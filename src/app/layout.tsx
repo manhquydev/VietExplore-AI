@@ -1,10 +1,37 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/components/auth/auth-provider";
+import { RoleSwitcher } from "@/components/dev/role-switcher";
 
 export const metadata: Metadata = {
-  title: 'VietExplore AI',
-  description: 'Personalized travel itineraries for Vietnam',
+  title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
+  description: 'Khám phá địa điểm du lịch Việt Nam đáng tin cậy và tạo lịch trình với AI trợ lý thông minh',
+  keywords: 'du lịch việt nam, lịch trình du lịch, AI trợ lý, địa điểm du lịch',
+  authors: [{ name: 'Du Lịch Việt Team' }],
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/logo-icon.svg', sizes: '192x192', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/logo-icon.svg', sizes: '180x180', type: 'image/svg+xml' },
+    ],
+  },
+  openGraph: {
+    title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
+    description: 'Khám phá địa điểm du lịch Việt Nam đáng tin cậy và tạo lịch trình với AI trợ lý thông minh',
+    type: 'website',
+    locale: 'vi_VN',
+    images: [
+      {
+        url: '/logo-horizontal.svg',
+        width: 680,
+        height: 200,
+        alt: 'Du Lịch Việt Logo',
+      },
+    ],
+  }
 };
 
 export default function RootLayout({
@@ -13,15 +40,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">
-        {children}
-        <Toaster />
+      <body className="min-h-screen bg-bg text-text antialiased">
+        <AuthProvider>
+          {children}
+          <Toaster />
+          <RoleSwitcher />
+        </AuthProvider>
       </body>
     </html>
   );

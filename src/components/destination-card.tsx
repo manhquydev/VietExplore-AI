@@ -58,9 +58,9 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="outline" className={cn('absolute top-3 right-3 border-0', badge.className)}>
+            <div className={cn('absolute top-3 right-3 inline-flex items-center gap-1 rounded-full px-3 h-7 text-sm font-medium transition-colors border-0', badge.className)}>
               {badge.icon}
-            </Badge>
+            </div>
           </TooltipTrigger>
           <TooltipContent>
             <p>{badge.label}</p>

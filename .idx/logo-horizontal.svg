@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 200" role="img" aria-label="Du Lịch Việt - logo ngang">
+  <title>Du Lịch Việt</title>
+  <defs>
+    <linearGradient id="lotusGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E91E63"/>
+      <stop offset="100%" stop-color="#F48FB1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Biểu tượng hoa sen -->
+  <g transform="translate(90,100) scale(1.25)">
+    <path d="M0 -40 C10 -10, 10 10, 0 40 C-10 10, -10 -10, 0 -40Z" fill="url(#lotusGrad)"/>
+    <path d="M-25 -10 C-40 0, -32 20, -10 35 C-15 15, -18 5, -25 -10Z" fill="url(#lotusGrad)"/>
+    <path d="M25 -10 C40 0, 32 20, 10 35 C15 15, 18 5, 25 -10Z" fill="url(#lotusGrad)"/>
+    <circle cx="0" cy="6" r="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+
+  <!-- Wordmark: dùng font có hỗ trợ tiếng Việt -->
+  <g transform="translate(210,116)">
+    <text x="0" y="0"
+      font-family="Noto Serif, 'Times New Roman', 'DejaVu Serif', 'Liberation Serif', serif"
+      font-size="68" font-weight="700" font-style="italic" letter-spacing="0.2" fill="#D81B60">
+      Du Lịch Việt
+    </text>
+    <!-- Nét lướt trang trí -->
+    <path d="M2 14 C80 32, 180 18, 280 26 S480 38, 540 18"
+      fill="none" stroke="#F48FB1" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+  </g>
+</svg>

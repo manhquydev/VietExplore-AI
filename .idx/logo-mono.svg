@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 200" role="img" aria-label="Du Lịch Việt - mono">
+  <title>Du Lịch Việt - Mono</title>
+  <g fill="currentColor">
+    <!-- Hoa sen -->
+    <g transform="translate(90,100) scale(1.25)">
+      <path d="M0 -40 C10 -10, 10 10, 0 40 C-10 10, -10 -10, 0 -40Z"/>
+      <path d="M-25 -10 C-40 0, -32 20, -10 35 C-15 15, -18 5, -25 -10Z"/>
+      <path d="M25 -10 C40 0, 32 20, 10 35 C15 15, 18 5, 25 -10Z"/>
+    </g>
+    <!-- Chữ: dùng font VN-ready -->
+    <text x="210" y="116"
+      font-family="Noto Serif, 'Times New Roman', 'DejaVu Serif', 'Liberation Serif', serif"
+      font-size="68" font-weight="800" font-style="italic">Du Lịch Việt</text>
+  </g>
+</svg>

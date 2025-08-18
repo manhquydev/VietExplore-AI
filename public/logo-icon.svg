@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Icon Du Lịch Việt">
+  <title>Du Lịch Việt - Icon</title>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="80%">
+      <stop offset="0%" stop-color="#FFE3EC"/>
+      <stop offset="100%" stop-color="#F8BBD0"/>
+    </radialGradient>
+    <linearGradient id="lotusGrad3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E91E63"/>
+      <stop offset="100%" stop-color="#F48FB1"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+  <g transform="translate(128,128) scale(1.1)">
+    <path d="M0 -40 C10 -10, 10 10, 0 40 C-10 10, -10 -10, 0 -40Z" fill="url(#lotusGrad3)"/>
+    <path d="M-25 -10 C-40 0, -32 20, -10 35 C-15 15, -18 5, -25 -10Z" fill="url(#lotusGrad3)"/>
+    <path d="M25 -10 C40 0, 32 20, 10 35 C15 15, 18 5, 25 -10Z" fill="url(#lotusGrad3)"/>
+    <circle cx="0" cy="6" r="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+</svg>
+

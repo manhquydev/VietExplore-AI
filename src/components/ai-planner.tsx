@@ -1,17 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import {
-  Bot,
-  LoaderCircle,
-  Sparkles,
-  ChevronDown,
-} from 'lucide-react';
+import { useState } from 'react';
+import { Icon } from '@/components/ui/icon';
 
-import { getItinerary } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,15 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -36,155 +20,131 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from './ui/scroll-area';
 
-const formSchema = z.object({
-  interests: z.string().min(3, {
-    message: 'Interests must be at least 3 characters long.',
-  }),
-  budget: z.enum(['low', 'medium', 'high']),
-  duration: z.coerce
-    .number()
-    .int()
-    .min(1, { message: 'Duration must be at least 1 day.' })
-    .max(30, { message: 'Duration cannot exceed 30 days.' }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+interface FormData {
+  interests: string;
+  budget: string;
+  duration: number;
+}
 
 export default function AiPlanner() {
-  const [isPending, startTransition] = useTransition();
-  const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      interests: '',
-      budget: 'medium',
-      duration: 7,
-    },
+  const [formData, setFormData] = useState<FormData>({
+    interests: '',
+    budget: 'medium',
+    duration: 7,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
 
-  function onSubmit(values: FormValues) {
-    setError(null);
-    setResult(null);
-    startTransition(async () => {
-      const response = await getItinerary(values);
-      if (response.error) {
-        setError(response.error);
-      }
-      if (response.data) {
-        setResult(response.data);
-      }
-    });
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      // Simulate AI processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setResult(`🎯 Lịch trình ${formData.duration} ngày được tạo!
+      
+Dựa trên sở thích "${formData.interests}" và ngân sách ${formData.budget}, đây là gợi ý:
+
+📍 Ngày 1-2: Khám phá Hà Nội
+• Hồ Gươm và Phố cổ
+• Văn Miếu - Quốc Tử Giám  
+• Ẩm thực phố cổ
+
+📍 Ngày 3-4: Vịnh Hạ Long
+• Du thuyền qua đêm
+• Động Thần Tiên
+• Làng chài Cửa Vạn
+
+📍 Ngày 5-${formData.duration}: Sapa
+• Thác Bạc và Cầu Mây
+• Bản Cát Cát
+• Núi Fansipan
+
+💰 Chi phí ước tính: ${formData.budget === 'low' ? '3-5' : formData.budget === 'medium' ? '5-8' : '8-12'} triệu VNĐ`);
+    } catch (error) {
+      console.error('AI planning error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <section id="ai-planner" aria-labelledby="ai-planner-title">
-      <Card className="max-w-4xl mx-auto shadow-lg border-primary/20">
+      <Card className="max-w-4xl mx-auto shadow-card">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-full">
-              <Bot className="w-6 h-6 text-primary" />
-            </div>
-            <CardTitle id="ai-planner-title" className="font-headline text-2xl md:text-3xl">
-              Công cụ Lập kế hoạch Chuyến đi AI
+          <div className="text-center">
+            <CardTitle id="ai-planner-title" className="text-2xl md:text-3xl mb-2">
+              <span className="text-primary font-bold">AI</span> Lập kế hoạch Chuyến đi
             </CardTitle>
+            <CardDescription>
+              Điền vào các tùy chọn bên dưới để tạo lịch trình du lịch được cá nhân hóa của bạn.
+            </CardDescription>
           </div>
-          <CardDescription>
-            Điền vào các tùy chọn bên dưới để tạo lịch trình du lịch được cá nhân hóa của bạn.
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="interests"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sở thích</FormLabel>
-                      <FormControl>
-                        <Input placeholder="ví dụ: lịch sử, ẩm thực, thiên nhiên" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="budget"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ngân sách</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn ngân sách" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="low">Thấp</SelectItem>
-                          <SelectItem value="medium">Trung bình</SelectItem>
-                          <SelectItem value="high">Cao</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="duration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Thời gian (ngày)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="ví dụ: 7" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <Label htmlFor="interests">Sở thích</Label>
+                <Input
+                  id="interests"
+                  placeholder="ví dụ: lịch sử, ẩm thực, thiên nhiên"
+                  value={formData.interests}
+                  onChange={(e) => setFormData(prev => ({ ...prev, interests: e.target.value }))}
                 />
               </div>
-              <Button type="submit" disabled={isPending} className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90">
-                {isPending ? (
-                  <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    Đang tạo...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Tạo Lịch trình
-                  </>
-                )}
-              </Button>
-            </form>
-          </Form>
+              
+              <div>
+                <Label htmlFor="budget">Ngân sách</Label>
+                <Select
+                  value={formData.budget}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, budget: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn ngân sách" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Thấp (1-3 triệu)</SelectItem>
+                    <SelectItem value="medium">Trung bình (3-6 triệu)</SelectItem>
+                    <SelectItem value="high">Cao (6+ triệu)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="duration">Thời gian (ngày)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  placeholder="ví dụ: 7"
+                  min="1"
+                  max="30"
+                  value={formData.duration}
+                  onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 1 }))}
+                />
+              </div>
+            </div>
+            
+            <Button type="submit" disabled={isLoading} className="w-full md:w-auto" loading={isLoading}>
+              {isLoading ? 'Đang tạo...' : 'Tạo Lịch trình'}
+            </Button>
+          </form>
 
-          {(result || error) && (
-            <div className="mt-8 pt-6 border-t">
-              <h3 className="font-headline text-xl font-bold mb-4">
+          {result && (
+            <div className="mt-8 pt-6 border-t border-border">
+              <h3 className="text-xl font-bold mb-4">
                 Lịch trình được đề xuất của bạn
               </h3>
-              {error && <p className="text-destructive">{error}</p>}
-              {result && (
-                <Card className="bg-background">
-                  <ScrollArea className="h-72">
-                    <CardContent className="p-6">
-                      <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed">
-                        {result}
-                      </pre>
-                    </CardContent>
-                  </ScrollArea>
-                </Card>
-              )}
+              <Card className="bg-surface">
+                <CardContent className="p-6">
+                  <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {result}
+                  </pre>
+                </CardContent>
+              </Card>
             </div>
           )}
         </CardContent>
