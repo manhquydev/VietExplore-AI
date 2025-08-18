@@ -10,7 +10,7 @@ const destinations: Destination[] = [
     'data-ai-hint': 'ha long bay',
     rating: 4.9,
     reviews: 2450,
-    type: 'default',
+    type: 'verified',
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ const destinations: Destination[] = [
     'data-ai-hint': 'hoi an old town',
     rating: 4.8,
     reviews: 1890,
-    type: 'verified',
+    type: 'contributor',
   },
   {
     id: 3,
@@ -43,7 +43,7 @@ const destinations: Destination[] = [
     'data-ai-hint': 'hanoi city',
     rating: 4.8,
     reviews: 2800,
-    type: 'default',
+    type: 'contributor',
   },
   {
     id: 5,
@@ -54,7 +54,7 @@ const destinations: Destination[] = [
     'data-ai-hint': 'sapa landscape',
     rating: 4.9,
     reviews: 1500,
-    type: 'verified',
+    type: 'contributor',
   },
   {
     id: 6,
@@ -65,7 +65,7 @@ const destinations: Destination[] = [
     'data-ai-hint': 'mekong delta',
     rating: 4.6,
     reviews: 980,
-    type: 'default',
+    type: 'partner',
   },
 ];
 

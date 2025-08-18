@@ -99,7 +99,7 @@ const mockPlaces = [
         isPrimary: true
       }
     ],
-    trustLabel: "community" as const,
+    trustLabel: "partner" as const,
     rating: { average: 4.6, count: 650 },
     tags: ["núi", "thác nước", "biên giới"]
   },

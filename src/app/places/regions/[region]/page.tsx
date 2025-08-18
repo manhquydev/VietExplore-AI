@@ -62,7 +62,7 @@ const mockPlacesByRegion = {
       province: "Cao Bằng",
       type: "núi",
       images: [{ url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop", alt: "Thác Bản Giốc", isPrimary: true }],
-      trustLabel: "community" as const,
+      trustLabel: "contributor" as const,
       rating: { average: 4.6, count: 650 },
       tags: ["núi", "thác nước", "biên giới"]
     }

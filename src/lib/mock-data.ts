@@ -188,7 +188,7 @@ export const MOCK_PLACES = [
     region: "trung-bo",
     province: "Bình Định",
     type: "bien",
-    trustLabel: "community",
+    trustLabel: "verified",
     status: "published",
     createdBy: "traveler_001",
     images: ["https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"],
