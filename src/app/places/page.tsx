@@ -9,7 +9,6 @@ import { FilterBar } from "@/components/filter-bar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Grid, List, Map } from "lucide-react"
 
 // Mock data - sẽ được thay thế bằng API calls
 const mockPlaces = [
@@ -130,10 +129,10 @@ interface SearchFilters {
 }
 
 export default function PlacesPage() {
-  const [places, setPlaces] = React.useState(mockPlaces)
+  const [places] = React.useState(mockPlaces) // Remove setPlaces since it's not used
   const [filteredPlaces, setFilteredPlaces] = React.useState(mockPlaces)
   const [loading, setLoading] = React.useState(false)
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list' | 'map'>('grid')
+  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid') // Remove map for now
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filters, setFilters] = React.useState<SearchFilters>({})
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -178,7 +177,7 @@ export default function PlacesPage() {
 
   const handleAddToItinerary = (placeId: string) => {
     console.log('Add to itinerary:', placeId)
-    // TODO: Implement add to itinerary logic
+    // Will implement add to itinerary logic later
   }
 
   // Pagination
@@ -242,33 +241,25 @@ export default function PlacesPage() {
               )}
             </div>
 
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle - Simplified without icons */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted mr-2">Hiển thị:</span>
               <div className="flex rounded-lg border border-border overflow-hidden">
                 <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="rounded-none border-0"
+                  className="rounded-none border-0 text-sm"
                 >
-                  <Grid className="w-4 h-4" />
+                  Lưới
                 </Button>
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="rounded-none border-0"
+                  className="rounded-none border-0 text-sm"
                 >
-                  <List className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'map' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('map')}
-                  className="rounded-none border-0"
-                >
-                  <Map className="w-4 h-4" />
+                  Danh sách
                 </Button>
               </div>
             </div>
@@ -278,7 +269,7 @@ export default function PlacesPage() {
           {loading && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="card p-0 overflow-hidden">
+                <div key={`loading-${i}`} className="card p-0 overflow-hidden">
                   <Skeleton className="aspect-[3/2] w-full" />
                   <div className="p-4 space-y-2">
                     <Skeleton className="h-5 w-3/4" />
@@ -296,7 +287,10 @@ export default function PlacesPage() {
             <>
               {filteredPlaces.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="text-6xl mb-4">🔍</div>
+                  <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                  </svg>
                   <h3 className="text-xl font-semibold mb-2">
                     Không tìm thấy kết quả
                   </h3>
@@ -360,15 +354,38 @@ export default function PlacesPage() {
                     </div>
                   )}
 
-                  {viewMode === 'map' && (
-                    <div className="bg-surface rounded-xl border border-border p-8 text-center">
-                      <div className="text-6xl mb-4">🗺️</div>
-                      <h3 className="text-xl font-semibold mb-2">
-                        Chế độ xem bản đồ
-                      </h3>
-                      <p className="text-muted">
-                        Tính năng sẽ được phát triển trong phiên bản tiếp theo
-                      </p>
+                  {viewMode === 'list' && (
+                    <div className="space-y-4">
+                      {paginatedPlaces.map((place) => (
+                        <div key={place.id} className="bg-surface border border-border rounded-xl p-6 flex gap-6">
+                          <img 
+                            src={place.images[0]?.url} 
+                            alt={place.name}
+                            className="w-32 h-24 rounded-lg object-cover flex-shrink-0"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="text-lg font-semibold">{place.name}</h3>
+                              <Badge variant="secondary" className="ml-2">
+                                {place.province}
+                              </Badge>
+                            </div>
+                            <p className="text-muted mb-3 line-clamp-2">{place.shortDescription}</p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex gap-2">
+                                {place.tags?.slice(0, 3).map((tag, tagIndex) => (
+                                  <Badge key={`${place.id}-${tag}-${tagIndex}`} variant="secondary" className="text-xs">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <Button variant="secondary" size="sm">
+                                Xem chi tiết →
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -390,7 +407,7 @@ export default function PlacesPage() {
                           return (
                             <Button
                               key={page}
-                              variant={currentPage === page ? 'default' : 'ghost'}
+                              variant={currentPage === page ? 'primary' : 'ghost'}
                               size="sm"
                               onClick={() => setCurrentPage(page)}
                             >

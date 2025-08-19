@@ -108,11 +108,11 @@ export default function ContentPolicyPage() {
         </h3>
         <div className="space-y-4">
           <div className="border border-border rounded-lg p-4">
-            <h4 className="font-medium text-text mb-2">🌟 Verified</h4>
+            <h4 className="font-medium text-text mb-2">Verified</h4>
             <p className="text-sm text-muted">Nội dung được xác thực bởi đội ngũ kiểm duyệt</p>
           </div>
           <div className="border border-border rounded-lg p-4">
-            <h4 className="font-medium text-text mb-2">🏛️ Partner</h4>
+            <h4 className="font-medium text-text mb-2">Partner</h4>
             <p className="text-sm text-muted">Nội dung từ đối tác chính thức (Sở Du lịch, khách sạn uy tín)</p>
           </div>
           <div className="border border-border rounded-lg p-4">
@@ -120,7 +120,7 @@ export default function ContentPolicyPage() {
             <p className="text-sm text-muted">Nội dung từ cộng tác viên có uy tín</p>
           </div>
           <div className="border border-border rounded-lg p-4">
-            <h4 className="font-medium text-text mb-2">👥 Community</h4>
+            <h4 className="font-medium text-text mb-2">Community</h4>
             <p className="text-sm text-muted">Nội dung từ cộng đồng, cần xem xét thêm</p>
           </div>
         </div>

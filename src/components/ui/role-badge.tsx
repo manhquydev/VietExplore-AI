@@ -16,27 +16,19 @@ const ContributorIcon: React.FC<{ className?: string }> = ({ className }) => (
     height="20" 
     viewBox="0 0 96 96" 
     className={cn("inline-block", className)}
-    role="img" 
     aria-label="Contributor badge"
   >
     <defs>
-      <linearGradient id="grad-contributor" x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id="grad-contributor-role" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stopColor="#21C1C5"/>
         <stop offset="100%" stopColor="#2178F5"/>
       </linearGradient>
     </defs>
-    {/* Ribbons */}
     <path d="M38 62 L32 88 L48 78 L64 88 L58 62 Z" fill="#1F6DE8" opacity="0.85"/>
     <path d="M38 62 L48 72 L58 62 Z" fill="#FFFFFF" opacity="0.15"/>
-    
-    {/* Medal circle */}
-    <circle cx="48" cy="40" r="28" fill="url(#grad-contributor)"/>
+    <circle cx="48" cy="40" r="28" fill="url(#grad-contributor-role)"/>
     <circle cx="48" cy="40" r="28" fill="none" stroke="#FFFFFF" strokeOpacity="0.18" strokeWidth="2"/>
-    
-    {/* Check */}
     <path d="M36 41 L45 50 L63 32" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
-    
-    {/* Sparkle */}
     <g transform="translate(68,22)" fill="#FFFFFF">
       <circle cx="4" cy="4" r="2" opacity="0.95"/>
       <path d="M4 0 L4 8 M0 4 L8 4" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
@@ -51,22 +43,17 @@ const PartnerIcon: React.FC<{ className?: string }> = ({ className }) => (
     height="20" 
     viewBox="0 0 108 108" 
     className={cn("inline-block", className)}
-    role="img" 
     aria-label="Community Partner badge"
   >
     <defs>
-      <linearGradient id="grad-partner" x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id="grad-partner-role" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stopColor="#DC2626"/>
         <stop offset="100%" stopColor="#991B1B"/>
       </linearGradient>
     </defs>
-    {/* Ribbon */}
     <path d="M42 70 L36 96 L54 84 L72 96 L66 70 Z" fill="#FFD700" opacity="0.9"/>
-    {/* Medal */}
-    <circle cx="54" cy="44" r="28" fill="url(#grad-partner)" stroke="#FFD700" strokeWidth="3"/>
-    {/* Star (main symbol) */}
+    <circle cx="54" cy="44" r="28" fill="url(#grad-partner-role)" stroke="#FFD700" strokeWidth="3"/>
     <polygon points="54,28 58,40 70,40 60,48 64,60 54,52 44,60 48,48 38,40 50,40" fill="#FFD700"/>
-    {/* Small check on top-right */}
     <circle cx="72" cy="28" r="10" fill="white" stroke="#FFD700" strokeWidth="2"/>
     <path d="M68 28 L71 31 L76 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
@@ -149,7 +136,6 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({ role, variant = "default",
 // Helper component for displaying role in different contexts
 interface UserRoleDisplayProps {
   role: string
-  verified?: boolean
   variant?: "default" | "compact" | "detailed"
   className?: string
 }

@@ -18,7 +18,7 @@
   <!-- Wordmark: dùng font có hỗ trợ tiếng Việt -->
   <g transform="translate(210,116)">
     <text x="0" y="0"
-      font-family="DM Sans, Inter, ui-sans-serif, system-ui"
+      font-family="Noto Serif, 'Times New Roman', 'DejaVu Serif', 'Liberation Serif', serif"
       font-size="68" font-weight="700" font-style="italic" letter-spacing="0.2" fill="#D81B60">
       Du Lịch Việt
     </text>

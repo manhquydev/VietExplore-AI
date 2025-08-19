@@ -20,6 +20,7 @@ import {
   EyeOff,
   User,
   Calendar,
+  Clock,
   MapPin,
   Flag,
   AlertTriangle,
@@ -198,145 +199,218 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
       <main className="container py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
             Quay lại
           </Button>
+          
           <div className="flex-1">
-            <h1 className="text-2xl font-bold mb-1">{reviewItem.title}</h1>
-            <p className="text-muted">Kiểm duyệt nội dung #{reviewItem.id}</p>
-          </div>
-          <div className="flex gap-2">
-            <Badge variant={priorityInfo.variant}>{priorityInfo.label}</Badge>
-            <Badge variant={statusInfo.variant} className="gap-1">
-              <statusInfo.icon className="w-3 h-3" />
-              {statusInfo.label}
-            </Badge>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-bold">{reviewItem.title}</h1>
+              <Badge variant={statusInfo.variant} className="flex items-center gap-1.5">
+                <statusInfo.icon className="w-3.5 h-3.5" />
+                {statusInfo.label}
+              </Badge>
+              <Badge variant={priorityInfo.variant} size="sm">
+                {priorityInfo.label}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-4 text-sm text-muted">
+              <span className="flex items-center gap-1.5">
+                <User className="w-4 h-4" />
+                Gửi bởi: <strong>{reviewItem.submittedBy.name}</strong>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                {new Date(reviewItem.submittedAt).toLocaleDateString('vi-VN', {
+                  day: '2-digit',
+                  month: '2-digit', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+              <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                ID: {reviewItem.id}
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="content">Nội dung</TabsTrigger>
-                <TabsTrigger value="media">Hình ảnh</TabsTrigger>
-                <TabsTrigger value="sources">Nguồn</TabsTrigger>
+                <TabsTrigger value="content" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Nội dung
+                </TabsTrigger>
+                <TabsTrigger value="images" className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  Hình ảnh ({reviewItem.content.images.length})
+                </TabsTrigger>
+                <TabsTrigger value="sources" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  Nguồn tham khảo
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="content" className="space-y-6">
+              <TabsContent value="content" className="space-y-6 mt-6">
+                {/* Basic Information */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Thông tin cơ bản</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      Thông tin cơ bản
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">Tên địa điểm</Label>
-                        <p className="mt-1">{reviewItem.content.name}</p>
+                        <Label className="text-sm font-medium text-muted">Tên địa điểm</Label>
+                        <p className="text-base font-semibold mt-1">{reviewItem.content.name}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">Loại hình</Label>
-                        <p className="mt-1 capitalize">{reviewItem.content.type}</p>
+                        <Label className="text-sm font-medium text-muted">Loại hình</Label>
+                        <div className="mt-1">
+                          <Badge variant="secondary" className="capitalize">
+                            {reviewItem.content.type}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-
+                    
                     <div>
-                      <Label className="text-sm font-medium">Mô tả ngắn</Label>
-                      <p className="mt-1">{reviewItem.content.shortDescription}</p>
+                      <Label className="text-sm font-medium text-muted">Mô tả ngắn</Label>
+                      <p className="text-base mt-1 leading-relaxed">{reviewItem.content.shortDescription}</p>
                     </div>
-
+                    
                     <div>
-                      <Label className="text-sm font-medium">Mô tả chi tiết</Label>
+                      <Label className="text-sm font-medium text-muted">Mô tả chi tiết</Label>
                       <div className="mt-1 prose prose-sm max-w-none">
                         {reviewItem.content.description.split('\n\n').map((paragraph, index) => (
-                          <p key={index} className="mb-3">{paragraph}</p>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Vùng miền</Label>
-                        <p className="mt-1">
-                          {reviewItem.content.region === 'bac-bo' ? 'Miền Bắc' : 
-                           reviewItem.content.region === 'trung-bo' ? 'Miền Trung' : 'Miền Nam'}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Tỉnh/Thành phố</Label>
-                        <p className="mt-1">{reviewItem.content.province}</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Địa chỉ</Label>
-                      <p className="mt-1">{reviewItem.content.address}</p>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Tọa độ</Label>
-                        <p className="mt-1 text-sm font-mono">
-                          {reviewItem.content.coordinates.lat}, {reviewItem.content.coordinates.lng}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Thời gian tốt nhất</Label>
-                        <p className="mt-1">{reviewItem.content.bestTimeToVisit}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Giờ mở cửa</Label>
-                        <p className="mt-1">{reviewItem.content.openingHours}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Phí vào cửa</Label>
-                        <p className="mt-1">{reviewItem.content.entryFee}</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Tiện ích</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {reviewItem.content.facilities.map((facility, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {facility}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Tags</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {reviewItem.content.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
+                          <p key={index} className="text-base leading-relaxed mb-4 last:mb-0">
+                            {paragraph}
+                          </p>
                         ))}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Location Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5" />
+                      Thông tin vị trí
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Vùng miền</Label>
+                        <p className="text-base mt-1 capitalize font-medium">
+                          {reviewItem.content.region === 'bac-bo' ? 'Miền Bắc' : 
+                           reviewItem.content.region === 'trung-bo' ? 'Miền Trung' : 'Miền Nam'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Tỉnh/Thành phố</Label>
+                        <p className="text-base mt-1 font-medium">{reviewItem.content.province}</p>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium text-muted">Địa chỉ</Label>
+                      <p className="text-base mt-1">{reviewItem.content.address}</p>
+                    </div>
+                    
+                    {reviewItem.content.coordinates.lat && reviewItem.content.coordinates.lng && (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium text-muted">Vĩ độ</Label>
+                          <p className="text-base mt-1 font-mono">{reviewItem.content.coordinates.lat}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-muted">Kinh độ</Label>
+                          <p className="text-base mt-1 font-mono">{reviewItem.content.coordinates.lng}</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Additional Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Thông tin bổ sung</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Giờ mở cửa</Label>
+                        <p className="text-base mt-1">{reviewItem.content.openingHours || "Chưa cập nhật"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Phí vào cửa</Label>
+                        <p className="text-base mt-1">{reviewItem.content.entryFee || "Chưa cập nhật"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Thời gian tốt nhất</Label>
+                        <p className="text-base mt-1">{reviewItem.content.bestTimeToVisit || "Chưa cập nhật"}</p>
+                      </div>
+                    </div>
+                    
+                    {reviewItem.content.facilities.length > 0 && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Tiện ích</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {reviewItem.content.facilities.map((facility, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {facility}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {reviewItem.content.tags.length > 0 && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted">Tags</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {reviewItem.content.tags.map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              #{tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </TabsContent>
 
-              <TabsContent value="media" className="space-y-6">
+              <TabsContent value="images" className="space-y-6 mt-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" />
-                      Hình ảnh ({reviewItem.content.images.length})
+                      Hình ảnh đính kèm
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-6">
                       {reviewItem.content.images.map((image, index) => (
                         <div key={image.id} className="space-y-3">
-                          <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-surface">
+                          <div className="relative aspect-[4/3] overflow-hidden rounded-lg border">
                             <img
                               src={image.url}
                               alt={image.alt}
@@ -350,23 +424,16 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                               </div>
                             )}
                           </div>
-                          
-                          <div className="space-y-2 text-sm">
-                            <div>
-                              <Label className="text-xs font-medium">Mô tả ảnh</Label>
-                              <p className="text-muted">{image.alt}</p>
-                            </div>
-                            {image.caption && (
-                              <div>
-                                <Label className="text-xs font-medium">Chú thích</Label>
-                                <p className="text-muted">{image.caption}</p>
-                              </div>
-                            )}
-                            <div>
-                              <Label className="text-xs font-medium">URL</Label>
-                              <p className="text-muted break-all">{image.url}</p>
-                            </div>
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Alt text</Label>
+                            <p className="text-sm text-muted">{image.alt}</p>
                           </div>
+                          {image.caption && (
+                            <div className="space-y-1">
+                              <Label className="text-sm font-medium">Chú thích</Label>
+                              <p className="text-sm text-muted italic">{image.caption}</p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -374,40 +441,35 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="sources" className="space-y-6">
+              <TabsContent value="sources" className="space-y-6 mt-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
-                      Nguồn tham khảo ({reviewItem.content.sources.length})
+                      <ExternalLink className="w-5 h-5" />
+                      Nguồn tham khảo
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {reviewItem.content.sources.map((source, index) => (
-                        <div key={index} className="p-4 border border-border rounded-lg">
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge variant="outline" className="text-xs">
+                        <div key={index} className="border rounded-lg p-4 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="capitalize text-xs">
                               {source.type === 'website' ? 'Website' :
                                source.type === 'social' ? 'Mạng xã hội' :
                                source.type === 'document' ? 'Tài liệu' : 'Cá nhân'}
                             </Badge>
-                            {source.url && (
-                              <a
-                                href={source.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline flex items-center gap-1 text-sm"
-                              >
-                                Xem nguồn
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
                           </div>
-                          <p className="text-sm">{source.description}</p>
                           {source.url && (
-                            <p className="text-xs text-muted mt-2 break-all">{source.url}</p>
+                            <div>
+                              <Label className="text-sm font-medium">URL</Label>
+                              <p className="text-sm text-blue-600 break-all mt-1">{source.url}</p>
+                            </div>
                           )}
+                          <div>
+                            <Label className="text-sm font-medium">Mô tả</Label>
+                            <p className="text-sm text-muted mt-1">{source.description}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -422,7 +484,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
             {/* Submitter Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Thông tin người gửi</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Thông tin người gửi
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3 mb-4">
@@ -432,7 +497,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                       {reviewItem.submittedBy.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{reviewItem.submittedBy.name}</span>
                     </div>
@@ -446,14 +511,22 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+                <Separator className="my-4" />
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="text-muted">Đã đóng góp:</span>
-                    <span>{reviewItem.submittedBy.stats.placesContributed} địa điểm</span>
+                    <span className="font-medium">{reviewItem.submittedBy.stats.placesContributed} địa điểm</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="text-muted">Tỷ lệ duyệt:</span>
-                    <span>{reviewItem.submittedBy.stats.approvalRate}%</span>
+                    <span className="font-medium text-green-600">{reviewItem.submittedBy.stats.approvalRate}%</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted">Trạng thái:</span>
+                    <Badge variant={reviewItem.submittedBy.verified ? "default" : "secondary"} className="text-xs">
+                      {reviewItem.submittedBy.verified ? "Đã xác minh" : "Chưa xác minh"}
+                    </Badge>
                   </div>
                 </div>
               </CardContent>
@@ -462,23 +535,34 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
             {/* Review Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Hành động kiểm duyệt</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Flag className="w-5 h-5" />
+                  Hành động kiểm duyệt
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="moderatorNotes">Ghi chú (bắt buộc khi từ chối)</Label>
+                  <Label htmlFor="moderatorNotes" className="text-sm font-medium">
+                    Ghi chú cho tác giả
+                  </Label>
                   <Textarea
                     id="moderatorNotes"
-                    placeholder="Nhập ghi chú cho tác giả..."
+                    placeholder="Nhập phản hồi cho tác giả..."
                     value={moderatorNotes}
                     onChange={(e) => setModeratorNotes(e.target.value)}
                     rows={4}
+                    className="mt-1.5"
                   />
+                  <p className="text-xs text-muted mt-1">
+                    Bắt buộc khi từ chối hoặc yêu cầu chỉnh sửa
+                  </p>
                 </div>
 
-                <div className="space-y-2">
+                <Separator />
+
+                <div className="space-y-3">
                   <Button
-                    className="w-full"
+                    className="w-full justify-start"
                     onClick={() => handleAction('approve')}
                     disabled={isProcessing}
                   >
@@ -488,7 +572,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full justify-start"
                     onClick={() => handleAction('request_edit')}
                     disabled={isProcessing}
                   >
@@ -498,7 +582,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   
                   <Button
                     variant="outline"
-                    className="w-full text-danger hover:text-danger"
+                    className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                     onClick={() => handleAction('reject')}
                     disabled={isProcessing}
                   >
@@ -508,7 +592,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   
                   <Button
                     variant="ghost"
-                    className="w-full"
+                    className="w-full justify-start"
                     onClick={() => handleAction('hide')}
                     disabled={isProcessing}
                   >
@@ -516,50 +600,52 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     Ẩn nội dung
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Submission Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Thông tin gửi</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted">Loại:</span>
-                  <Badge variant="outline" className="text-xs">
-                    {reviewItem.type === 'place' ? 'Địa điểm' :
-                     reviewItem.type === 'itinerary' ? 'Lịch trình' :
-                     reviewItem.type === 'user' ? 'Người dùng' : 'Báo cáo'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted">Thời gian gửi:</span>
-                  <span>{new Date(reviewItem.submittedAt).toLocaleString('vi-VN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted">ID mục tiêu:</span>
-                  <span className="font-mono text-xs">{reviewItem.targetId}</span>
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    <strong>Lưu ý:</strong> Tất cả hành động kiểm duyệt sẽ được ghi lại và thông báo đến tác giả qua email.
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* History */}
+            {/* Review History */}
             <Card>
               <CardHeader>
-                <CardTitle>Lịch sử xử lý</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Lịch sử xem xét
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {reviewItem.history.map((entry, index) => (
                     <div key={index} className="flex gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="flex-1 text-sm">
-                        <p className="font-medium">{entry.actor}</p>
-                        <p className="text-muted">{entry.notes}</p>
-                        <p className="text-xs text-muted">
-                          {new Date(entry.timestamp).toLocaleString('vi-VN')}
+                      <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                      <div className="flex-1 pb-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium capitalize">
+                            {entry.action === 'submitted' ? 'Đã gửi' :
+                             entry.action === 'approved' ? 'Đã duyệt' :
+                             entry.action === 'rejected' ? 'Đã từ chối' : 'Khác'}
+                          </p>
+                          <span className="text-xs text-muted">
+                            {new Date(entry.timestamp).toLocaleDateString('vi-VN', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted mt-1">
+                          Bởi: {entry.actor}
                         </p>
+                        {entry.notes && (
+                          <p className="text-sm mt-2 p-2 bg-gray-50 rounded">
+                            {entry.notes}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}

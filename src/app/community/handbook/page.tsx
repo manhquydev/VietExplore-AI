@@ -41,7 +41,7 @@ export default function CommunityHandbookPage() {
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-text mb-3">🚀 Cho người mới</h3>
+                <h3 className="font-semibold text-text mb-3">Cho người mới</h3>
                 <ul className="space-y-2 text-sm text-muted">
                   <li>• Tạo tài khoản miễn phí</li>
                   <li>• Khám phá địa điểm yêu thích</li>
@@ -147,14 +147,14 @@ export default function CommunityHandbookPage() {
               </div>
               
               <div>
-                <h3 className="font-semibold text-text mb-2">📍 Thông tin chính xác</h3>
+                <h3 className="font-semibold text-text mb-2">Thông tin chính xác</h3>
                 <p className="text-sm text-muted">
                   Chỉ chia sẻ thông tin đã trải nghiệm hoặc có nguồn đáng tin cậy, ghi rõ nguồn tham khảo
                 </p>
               </div>
               
               <div>
-                <h3 className="font-semibold text-text mb-2">🎯 Nội dung hữu ích</h3>
+                <h3 className="font-semibold text-text mb-2">Nội dung hữu ích</h3>
                 <p className="text-sm text-muted">
                   Chia sẻ kinh nghiệm thực tế, mẹo hay, lưu ý quan trọng giúp ích cho du khách khác
                 </p>

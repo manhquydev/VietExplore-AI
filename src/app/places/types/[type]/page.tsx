@@ -32,12 +32,12 @@ const placeTypes = {
   "van-hoa": {
     name: "Văn hóa",
     description: "Trải nghiệm di sản văn hóa phong phú",
-    emoji: "🏛️"
+    icon: "building"
   },
   "am-thuc": {
     name: "Ẩm thực",
     description: "Thưởng thức tinh hoa ẩm thực Việt",
-    emoji: "🍜"
+    icon: "utensils"
   },
   "check-in": {
     name: "Check-in",

@@ -4,46 +4,43 @@ import { Badge } from "@/components/ui/badge"
 
 export const Hero: React.FC = () => {
   return (
-    <section className="container py-16 lg:py-24">
-      <div className="grid lg:grid-cols-12 gap-8 items-center">
+    <section className="container py-20 lg:py-32">
+      <div className="grid lg:grid-cols-12 gap-12 items-center">
         {/* Text Content */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="space-y-4">
-            <Badge variant="outline" className="w-fit">
+        <div className="lg:col-span-6 space-y-8">
+          <div className="space-y-6">
+            <Badge variant="outline" className="w-fit bg-primary/5 border-primary/20 text-primary">
               ✨ Nền tảng phi lợi nhuận
             </Badge>
             
-            <h1 className="font-bold leading-tight text-[clamp(32px,4vw,48px)]">
+            <h1 className="font-bold leading-tight text-[clamp(36px,5vw,56px)] tracking-tight">
               Trải nghiệm phép màu của{" "}
               <span className="text-primary">những chuyến đi Việt Nam!</span>
             </h1>
             
-            <p className="text-muted max-w-prose text-lg leading-relaxed">
+            <p className="text-muted text-xl leading-relaxed text-justify max-w-lg">
               Khám phá địa điểm đáng tin cậy khắp Việt Nam và để Trợ lý AI giúp bạn tạo lịch trình hoàn hảo trong vài phút.
             </p>
           </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" className="text-base px-8">
-              Bắt đầu với AI
+            <Button size="lg" className="text-base px-8 py-4 h-auto">
+              Bắt đầu với AI →
             </Button>
-            <Button variant="secondary" size="lg" className="text-base px-8">
+            <Button variant="secondary" size="lg" className="text-base px-8 py-4 h-auto">
               Khám phá địa điểm
             </Button>
           </div>
 
-          {/* Trust Indicators - Text only, no icons */}
-          <div className="flex flex-wrap gap-3 pt-4">
-            <Badge variant="secondary" className="text-xs">
-              1,000+ địa điểm xác minh
-            </Badge>
-            <Badge variant="secondary" className="text-xs">
-              10,000+ người dùng tin tưởng
-            </Badge>
-            <Badge variant="secondary" className="text-xs">
-              Đối tác chính thống
-            </Badge>
+          {/* Trust Indicators - Clean, minimal design */}
+          <div className="pt-6 space-y-3">
+            <p className="text-sm text-muted font-medium">Được tin tưởng bởi:</p>
+            <div className="flex flex-wrap gap-6 text-sm text-muted">
+              <span className="font-medium">1,000+ địa điểm xác minh</span>
+              <span className="font-medium">10,000+ người dùng</span>
+              <span className="font-medium">Đối tác chính thống</span>
+            </div>
           </div>
         </div>
 
@@ -94,7 +91,9 @@ export const Hero: React.FC = () => {
 
             <div className="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-card p-4 border border-border hidden lg:block">
               <div className="text-center">
-                <div className="font-semibold text-success text-lg">✓</div>
+                <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
                 <div className="font-medium text-sm">Đáng tin cậy</div>
                 <div className="text-xs text-muted">Xác minh cộng đồng</div>
               </div>

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const announcements = [
   {
     id: "1",
-    title: "🎉 Chào mừng đến với Du Lịch Việt!",
+    title: "Chào mừng đến với Du Lịch Việt!",
     content: "Chúng tôi vui mừng giới thiệu nền tảng du lịch phi lợi nhuận đầu tiên tại Việt Nam. Hãy cùng nhau xây dựng cộng đồng chia sẻ thông tin du lịch đáng tin cậy.",
     author: "Đội ngũ Du Lịch Việt",
     date: "2024-03-15",
@@ -34,7 +34,7 @@ const announcements = [
   },
   {
     id: "3",
-    title: "📝 Hướng dẫn đóng góp nội dung chất lượng",
+    title: "Hướng dẫn đóng góp nội dung chất lượng",
     content: "Để đảm bảo chất lượng thông tin trên nền tảng, chúng tôi đã cập nhật hướng dẫn chi tiết về cách đóng góp địa điểm và lịch trình. Hãy tham khảo để nội dung của bạn được duyệt nhanh chóng.",
     author: "Đội kiểm duyệt",
     date: "2024-03-10",
@@ -43,7 +43,7 @@ const announcements = [
   },
   {
     id: "4",
-    title: "🏆 Chương trình Contributor của tháng",
+    title: "Chương trình Contributor của tháng",
     content: "Chúng tôi tri ân những cộng tác viên tích cực nhất trong tháng 3. Hãy tham gia đóng góp để có cơ hội nhận được huy hiệu đặc biệt và được giới thiệu trên trang chủ.",
     author: "Community Manager",
     date: "2024-03-08",

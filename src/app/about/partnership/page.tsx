@@ -5,7 +5,6 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card-custom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Icon } from "@/components/ui/icon"
 import { RoleBadge } from "@/components/ui/role-badge"
 import Link from "next/link"
 
@@ -70,56 +69,64 @@ export default function PartnershipPage() {
     <div className="min-h-screen bg-bg text-text">
       <Header />
       
-      <div className="container mx-auto py-16 max-w-6xl">
+      <div className="container mx-auto py-20 max-w-6xl">
         {/* Hero Section */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-20">
           <div className="flex justify-center mb-6">
             <RoleBadge role="partner" variant="detailed" />
           </div>
           <h1 className="text-4xl font-bold text-text mb-6">
             Chương trình Đối tác Cộng đồng
           </h1>
-          <p className="text-xl text-muted max-w-3xl mx-auto">
+          <p className="text-xl text-muted max-w-3xl mx-auto leading-relaxed text-justify">
             Tham gia cùng Du Lịch Việt để xây dựng nền tảng thông tin du lịch đáng tin cậy, 
             minh bạch và phi lợi nhuận cho cộng đồng.
           </p>
         </div>
 
         {/* Partner Types */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-semibold text-text mb-8 text-center">
+        <div className="mb-20">
+          <h2 className="text-3xl font-semibold text-text mb-12 text-center">
             Các loại đối tác
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {partnerTypes.map((partner, index) => (
               <Card key={partner.type} className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-primary font-bold">{index + 1}</span>
+                <CardHeader className="pb-6">
+                  <CardTitle className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+                      <span className="text-primary font-bold text-lg">{index + 1}</span>
                     </div>
                     {partner.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted">
+                <CardContent className="pt-0 space-y-6">
+                  <p className="text-muted leading-relaxed text-justify">
                     {partner.description}
                   </p>
                   
                   <div>
-                    <h4 className="font-medium text-text mb-2">Ví dụ:</h4>
-                    <ul className="text-sm text-muted space-y-1">
+                    <h4 className="font-medium text-text mb-3">Ví dụ:</h4>
+                    <ul className="text-sm text-muted space-y-2">
                       {partner.examples.map((example, idx) => (
-                        <li key={idx}>• {example}</li>
+                        <li key={`${partner.type}-example-${idx}`} className="flex items-start">
+                          <span className="text-primary mr-2 font-bold">•</span>
+                          {example}
+                        </li>
                       ))}
                     </ul>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-text mb-2">Quyền lợi:</h4>
-                    <ul className="text-sm text-muted space-y-1">
+                    <h4 className="font-medium text-text mb-3">Quyền lợi:</h4>
+                    <ul className="text-sm text-success space-y-2">
                       {partner.benefits.map((benefit, idx) => (
-                        <li key={idx}>• {benefit}</li>
+                        <li key={`${partner.type}-benefit-${idx}`} className="flex items-start">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 mt-0.5 flex-shrink-0">
+                            <polyline points="20,6 9,17 4,12"/>
+                          </svg>
+                          {benefit}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -155,7 +162,7 @@ export default function PartnershipPage() {
                     </div>
                   </div>
                   
-                  <p className="text-muted text-sm mb-4 leading-relaxed">
+                  <p className="text-muted text-sm mb-4 leading-relaxed text-justify">
                     {partner.description}
                   </p>
                   
@@ -227,7 +234,7 @@ export default function PartnershipPage() {
           <CardContent>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="font-semibold text-text mb-4">🚀 Giai đoạn 1 (Hiện tại)</h3>
+                <h3 className="font-semibold text-text mb-4">Giai đoạn 1 (Hiện tại)</h3>
                 <ul className="space-y-2 text-sm text-muted">
                   <li>• Gắn nhãn Partner chính thức</li>
                   <li>• Luồng duyệt nhanh (24-48h)</li>
@@ -238,7 +245,7 @@ export default function PartnershipPage() {
               </div>
               
               <div>
-                <h3 className="font-semibold text-text mb-4">🎯 Giai đoạn 2 (Sắp tới)</h3>
+                <h3 className="font-semibold text-text mb-4">Giai đoạn 2 (Sắp tới)</h3>
                 <ul className="space-y-2 text-sm text-muted">
                   <li>• Quyền xuất bản ủy quyền</li>
                   <li>• API tích hợp hệ thống riêng</li>
@@ -384,16 +391,18 @@ export default function PartnershipPage() {
             Liên hệ trực tiếp với đội ngũ phát triển đối tác của chúng tôi
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" asChild>
-              <a href="mailto:partnership@dulichviet.com">
-                partnership@dulichviet.com
-              </a>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/about/contact">
-                Trang liên hệ
-              </Link>
-            </Button>
+            <a 
+              href="mailto:partnership@dulichviet.com"
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-center"
+            >
+              partnership@dulichviet.com
+            </a>
+            <Link 
+              href="/about/contact"
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-center"
+            >
+              Trang liên hệ
+            </Link>
           </div>
         </div>
       </div>

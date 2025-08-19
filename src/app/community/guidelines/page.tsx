@@ -182,14 +182,18 @@ export default function CommunityGuidelinesPage() {
                 </p>
               </div>
               <div>
-                <div className="text-3xl mb-3">🌟</div>
+                <svg className="w-8 h-8 text-yellow-500 mb-3 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
                 <h4 className="font-semibold text-text mb-2">Chất lượng</h4>
                 <p className="text-sm text-muted">
                   Luôn hướng tới việc cung cấp thông tin chính xác và hữu ích nhất
                 </p>
               </div>
               <div>
-                <div className="text-3xl mb-3">🚀</div>
+                <svg className="w-8 h-8 text-blue-600 mb-3 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 22V7.5a3 3 0 013-3h9a3 3 0 013 3V22m-10.5-10.5h3m-3 4h3m-6-10V2.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75V1.5"/>
+                </svg>
                 <h4 className="font-semibold text-text mb-2">Phát triển</h4>
                 <p className="text-sm text-muted">
                   Không ngừng học hỏi và cải thiện để phục vụ cộng đồng tốt hơn

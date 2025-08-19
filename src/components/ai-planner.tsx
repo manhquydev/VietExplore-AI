@@ -44,26 +44,21 @@ export default function AiPlanner() {
       // Simulate AI processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      setResult(`🎯 Lịch trình ${formData.duration} ngày được tạo!
-      
-Dựa trên sở thích "${formData.interests}" và ngân sách ${formData.budget}, đây là gợi ý:
+      setResult(`Lịch trình ${formData.duration} ngày được tạo!
 
-📍 Ngày 1-2: Khám phá Hà Nội
-• Hồ Gươm và Phố cổ
-• Văn Miếu - Quốc Tử Giám  
-• Ẩm thực phố cổ
+Dự kiến chi phí: ${totalBudget.toLocaleString()}đ/người
 
-📍 Ngày 3-4: Vịnh Hạ Long
-• Du thuyền qua đêm
-• Động Thần Tiên
-• Làng chài Cửa Vạn
+• Ngày 1-2: Khám phá Hà Nội
+  - Hồ Hoàn Kiếm, Phố cổ
+  - Văn Miếu, Chùa Một Cột
+  - Thưởng thức phở, bún chả
 
-📍 Ngày 5-${formData.duration}: Sapa
-• Thác Bạc và Cầu Mây
-• Bản Cát Cát
-• Núi Fansipan
+• Ngày 3-4: Vịnh Hạ Long
+  - Tour thuyền qua đêm
+  - Hang Sửng Sốt, đảo Ti Tốp
+  - Kayak khám phá hang động
 
-💰 Chi phí ước tính: ${formData.budget === 'low' ? '3-5' : formData.budget === 'medium' ? '5-8' : '8-12'} triệu VNĐ`);
+• Ngày 5-${formData.duration}: Sapa`);
     } catch (error) {
       console.error('AI planning error:', error);
     } finally {

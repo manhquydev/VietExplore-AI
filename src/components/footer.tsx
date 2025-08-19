@@ -1,6 +1,5 @@
 import * as React from "react"
 import Link from "next/link"
-import { Icon } from "@/components/ui/icon"
 
 const footerLinks = {
   about: [
@@ -38,24 +37,19 @@ export const Footer: React.FC = () => {
             <h4 className="font-bold text-lg text-primary mb-3">
               Du Lịch Việt
             </h4>
-            <p className="text-muted leading-relaxed mb-4">
+            <p className="text-muted leading-relaxed text-justify mb-4">
               Nền tảng phi lợi nhuận, cung cấp thông tin du lịch Việt Nam đáng tin cậy với sự hỗ trợ của AI trợ lý thông minh.
             </p>
             
-            {/* Social Links - Balanced text + icon approach */}
-            <div className="flex gap-4">
+            {/* Social Links - Clean, minimal approach */}
+            <div className="flex gap-6">
               {socialLinks.map((social) => (
                 <Link
                   key={social.name}
                   href={social.href}
-                  className="text-sm text-muted hover:text-primary transition-colors font-medium flex items-center gap-2"
+                  className="text-sm text-muted hover:text-primary transition-colors font-medium"
                   aria-label={social.name}
                 >
-                  <Icon 
-                    name={social.name.toLowerCase() === 'facebook' ? 'facebook' : 
-                          social.name.toLowerCase() === 'email' ? 'mail' : 'github'} 
-                    className="w-4 h-4" 
-                  />
                   {social.label}
                 </Link>
               ))}
@@ -121,7 +115,12 @@ export const Footer: React.FC = () => {
           </div>
           
           <div className="text-xs">
-            <p>Được xây dựng với ❤️ tại Việt Nam</p>
+            <p>Được xây dựng với 
+              <svg className="w-4 h-4 inline mx-1 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+              tại Việt Nam
+            </p>
           </div>
         </div>
       </div>

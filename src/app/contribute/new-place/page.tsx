@@ -151,6 +151,8 @@ export default function NewPlacePage() {
 
   // Check user role
   const canContribute = user?.role === 'contributor' || user?.role === 'partner' || user?.role === 'admin'
+  const isModerator = user?.role === 'moderator'
+  const isTraveler = user?.role === 'traveler' || !user?.role
 
   const updateFormData = <K extends keyof PlaceFormData>(
     key: K,
@@ -302,21 +304,277 @@ export default function NewPlacePage() {
     )
   }
 
+  if (isModerator) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <main className="container py-16 max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-blue-600" />
+            </div>
+            <h1 className="text-3xl font-bold mb-4 text-gray-900">Vai trò Moderator</h1>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              Tài khoản <strong>Moderator</strong> có trách nhiệm kiểm duyệt và quản lý nội dung, 
+              không có quyền tạo địa điểm mới để đảm bảo tính khách quan trong quá trình kiểm duyệt.
+            </p>
+          </div>
+
+          <Card className="border-2 border-blue-200 bg-blue-50 mb-8">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                  MODERATOR
+                </span>
+                <h3 className="text-xl font-bold text-blue-800">Quyền hạn và trách nhiệm</h3>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-3">✅ Được phép:</h4>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-blue-600" />
+                      <span>Kiểm duyệt nội dung địa điểm</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-blue-600" />
+                      <span>Phê duyệt/từ chối đề xuất</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-blue-600" />
+                      <span>Quản lý báo cáo vi phạm</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-blue-600" />
+                      <span>Chỉnh sửa nội dung có sẵn</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-red-800 mb-3">❌ Không được phép:</h4>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-600" />
+                      <span>Tạo địa điểm mới</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-600" />
+                      <span>Đăng nội dung cá nhân</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-600" />
+                      <span>Thay đổi trạng thái của chính mình</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-8 text-center mb-8">
+            <h3 className="text-2xl font-bold mb-4">Tại sao Moderator không thể đăng địa điểm?</h3>
+            <p className="text-blue-100 mb-6 leading-relaxed max-w-3xl mx-auto text-justify">
+              Để đảm bảo tính khách quan và công bằng trong quá trình kiểm duyệt, Moderator không được phép 
+              tạo nội dung mới. Điều này tránh xung đột lợi ích và đảm bảo mọi nội dung đều được đánh giá 
+              một cách khách quan theo cùng một tiêu chuẩn.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8"
+                onClick={() => router.push('/moderation/dashboard')}
+              >
+                Đi đến Dashboard Moderator →
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-white text-white hover:bg-white hover:text-blue-600 font-semibold px-8"
+                onClick={() => router.push('/')}
+              >
+                Về trang chủ
+              </Button>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-500 mb-4">Bạn muốn đóng góp nội dung? Liên hệ Admin để được cấp vai trò phù hợp</p>
+            <Button 
+              variant="secondary" 
+              onClick={() => router.push('/about/contact?type=role-upgrade')}
+            >
+              Liên hệ về vai trò →
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (isTraveler && !canContribute) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <main className="container py-16 max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-yellow-600" />
+            </div>
+            <h1 className="text-3xl font-bold mb-4 text-gray-900">Nâng cấp quyền đóng góp</h1>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              Tài khoản <strong>Traveler</strong> hiện chỉ có thể khám phá và sử dụng nền tảng. 
+              Để đóng góp địa điểm mới, bạn cần nâng cấp lên <strong>Contributor</strong> hoặc <strong>Community Partner</strong>.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                    CONTRIBUTOR
+                  </span>
+                  <h3 className="text-xl font-bold text-green-800">Cộng tác viên</h3>
+                </div>
+                <p className="text-gray-700 mb-6 leading-relaxed text-justify">
+                  Dành cho blogger du lịch, hướng dẫn viên, và những người đam mê khám phá. 
+                  Có quyền tạo và đăng tải địa điểm mới với quy trình kiểm duyệt nhanh.
+                </p>
+                <div className="space-y-2 text-sm text-gray-600 mb-6">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Đăng địa điểm mới</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Huy hiệu Verified Contributor</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Quy trình duyệt ưu tiên</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-blue-200 bg-blue-50">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                    PARTNER
+                  </span>
+                  <h3 className="text-xl font-bold text-blue-800">Đối tác cộng đồng</h3>
+                </div>
+                <p className="text-gray-700 mb-6 leading-relaxed text-justify">
+                  Dành cho tổ chức du lịch, sở văn hóa, doanh nghiệp có uy tín. 
+                  Có quyền đăng nội dung với cơ chế kiểm duyệt nhanh và ưu tiên hiển thị.
+                </p>
+                <div className="space-y-2 text-sm text-gray-600 mb-6">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-blue-600" />
+                    <span>Tất cả quyền của Contributor</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-blue-600" />
+                    <span>Huy hiệu Official Partner</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-blue-600" />
+                    <span>Ưu tiên hiển thị nội dung</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-8 text-center">
+            <h3 className="text-2xl font-bold mb-4">Sẵn sàng tham gia đóng góp?</h3>
+            <p className="text-blue-100 mb-6 leading-relaxed max-w-2xl mx-auto">
+              Liên hệ với chúng tôi để được xem xét nâng cấp quyền hạn. 
+              Chúng tôi sẽ đánh giá hồ sơ và phản hồi trong vòng 3-5 ngày làm việc.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8"
+                onClick={() => router.push('/about/contact?type=role-upgrade')}
+              >
+                Đăng ký nâng cấp quyền →
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-white text-white hover:bg-white hover:text-blue-600 font-semibold px-8"
+                onClick={() => router.push('/')}
+              >
+                Về trang chủ
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-sm text-gray-500 mb-4">Bạn vẫn có thể đề xuất địa điểm thông qua:</p>
+            <div className="flex justify-center gap-4">
+              <Button 
+                variant="secondary" 
+                onClick={() => router.push('/about/contact?type=suggest-place')}
+              >
+                Đề xuất địa điểm mới
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => router.push('/help/faq')}
+              >
+                Câu hỏi thường gặp
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  // Fallback for any other roles that can't contribute
   if (!canContribute) {
     return (
       <div className="min-h-screen bg-bg text-text">
         <Header />
-        <main className="container py-16">
-          <div className="text-center">
-            <AlertCircle className="w-16 h-16 text-warn mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-4">Chưa có quyền đóng góp</h1>
-            <p className="text-muted mb-6">
-              Tài khoản của bạn chưa được cấp quyền đóng góp nội dung. 
-              Vui lòng liên hệ admin để được hỗ trợ.
+        <main className="container py-16 max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-gray-600" />
+            </div>
+            <h1 className="text-3xl font-bold mb-4 text-gray-900">Không có quyền đóng góp</h1>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              Tài khoản của bạn hiện không có quyền tạo địa điểm mới. 
+              Vui lòng liên hệ quản trị viên để được hỗ trợ.
             </p>
-            <Button variant="secondary" onClick={() => router.push('/')}>
-              Về trang chủ
-            </Button>
+          </div>
+
+          <div className="bg-gray-50 rounded-xl p-8 text-center">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Cần hỗ trợ?</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Liên hệ với đội ngũ quản trị để được tư vấn về quyền hạn và vai trò phù hợp.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                onClick={() => router.push('/about/contact?type=general')}
+              >
+                Liên hệ hỗ trợ →
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => router.push('/')}
+              >
+                Về trang chủ
+              </Button>
+            </div>
           </div>
         </main>
         <Footer />
@@ -621,14 +879,19 @@ export default function NewPlacePage() {
                   </div>
 
                   <div className="p-4 bg-primary-50 rounded-lg">
-                    <p className="text-sm text-primary">
-                      💡 <strong>Mẹo:</strong> Bạn có thể tìm tọa độ chính xác bằng cách:
-                    </p>
-                    <ul className="text-sm text-primary mt-2 space-y-1">
-                      <li>• Sử dụng Google Maps: Click chuột phải → chọn tọa độ</li>
-                      <li>• Sử dụng GPS trên điện thoại tại địa điểm</li>
-                      <li>• Tọa độ giúp du khách tìm đường chính xác hơn</li>
-                    </ul>
+                    <div className="flex items-start gap-2 text-sm text-primary">
+                      <svg className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                      </svg>
+                      <div>
+                        <p><strong>Mẹo:</strong> Bạn có thể tìm tọa độ chính xác bằng cách:</p>
+                        <ul className="text-sm text-primary mt-2 space-y-1">
+                          <li>• Sử dụng Google Maps: Click chuột phải → chọn tọa độ</li>
+                          <li>• Sử dụng GPS trên điện thoại tại địa điểm</li>
+                          <li>• Tọa độ giúp du khách tìm đường chính xác hơn</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}

@@ -7,17 +7,8 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card-custom"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Heart,
-  Users,
-  Shield,
-  Zap,
-  Target,
-  Award,
-  Mail,
-  Github,
-  ExternalLink
-} from "lucide-react"
+// Removed decorative icons for cleaner, professional design
+// Following reference design principle: typography-first approach
 
 const teamMembers = [
   {
@@ -80,7 +71,7 @@ export default function AboutPage() {
               Về <span className="text-primary">Du Lịch Việt</span>
             </h1>
             
-            <p className="text-lg text-muted leading-relaxed mb-8">
+            <p className="text-lg text-muted leading-relaxed text-justify mb-8">
               Chúng tôi là nền tảng phi lợi nhuận, được xây dựng bởi cộng đồng và vì cộng đồng, 
               nhằm cung cấp thông tin du lịch Việt Nam đáng tin cậy và hỗ trợ du khách tạo ra 
               những trải nghiệm du lịch tuyệt vời.
@@ -103,7 +94,7 @@ export default function AboutPage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl font-bold mb-6">Sứ mệnh của chúng tôi</h2>
-                <div className="space-y-4 text-muted leading-relaxed">
+                <div className="space-y-4 text-muted leading-relaxed text-justify">
                   <p>
                     <strong className="text-text">Tạo ra kho dữ liệu du lịch minh bạch – xác thực – dễ tiếp cận</strong> cho mọi người, 
                     giúp du khách có những quyết định thông minh cho chuyến đi của mình.
@@ -151,9 +142,11 @@ export default function AboutPage() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-primary" />
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
               </div>
               <h3 className="font-semibold mb-2">Phi lợi nhuận</h3>
               <p className="text-sm text-muted">
@@ -161,9 +154,9 @@ export default function AboutPage() {
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-success" />
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-success/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🛡️</span>
               </div>
               <h3 className="font-semibold mb-2">Đáng tin cậy</h3>
               <p className="text-sm text-muted">
@@ -171,9 +164,9 @@ export default function AboutPage() {
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-secondary" />
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🤝</span>
               </div>
               <h3 className="font-semibold mb-2">Cộng đồng</h3>
               <p className="text-sm text-muted">
@@ -181,9 +174,11 @@ export default function AboutPage() {
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-warn/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-8 h-8 text-warn" />
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-warn/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
               </div>
               <h3 className="font-semibold mb-2">Đổi mới</h3>
               <p className="text-sm text-muted">
@@ -268,11 +263,16 @@ export default function AboutPage() {
 
               <div className="grid sm:grid-cols-2 gap-6">
                 <Card>
-                  <CardContent className="p-6 text-center">
-                    <Mail className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <CardContent className="p-8 text-center">
+                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                    </div>
                     <h3 className="font-semibold mb-2">Email</h3>
-                    <p className="text-muted text-sm mb-3">Gửi email cho chúng tôi</p>
-                    <Button variant="outline" size="sm" asChild>
+                    <p className="text-muted text-sm mb-4">Gửi email cho chúng tôi</p>
+                    <Button variant="secondary" size="sm" asChild>
                       <a href="mailto:hello@dulichviet.com">
                         hello@dulichviet.com
                       </a>
@@ -281,29 +281,31 @@ export default function AboutPage() {
                 </Card>
 
                 <Card>
-                  <CardContent className="p-6 text-center">
-                    <Github className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <CardContent className="p-8 text-center">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-xl">🔓</span>
+                    </div>
                     <h3 className="font-semibold mb-2">Open Source</h3>
-                    <p className="text-muted text-sm mb-3">Xem mã nguồn dự án</p>
-                    <Button variant="outline" size="sm" asChild>
+                    <p className="text-muted text-sm mb-4">Xem mã nguồn dự án</p>
+                    <Button variant="secondary" size="sm" asChild>
                       <a href="https://github.com/dulichviet" target="_blank" rel="noopener noreferrer">
-                        GitHub
-                        <ExternalLink className="w-3 h-3 ml-1" />
+                        GitHub →
                       </a>
                     </Button>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="mt-8 p-6 bg-primary-50 rounded-xl">
-                <h3 className="font-semibold mb-2">🤝 Quan tâm đến việc hợp tác?</h3>
-                <p className="text-sm text-muted mb-4">
+              <div className="mt-8 p-8 bg-primary-50 rounded-2xl">
+                <div className="text-3xl mb-3">🤝</div>
+                <h3 className="font-semibold mb-2">Quan tâm đến việc hợp tác?</h3>
+                <p className="text-sm text-muted mb-6">
                   Chúng tôi luôn tìm kiếm các đối tác, tổ chức và cá nhân có cùng tầm nhìn 
                   để cùng xây dựng nền tảng du lịch bền vững cho Việt Nam.
                 </p>
                 <Button variant="secondary" asChild>
                   <Link href="/about/partnership">
-                    Tìm hiểu về đối tác
+                    Tìm hiểu về đối tác →
                   </Link>
                 </Button>
               </div>

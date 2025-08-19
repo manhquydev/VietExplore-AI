@@ -104,7 +104,9 @@ export default function SavedPlacesPage() {
       {/* Places Grid */}
       {filteredPlaces.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-6xl mb-4">❤️</div>
+          <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
           <h3 className="text-xl font-semibold mb-2">
             {searchQuery ? "Không tìm thấy địa điểm nào" : "Chưa có địa điểm yêu thích"}
           </h3>
