@@ -6,16 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
-  LogIn, 
-  ArrowRight, 
-  Shield, 
-  Heart
-} from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
+import { Logo } from "@/components/ui/logo"
+import { ForgotPasswordModal } from "./forgot-password-modal"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -33,6 +26,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [showPassword, setShowPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState("")
+  const [showForgotPassword, setShowForgotPassword] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,26 +54,32 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden">
-        <div className="bg-card p-8 space-y-6">
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden bg-white">
+        <div className="p-8 space-y-6">
           <DialogHeader className="space-y-4">
+            {/* Logo */}
+            <div className="flex justify-center">
+              <Logo variant="horizontal" size="lg" className="h-12" />
+            </div>
+            
             <div className="space-y-2">
-              <DialogTitle className="text-center text-2xl font-bold">
+              <DialogTitle className="text-center text-2xl font-bold text-slate-900">
                 Đăng nhập
               </DialogTitle>
-              <DialogDescription className="text-center text-muted-foreground">
+              <DialogDescription className="text-center text-slate-600">
                 Chào mừng trở lại VietExplore
               </DialogDescription>
             </div>
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Google Login - Primary Option */}
+            {/* Google Login */}
             <Button
               onClick={handleGoogleLogin}
               variant="secondary"
-              className="w-full h-11 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-all duration-200"
+              className="w-full h-12 border-2 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -92,68 +92,58 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </div>
             </Button>
 
-            {/* Separator */}
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <Separator className="bg-border/50" />
+                <Separator />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-card px-4 text-muted font-medium">
-                  hoặc đăng nhập bằng email
-                </span>
+                <span className="bg-white px-3 text-slate-500">hoặc đăng nhập bằng email</span>
               </div>
             </div>
 
             {/* Email/Password Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50/80 border border-red-200/50 rounded-lg">
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                   {error}
                 </div>
               )}
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="modal-email" className="text-foreground font-medium">
+                  <Label htmlFor="modal-email" className="text-slate-700 font-medium">
                     Email
                   </Label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <Input
-                      id="modal-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-10 bg-background/50 border-border hover:border-primary/50 focus:border-primary transition-colors"
-                      required
-                    />
-                  </div>
+                  <Input
+                    id="modal-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-11"
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="modal-password" className="text-foreground font-medium">
+                  <Label htmlFor="modal-password" className="text-slate-700 font-medium">
                     Mật khẩu
                   </Label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">
-                      <Lock className="w-4 h-4" />
-                    </div>
                     <Input
                       id="modal-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-10 bg-background/50 border-border hover:border-primary/50 focus:border-primary transition-colors"
+                      className="h-11 pr-10"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -165,13 +155,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <label className="flex items-center space-x-2">
                   <input 
                     type="checkbox" 
-                    className="rounded border-border text-primary focus:ring-primary/20" 
+                    className="rounded border-slate-300 text-blue-600" 
                   />
-                  <span className="text-muted">Ghi nhớ</span>
+                  <span className="text-slate-600">Ghi nhớ</span>
                 </label>
                 <button 
                   type="button"
-                  className="text-primary hover:text-primary-600 transition-colors"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-blue-600 hover:text-blue-700"
                 >
                   Quên mật khẩu?
                 </button>
@@ -179,7 +170,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
               <Button 
                 type="submit" 
-                className="w-full h-10 bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium transition-all duration-200"
+                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -188,44 +179,36 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     Đang đăng nhập...
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <LogIn className="w-4 h-4" />
-                    Đăng nhập
-                    <ArrowRight className="w-3 h-3 ml-1" />
-                  </div>
+                  "Đăng nhập"
                 )}
               </Button>
             </form>
 
             {/* Switch to Register */}
             {onSwitchToRegister && (
-              <div className="text-center pt-4 border-t border-border/50">
-                <p className="text-sm text-muted">
+              <div className="text-center pt-4 border-t border-slate-200">
+                <p className="text-sm text-slate-600">
                   Chưa có tài khoản?{" "}
                   <button 
                     onClick={onSwitchToRegister}
-                    className="text-primary hover:text-primary-600 font-medium transition-colors"
+                    className="text-blue-600 hover:text-blue-700 font-medium"
                   >
                     Đăng ký ngay
                   </button>
                 </p>
               </div>
             )}
-
-            {/* Trust indicators */}
-            <div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted">
-              <div className="flex items-center gap-1">
-                <Shield className="w-3 h-3 text-primary" />
-                <span>Bảo mật</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Heart className="w-3 h-3 text-green-500" />
-                <span>Đáng tin cậy</span>
-              </div>
-            </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        onBackToLogin={() => setShowForgotPassword(false)}
+      />
+    </>
   )
 }

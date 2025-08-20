@@ -6,19 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Checkbox } from "@/components/ui/checkbox"
-import { 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
-  User, 
-  UserPlus,
-  ArrowRight, 
-  Shield,
-  CheckCircle2
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Eye, EyeOff } from "lucide-react"
+import { Logo } from "@/components/ui/logo"
 
 interface RegisterModalProps {
   isOpen: boolean
@@ -37,7 +26,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
-    subscribeNewsletter: true,
   })
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
@@ -53,14 +41,14 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
     if (!formData.email.trim()) {
       newErrors.email = "Vui lòng nhập email"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email không hợp lệ"
     }
 
     if (!formData.password) {
       newErrors.password = "Vui lòng nhập mật khẩu"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự"
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự"
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -71,20 +59,24 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
       newErrors.agreeToTerms = "Vui lòng đồng ý với điều khoản sử dụng"
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return newErrors
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const newErrors = validateForm()
     
-    if (!validateForm()) return
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
 
     setIsLoading(true)
+    setErrors({})
 
     try {
       // TODO: Implement actual registration logic
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000))
       
       console.log("Registration successful", formData)
       onClose()
@@ -96,39 +88,44 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     }
   }
 
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }))
+  const handleGoogleRegister = () => {
+    console.log("Google registration initiated")
+    // TODO: Implement Google OAuth
+  }
+
+  const updateFormData = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }))
     }
   }
 
-  const handleGoogleRegister = () => {
-    console.log("Google register initiated")
-    // TODO: Implement Google OAuth
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="bg-card p-8 space-y-6">
+      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden bg-white">
+        <div className="p-8 space-y-6">
           <DialogHeader className="space-y-4">
+            {/* Logo */}
+            <div className="flex justify-center">
+              <Logo variant="horizontal" size="lg" className="h-12" />
+            </div>
+            
             <div className="space-y-2">
-              <DialogTitle className="text-center text-2xl font-bold">
-                Tạo tài khoản
+              <DialogTitle className="text-center text-2xl font-bold text-slate-900">
+                Đăng ký
               </DialogTitle>
-              <DialogDescription className="text-center text-muted-foreground">
-                Tham gia cộng đồng VietExplore
+              <DialogDescription className="text-center text-slate-600">
+                Chào mừng tới VietExplore
               </DialogDescription>
             </div>
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Google Registration - Primary Option */}
+            {/* Google Register */}
             <Button
               onClick={handleGoogleRegister}
               variant="secondary"
-              className="w-full h-11 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-all duration-200"
+              className="w-full h-12 border-2 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -137,104 +134,83 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                <span className="font-medium">Đăng ký với Google</span>
+                <span className="font-medium">Tiếp tục với Google</span>
               </div>
             </Button>
 
-            {/* Separator */}
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <Separator className="bg-border/50" />
+                <Separator />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-card px-4 text-muted font-medium">
-                  hoặc đăng ký bằng email
-                </span>
+                <span className="bg-white px-3 text-slate-500">hoặc đăng ký bằng email</span>
               </div>
             </div>
 
             {/* Registration Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {errors.general && (
-                <div className="p-3 text-sm text-red-600 bg-red-50/80 border border-red-200/50 rounded-lg">
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                   {errors.general}
                 </div>
               )}
 
-              <div className="grid gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="modal-fullName" className="text-foreground font-medium">
-                    Họ và tên *
+                  <Label htmlFor="modal-fullName" className="text-slate-700 font-medium">
+                    Họ và tên
                   </Label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <Input
-                      id="modal-fullName"
-                      type="text"
-                      placeholder="Nguyễn Văn A"
-                      value={formData.fullName}
-                      onChange={handleInputChange('fullName')}
-                      className={cn(
-                        "pl-10 h-10 bg-background/50 border-border hover:border-primary/50 focus:border-primary transition-colors",
-                        errors.fullName && "border-red-300 focus:border-red-400"
-                      )}
-                    />
-                  </div>
+                  <Input
+                    id="modal-fullName"
+                    type="text"
+                    placeholder="Nguyễn Văn A"
+                    value={formData.fullName}
+                    onChange={(e) => updateFormData("fullName", e.target.value)}
+                    className="h-11"
+                    required
+                  />
                   {errors.fullName && (
                     <p className="text-sm text-red-600">{errors.fullName}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="modal-email" className="text-foreground font-medium">
-                    Email *
+                  <Label htmlFor="modal-email" className="text-slate-700 font-medium">
+                    Email
                   </Label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <Input
-                      id="modal-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.email}
-                      onChange={handleInputChange('email')}
-                      className={cn(
-                        "pl-10 h-10 bg-background/50 border-border hover:border-primary/50 focus:border-primary transition-colors",
-                        errors.email && "border-red-300 focus:border-red-400"
-                      )}
-                    />
-                  </div>
+                  <Input
+                    id="modal-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={(e) => updateFormData("email", e.target.value)}
+                    className="h-11"
+                    required
+                  />
                   {errors.email && (
                     <p className="text-sm text-red-600">{errors.email}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="modal-password" className="text-foreground font-medium">
-                    Mật khẩu *
+                  <Label htmlFor="modal-password" className="text-slate-700 font-medium">
+                    Mật khẩu
                   </Label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">
-                      <Lock className="w-4 h-4" />
-                    </div>
                     <Input
                       id="modal-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={formData.password}
-                      onChange={handleInputChange('password')}
-                      className={cn(
-                        "pl-10 pr-10 h-10 bg-background/50 border-border hover:border-primary/50 focus:border-primary transition-colors",
-                        errors.password && "border-red-300 focus:border-red-400"
-                      )}
+                      onChange={(e) => updateFormData("password", e.target.value)}
+                      className="h-11 pr-10"
+                      required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -245,28 +221,23 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="modal-confirmPassword" className="text-foreground font-medium">
-                    Xác nhận mật khẩu *
+                  <Label htmlFor="modal-confirmPassword" className="text-slate-700 font-medium">
+                    Xác nhận mật khẩu
                   </Label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">
-                      <Lock className="w-4 h-4" />
-                    </div>
                     <Input
                       id="modal-confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={formData.confirmPassword}
-                      onChange={handleInputChange('confirmPassword')}
-                      className={cn(
-                        "pl-10 pr-10 h-10 bg-background/50 border-border hover:border-primary/50 focus:border-primary transition-colors",
-                        errors.confirmPassword && "border-red-300 focus:border-red-400"
-                      )}
+                      onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                      className="h-11 pr-10"
+                      required
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -277,94 +248,60 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                 </div>
               </div>
 
-              {/* Terms and Newsletter */}
               <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    id="modal-agreeToTerms"
+                <label className="flex items-start space-x-2 text-sm">
+                  <input 
+                    type="checkbox"
                     checked={formData.agreeToTerms}
-                    onCheckedChange={(checked) => {
-                      setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))
-                      if (errors.agreeToTerms) {
-                        setErrors(prev => ({ ...prev, agreeToTerms: "" }))
-                      }
-                    }}
-                    className={cn(
-                      "mt-1",
-                      errors.agreeToTerms && "border-red-300"
-                    )}
+                    onChange={(e) => updateFormData("agreeToTerms", e.target.checked)}
+                    className="rounded border-slate-300 text-blue-600 mt-0.5"
                   />
-                  <div className="space-y-1">
-                    <Label htmlFor="modal-agreeToTerms" className="text-sm leading-relaxed">
-                      Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật
-                    </Label>
-                    {errors.agreeToTerms && (
-                      <p className="text-sm text-red-600">{errors.agreeToTerms}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    id="modal-subscribeNewsletter"
-                    checked={formData.subscribeNewsletter}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, subscribeNewsletter: checked as boolean }))
-                    }
-                    className="mt-1"
-                  />
-                  <Label htmlFor="modal-subscribeNewsletter" className="text-sm leading-relaxed text-muted">
-                    Nhận email về địa điểm mới và mẹo du lịch
-                  </Label>
-                </div>
+                  <span className="text-slate-600">
+                    Tôi đồng ý với{" "}
+                    <a href="#" className="text-blue-600 hover:text-blue-700 underline">
+                      điều khoản sử dụng
+                    </a>{" "}
+                    và{" "}
+                    <a href="#" className="text-blue-600 hover:text-blue-700 underline">
+                      chính sách bảo mật
+                    </a>
+                  </span>
+                </label>
+                {errors.agreeToTerms && (
+                  <p className="text-sm text-red-600">{errors.agreeToTerms}</p>
+                )}
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-10 bg-gradient-to-r from-secondary to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 text-white font-medium transition-all duration-200"
+                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Đang tạo tài khoản...
+                    Đang đăng ký...
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <UserPlus className="w-4 h-4" />
-                    Tạo tài khoản
-                    <ArrowRight className="w-3 h-3 ml-1" />
-                  </div>
+                  "Đăng ký"
                 )}
               </Button>
             </form>
 
             {/* Switch to Login */}
             {onSwitchToLogin && (
-              <div className="text-center pt-4 border-t border-border/50">
-                <p className="text-sm text-muted">
+              <div className="text-center pt-4 border-t border-slate-200">
+                <p className="text-sm text-slate-600">
                   Đã có tài khoản?{" "}
                   <button 
                     onClick={onSwitchToLogin}
-                    className="text-primary hover:text-primary-600 font-medium transition-colors"
+                    className="text-blue-600 hover:text-blue-700 font-medium"
                   >
                     Đăng nhập ngay
                   </button>
                 </p>
               </div>
             )}
-
-            {/* Benefits */}
-            <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted">
-              <div className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-primary" />
-                <span>Miễn phí</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Shield className="w-3 h-3 text-green-500" />
-                <span>Bảo mật</span>
-              </div>
-            </div>
           </div>
         </div>
       </DialogContent>
