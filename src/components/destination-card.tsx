@@ -33,6 +33,8 @@ interface DestinationCardProps {
 
 export default function DestinationCard({ destination }: DestinationCardProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   const renderBadge = () => {
     // Chỉ có Contributor và Partner mới có thể đăng địa điểm
@@ -42,7 +44,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
     const badgeContent = {
       contributor: {
         icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 96 96" className="inline-block">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 96 96" className="inline-block">
             <defs>
               <linearGradient id="grad-contributor-dest" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#21C1C5"/>
@@ -65,7 +67,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
       },
       partner: {
         icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 108 108" className="inline-block">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 108 108" className="inline-block">
             <defs>
               <linearGradient id="grad-medal-dest" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#DC2626"/>
@@ -84,7 +86,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
       },
       verified: {
         icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 120 120" className="inline-block">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 120 120" className="inline-block">
             <defs>
               <linearGradient id="goldA-dest" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#FFD700"/>
@@ -114,7 +116,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className={cn('absolute top-3 right-3 rounded-full p-2.5 transition-colors', badge.className)}>
+            <div className={cn('absolute top-4 right-4 rounded-full p-2.5 transition-colors scale-110', badge.className)}>
               {badge.icon}
             </div>
           </TooltipTrigger>
@@ -127,53 +129,125 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden flex flex-col h-full transition-all hover:shadow-xl hover:-translate-y-1">
+    <Card className="glass-card overflow-hidden flex flex-col h-full motion-gentle hover:scale-105 hover:shadow-2xl">
       <CardHeader className="p-0 relative">
-        <div className="relative h-56 w-full">
-          <Image
-            src={destination.image}
-            alt={destination.name}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-            data-ai-hint={destination['data-ai-hint']}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        <div className="relative h-56 w-full bg-surface">
+          {/* Loading skeleton */}
+          {isImageLoading && !imageError && (
+            <div className="absolute inset-0 bg-gradient-to-r from-surface via-border to-surface animate-pulse" />
+          )}
+          
+          {/* Error fallback */}
+          {imageError ? (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="48" 
+                  height="48" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="text-muted mx-auto"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="M21 15l-3.086-3.086a2 2 0 00-2.828 0L6 21"/>
+                </svg>
+                <p className="text-sm text-muted">Hình ảnh không khả dụng</p>
+              </div>
+            </div>
+          ) : (
+            <Image
+              src={destination.image}
+              alt={`${destination.name} - ${destination.location}`}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className={cn(
+                "object-cover motion-gentle",
+                isImageLoading ? "opacity-0" : "opacity-100"
+              )}
+              data-ai-hint={destination['data-ai-hint']}
+              onLoad={() => setIsImageLoading(false)}
+              onError={() => {
+                setImageError(true);
+                setIsImageLoading(false);
+              }}
+              priority={destination.id <= 3} // Load first 3 images with priority
+            />
+          )}
+          
+          {/* Elegant gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
         {renderBadge()}
       </CardHeader>
-      <CardContent className="pt-4 flex-grow">
-        <CardTitle className="font-headline text-2xl mb-1">{destination.name}</CardTitle>
-        <CardDescription className="text-foreground/70">{destination.location}</CardDescription>
-        <p className="mt-3 text-sm leading-relaxed text-justify text-foreground/90">
+      <CardContent className="pt-6 flex-grow space-y-4">
+        <div className="space-y-2">
+          <CardTitle className="text-2xl font-bold text-text leading-tight">
+            {destination.name}
+          </CardTitle>
+          <CardDescription className="text-muted text-lg flex items-center gap-2">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              className="text-primary flex-shrink-0"
+            >
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            {destination.location}
+          </CardDescription>
+        </div>
+        <p className="text-muted leading-relaxed">
           {destination.description}
         </p>
       </CardContent>
-      <CardFooter className="flex justify-between items-center pt-4">
-        <div className="flex items-center gap-1.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2986FE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-          </svg>
-          <span className="font-bold">{destination.rating.toFixed(1)}</span>
-          <span className="text-sm text-muted-foreground">({destination.reviews})</span>
+      
+      <CardFooter className="glass-subtle border-t border-border/50 flex justify-between items-center p-6">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#0891B2" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+            </svg>
+            <span className="font-bold text-primary">{destination.rating.toFixed(1)}</span>
+          </div>
+          <span className="text-sm text-muted">({destination.reviews.toLocaleString()} đánh giá)</span>
         </div>
+        
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setIsSaved(!isSaved)}
-          aria-label={isSaved ? 'Unsave destination' : 'Save destination'}
+          className={cn(
+            "glass-subtle motion-gentle hover:scale-105 p-2 rounded-lg",
+            isSaved 
+              ? "text-danger hover:text-danger" 
+              : "text-muted hover:text-primary"
+          )}
+          aria-label={isSaved ? "Bỏ lưu địa điểm" : "Lưu địa điểm"}
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
+            width="20" 
+            height="20" 
             viewBox="0 0 24 24" 
-            fill="none" 
-            stroke={isSaved ? "#ef4444" : "#6b7280"} 
+            fill={isSaved ? "currentColor" : "none"} 
+            stroke="currentColor" 
             strokeWidth="2" 
             strokeLinecap="round" 
             strokeLinejoin="round"
-            className="w-6 h-6"
+            className="transition-all duration-200"
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>

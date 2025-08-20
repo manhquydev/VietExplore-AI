@@ -14,6 +14,20 @@ import { Icon, IconButton } from "@/components/ui/icon"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { Logo } from "@/components/ui/logo"
 import { cn } from "@/lib/utils"
+import { 
+  User, 
+  Heart, 
+  Settings, 
+  Shield, 
+  Calendar, 
+  MapPin, 
+  Award, 
+  FileText, 
+  LogOut,
+  HelpCircle,
+  BookOpen,
+  Camera
+} from "lucide-react"
 
 const navigation = [
   { name: "Trang chủ", href: "/" },
@@ -22,6 +36,7 @@ const navigation = [
   { name: "Đóng góp", href: "/contribute/new-place" },
   { name: "Trợ lý AI", href: "/ai-assistant/chat" },
   { name: "Cộng đồng", href: "/community" },
+  { name: "Tài nguyên", href: "/resources" },
   { name: "Về dự án", href: "/about" },
 ]
 
@@ -93,81 +108,173 @@ export const Header: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {/* Authenticated User Menu */}
+            {/* Enhanced Authenticated User Menu */}
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={user.avatar} alt={user.fullName} />
-                      <AvatarFallback>
-                        {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                  <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 hover:scale-105 transition-all duration-200">
+                    <div className="relative">
+                      <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-sky-200/50 dark:hover:ring-sky-400/30 transition-all duration-200">
+                        <AvatarImage src={user.avatar} alt={user.fullName} />
+                        <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
+                          {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Online status indicator */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800"></div>
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64" align="end" forceMount>
-                  <div className="p-3">
-                    <div className="flex flex-col space-y-2">
-                      <p className="font-medium">{user.fullName}</p>
-                      <p className="truncate text-sm text-muted">
-                        {user.email}
-                      </p>
-                      <UserRoleDisplay 
-                        role={user.role}
-                        variant="compact"
-                      />
+                <DropdownMenuContent 
+                  className="w-80 p-0 glass-card border-slate-200/50 dark:border-slate-700/50 shadow-xl" 
+                  align="end" 
+                  forceMount
+                  sideOffset={8}
+                >
+                  {/* Enhanced User Profile Header */}
+                  <div className="p-4 bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
+                        <AvatarImage src={user.avatar} alt={user.fullName} />
+                        <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold text-lg">
+                          {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
+                        <UserRoleDisplay 
+                          role={user.role}
+                          variant="compact"
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/me">
-                      <Icon name="user" className="mr-2" />
-                      <span>Hồ sơ cá nhân</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/itineraries/my">
-                      <span>Lịch trình của tôi</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/places/saved">
-                      <Icon name="heart" className="mr-2" />
-                      <span>Địa điểm yêu thích</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings">
-                      <span>Cài đặt</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {(user.role === 'moderator' || user.role === 'admin') && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/moderation/dashboard">
-                        <Icon name="shield" className="mr-2" />
-                        <span>Kiểm duyệt</span>
-                      </Link>
+
+                  <div className="p-2">
+                    {/* Personal Section */}
+                    <div className="mb-1">
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/profile/me" className="flex items-center gap-3 px-3">
+                          <User className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Hồ sơ cá nhân</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Quản lý thông tin cá nhân</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/itineraries/my" className="flex items-center gap-3 px-3">
+                          <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Lịch trình của tôi</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Quản lý hành trình du lịch</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/places/saved" className="flex items-center gap-3 px-3">
+                          <Heart className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Địa điểm yêu thích</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Danh sách đã lưu</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/contribute/my-drafts" className="flex items-center gap-3 px-3">
+                          <Camera className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Đóng góp của tôi</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Bài viết và hình ảnh</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+
+                    <DropdownMenuSeparator className="my-2" />
+
+                    {/* Settings & Support */}
+                    <div className="mb-1">
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/settings" className="flex items-center gap-3 px-3">
+                          <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Cài đặt</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Tùy chỉnh tài khoản</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/help/faq" className="flex items-center gap-3 px-3">
+                          <HelpCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Trợ giúp</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">FAQ và hướng dẫn</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+
+                    {/* Admin/Moderator Section */}
+                    {(user.role === 'moderator' || user.role === 'admin') && (
+                      <>
+                        <DropdownMenuSeparator className="my-2" />
+                        <div className="mb-1">
+                          <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <Link href="/moderation/dashboard" className="flex items-center gap-3 px-3">
+                              <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-900 dark:text-white">Kiểm duyệt</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Quản lý nội dung</div>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                        </div>
+                      </>
+                    )}
+
+                    {user.role === 'admin' && (
+                      <div className="mb-1">
+                        <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                          <Link href="/admin/dashboard" className="flex items-center gap-3 px-3">
+                            <Award className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                            <div className="flex-1">
+                              <div className="font-medium text-slate-900 dark:text-white">Quản trị hệ thống</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">Bảng điều khiển admin</div>
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      </div>
+                    )}
+
+                    <DropdownMenuSeparator className="my-2" />
+
+                    {/* Logout */}
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      className="h-10 cursor-pointer rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors px-3"
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <LogOut className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        <div className="flex-1">
+                          <div className="font-medium text-red-600 dark:text-red-400">Đăng xuất</div>
+                          <div className="text-xs text-red-500 dark:text-red-500">Thoát khỏi tài khoản</div>
+                        </div>
+                      </div>
                     </DropdownMenuItem>
-                  )}
-                  {user.role === 'admin' && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin/dashboard">
-                        <Icon name="settings" className="mr-2" />
-                        <span>Quản trị hệ thống</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <span>Đăng xuất</span>
-                  </DropdownMenuItem>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
                 {/* CTA Button - Desktop */}
-                <Button className="hidden md:inline-flex" onClick={openLoginModal}>
+                <Button className="hidden md:inline-flex bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white" onClick={openLoginModal}>
                   Bắt đầu với AI
                 </Button>
                 
@@ -197,7 +304,7 @@ export const Header: React.FC = () => {
                   />
                 </div>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] glass-card">
                 <div className="flex flex-col gap-4 mt-8">
                   {/* Mobile Navigation */}
                   <nav className="flex flex-col gap-4">
@@ -220,28 +327,38 @@ export const Header: React.FC = () => {
                   <div className="pt-4 border-t border-border space-y-2">
                     {isAuthenticated && user ? (
                       <>
-                        <div className="flex items-center gap-3 p-2">
-                          <Avatar className="h-8 w-8">
+                        <div className="flex items-center gap-3 p-3 glass-subtle rounded-xl">
+                          <Avatar className="h-10 w-10 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
                             <AvatarImage src={user.avatar} alt={user.fullName} />
-                            <AvatarFallback>
+                            <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
                               {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="font-medium text-sm">{user.fullName}</p>
-                            <p className="text-xs text-muted">{user.email}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
+                            <UserRoleDisplay 
+                              role={user.role}
+                              variant="compact"
+                              className="mt-1"
+                            />
                           </div>
                         </div>
-                        <Button variant="outline" className="w-full" onClick={handleLogout}>
+                        <Button 
+                          variant="outline" 
+                          className="w-full glass-subtle hover:bg-red-50 dark:hover:bg-red-900/20" 
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="w-4 h-4 mr-2" />
                           Đăng xuất
                         </Button>
                       </>
                     ) : (
                       <>
-                        <Button className="w-full" onClick={openLoginModal}>
+                        <Button className="w-full bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white" onClick={openLoginModal}>
                           Bắt đầu với AI
                         </Button>
-                        <Button variant="outline" className="w-full" onClick={openRegisterModal}>
+                        <Button variant="outline" className="w-full glass-subtle" onClick={openRegisterModal}>
                           Tạo tài khoản
                         </Button>
                       </>

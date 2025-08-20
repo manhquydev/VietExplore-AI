@@ -1,23 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* DLV-01 Design Tokens - Enhanced for Professional Design */
+/* "A Window to Vietnam" Design System - Clear & Refined */
 :root {
-  --bg: #FFFFFF;
-  --surface: #F6F8FC;
-  --text: #101010;
-  --muted: #667085;
-  --border: #E5E7EB;
-  --primary: #2986FE;
-  --primary-700: #1E6EE3;
-  --primary-50: #E9F2FF;
-  --secondary: #0EA5E9;
-  --success: #16A34A;
-  --warn: #F59E0B;
-  --danger: #EF4444;
-  --overlay: rgba(15,23,42,0.6);
+  /* Color Palette - Inspired by clear morning in Ha Long Bay */
+  --bg: #FFFFFF;                    /* Pure white - clouds and sand */
+  --surface: #FAFBFC;               /* Subtle off-white - morning mist */
+  --text: #1A2332;                  /* Deep navy - ocean depths */
+  --muted: #6B7280;                 /* Soft gray - distant mountains */
+  --border: #E5E7EB;                /* Light gray - gentle waves */
+  --primary: #0891B2;               /* Ocean teal - where sun hits waves */
+  --primary-rgb: 8, 145, 178;       /* For gradients */
+  --primary-700: #0E7490;           /* Deeper teal */
+  --primary-50: rgba(8, 145, 178, 0.05); /* Teal whisper */
+  --secondary: #0EA5E9;             /* Sky blue - clear morning sky */
+  --secondary-rgb: 14, 165, 233;    /* For gradients */
+  --success: #10B981;               /* Emerald - lush greenery */
+  --warn: #F59E0B;                  /* Amber - golden hour */
+  --danger: #EF4444;                /* Coral red */
+  --overlay: rgba(26, 35, 50, 0.6); /* Gentle dark overlay */
+  
+  /* Glassmorphism Core Values */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-backdrop: blur(16px);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
 
   /* Enhanced Typography Scale */
   --text-xs: 12px;
@@ -62,14 +71,28 @@
 }
 
 .dark {
-  --bg: #0B1220;
-  --surface: #101826;
-  --text: #E6E8EC;
-  --muted: #98A2B3;
-  --border: #2B3342;
-  --primary: #2986FE;
-  --primary-700: #4F93FF;
-  --primary-50: rgba(41, 134, 254, 0.1);
+  /* Dark Mode - Inspired by Vietnam evening sky */
+  --bg: #0A1628;                    /* Deep ocean night */
+  --surface: #0F1D2E;               /* Twilight depths */
+  --text: #E2E8F0;                  /* Moonlight on water */
+  --muted: #94A3B8;                 /* Misty evening */
+  --border: #1E293B;                /* Dark wave crests */
+  --primary: #22D3EE;               /* Bright teal - bioluminescence */
+  --primary-rgb: 34, 211, 238;      /* For gradients */
+  --primary-700: #0891B2;           /* Ocean teal */
+  --primary-50: rgba(34, 211, 238, 0.1); /* Soft glow */
+  --secondary: #38BDF8;             /* Bright sky blue - stars reflection */
+  --secondary-rgb: 56, 189, 248;    /* For gradients */
+  --success: #14B8A6;               /* Emerald glow */
+  --warn: #FBBF24;                  /* Golden moon */
+  --danger: #F87171;                /* Soft coral */
+  --overlay: rgba(10, 22, 40, 0.8); /* Deep night overlay */
+  
+  /* Dark Mode Glassmorphism */
+  --glass-bg: rgba(15, 29, 46, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-backdrop: blur(16px);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   
   /* Keep existing shadcn dark variables */
   --background: 222.2 84% 4.9%;
@@ -79,7 +102,6 @@
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
   --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
@@ -158,6 +180,50 @@
   
   body {
     @apply bg-bg text-text;
-    font-family: 'DM Sans', 'Inter', ui-sans-serif, system-ui;
+    font-family: 'Be Vietnam Pro', 'Inter', ui-sans-serif, system-ui;
+  }
+  
+  /* Glassmorphism Utilities - "Sheet of Glass" Principle */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-backdrop);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+  
+  .glass-card {
+    @apply glass rounded-2xl;
+  }
+  
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Gradient Text Utilities - Fixed for proper display */
+  .gradient-text {
+    background: linear-gradient(135deg, #0891B2 0%, #0EA5E9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  
+  .dark .gradient-text {
+    background: linear-gradient(135deg, #22D3EE 0%, #38BDF8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  
+  /* Gentle Motion Utilities */
+  .motion-gentle {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .motion-soft {
+    transition: all 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
   }
 }

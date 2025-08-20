@@ -6,9 +6,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card-custom"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { 
   Plus,
   Search,
@@ -22,7 +20,13 @@ import {
   MoreHorizontal,
   Filter,
   Grid,
-  List
+  List,
+  TrendingUp,
+  Users,
+  Heart,
+  Copy,
+  Settings,
+  BarChart3
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -156,16 +160,30 @@ export default function MyItinerariesPage() {
   // Redirect if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-bg text-text">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <Header />
-        <main className="container py-16">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Đăng nhập để xem lịch trình</h1>
-            <p className="text-muted mb-6">
-              Bạn cần đăng nhập để quản lý lịch trình cá nhân
-            </p>
-            <Button>Đăng nhập ngay</Button>
-          </div>
+        <main className="min-h-screen pt-16">
+          <section className="relative py-20 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+            
+            <div className="relative container">
+              <div className="glass-card max-w-md mx-auto text-center p-8">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+                </div>
+                <h1 className="gradient-text text-2xl font-bold mb-4">Đăng nhập để xem lịch trình</h1>
+                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                  Bạn cần đăng nhập để quản lý lịch trình cá nhân
+                </p>
+                <Button 
+                  asChild 
+                  className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+                >
+                  <Link href="/auth/login">Đăng nhập ngay</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
         </main>
         <Footer />
       </div>
@@ -173,335 +191,360 @@ export default function MyItinerariesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg text-text">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
-      <main className="container py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Lịch trình của tôi</h1>
-            <p className="text-muted">
-              Quản lý và chia sẻ các lịch trình du lịch của bạn
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/itineraries/builder">
-              <Plus className="w-4 h-4 mr-2" />
-              Tạo lịch trình mới
-            </Link>
-          </Button>
-        </div>
-
-        {/* Filters & Search */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
-            <Input
-              placeholder="Tìm kiếm lịch trình..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+      <main className="min-h-screen pt-16">
+        {/* Hero Section */}
+        <section className="relative py-16 sm:py-20 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
           
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Filter className="w-4 h-4" />
-                  Lọc
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-                  Tất cả
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus("public")}>
-                  Công khai
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus("private")}>
-                  Riêng tư
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <div className="flex rounded-lg border border-border overflow-hidden">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-none border-0"
+          <div className="relative container">
+            <div className="glass-card text-center p-8 mb-8">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+              </div>
+              <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
+                Lịch trình của tôi
+              </h1>
+              <p className="text-slate-600 dark:text-slate-300 text-lg mb-6">
+                Quản lý và chia sẻ các lịch trình du lịch của bạn
+              </p>
+              
+              <Button 
+                asChild 
+                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
               >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-none border-0"
-              >
-                <List className="w-4 h-4" />
+                <Link href="/itineraries/builder">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Tạo lịch trình mới
+                </Link>
               </Button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{itineraries.length}</div>
-            <div className="text-sm text-muted">Tổng lịch trình</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {itineraries.filter(i => i.isPublic).length}
+        <section className="container py-8 relative">
+          {/* Stats Dashboard */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div className="glass-card p-6 text-center">
+              <div className="text-3xl font-bold text-sky-600 mb-2">{itineraries.length}</div>
+              <div className="text-sm text-slate-600 dark:text-slate-300">Tổng lịch trình</div>
             </div>
-            <div className="text-sm text-muted">Công khai</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {itineraries.reduce((sum, i) => sum + i.stats.views, 0)}
+            <div className="glass-card p-6 text-center">
+              <div className="text-3xl font-bold text-teal-600 mb-2">
+                {itineraries.filter(i => i.isPublic).length}
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-300">Công khai</div>
             </div>
-            <div className="text-sm text-muted">Lượt xem</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {itineraries.reduce((sum, i) => sum + i.stats.likes, 0)}
+            <div className="glass-card p-6 text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                {itineraries.reduce((sum, i) => sum + i.stats.views, 0)}
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-300">Lượt xem</div>
             </div>
-            <div className="text-sm text-muted">Lượt thích</div>
+            <div className="glass-card p-6 text-center">
+              <div className="text-3xl font-bold text-pink-600 mb-2">
+                {itineraries.reduce((sum, i) => sum + i.stats.likes, 0)}
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-300">Lượt thích</div>
+            </div>
           </div>
-        </div>
 
-        {/* Itineraries Grid/List */}
-        {isLoading ? (
-          <div className="text-center py-16">
-            <div className="text-muted">Đang tải...</div>
+          {/* Filters & Search */}
+          <div className="glass-card p-6 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Input
+                  placeholder="Tìm kiếm lịch trình..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 glass-subtle border-white/20 dark:border-slate-700/50"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <div className="flex rounded-lg glass-subtle border border-white/20 dark:border-slate-700/50 overflow-hidden">
+                  <Button
+                    variant={filterStatus === 'all' ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setFilterStatus('all')}
+                    className="rounded-none border-0"
+                  >
+                    Tất cả
+                  </Button>
+                  <Button
+                    variant={filterStatus === 'public' ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setFilterStatus('public')}
+                    className="rounded-none border-0"
+                  >
+                    Công khai
+                  </Button>
+                  <Button
+                    variant={filterStatus === 'private' ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setFilterStatus('private')}
+                    className="rounded-none border-0"
+                  >
+                    Riêng tư
+                  </Button>
+                </div>
+
+                <div className="flex rounded-lg glass-subtle border border-white/20 dark:border-slate-700/50 overflow-hidden">
+                  <Button
+                    variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-none border-0"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-none border-0"
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
-        ) : filteredItineraries.length === 0 ? (
-          <div className="text-center py-16">
-            <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            <h3 className="text-xl font-semibold mb-2">
-              {searchQuery || filterStatus !== "all" 
-                ? "Không tìm thấy lịch trình nào" 
-                : "Chưa có lịch trình nào"
-              }
-            </h3>
-            <p className="text-muted mb-6">
-              {searchQuery || filterStatus !== "all"
-                ? "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc"
-                : "Tạo lịch trình đầu tiên để bắt đầu lên kế hoạch du lịch"
-              }
-            </p>
-            <Button asChild>
-              <Link href="/itineraries/builder">
-                <Plus className="w-4 h-4 mr-2" />
-                Tạo lịch trình mới
-              </Link>
-            </Button>
-          </div>
-        ) : (
-          <>
-            {viewMode === 'grid' ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredItineraries.map((itinerary) => (
-                  <Card key={itinerary.id} className="overflow-hidden group">
-                    <div className="relative aspect-[16/10] overflow-hidden">
-                      <img
-                        src={itinerary.coverImage}
-                        alt={itinerary.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-3 left-3">
-                        <Badge variant={itinerary.isPublic ? "default" : "secondary"}>
-                          {itinerary.isPublic ? "Công khai" : "Riêng tư"}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-3 right-3">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="sm" className="bg-white/80 backdrop-blur-sm hover:bg-white">
+
+          {/* Itineraries Grid/List */}
+          {isLoading ? (
+            <div className="glass-card p-16 text-center">
+              <div className="w-8 h-8 border-2 border-sky-300 border-t-sky-600 rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="text-slate-600 dark:text-slate-300">Đang tải...</div>
+            </div>
+          ) : filteredItineraries.length === 0 ? (
+            <div className="glass-card p-16 text-center">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-slate-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                {searchQuery || filterStatus !== "all" 
+                  ? "Không tìm thấy lịch trình nào" 
+                  : "Chưa có lịch trình nào"
+                }
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 mb-6">
+                {searchQuery || filterStatus !== "all"
+                  ? "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc"
+                  : "Tạo lịch trình đầu tiên để bắt đầu lên kế hoạch du lịch"
+                }
+              </p>
+              <Button 
+                asChild 
+                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              >
+                <Link href="/itineraries/builder">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Tạo lịch trình mới
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <>
+              {viewMode === 'grid' ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredItineraries.map((itinerary) => (
+                    <div key={itinerary.id} className="glass-card overflow-hidden group">
+                      <div className="relative aspect-[16/10] overflow-hidden">
+                        <img
+                          src={itinerary.coverImage}
+                          alt={itinerary.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <Badge 
+                            variant={itinerary.isPublic ? "default" : "secondary"}
+                            className="glass-subtle"
+                          >
+                            {itinerary.isPublic ? "Công khai" : "Riêng tư"}
+                          </Badge>
+                        </div>
+                        <div className="absolute top-3 right-3">
+                          <div className="relative">
+                            <Button 
+                              variant="secondary" 
+                              size="sm" 
+                              className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
+                              onClick={() => {
+                                const dropdown = document.getElementById(`dropdown-${itinerary.id}`)
+                                if (dropdown) {
+                                  dropdown.classList.toggle('hidden')
+                                }
+                              }}
+                            >
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/itineraries/${itinerary.slug}`}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Xem chi tiết
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/itineraries/builder?edit=${itinerary.id}`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Chỉnh sửa
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDuplicate(itinerary)}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Sao chép
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => togglePublic(itinerary.id)}>
-                              <Share2 className="mr-2 h-4 w-4" />
-                              {itinerary.isPublic ? "Chuyển riêng tư" : "Công khai"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDelete(itinerary.id)}
-                              className="text-danger"
+                            <div 
+                              id={`dropdown-${itinerary.id}`}
+                              className="hidden absolute right-0 top-full mt-1 w-48 glass-card border border-white/20 dark:border-slate-700/50 z-10"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Xóa
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <div className="p-1">
+                                <Link 
+                                  href={`/itineraries/${itinerary.slug}`}
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  Xem chi tiết
+                                </Link>
+                                <Link 
+                                  href={`/itineraries/builder?edit=${itinerary.id}`}
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  Chỉnh sửa
+                                </Link>
+                                <button 
+                                  onClick={() => handleDuplicate(itinerary)}
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded w-full text-left"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                  Sao chép
+                                </button>
+                                <button 
+                                  onClick={() => togglePublic(itinerary.id)}
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded w-full text-left"
+                                >
+                                  <Share2 className="w-4 h-4" />
+                                  {itinerary.isPublic ? "Chuyển riêng tư" : "Công khai"}
+                                </button>
+                                <button 
+                                  onClick={() => handleDelete(itinerary.id)}
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded w-full text-left"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Xóa
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                        {itinerary.title}
-                      </h3>
-                      <p className="text-muted text-sm mb-3 line-clamp-2">
-                        {itinerary.description}
-                      </p>
                       
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-1 text-muted">
-                            <Calendar className="w-4 h-4" />
-                            {itinerary.duration} ngày
-                          </span>
-                          <span className="flex items-center gap-1 text-muted">
-                            <MapPin className="w-4 h-4" />
-                            {itinerary.placesCount} địa điểm
-                          </span>
-                        </div>
+                      <div className="p-6">
+                        <h3 className="font-semibold text-lg text-slate-900 dark:text-white mb-2 line-clamp-2">
+                          {itinerary.title}
+                        </h3>
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">
+                          {itinerary.description}
+                        </p>
                         
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-xs">
-                            {tripTypeLabels[itinerary.tripType as keyof typeof tripTypeLabels]}
-                          </Badge>
-                          <span className="flex items-center gap-1 text-muted">
-                            <DollarSign className="w-4 h-4" />
-                            {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
-                          </span>
-                        </div>
-
-                        {itinerary.isPublic && (
-                          <div className="flex items-center justify-between pt-2 border-t border-border">
-                            <span className="text-xs text-muted">
-                              {itinerary.stats.views} lượt xem
+                        <div className="space-y-3 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                              <Calendar className="w-4 h-4" />
+                              {itinerary.duration} ngày
                             </span>
-                            <span className="text-xs text-muted">
-                              {itinerary.stats.likes} lượt thích
+                            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                              <MapPin className="w-4 h-4" />
+                              {itinerary.placesCount} địa điểm
                             </span>
                           </div>
-                        )}
+                          
+                          <div className="flex items-center justify-between">
+                            <Badge variant="secondary" className="text-xs glass-subtle">
+                              {tripTypeLabels[itinerary.tripType as keyof typeof tripTypeLabels]}
+                            </Badge>
+                            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                              <DollarSign className="w-4 h-4" />
+                              {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
+                            </span>
+                          </div>
+
+                          {itinerary.isPublic && (
+                            <div className="flex items-center justify-between pt-3 border-t border-white/20 dark:border-slate-700/50">
+                              <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                <Eye className="w-3 h-3" />
+                                {itinerary.stats.views}
+                              </span>
+                              <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                <Heart className="w-3 h-3" />
+                                {itinerary.stats.likes}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredItineraries.map((itinerary) => (
-                  <Card key={itinerary.id}>
-                    <CardContent className="p-4">
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredItineraries.map((itinerary) => (
+                    <div key={itinerary.id} className="glass-card p-6">
                       <div className="flex gap-4">
                         <img
                           src={itinerary.coverImage}
                           alt={itinerary.title}
-                          className="w-24 h-16 rounded object-cover flex-shrink-0"
+                          className="w-24 h-16 rounded-lg object-cover flex-shrink-0"
                         />
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-lg truncate pr-4">
+                            <h3 className="font-semibold text-lg text-slate-900 dark:text-white truncate pr-4">
                               {itinerary.title}
                             </h3>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/itineraries/${itinerary.slug}`}>
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    Xem chi tiết
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/itineraries/builder?edit=${itinerary.id}`}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Chỉnh sửa
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDuplicate(itinerary)}>
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Sao chép
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => togglePublic(itinerary.id)}>
-                                  <Share2 className="mr-2 h-4 w-4" />
-                                  {itinerary.isPublic ? "Chuyển riêng tư" : "Công khai"}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleDelete(itinerary.id)}
-                                  className="text-danger"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Xóa
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
                           </div>
                           
-                          <p className="text-muted text-sm mb-3 line-clamp-1">
+                          <p className="text-slate-600 dark:text-slate-300 text-sm mb-3 line-clamp-1">
                             {itinerary.description}
                           </p>
                           
                           <div className="flex flex-wrap items-center gap-4 text-sm">
-                            <Badge variant={itinerary.isPublic ? "default" : "secondary"}>
+                            <Badge 
+                              variant={itinerary.isPublic ? "default" : "secondary"}
+                              className="glass-subtle"
+                            >
                               {itinerary.isPublic ? "Công khai" : "Riêng tư"}
                             </Badge>
                             
-                            <span className="flex items-center gap-1 text-muted">
+                            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
                               <Calendar className="w-4 h-4" />
                               {itinerary.duration} ngày
                             </span>
                             
-                            <span className="flex items-center gap-1 text-muted">
+                            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
                               <MapPin className="w-4 h-4" />
                               {itinerary.placesCount} địa điểm
                             </span>
                             
-                            <span className="flex items-center gap-1 text-muted">
+                            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
                               <DollarSign className="w-4 h-4" />
                               {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
                             </span>
 
                             {itinerary.isPublic && (
-                              <span className="text-muted">
+                              <span className="text-slate-500 dark:text-slate-400">
                                 {itinerary.stats.views} lượt xem • {itinerary.stats.likes} lượt thích
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </section>
       </main>
 
       <Footer />
     </div>
   )
 }
-

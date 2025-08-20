@@ -22,7 +22,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'Inter', 'ui-sans-serif', 'system-ui'],
+        sans: ['Be Vietnam Pro', 'Inter', 'ui-sans-serif', 'system-ui'],
       },
       colors: {
         bg: 'var(--bg)',

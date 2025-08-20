@@ -19,11 +19,9 @@ import {
   AlertTriangle,
   Save,
   Key,
-  Globe,
   Monitor,
   Moon,
-  Sun,
-  Check
+  Sun
 } from "lucide-react"
 
 export default function SettingsPage() {
@@ -81,9 +79,7 @@ export default function SettingsPage() {
           {/* Profile Settings */}
           <div className="glass-card p-8">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900/30 rounded-lg flex items-center justify-center">
-                <User className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-              </div>
+              <User className="w-6 h-6 text-sky-600 dark:text-sky-400" />
               Thông tin cá nhân
             </h2>
             <div className="space-y-6">
@@ -145,9 +141,7 @@ export default function SettingsPage() {
           {/* Privacy Settings */}
           <div className="glass-card p-8">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              </div>
+              <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               Quyền riêng tư
             </h2>
             <div className="space-y-6">
@@ -192,9 +186,7 @@ export default function SettingsPage() {
           {/* Notification Settings */}
           <div className="glass-card p-8">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Bell className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              </div>
+              <Bell className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               Thông báo
             </h2>
             <div className="space-y-6">
@@ -239,9 +231,7 @@ export default function SettingsPage() {
           {/* Appearance & Language Settings */}
           <div className="glass-card p-8">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                <Monitor className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              </div>
+              <Monitor className="w-6 h-6 text-violet-600 dark:text-violet-400" />
               Giao diện & Ngôn ngữ
             </h2>
             <div className="space-y-6">
@@ -355,9 +345,7 @@ export default function SettingsPage() {
           {/* Danger Zone */}
           <div className="glass-card p-8 border-2 border-red-200/50 dark:border-red-800/50">
             <h2 className="text-xl font-bold text-red-700 dark:text-red-400 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
-              </div>
+              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
               Vùng nguy hiểm
             </h2>
             <div className="p-6 bg-red-50/50 dark:bg-red-900/20 rounded-xl border border-red-200/50 dark:border-red-800/50">
@@ -366,7 +354,7 @@ export default function SettingsPage() {
                 Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.
               </p>
               <Button 
-                variant="destructive"
+                variant="danger"
                 className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white"
               >
                 <AlertTriangle className="w-4 h-4 mr-2" />

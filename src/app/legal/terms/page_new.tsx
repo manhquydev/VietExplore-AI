@@ -160,8 +160,8 @@ export default function TermsPage() {
       <main className="container py-16 max-w-5xl">
         {/* Hero Section */}
         <div className="glass-card text-center p-8 sm:p-12 mb-12">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Scale className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Scale className="w-8 h-8 text-white" />
           </div>
           <h1 className="gradient-text text-4xl sm:text-5xl font-bold mb-6 leading-tight">
             Điều Khoản Sử Dụng
@@ -199,8 +199,8 @@ export default function TermsPage() {
         {/* Legal Footer */}
         <div className="glass-card p-8 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-400/10 dark:to-indigo-400/10">
           <div className="text-center">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
               Cam kết minh bạch

@@ -50,47 +50,47 @@ const mockPlaces = [
   },
   {
     id: "place_003",
-    slug: "doi-che-cau-dat",
-    name: "Đồi chè Cầu Đất",
-    shortDescription: "Cảnh quan núi đồi thơ mộng với những thảm chè xanh mướt",
-    province: "Đà Lạt",
-    type: "núi",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop",
-        alt: "Đồi chè Cầu Đất",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "contributor" as const,
-    rating: { average: 4.7, count: 890 },
-    tags: ["núi", "thiên nhiên", "check-in"]
-  },
-  {
-    id: "place_004",
     slug: "vinh-ha-long",
     name: "Vịnh Hạ Long",
-    shortDescription: "Di sản thiên nhiên thế giới với hàng nghìn đảo đá vôi",
+    shortDescription: "Kỳ quan thiên nhiên thế giới với hàng nghìn đảo đá vôi",
     province: "Quảng Ninh",
-    type: "biển",
+    type: "thiên nhiên",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1528127269322-539801943592?w=500&h=300&fit=crop",
+        url: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=500&h=300&fit=crop",
         alt: "Vịnh Hạ Long",
         isPrimary: true
       }
     ],
     trustLabel: "verified" as const,
-    rating: { average: 4.9, count: 3200 },
-    tags: ["biển", "di sản", "du thuyền"]
+    rating: { average: 4.7, count: 3450 },
+    tags: ["thiên nhiên", "du thuyền", "kỳ quan"]
+  },
+  {
+    id: "place_004",
+    slug: "sa-pa",
+    name: "Sa Pa",
+    shortDescription: "Thành phố trong mây với ruộng bậc thang tuyệt đẹp",
+    province: "Lào Cai",
+    type: "núi",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1583311640151-4e18a3e41d49?w=500&h=300&fit=crop",
+        alt: "Sa Pa",
+        isPrimary: true
+      }
+    ],
+    trustLabel: "verified" as const,
+    rating: { average: 4.6, count: 890 },
+    tags: ["núi", "trekking", "văn hóa dân tộc"]
   },
   {
     id: "place_005",
     slug: "ban-gioc",
     name: "Thác Bản Giốc",
-    shortDescription: "Thác nước hùng vĩ nhất Việt Nam tại biên giới Việt - Trung",
+    shortDescription: "Thác nước hùng vĩ trên biên giới Việt - Trung",
     province: "Cao Bằng",
-    type: "núi",
+    type: "thác nước",
     images: [
       {
         url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop",
@@ -129,10 +129,10 @@ interface SearchFilters {
 }
 
 export default function PlacesPage() {
-  const [places] = React.useState(mockPlaces) // Remove setPlaces since it's not used
+  const [places] = React.useState(mockPlaces)
   const [filteredPlaces, setFilteredPlaces] = React.useState(mockPlaces)
   const [loading, setLoading] = React.useState(false)
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid') // Remove map for now
+  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filters, setFilters] = React.useState<SearchFilters>({})
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -152,31 +152,30 @@ export default function PlacesPage() {
       )
     }
 
-    // Filters
-    if (filters.type) {
-      filtered = filtered.filter(place => place.type === filters.type)
-    }
+    // Province filter
     if (filters.province) {
       filtered = filtered.filter(place => place.province === filters.province)
     }
 
+    // Type filter
+    if (filters.type) {
+      filtered = filtered.filter(place => place.type === filters.type)
+    }
+
     setFilteredPlaces(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
+    setCurrentPage(1) // Reset to first page on filter change
   }, [searchQuery, filters, places])
 
-  const handleSearch = (query: string, searchFilters: SearchFilters) => {
-    setLoading(true)
+  const handleSearch = (query: string) => {
     setSearchQuery(query)
-    setFilters(searchFilters)
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-    }, 500)
+  }
+
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    setFilters(newFilters)
   }
 
   const handleAddToItinerary = (placeId: string) => {
-    console.log('Add to itinerary:', placeId)
+    console.log('Adding place to itinerary:', placeId)
     // Will implement add to itinerary logic later
   }
 
@@ -186,54 +185,65 @@ export default function PlacesPage() {
   const paginatedPlaces = filteredPlaces.slice(startIndex, startIndex + itemsPerPage)
 
   return (
-    <div className="min-h-screen bg-bg text-text">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
-      <main>
-        {/* Page Header */}
-        <section className="bg-surface border-b border-border">
-          <div className="container py-8">
-            <div className="max-w-4xl">
-              <h1 className="text-3xl font-bold mb-2">
-                Khám phá địa điểm du lịch Việt Nam
+      <main className="min-h-screen pt-16">
+        {/* Hero Section - Glassmorphism */}
+        <section className="relative py-20 sm:py-24 overflow-hidden">
+          {/* Background with subtle gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          
+          {/* Glass morphism container */}
+          <div className="relative container">
+            <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
+              <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Khám Phá Việt Nam
               </h1>
-              <p className="text-muted mb-6">
-                Tìm kiếm và khám phá hàng nghìn địa điểm đáng tin cậy được xác minh bởi cộng đồng
+              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Hành trình qua hàng nghìn địa điểm tuyệt vời được cộng đồng tin tưởng và xác minh
               </p>
               
-              {/* Search Bar */}
-              <SearchBar 
-                onSearch={handleSearch}
-                placeholder="Tìm kiếm địa điểm, tỉnh thành, loại hình..."
-              />
+              {/* Enhanced Search Bar */}
+              <div className="glass-subtle p-6 rounded-2xl backdrop-blur-sm">
+                <SearchBar 
+                  onSearch={handleSearch}
+                  placeholder="Tìm kiếm địa điểm, tỉnh thành, trải nghiệm..."
+                />
+              </div>
             </div>
           </div>
         </section>
 
         {/* Results Section */}
-        <section className="container py-8">
+        <section className="container py-8 relative">
+          {/* Filter Bar with glassmorphism */}
+          <div className="glass-card p-6 mb-8">
+            <FilterBar onFiltersChange={handleFiltersChange} />
+          </div>
+
           {/* Results Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <p className="text-muted">
-                Hiển thị <strong>{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPlaces.length)}</strong> trong tổng số <strong>{filteredPlaces.length}</strong> kết quả
+              <p className="text-slate-600 dark:text-slate-300">
+                Hiển thị <strong className="text-slate-900 dark:text-white">{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPlaces.length)}</strong> trong tổng số <strong className="text-slate-900 dark:text-white">{filteredPlaces.length}</strong> kết quả
               </p>
               
-              {/* Active Filters */}
+              {/* Active Filters - Enhanced styling */}
               {(searchQuery || Object.values(filters).some(Boolean)) && (
                 <div className="flex flex-wrap gap-2">
                   {searchQuery && (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="glass-subtle border-teal-200 dark:border-teal-800">
                       Tìm kiếm: "{searchQuery}"
                     </Badge>
                   )}
                   {filters.type && (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="glass-subtle border-sky-200 dark:border-sky-800">
                       Loại: {filters.type}
                     </Badge>
                   )}
                   {filters.province && (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="glass-subtle border-blue-200 dark:border-blue-800">
                       Tỉnh: {filters.province}
                     </Badge>
                   )}
@@ -241,23 +251,23 @@ export default function PlacesPage() {
               )}
             </div>
 
-            {/* View Mode Toggle - Simplified without icons */}
+            {/* View Mode Toggle - Glass effect */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted mr-2">Hiển thị:</span>
-              <div className="flex rounded-lg border border-border overflow-hidden">
+              <span className="text-sm text-slate-600 dark:text-slate-300 mr-2">Hiển thị:</span>
+              <div className="glass-subtle flex rounded-xl border border-white/20 dark:border-slate-700/50 overflow-hidden backdrop-blur-sm">
                 <Button
                   variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                   size="sm"
+                  className={viewMode === 'grid' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10 dark:hover:bg-slate-800/50 border-0'}
                   onClick={() => setViewMode('grid')}
-                  className="rounded-none border-0 text-sm"
                 >
                   Lưới
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'primary' : 'ghost'}
                   size="sm"
+                  className={viewMode === 'list' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10 dark:hover:bg-slate-800/50 border-0'}
                   onClick={() => setViewMode('list')}
-                  className="rounded-none border-0 text-sm"
                 >
                   Danh sách
                 </Button>
@@ -265,169 +275,142 @@ export default function PlacesPage() {
             </div>
           </div>
 
-          {/* Loading State */}
-          {loading && (
+          {/* Results Content */}
+          {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={`loading-${i}`} className="card p-0 overflow-hidden">
+                <div key={`loading-${i}`} className="glass-card p-0 overflow-hidden">
                   <Skeleton className="aspect-[3/2] w-full" />
                   <div className="p-4 space-y-2">
-                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-2/3" />
                   </div>
                 </div>
               ))}
             </div>
-          )}
-
-          {/* Results Grid/List */}
-          {!loading && (
-            <>
-              {filteredPlaces.length === 0 ? (
-                <div className="text-center py-16">
-                  <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
+          ) : filteredPlaces.length === 0 ? (
+            <div className="glass-card text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <h3 className="text-xl font-semibold mb-2">
-                    Không tìm thấy kết quả
-                  </h3>
-                  <p className="text-muted mb-6">
-                    Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc của bạn
-                  </p>
-                  <Button 
-                    variant="secondary"
-                    onClick={() => {
-                      setSearchQuery('')
-                      setFilters({})
-                    }}
-                  >
-                    Xóa tất cả bộ lọc
-                  </Button>
                 </div>
-              ) : (
-                <>
-                  {viewMode === 'grid' && (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {paginatedPlaces.map((place) => (
-                        <PlaceCard
-                          key={place.id}
-                          place={place}
-                          onAddToItinerary={handleAddToItinerary}
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                  Không tìm thấy địa điểm nào
+                </h3>
+                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                  Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc để tìm những địa điểm phù hợp
+                </p>
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setFilters({})
+                  }}
+                  className="glass-subtle"
+                >
+                  Xóa tất cả bộ lọc
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {viewMode === 'grid' && (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPlaces.map((place) => (
+                    <PlaceCard
+                      key={place.id}
+                      place={place}
+                      onAddToItinerary={handleAddToItinerary}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'list' && (
+                <div className="space-y-4">
+                  {paginatedPlaces.map((place) => (
+                    <div key={place.id} className="glass-card p-6 flex gap-6 hover:shadow-lg transition-all duration-300">
+                      <div className="w-32 h-24 rounded-xl overflow-hidden flex-shrink-0">
+                        <img
+                          src={place.images[0]?.url}
+                          alt={place.images[0]?.alt}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         />
-                      ))}
-                    </div>
-                  )}
-
-                  {viewMode === 'list' && (
-                    <div className="space-y-4">
-                      {paginatedPlaces.map((place) => (
-                        <div key={place.id} className="card p-4 flex gap-4">
-                          <div className="w-32 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                            <img
-                              src={place.images[0]?.url}
-                              alt={place.images[0]?.alt}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-1">{place.name}</h3>
-                            <p className="text-muted text-sm mb-2">{place.province} • {place.type}</p>
-                            <p className="text-sm mb-3 line-clamp-2">{place.shortDescription}</p>
-                            <div className="flex items-center justify-between">
-                              <div className="flex gap-2">
-                                {place.tags?.slice(0, 2).map((tag, i) => (
-                                  <Badge key={i} variant="secondary" className="text-xs">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                              <Button size="sm" onClick={() => handleAddToItinerary(place.id)}>
-                                Thêm vào lịch trình
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {viewMode === 'list' && (
-                    <div className="space-y-4">
-                      {paginatedPlaces.map((place) => (
-                        <div key={place.id} className="bg-surface border border-border rounded-xl p-6 flex gap-6">
-                          <img 
-                            src={place.images[0]?.url} 
-                            alt={place.name}
-                            className="w-32 h-24 rounded-lg object-cover flex-shrink-0"
-                          />
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="text-lg font-semibold">{place.name}</h3>
-                              <Badge variant="secondary" className="ml-2">
-                                {place.province}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-xl mb-2 text-slate-900 dark:text-white">{place.name}</h3>
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-2">{place.province} • {place.type}</p>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{place.shortDescription}</p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-2">
+                            {place.tags?.slice(0, 2).map((tag, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs glass-subtle">
+                                {tag}
                               </Badge>
-                            </div>
-                            <p className="text-muted mb-3 line-clamp-2">{place.shortDescription}</p>
-                            <div className="flex items-center justify-between">
-                              <div className="flex gap-2">
-                                {place.tags?.slice(0, 3).map((tag, tagIndex) => (
-                                  <Badge key={`${place.id}-${tag}-${tagIndex}`} variant="secondary" className="text-xs">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                              <Button variant="secondary" size="sm">
-                                Xem chi tiết →
-                              </Button>
-                            </div>
+                            ))}
                           </div>
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleAddToItinerary(place.id)}
+                            className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600"
+                          >
+                            Thêm vào lịch trình
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="flex justify-center mt-12">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                          disabled={currentPage === 1}
-                        >
-                          ← Trước
-                        </Button>
-                        
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          const page = i + 1
-                          return (
-                            <Button
-                              key={page}
-                              variant={currentPage === page ? 'primary' : 'ghost'}
-                              size="sm"
-                              onClick={() => setCurrentPage(page)}
-                            >
-                              {page}
-                            </Button>
-                          )
-                        })}
-                        
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                          disabled={currentPage === totalPages}
-                        >
-                          Sau →
-                        </Button>
                       </div>
                     </div>
-                  )}
-                </>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination - Enhanced with glassmorphism */}
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-12">
+                  <div className="glass-card p-2 rounded-2xl">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="hover:bg-white/10 dark:hover:bg-slate-800/50"
+                      >
+                        ← Trước
+                      </Button>
+                      
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = i + 1
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? 'primary' : 'ghost'}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={currentPage === page ? 
+                              'bg-gradient-to-r from-sky-500 to-teal-500 text-white' : 
+                              'hover:bg-white/10 dark:hover:bg-slate-800/50'
+                            }
+                          >
+                            {page}
+                          </Button>
+                        )
+                      })}
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="hover:bg-white/10 dark:hover:bg-slate-800/50"
+                      >
+                        Sau →
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -438,4 +421,3 @@ export default function PlacesPage() {
     </div>
   )
 }
-

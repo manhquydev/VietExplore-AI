@@ -8,13 +8,12 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FilterBarProps {
-  filters: {
+  onFiltersChange: (filters: {
     region?: string
     province?: string
     type?: string
     trustLabel?: string
-  }
-  onFiltersChange: (filters: any) => void
+  }) => void
   className?: string
 }
 
@@ -66,10 +65,16 @@ const provinces = [
 ]
 
 export const FilterBar: React.FC<FilterBarProps> = ({
-  filters,
   onFiltersChange,
   className,
 }) => {
+  const [filters, setFilters] = React.useState<{
+    region?: string
+    province?: string
+    type?: string
+    trustLabel?: string
+  }>({})
+
   const updateFilter = (key: string, value: string | undefined) => {
     const newFilters = { ...filters, [key]: value }
     
@@ -78,11 +83,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       newFilters.province = undefined
     }
     
+    setFilters(newFilters)
     onFiltersChange(newFilters)
   }
 
   const clearAllFilters = () => {
-    onFiltersChange({})
+    const emptyFilters = {}
+    setFilters(emptyFilters)
+    onFiltersChange(emptyFilters)
   }
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length

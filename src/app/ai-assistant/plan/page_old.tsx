@@ -228,8 +228,8 @@ export default function AITravelPlannerPage() {
           <div className="relative container">
             <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
               <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-sky-500 to-teal-500 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-white" />
                 </div>
                 <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                   AI Travel Planner
@@ -463,8 +463,8 @@ export default function AITravelPlannerPage() {
           {step === 'generating' && (
             <div className="max-w-2xl mx-auto">
               <div className="glass-card p-12 text-center">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Loader2 className="w-8 h-8 text-sky-600 dark:text-sky-400 animate-spin" />
+                <div className="w-16 h-16 bg-gradient-to-r from-sky-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
                 </div>
                 <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">
                   AI đang thiết kế chuyến đi...
@@ -559,7 +559,7 @@ export default function AITravelPlannerPage() {
                   {generatedItinerary.days.map((day) => (
                     <div key={day.day} className="glass-subtle p-6 rounded-2xl">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold">
+                        <div className="w-8 h-8 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold">
                           {day.day}
                         </div>
                         <h4 className="text-lg font-bold text-slate-900 dark:text-white">

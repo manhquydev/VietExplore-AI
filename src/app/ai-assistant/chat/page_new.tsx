@@ -163,8 +163,8 @@ export default function AIChatPage() {
           
           <div className="relative container">
             <div className="glass-card text-center p-8 mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bot className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bot className="w-8 h-8 text-sky-600 dark:text-sky-400" />
               </div>
               <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
                 AI Trợ lý Du lịch
@@ -216,8 +216,8 @@ export default function AIChatPage() {
                         )}
                       >
                         {message.role === "assistant" && (
-                          <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                            <Bot className="w-5 h-5 text-white" />
+                          <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <Bot className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                           </div>
                         )}
 
@@ -331,8 +331,8 @@ export default function AIChatPage() {
                     {/* Loading indicator */}
                     {isLoading && (
                       <div className="flex gap-4 justify-start">
-                        <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                         </div>
                         <div className="glass-subtle border border-white/20 dark:border-slate-700/50 rounded-2xl px-4 py-3">
                           <div className="flex items-center gap-3">
@@ -396,8 +396,8 @@ export default function AIChatPage() {
               {/* Quick Suggestions */}
               <div className="glass-card p-6">
                 <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   </div>
                   Gợi ý nhanh
                 </h3>
@@ -421,8 +421,8 @@ export default function AIChatPage() {
                 <h3 className="font-bold mb-4 text-lg text-slate-900 dark:text-white">Tôi có thể giúp bạn</h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-gradient-to-r from-sky-100 to-sky-200 dark:from-sky-900 dark:to-sky-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-sky-600" />
+                    <div className="w-10 h-10 bg-sky-50 dark:bg-sky-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Tìm địa điểm</p>
@@ -431,8 +431,8 @@ export default function AIChatPage() {
                   </div>
                   
                   <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-gradient-to-r from-teal-100 to-teal-200 dark:from-teal-900 dark:to-teal-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-5 h-5 text-teal-600" />
+                    <div className="w-10 h-10 bg-teal-50 dark:bg-teal-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Lập lịch trình</p>
@@ -441,8 +441,8 @@ export default function AIChatPage() {
                   </div>
                   
                   <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <DollarSign className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Tính chi phí</p>
@@ -455,8 +455,8 @@ export default function AIChatPage() {
               {/* Tips */}
               <div className="glass-card p-6">
                 <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800 rounded-xl flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-yellow-600" />
+                  <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                   </div>
                   Mẹo sử dụng
                 </h3>

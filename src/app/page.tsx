@@ -1,14 +1,11 @@
 "use client"
 
+import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Hero } from '@/components/hero';
 import { SearchBar } from '@/components/search-bar';
-import { PlaceCard } from '@/components/place-card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { TrustBadge } from '@/components/ui/role-badge';
 import AiPlanner from '@/components/ai-planner';
 import DestinationGrid from '@/components/destination-grid';
 
@@ -97,11 +94,6 @@ export default function Home() {
     // Implement search logic
   }
 
-  const handleAddToItinerary = (placeId: string) => {
-    console.log('Add to itinerary:', placeId)
-    // Implement add to itinerary logic
-  }
-
   return (
     <div className="min-h-screen bg-bg text-text">
       <Header />
@@ -110,249 +102,260 @@ export default function Home() {
         {/* Hero Section */}
         <Hero />
 
-        {/* AI Planner */}
-        <section className="container py-16">
-          <AiPlanner />
+        {/* AI Planner - Glass Integration */}
+        <section className="container py-20">
+          <div className="glass-card p-8 lg:p-12">
+            <AiPlanner />
+          </div>
         </section>
 
-        {/* Quick Search */}
-        <section className="container py-16">
+        {/* Quick Search - Window to Discovery */}
+        <section className="container py-20">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-semibold mb-2">
-                Tìm kiếm địa điểm du lịch
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-text leading-tight">
+                Cửa sổ{" "}
+                <span className="gradient-text">
+                  khám phá
+                </span>
               </h2>
-              <p className="text-muted">
-                Khám phá hàng ngàn địa điểm đáng tin cậy khắp Việt Nam
+              <p className="text-lg text-muted leading-relaxed">
+                Mở ra hàng ngàn điểm đến được tin cậy khắp đất nước Việt Nam
               </p>
             </div>
             <SearchBar onSearch={handleSearch} />
           </div>
         </section>
 
-        {/* Regions */}
-        <section className="container py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Khám phá theo vùng miền</h2>
-            <p className="text-muted max-w-2xl mx-auto">
-              Mỗi vùng miền có nét đẹp riêng, văn hóa độc đáo và ẩm thực đặc sắc
+        {/* Regions - Glass Windows to Vietnam */}
+        <section className="container py-20">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-text leading-tight">
+              Ba miền{" "}
+              <span className="gradient-text">
+                Việt Nam
+              </span>
+            </h2>
+            <p className="text-lg text-muted max-w-3xl mx-auto leading-relaxed">
+              Mỗi vùng miền là một câu chuyện riêng, mỗi cảnh đẹp là một trang sử. 
+              Hãy để chúng tôi dẫn lối qua những cửa sổ trong suốt này.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {regions.map((region, index) => (
-              <div key={index} className="card p-0 overflow-hidden group hover:shadow-float hover:-translate-y-1 transition-all duration-300">
+          <div className="grid md:grid-cols-3 gap-10">
+            {regions.map((region) => (
+              <div key={region.name} className="glass-card overflow-hidden group motion-gentle hover:scale-105">
                 <div className="aspect-[4/3] relative overflow-hidden">
                   <img
                     src={region.image}
                     alt={region.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 motion-gentle"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="text-xl font-semibold mb-1">{region.name}</h3>
-                    <p className="text-sm opacity-90">{region.description}</p>
+                  {/* Gentle gradient overlay - not obscuring the beauty */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                  <div className="absolute bottom-6 left-6 text-white space-y-2">
+                    <h3 className="text-2xl font-bold drop-shadow-lg">{region.name}</h3>
+                    <p className="text-sm opacity-90 leading-relaxed drop-shadow-sm">
+                      {region.description}
+                    </p>
                   </div>
                 </div>
-                <div className="p-4">
-                  <Button variant="secondary" className="w-full">
-                    Khám phá {region.name}
-                  </Button>
+                <div className="p-6">
+                  <Link href={region.href}>
+                    <button className="w-full glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40">
+                      Khám phá {region.name}
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Featured Places */}
-        <section className="container py-16">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Điểm đến nổi bật</h2>
-              <p className="text-muted">
-                Những địa điểm được yêu thích nhất bởi cộng đồng du lịch
+        {/* Featured Places - Elevated Showcase */}
+        <section className="container py-20">
+          <div className="flex items-center justify-between mb-16">
+            <div className="space-y-4">
+              <h2 className="text-4xl lg:text-5xl font-bold text-text leading-tight">
+                Điểm đến{" "}
+                <span className="gradient-text">
+                  nổi bật
+                </span>
+              </h2>
+              <p className="text-lg text-muted leading-relaxed max-w-2xl">
+                Những địa điểm được cộng đồng du lịch tin cậy và yêu thích nhất
               </p>
             </div>
-            <Button variant="ghost">
+            <Button 
+              variant="ghost" 
+              className="glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40 hidden lg:flex"
+            >
               Xem tất cả →
             </Button>
           </div>
 
-          <DestinationGrid />
+          <div className="glass-card p-6 lg:p-8">
+            <DestinationGrid />
+          </div>
         </section>
 
-        {/* Trust Indicators */}
-        <section className="bg-surface py-20">
-          <div className="container">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-text">
-                Thông tin đáng tin cậy
+        {/* Trust Indicators - "Sheet of Glass" Principle */}
+        <section className="py-24 relative overflow-hidden">
+          {/* Subtle background gradient - Morning mist effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-surface to-secondary/5" />
+          
+          <div className="container relative">
+            {/* Typography as Voice - Strong hierarchy */}
+            <div className="text-center mb-20">
+              <h2 className="text-4xl lg:text-5xl font-bold mb-8 text-text leading-tight">
+                Cửa sổ tin cậy
+                <br className="hidden lg:block" />
+                <span className="text-primary">dẫn lối khám phá</span>
               </h2>
-              <p className="text-lg text-muted max-w-3xl mx-auto leading-relaxed text-justify">
-                Hệ thống phân cấp đáng tin cậy với quy trình kiểm duyệt nghiêm ngặt, 
-                đảm bảo chất lượng thông tin từ cộng đồng cho đến các chuyên gia và đối tác chính thống
+              <p className="text-lg text-muted max-w-4xl mx-auto leading-relaxed">
+                Từng thông tin được kiểm chứng kỹ lưỡng, từng địa điểm được xác minh bởi cộng đồng chuyên gia. 
+                Chúng tôi tạo nên hệ thống uy tín để mỗi hành trình của bạn đều an tâm và trọn vẹn.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              <Card className="text-center p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500">
-                <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 96 96">
-                    <defs>
-                      <linearGradient id="grad-contributor-home" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#21C1C5"/>
-                        <stop offset="100%" stopColor="#2178F5"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M38 62 L32 88 L48 78 L64 88 L58 62 Z" fill="#1F6DE8" opacity="0.85"/>
-                    <path d="M38 62 L48 72 L58 62 Z" fill="#FFFFFF" opacity="0.15"/>
-                    <circle cx="48" cy="40" r="28" fill="url(#grad-contributor-home)"/>
-                    <circle cx="48" cy="40" r="28" fill="none" stroke="#FFFFFF" strokeOpacity="0.18" strokeWidth="2"/>
-                    <path d="M36 41 L45 50 L63 32" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
-                    <g transform="translate(68,22)" fill="#FFFFFF">
-                      <circle cx="4" cy="4" r="2" opacity="0.95"/>
-                      <path d="M4 0 L4 8 M0 4 L8 4" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-                    </g>
-                  </svg>
+            {/* Glassmorphism Cards - Preserved Trust Badge Icons */}
+            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+              {/* Contributor Badge */}
+              <div className="glass-card p-8 text-center motion-gentle hover:scale-105 group">
+                <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                  <img 
+                    src="/badges/contributor.svg" 
+                    alt="Cộng tác viên đã xác minh" 
+                    className="w-20 h-20 drop-shadow-lg transition-transform group-hover:scale-110"
+                  />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-text">Cộng tác viên đã xác minh</h3>
-                <p className="text-base text-muted leading-relaxed text-justify mb-6">
-                  Nội dung từ blogger du lịch chuyên nghiệp, hướng dẫn viên địa phương có kinh nghiệm 
-                  và travel influencer đã được xác minh danh tính cùng chuyên môn qua quy trình nghiêm ngặt.
+                <h3 className="text-2xl font-bold mb-6 text-text">Cộng tác viên đã xác minh</h3>
+                <p className="text-muted leading-relaxed mb-8">
+                  Những người kể chuyện chuyên nghiệp - blogger du lịch, hướng dẫn viên địa phương, 
+                  và travel influencer đã được xác minh danh tính và chuyên môn qua quy trình nghiêm ngặt.
                 </p>
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="glass-subtle rounded-xl p-4 border-l-4 border-l-primary">
+                  <div className="flex items-center justify-center gap-3 text-primary font-semibold">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Có quyền đăng địa điểm mới
+                    Quyền đăng địa điểm mới
                   </div>
                 </div>
-              </Card>
+              </div>
               
-              <Card className="text-center p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-l-red-500">
-                <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 108 108">
-                    <defs>
-                      <linearGradient id="grad-medal-home" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#DC2626"/>
-                        <stop offset="100%" stopColor="#991B1B"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M42 70 L36 96 L54 84 L72 96 L66 70 Z" fill="#FFD700" opacity="0.9"/>
-                    <circle cx="54" cy="44" r="28" fill="url(#grad-medal-home)" stroke="#FFD700" strokeWidth="3"/>
-                    <polygon points="54,28 58,40 70,40 60,48 64,60 54,52 44,60 48,48 38,40 50,40" fill="#FFD700"/>
-                    <circle cx="72" cy="28" r="10" fill="white" stroke="#FFD700" strokeWidth="2"/>
-                    <path d="M68 28 L71 31 L76 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+              {/* Community Partner Badge */}
+              <div className="glass-card p-8 text-center motion-gentle hover:scale-105 group">
+                <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                  <img 
+                    src="/badges/community-partner.svg" 
+                    alt="Đối tác chính thức" 
+                    className="w-20 h-20 drop-shadow-lg transition-transform group-hover:scale-110"
+                  />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-text">Đối tác chính thức</h3>
-                <p className="text-base text-muted leading-relaxed text-justify mb-6">
-                  Thông tin chính thống từ Sở Du lịch các tỉnh thành, công ty du lịch được cấp phép hoạt động, 
-                  khách sạn và resort đã đăng ký kinh doanh hợp pháp với đầy đủ giấy tờ pháp lý.
+                <h3 className="text-2xl font-bold mb-6 text-text">Đối tác chính thức</h3>
+                <p className="text-muted leading-relaxed mb-8">
+                  Nguồn thông tin chính thống từ Sở Du lịch các tỉnh thành, các doanh nghiệp du lịch 
+                  được cấp phép hoạt động với đầy đủ giấy tờ pháp lý.
                 </p>
-                <div className="bg-green-50 rounded-lg p-4">
-                  <div className="flex items-center justify-center gap-2 text-green-700 font-semibold">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="glass-subtle rounded-xl p-4 border-l-4 border-l-success">
+                  <div className="flex items-center justify-center gap-3 text-success font-semibold">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                     Ưu tiên kiểm duyệt nhanh
                   </div>
                 </div>
-              </Card>
+              </div>
               
-              <Card className="text-center p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-l-yellow-500 bg-gradient-to-br from-yellow-50 to-orange-50">
-                <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 120 120">
-                    <defs>
-                      <linearGradient id="goldA-home" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#FFD700"/>
-                        <stop offset="100%" stopColor="#B8860B"/>
-                      </linearGradient>
-                    </defs>
-                    <circle cx="60" cy="60" r="45" fill="url(#goldA-home)" stroke="#FFF8DC" strokeWidth="3"/>
-                    <path d="M30 60 C28 52 32 44 40 36 C36 46 36 54 38 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                    <path d="M34 64 L28 68" stroke="white" strokeWidth="2" />
-                    <path d="M36 56 L30 60" stroke="white" strokeWidth="2" />
-                    <path d="M90 60 C92 52 88 44 80 36 C84 46 84 54 82 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                    <path d="M86 64 L92 68" stroke="white" strokeWidth="2" />
-                    <path d="M84 56 L90 60" stroke="white" strokeWidth="2" />
-                    <polygon points="60,36 66,52 82,52 70,62 76,78 60,68 44,78 50,62 38,52 54,52" fill="white"/>
-                    <circle cx="90" cy="30" r="12" fill="white" stroke="#FFD700" strokeWidth="3"/>
-                    <path d="M86 30 L90 34 L96 24" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+              {/* Verified Badge */}
+              <div className="glass-card p-8 text-center motion-gentle hover:scale-105 group bg-gradient-to-br from-amber-50/50 to-orange-50/50">
+                <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                  <img 
+                    src="/badges/verified.svg" 
+                    alt="Địa điểm xác thực đặc biệt" 
+                    className="w-20 h-20 drop-shadow-lg transition-transform group-hover:scale-110"
+                  />
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-yellow-800">Địa điểm xác thực đặc biệt</h3>
-                <p className="text-base text-muted leading-relaxed text-justify mb-6">
-                  Di sản văn hóa thế giới UNESCO, danh lam thắng cảnh quốc gia và những địa điểm có giá trị 
-                  văn hóa lịch sử đặc biệt được Ban biên tập xác thực và kiểm định chuyên sâu.
+                <h3 className="text-2xl font-bold mb-6 text-amber-800">Địa điểm xác thực đặc biệt</h3>
+                <p className="text-muted leading-relaxed mb-8">
+                  Di sản văn hóa thế giới UNESCO, danh lam thắng cảnh quốc gia và những địa điểm 
+                  có giá trị văn hóa lịch sử đặc biệt được kiểm định chuyên sâu.
                 </p>
-                <div className="bg-yellow-100 rounded-lg p-4 border border-yellow-200">
-                  <div className="flex items-center justify-center gap-2 text-yellow-800 font-semibold">
+                <div className="glass-subtle rounded-xl p-4 border-l-4 border-l-amber-500 bg-amber-100/30">
+                  <div className="flex items-center justify-center gap-3 text-amber-700 font-semibold">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                     </svg>
-                    Chất lượng cao nhất
+                    Chất lượng đỉnh cao
                   </div>
                 </div>
-              </Card>
+              </div>
             </div>
 
-            <div className="text-center mt-16">
-              <div className="mb-8">
-                <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                  Đã có <strong className="text-blue-600 text-xl">10,000+</strong> người dùng tin tưởng và 
-                  <strong className="text-green-600 text-xl"> 1,000+</strong> địa điểm được xác minh
+            {/* Elegant Statistics - Eloquent Emptiness */}
+            <div className="text-center mb-16">
+              <div className="glass-subtle rounded-3xl p-12 max-w-4xl mx-auto">
+                <p className="text-xl text-text leading-relaxed font-medium mb-12">
+                  Đã có <strong className="text-3xl text-primary font-bold">10,000+</strong> người dùng tin tưởng và{" "}
+                  <strong className="text-3xl text-success font-bold">1,000+</strong> địa điểm được xác minh
                 </p>
-              </div>
-              
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-8 max-w-4xl mx-auto border border-blue-200 shadow-lg">
-                <div className="mb-8">
-                  <h4 className="text-2xl font-bold text-blue-900 mb-3">Ai có thể đăng địa điểm?</h4>
-                  <p className="text-gray-600 leading-relaxed">Hệ thống phân quyền đảm bảo chất lượng nội dung</p>
-                </div>
                 
-                <div className="space-y-6">
-                  <div className="bg-white rounded-lg p-6 border-l-4 border-l-green-500 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-                            FULL ACCESS
-                          </span>
-                          <h5 className="text-lg font-bold text-green-800">Cộng tác viên & Đối tác chính thức</h5>
-                        </div>
-                        <p className="text-gray-700 leading-relaxed text-justify">
-                          Có quyền tạo và đăng tải địa điểm mới trực tiếp với quyền kiểm duyệt nhanh. 
-                          Được đào tạo về tiêu chuẩn chất lượng và có trách nhiệm duy trì uy tín nền tảng.
-                        </p>
+                {/* Authority System Explanation */}
+                <div className="space-y-8">
+                  <h4 className="text-2xl font-bold text-text mb-6">Ai có thể đóng góp nội dung?</h4>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="glass-subtle rounded-2xl p-6 text-left border border-success/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="bg-success text-white text-sm font-bold px-4 py-2 rounded-full">
+                          FULL ACCESS
+                        </span>
+                        <h5 className="text-lg font-bold text-success">Cộng tác viên & Đối tác</h5>
                       </div>
+                      <p className="text-muted leading-relaxed">
+                        Được đào tạo về tiêu chuẩn chất lượng, có quyền tạo và đăng tải nội dung trực tiếp 
+                        với ưu tiên kiểm duyệt nhanh.
+                      </p>
+                    </div>
+                    
+                    <div className="glass-subtle rounded-2xl p-6 text-left border border-amber-300/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="bg-amber-500 text-white text-sm font-bold px-4 py-2 rounded-full">
+                          SUGGEST ONLY
+                        </span>
+                        <h5 className="text-lg font-bold text-amber-600">Traveler</h5>
+                      </div>
+                      <p className="text-muted leading-relaxed">
+                        Đóng góp thông qua form đề xuất để đội ngũ biên tập xem xét và phê duyệt 
+                        theo quy trình kiểm duyệt chất lượng.
+                      </p>
                     </div>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-6 border-l-4 border-l-yellow-500 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-                            SUGGEST ONLY
-                          </span>
-                          <h5 className="text-lg font-bold text-yellow-800">Traveler (Người dùng thường)</h5>
-                        </div>
-                        <p className="text-gray-700 leading-relaxed text-justify">
-                          Chỉ có thể đề xuất địa điểm thông qua form góp ý để đội ngũ biên tập xem xét, 
-                          đánh giá và phê duyệt theo quy trình kiểm duyệt chất lượng.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg p-6 shadow-lg">
+                  <div className="glass-card bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 border border-primary/20">
                     <div className="text-center">
-                      <h5 className="text-xl font-bold mb-3">🛡️ Cam kết chất lượng</h5>
-                      <p className="leading-relaxed text-blue-100">
-                        <strong>100% nội dung</strong> được kiểm duyệt bởi đội ngũ biên tập chuyên nghiệp 
-                        trước khi xuất bản để đảm bảo tính chính xác và giá trị thông tin.
+                      <div className="flex items-center gap-3 mb-4">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="24" 
+                          height="24" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                          className="text-primary"
+                        >
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                          <path d="M9 12l2 2 4-4"/>
+                        </svg>
+                        <h5 className="text-2xl font-bold text-text">Cam kết chất lượng tuyệt đối</h5>
+                      </div>
+                      <p className="leading-relaxed text-muted text-lg">
+                        <strong className="text-primary">100% nội dung</strong> được kiểm duyệt bởi đội ngũ biên tập chuyên nghiệp 
+                        để đảm bảo tính chính xác và giá trị thông tin cho từng hành trình.
                       </p>
                     </div>
                   </div>

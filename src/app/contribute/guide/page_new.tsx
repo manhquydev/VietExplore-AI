@@ -33,7 +33,7 @@ export default function ContributeGuidePage() {
       <main className="container py-16 max-w-4xl">
         {/* Hero Section */}
         <div className="glass-card text-center p-8 sm:p-12 mb-12">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <BookOpen className="w-8 h-8 text-sky-600 dark:text-sky-400" />
           </div>
           <h1 className="gradient-text text-4xl sm:text-5xl font-bold mb-6 leading-tight">
@@ -243,7 +243,7 @@ export default function ContributeGuidePage() {
 
         {/* Call to Action */}
         <div className="glass-card text-center p-8">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Zap className="w-8 h-8 text-sky-600 dark:text-sky-400" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">

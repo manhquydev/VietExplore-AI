@@ -65,7 +65,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
         <div className="absolute top-3 right-3">
           {place.trustLabel === 'contributor' && (
             <div className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-sm border border-gray-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 96 96">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 96 96">
                 <defs>
                   <linearGradient id="grad-c2-card" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="#21C1C5"/>
@@ -86,7 +86,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
           )}
           {place.trustLabel === 'partner' && (
             <div className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-sm border border-gray-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 108 108">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 108 108">
                 <defs>
                   <linearGradient id="grad-medal-card" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="#DC2626"/>
@@ -103,7 +103,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
           )}
           {place.trustLabel === 'verified' && (
             <div className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-sm border border-gray-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 120 120">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 120 120">
                 <defs>
                   <linearGradient id="goldA-card" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="#FFD700"/>
