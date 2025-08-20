@@ -1,206 +1,271 @@
 import * as React from "react"
 import { Metadata } from "next"
+import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Card, CardContent } from "@/components/ui/card-custom"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+import {
+  Target,
+  Lightbulb,
+  Heart,
+  Users,
+  Shield,
+  Globe,
+  Star,
+  Zap,
+  ArrowRight,
+  CheckCircle,
+  Award
+} from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Sứ mệnh | Du Lịch Việt",
   description: "Tìm hiểu về sứ mệnh và tầm nhìn của nền tảng Du Lịch Việt",
 }
 
+const coreValues = [
+  {
+    title: "Minh bạch",
+    description: "Mọi thông tin đều có nguồn rõ ràng và được xác minh bởi cộng đồng",
+    icon: Shield,
+    iconColor: "text-blue-600 dark:text-blue-400"
+  },
+  {
+    title: "Cộng đồng", 
+    description: "Xây dựng bởi cộng đồng, vì cộng đồng, không vì lợi nhuận",
+    icon: Heart,
+    iconColor: "text-rose-600 dark:text-rose-400"
+  },
+  {
+    title: "Bền vững",
+    description: "Khuyến khích du lịch có trách nhiệm với môi trường và văn hóa",
+    icon: Globe,
+    iconColor: "text-emerald-600 dark:text-emerald-400"
+  },
+  {
+    title: "Đổi mới",
+    description: "Ứng dụng AI và công nghệ mới để cải thiện trải nghiệm du lịch",
+    icon: Star,
+    iconColor: "text-amber-600 dark:text-amber-400"
+  }
+]
+
+const principles = [
+  {
+    title: "Xác thực và đáng tin cậy",
+    description: "Mọi thông tin đều được kiểm chứng bởi cộng đồng người dùng thực tế",
+    icon: CheckCircle,
+    iconColor: "text-emerald-600 dark:text-emerald-400"
+  },
+  {
+    title: "Miễn phí và công bằng",
+    description: "Không có phí ẩn, không thiên vị thương mại, chỉ có thông tin trung thực",
+    icon: Heart,
+    iconColor: "text-rose-600 dark:text-rose-400"
+  },
+  {
+    title: "Hỗ trợ địa phương",
+    description: "Ưu tiên các doanh nghiệp nhỏ, cộng đồng địa phương và du lịch bền vững",
+    icon: Users,
+    iconColor: "text-blue-600 dark:text-blue-400"
+  },
+  {
+    title: "Công nghệ thông minh",
+    description: "Tích hợp AI để cung cấp gợi ý cá nhân hóa và trải nghiệm tốt nhất",
+    icon: Zap,
+    iconColor: "text-purple-600 dark:text-purple-400"
+  }
+]
+
 export default function MissionPage() {
   return (
-    <div className="min-h-screen bg-bg text-text">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Header />
       
-      <div className="container mx-auto py-16 max-w-4xl">
+      <main className="container py-16 max-w-6xl">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-text mb-6">
+        <div className="glass-card text-center p-8 sm:p-12 mb-16">
+          <Badge className="mb-6 bg-gradient-to-r from-sky-500 to-teal-500 text-white border-none">
+            🎯 Sứ mệnh & Tầm nhìn
+          </Badge>
+          
+          <h1 className="gradient-text text-4xl md:text-5xl font-bold mb-8 leading-tight">
             Sứ mệnh của Du Lịch Việt
           </h1>
-          <p className="text-xl text-muted max-w-3xl mx-auto">
+          
+          <p className="text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed mb-8">
             Xây dựng nền tảng phi lợi nhuận, cung cấp thông tin du lịch Việt Nam đáng tin cậy, 
             tích hợp AI để nâng cao trải nghiệm khám phá đất nước.
           </p>
-        </div>
 
-        {/* Vision */}
-        <Card className="mb-12">
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-semibold text-text mb-4">Tầm nhìn</h2>
-            <p className="text-muted leading-relaxed text-justify">
-              "Du Lịch Việt" trở thành <strong>nền tảng phi lợi nhuận, cộng đồng mở</strong>, 
-              cung cấp thông tin du lịch Việt Nam đáng tin cậy, xác minh bởi cộng đồng và đối tác chính thống. 
-              Ứng dụng AI để hỗ trợ người dùng tìm hiểu địa điểm, xây dựng kế hoạch du lịch, 
-              nâng cao trải nghiệm khám phá và lan tỏa giá trị văn hóa – thiên nhiên Việt Nam.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Mission */}
-        <Card className="mb-12">
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-semibold text-text mb-6">Sứ mệnh</h2>
-            <div className="space-y-8">
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold text-lg">1</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text mb-3">Tạo kho dữ liệu minh bạch</h3>
-                  <p className="text-muted leading-relaxed">
-                    Xây dựng kho dữ liệu du lịch <strong>minh bạch – xác thực – dễ tiếp cận</strong> cho mọi người.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold text-lg">2</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text mb-3">Kết nối cộng đồng</h3>
-                  <p className="text-muted leading-relaxed">
-                    Kết nối du khách, cộng đồng địa phương, blogger, doanh nghiệp nhỏ và cơ quan quản lý 
-                    vào một nền tảng chung.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-6">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold text-lg">3</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text mb-3">Ứng dụng AI thông minh</h3>
-                  <p className="text-muted leading-relaxed">
-                    Ứng dụng công nghệ AI giúp <strong>cá nhân hóa hành trình</strong>, 
-                    tiết kiệm thời gian và tăng trải nghiệm.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Goals */}
-        <Card className="mb-12">
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-semibold text-text mb-6">Mục tiêu giai đoạn 1 (12 tháng)</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20,6 9,17 4,12"/>
-                    </svg>
-                  </div>
-                  <span className="text-muted">Ra mắt nền tảng với ~1,000 địa điểm xác minh</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20,6 9,17 4,12"/>
-                    </svg>
-                  </div>
-                  <span className="text-muted">Tích hợp AI trợ lý hành trình thông minh</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20,6 9,17 4,12"/>
-                    </svg>
-                  </div>
-                  <span className="text-muted">Hệ thống phân quyền minh bạch 6 cấp độ</span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <span className="text-yellow-600 text-sm">⏳</span>
-                  </div>
-                  <span className="text-muted">Thu hút 10,000 người dùng đầu tiên</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <span className="text-yellow-600 text-sm">⏳</span>
-                  </div>
-                  <span className="text-muted">Tuyển dụng 100 Contributor tích cực</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <span className="text-yellow-600 text-sm">⏳</span>
-                  </div>
-                  <span className="text-muted">Hợp tác với 5+ Community Partner</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Values */}
-        <Card className="mb-12">
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-semibold text-text mb-6">Giá trị cốt lõi</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <svg className="w-10 h-10 text-yellow-500 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                </svg>
-                <h3 className="font-semibold text-text mb-2">Minh bạch</h3>
-                <p className="text-sm text-muted">
-                  Mọi thông tin đều có nguồn rõ ràng và được xác minh bởi cộng đồng
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl mb-4">🤝</div>
-                <h3 className="font-semibold text-text mb-2">Cộng đồng</h3>
-                <p className="text-sm text-muted">
-                  Xây dựng bởi cộng đồng, vì cộng đồng, không vì lợi nhuận
-                </p>
-              </div>
-              <div className="text-center">
-                <svg className="w-10 h-10 text-blue-600 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 22V7.5a3 3 0 013-3h9a3 3 0 013 3V22m-10.5-10.5h3m-3 4h3m-6-10V2.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75V1.5"/>
-                </svg>
-                <h3 className="font-semibold text-text mb-2">Đổi mới</h3>
-                <p className="text-sm text-muted">
-                  Ứng dụng AI và công nghệ mới để cải thiện trải nghiệm du lịch
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CTA */}
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-text mb-4">
-            Tham gia cùng chúng tôi
-          </h3>
-          <p className="text-muted mb-6">
-            Hãy là một phần của cộng đồng xây dựng nền tảng du lịch Việt Nam tốt nhất
-          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild>
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              asChild
+            >
               <Link href="/contribute/new-place">
-                Đóng góp địa điểm
+                <Target className="w-5 h-5 mr-2" />
+                Tham gia sứ mệnh
               </Link>
             </Button>
-            <Button variant="secondary" asChild>
-              <Link href="/community">
-                Tham gia cộng đồng
+            <Button variant="secondary" size="lg" className="glass-subtle" asChild>
+              <Link href="/about">
+                <ArrowRight className="w-5 h-5 mr-2" />
+                Tìm hiểu về dự án
               </Link>
             </Button>
           </div>
         </div>
-      </div>
+
+        {/* Mission Statement */}
+        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+          <div className="glass-card p-8">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+              <Target className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+              Sứ mệnh
+            </h2>
+            <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-lg">
+                <strong className="text-slate-900 dark:text-white">Tạo ra kho dữ liệu du lịch minh bạch – xác thực – dễ tiếp cận</strong> cho mọi người, 
+                giúp du khách có những quyết định thông minh cho chuyến đi của mình.
+              </p>
+              <p>
+                Chúng tôi tin rằng mỗi chuyến du lịch đều có thể trở thành trải nghiệm ý nghĩa 
+                khi có thông tin đúng đắn, được chia sẻ bởi cộng đồng với tinh thần cởi mở và trung thực.
+              </p>
+            </div>
+          </div>
+
+          <div className="glass-card p-8">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+              <Lightbulb className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+              Tầm nhìn
+            </h2>
+            <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-lg">
+                <strong className="text-slate-900 dark:text-white">Trở thành nguồn thông tin du lịch Việt Nam đáng tin cậy nhất</strong>, 
+                được xây dựng và duy trì bởi chính cộng đồng yêu du lịch.
+              </p>
+              <p>
+                Khát vọng của chúng tôi là giúp mọi người khám phá vẻ đẹp Việt Nam một cách bền vững, 
+                có trách nhiệm và trọn vẹn nhất.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Core Values */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="gradient-text text-3xl font-bold mb-4">Giá trị cốt lõi</h2>
+            <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+              Những nguyên tắc định hướng mọi quyết định và hoạt động của chúng tôi
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {coreValues.map((value, index) => (
+              <div key={`core-value-${value.title}`} className="glass-card p-6 text-center hover:scale-105 transition-transform duration-200">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <value.icon className={`w-8 h-8 ${value.iconColor}`} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{value.title}</h3>
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{value.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Operating Principles */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="gradient-text text-3xl font-bold mb-4">Nguyên tắc hoạt động</h2>
+            <p className="text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+              Cách chúng tôi vận hành để đảm bảo chất lượng và độ tin cậy của nền tảng
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {principles.map((principle, index) => (
+              <div key={`principle-${principle.title}`} className="glass-card p-8 hover:scale-105 transition-transform duration-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <principle.icon className={`w-6 h-6 ${principle.iconColor}`} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{principle.title}</h3>
+                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{principle.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Impact Statement */}
+        <div className="glass-card p-8 sm:p-12 mb-16 bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Award className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
+              Tác động mong muốn
+            </h2>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+                Chúng tôi mong muốn Du Lịch Việt không chỉ là một nền tảng thông tin, 
+                mà còn là cầu nối giúp du khách hiểu sâu hơn về văn hóa, con người và thiên nhiên Việt Nam.
+              </p>
+              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+                Mỗi chuyến đi được lên kế hoạch qua nền tảng của chúng tôi sẽ góp phần 
+                <strong className="text-slate-900 dark:text-white"> phát triển du lịch bền vững</strong>, 
+                <strong className="text-slate-900 dark:text-white"> hỗ trợ cộng đồng địa phương</strong>, 
+                và <strong className="text-slate-900 dark:text-white">bảo tồn di sản văn hóa</strong> cho thế hệ tương lai.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="glass-card text-center p-8 sm:p-12">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
+            Tham gia cùng chúng tôi
+          </h2>
+          <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
+            Hãy là một phần của cộng đồng xây dựng nền tảng du lịch Việt Nam tốt nhất
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              asChild
+            >
+              <Link href="/contribute/new-place">
+                <Target className="w-5 h-5 mr-2" />
+                Đóng góp địa điểm
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </Button>
+            <Button variant="secondary" size="lg" className="glass-subtle" asChild>
+              <Link href="/community">
+                <Users className="w-5 h-5 mr-2" />
+                Tham gia cộng đồng
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Du Lịch Việt - Được xây dựng với ❤️ bởi cộng đồng Việt Nam
+            </p>
+          </div>
+        </div>
+      </main>
       
       <Footer />
     </div>
   )
 }
-
