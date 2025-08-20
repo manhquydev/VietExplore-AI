@@ -48,9 +48,31 @@ export const Header: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = React.useState(false)
   const [showRegisterModal, setShowRegisterModal] = React.useState(false)
 
+  // Initialize dark mode from localStorage or system preference
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('theme')
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && systemDark)
+    
+    setIsDark(shouldBeDark)
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
+
   const toggleDarkMode = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
+    const newDarkMode = !isDark
+    setIsDark(newDarkMode)
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
   }
 
   const handleLogout = () => {
@@ -79,7 +101,7 @@ export const Header: React.FC = () => {
   }
 
   return (
-    <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/95 border-b border-border shadow-soft">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95 dark:bg-slate-950/95 border-b border-slate-200 dark:border-slate-800 shadow-soft">
       <div className="container mx-auto">
         <div className="flex h-16 sm:h-20 items-center justify-between">
           {/* Enhanced Logo */}
@@ -97,8 +119,10 @@ export const Header: React.FC = () => {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-[15px] font-medium transition-colors hover:text-text",
-                  pathname === item.href ? "text-text" : "text-muted"
+                  "text-[15px] font-medium transition-colors hover:text-white dark:hover:text-white",
+                  pathname === item.href 
+                    ? "text-slate-900 dark:text-white font-semibold" 
+                    : "text-slate-600 dark:text-slate-200 hover:text-slate-900"
                 )}
               >
                 {item.name}
@@ -291,6 +315,7 @@ export const Header: React.FC = () => {
               label="Đổi giao diện"
               variant="ghost"
               onClick={toggleDarkMode}
+              className="text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
             />
 
             {/* Mobile Menu - Using Icon Registry */}
@@ -301,10 +326,11 @@ export const Header: React.FC = () => {
                     icon="menu"
                     label="Menu"
                     variant="ghost"
+                    className="text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                   />
                 </div>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] glass-card">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-slate-200/50 dark:border-slate-800/50">
                 <div className="flex flex-col gap-4 mt-8">
                   {/* Mobile Navigation */}
                   <nav className="flex flex-col gap-4">
@@ -314,8 +340,10 @@ export const Header: React.FC = () => {
                         href={item.href}
                         onClick={() => setIsOpen(false)}
                         className={cn(
-                          "text-base font-medium transition-colors hover:text-text py-2",
-                          pathname === item.href ? "text-text" : "text-muted"
+                          "text-base font-medium transition-colors hover:text-slate-900 dark:hover:text-white py-2",
+                          pathname === item.href 
+                            ? "text-slate-900 dark:text-white font-semibold" 
+                            : "text-slate-600 dark:text-slate-200"
                         )}
                       >
                         {item.name}
@@ -324,7 +352,7 @@ export const Header: React.FC = () => {
                   </nav>
 
                   {/* Mobile Auth Actions */}
-                  <div className="pt-4 border-t border-border space-y-2">
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
                     {isAuthenticated && user ? (
                       <>
                         <div className="flex items-center gap-3 p-3 glass-subtle rounded-xl">

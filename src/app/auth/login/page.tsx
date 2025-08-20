@@ -5,19 +5,17 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { Logo } from "@/components/ui/logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { 
   Eye, 
   EyeOff, 
   Mail, 
   Lock, 
-  LogIn,
-  Shield,
-  UserCheck,
-  Sparkles
+  ArrowRight
 } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { TEST_CREDENTIALS } from "@/lib/mock-data"
@@ -57,6 +55,11 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleLogin = () => {
+    // TODO: Implement Google OAuth
+    console.log("Google login initiated")
+  }
+
   const quickLogin = (role: string) => {
     const credentials = TEST_CREDENTIALS[role as keyof typeof TEST_CREDENTIALS]
     if (credentials && 'email' in credentials) {
@@ -66,225 +69,172 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="min-h-screen pt-16">
-        {/* Hero Section */}
-        <section className="relative py-16 sm:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
-          
-          <div className="relative container">
-            <div className="max-w-md mx-auto">
-              {/* Welcome Message */}
-              <div className="glass-card text-center p-8 mb-8">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <LogIn className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+      <main className="relative min-h-screen pt-20 pb-12">
+        <div className="container">
+          <div className="max-w-md mx-auto">
+            {/* Welcome Header with Logo */}
+            <div className="text-center mb-8 space-y-6">
+              <div className="space-y-4">
+                {/* Project Logo */}
+                <div className="flex justify-center">
+                  <Logo variant="stacked" size="lg" className="h-20" />
                 </div>
-                <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
-                  Chào mừng trở lại
-                </h1>
-                <p className="text-slate-600 dark:text-slate-300 text-lg">
-                  Tiếp tục hành trình khám phá Việt Nam cùng chúng tôi
-                </p>
+                
+                <div className="space-y-2">
+                  <h1 className="text-3xl sm:text-4xl font-bold">
+                    <span className="text-foreground">Chào mừng</span>
+                    <br />
+                    <span className="gradient-text">trở lại</span>
+                  </h1>
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    Tiếp tục hành trình khám phá{" "}
+                    <span className="font-medium text-primary">cửa sổ Việt Nam</span>
+                  </p>
+                </div>
               </div>
-
-              {/* Quick Test Logins - Development only */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="glass-card p-6 mb-6 border border-sky-200/30 dark:border-sky-700/30">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-4 h-4 text-sky-600" />
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Test Login</h3>
-                    <Badge variant="outline" className="text-xs glass-subtle">DEV</Badge>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        onClick={() => quickLogin('traveler')}
-                        className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
-                      >
-                        <UserCheck className="w-3 h-3 mr-1" />
-                        Traveler
-                      </Button>
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        onClick={() => quickLogin('contributor')}
-                        className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
-                      >
-                        <UserCheck className="w-3 h-3 mr-1" />
-                        Contributor
-                      </Button>
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        onClick={() => quickLogin('partner')}
-                        className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
-                      >
-                        <Shield className="w-3 h-3 mr-1" />
-                        Partner
-                      </Button>
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        onClick={() => quickLogin('moderator')}
-                        className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
-                      >
-                        <Shield className="w-3 h-3 mr-1" />
-                        Moderator
-                      </Button>
-                    </div>
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="w-full glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40" 
-                      onClick={() => quickLogin('admin')}
-                    >
-                      <Shield className="w-3 h-3 mr-1" />
-                      Admin
-                    </Button>
+            </div>
+            {/* Login Form */}
+            <div className="bg-card rounded-lg shadow-sm border p-6 sm:p-8 space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
                 </div>
-              )}
 
-              {/* Login Form */}
-              <div className="glass-card p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {error && (
-                    <div className="p-4 text-sm text-red-600 bg-red-50/80 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/50 rounded-lg glass-subtle">
-                      {error}
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Mật khẩu
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error Display */}
+                {error && (
+                  <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-md">
+                    <p className="text-sm text-destructive">{error}</p>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Đang đăng nhập...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span>Đăng nhập</span>
+                      <ArrowRight className="w-4 h-4" />
                     </div>
                   )}
+                </Button>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                        <Mail className="w-4 h-4" />
-                      </div>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="glass-subtle pl-10 border-white/20 dark:border-slate-700/50 focus:border-sky-300 dark:focus:border-sky-600"
-                        required
-                      />
-                    </div>
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">
-                      Mật khẩu
-                    </Label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                        <Lock className="w-4 h-4" />
-                      </div>
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="glass-subtle pl-10 pr-10 border-white/20 dark:border-slate-700/50 focus:border-sky-300 dark:focus:border-sky-600"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center space-x-2 text-sm">
-                      <input 
-                        type="checkbox" 
-                        className="rounded border-slate-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500" 
-                      />
-                      <span className="text-slate-600 dark:text-slate-300">Ghi nhớ đăng nhập</span>
-                    </label>
-                    <Link 
-                      href="/auth/forgot-password" 
-                      className="text-sm text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors"
-                    >
-                      Quên mật khẩu?
-                    </Link>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white font-medium h-12"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Đang đăng nhập...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <LogIn className="w-4 h-4" />
-                        Đăng nhập
-                      </div>
-                    )}
-                  </Button>
-                </form>
-
-                <div className="mt-8">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-200/50 dark:border-slate-700/50"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="bg-white/80 dark:bg-slate-800/80 px-4 text-slate-500 dark:text-slate-400">
-                        hoặc
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-center text-sm mt-6">
-                    <span className="text-slate-600 dark:text-slate-300">Chưa có tài khoản? </span>
-                    <Link 
-                      href="/auth/register" 
-                      className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium transition-colors"
-                    >
-                      Đăng ký ngay
-                    </Link>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Hoặc</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Trust Indicators */}
-              <div className="glass-card mt-6 p-6 text-center">
-                <div className="flex items-center justify-center gap-6 text-sm text-slate-600 dark:text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-green-500" />
-                    <span>Bảo mật cao</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-blue-500" />
-                    <span>Xác thực 2FA</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple-500" />
-                    <span>Trải nghiệm cá nhân</span>
-                  </div>
+                {/* Google Login */}
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={handleGoogleLogin}
+                  className="w-full"
+                >
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    />
+                  </svg>
+                  Đăng nhập với Google
+                </Button>
+              </form>
+
+              {/* Links */}
+              <div className="space-y-4 pt-6 border-t border-border/50">
+                <div className="text-center">
+                  <Link 
+                    href="/auth/forgot-password" 
+                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                  >
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+                
+                <div className="text-center text-sm text-muted-foreground">
+                  Chưa có tài khoản?{" "}
+                  <Link 
+                    href="/auth/register" 
+                    className="text-primary hover:text-primary/80 font-medium transition-colors"
+                  >
+                    Đăng ký ngay
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
       </main>
-
+      
       <Footer />
     </div>
   )
