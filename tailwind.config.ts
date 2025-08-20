@@ -10,7 +10,14 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: '24px',
+      padding: {
+        DEFAULT: '16px',
+        sm: '20px', 
+        md: '24px',
+        lg: '32px',
+        xl: '40px',
+        '2xl': '48px',
+      },
       screens: {
         xs: '360px',
         sm: '640px',

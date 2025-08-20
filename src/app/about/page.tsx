@@ -104,233 +104,343 @@ const coreValues = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-bg relative overflow-hidden">
+      {/* Background with subtle pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-secondary/3" />
+      
       <Header />
       
-      <main>
-        {/* Hero Section */}
+      <main className="relative">
+        {/* Hero Section - "Digital Window" Principle */}
         <section className="container py-16 lg:py-24">
           <div className="max-w-5xl mx-auto">
-            <div className="glass-card text-center p-8 sm:p-12">
-              <Badge className="mb-6 bg-gradient-to-r from-sky-500 to-teal-500 text-white border-none">
-                🇻🇳 Made in Vietnam
-              </Badge>
+            {/* Glass morphism card with background image */}
+            <div className="relative overflow-hidden rounded-3xl">
+              {/* Background image with overlay */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=2070')`
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-white/60 to-secondary/20 backdrop-blur-sm" />
               
-              <h1 className="gradient-text text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Về Du Lịch Việt
-              </h1>
-              
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 leading-relaxed mb-8 max-w-3xl mx-auto">
-                Chúng tôi là nền tảng phi lợi nhuận, được xây dựng bởi cộng đồng và vì cộng đồng, 
-                nhằm cung cấp thông tin du lịch Việt Nam đáng tin cậy và hỗ trợ du khách tạo ra 
-                những trải nghiệm du lịch tuyệt vời.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  size="lg"
-                  className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
-                  asChild
-                >
-                  <Link href="/community">
-                    <Users className="w-5 h-5 mr-2" />
-                    Tham gia cộng đồng
-                  </Link>
-                </Button>
-                <Button variant="secondary" size="lg" className="glass-subtle" asChild>
-                  <Link href="/about/mission">
-                    <ExternalLink className="w-5 h-5 mr-2" />
-                    Xem tài liệu dự án
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Mission & Vision */}
-        <section className="container py-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="glass-card p-8">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-                <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-xl flex items-center justify-center">
-                  <Target className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-                </div>
-                Sứ mệnh của chúng tôi
-              </h2>
-              <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
-                <p>
-                  <strong className="text-slate-900 dark:text-white">Tạo ra kho dữ liệu du lịch minh bạch – xác thực – dễ tiếp cận</strong> cho mọi người, 
-                  giúp du khách có những quyết định thông minh cho chuyến đi của mình.
-                </p>
-                <p>
-                  Chúng tôi tin rằng mỗi chuyến du lịch đều có thể trở thành trải nghiệm ý nghĩa 
-                  khi có thông tin đúng đắn, được chia sẻ bởi cộng đồng với tinh thần cởi mở và trung thực.
-                </p>
-              </div>
-            </div>
-
-            <div className="glass-card p-8">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                Tầm nhìn
-              </h2>
-              <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
-                <p>
-                  <strong className="text-slate-900 dark:text-white">Trở thành nguồn thông tin du lịch Việt Nam đáng tin cậy nhất</strong>, 
-                  được xây dựng và duy trì bởi chính cộng đồng yêu du lịch.
-                </p>
-                <p>
-                  Khát vọng của chúng tôi là giúp mọi người khám phá vẻ đẹp Việt Nam một cách bền vững, 
-                  có trách nhiệm và trọn vẹn nhất.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Core Values */}
-        <section className="container py-16">
-          <div className="text-center mb-12">
-            <h2 className="gradient-text text-3xl font-bold mb-4">Giá trị cốt lõi</h2>
-            <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Những nguyên tắc định hướng mọi quyết định và hoạt động của chúng tôi
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {coreValues.map((value, index) => (
-              <div key={index} className="glass-card p-6 text-center hover:scale-105 transition-transform duration-200">
-                <div className={`w-16 h-16 bg-gradient-to-r ${value.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                  <value.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{value.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Timeline */}
-        <section className="container py-16">
-          <div className="text-center mb-12">
-            <h2 className="gradient-text text-3xl font-bold mb-4">Hành trình phát triển</h2>
-            <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Từ ý tưởng ban đầu đến nền tảng du lịch hàng đầu Việt Nam
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {milestones.map((milestone, index) => (
-              <div key={index} className="glass-card p-6 relative">
-                <div className={`w-12 h-12 bg-gradient-to-r ${milestone.color} rounded-xl flex items-center justify-center mb-4`}>
-                  <milestone.icon className="w-6 h-6 text-white" />
-                </div>
-                <Badge className="mb-3 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                  {milestone.date}
+              {/* Content with glass effect */}
+              <div className="relative glass-card text-center p-8 sm:p-12 border-0">
+                <Badge className="mb-6 glass-subtle border-primary/20 text-primary px-4 py-2">
+                  🇻🇳 Cửa sổ đến Việt Nam
                 </Badge>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{milestone.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm">{milestone.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Team */}
-        <section className="container py-16">
-          <div className="text-center mb-12">
-            <h2 className="gradient-text text-3xl font-bold mb-4">Đội ngũ sáng lập</h2>
-            <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Những người tiên phong với đam mê xây dựng nền tảng du lịch bền vững
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="glass-card p-6 text-center hover:scale-105 transition-transform duration-200">
-                <div className="relative w-24 h-24 mx-auto mb-4">
-                  <img
-                    src={member.avatar}
-                    alt={member.name}
-                    className="w-full h-full rounded-full object-cover ring-4 ring-sky-200/50 dark:ring-sky-400/30"
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800"></div>
+                
+                {/* Typography as Voice - Confident & Modern */}
+                <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                  <span className="gradient-text">Du Lịch Việt</span>
+                  <br />
+                  <span className="text-foreground">Trong suốt & Tinh tế</span>
+                </h1>
+                
+                {/* Eloquence of Emptiness - Generous spacing */}
+                <div className="space-y-6 max-w-3xl mx-auto">
+                  <p className="text-lg sm:text-xl text-muted leading-relaxed">
+                    Chúng tôi không chỉ xây dựng một website du lịch. Chúng tôi tạo ra một 
+                    <span className="font-medium text-primary"> cửa sổ kỹ thuật số</span>, 
+                    nơi mỗi click và cuộn trang đều mở ra những khung cảnh đầy cảm hứng của vẻ đẹp Việt Nam.
+                  </p>
+                  
+                  <p className="text-base text-muted/80 leading-relaxed">
+                    Giao diện của chúng tôi như một tấm kính trong suốt, tinh tế - cho phép bạn tương tác 
+                    mà không làm gián đoạn kết nối cảm xúc với cảnh quan phía sau.
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">{member.name}</h3>
-                <p className="text-sky-600 dark:text-sky-400 text-sm font-medium mb-3">{member.role}</p>
-                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{member.description}</p>
+
+                {/* Gentle Motion - Subtle interactions */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                  <Button 
+                    size="lg"
+                    className="motion-gentle hover:scale-105 shadow-soft"
+                    asChild
+                  >
+                    <Link href="/community">
+                      <Heart className="w-5 h-5 mr-2" />
+                      Khám phá cộng đồng
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="lg" 
+                    className="glass-subtle motion-gentle hover:scale-105" 
+                    asChild
+                  >
+                    <Link href="/about/mission">
+                      <Target className="w-5 h-5 mr-2" />
+                      Sứ mệnh của chúng tôi
+                    </Link>
+                  </Button>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
-        {/* Contact */}
-        <section className="container py-16">
-          <div className="max-w-4xl mx-auto">
-            <div className="glass-card p-8 sm:p-12 text-center">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Liên hệ với chúng tôi</h2>
-              <p className="text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
-                Có câu hỏi, góp ý hoặc muốn hợp tác? Chúng tôi luôn sẵn sàng lắng nghe!
+        {/* Mission & Vision - Refined Layout with Glass Effect */}
+        <section className="container py-20">
+          <div className="max-w-6xl mx-auto">
+            {/* Section header with breathing space */}
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+                <span className="gradient-text">Tầm nhìn</span> & <span className="text-foreground">Sứ mệnh</span>
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+              {/* Mission Card with glass morphism */}
+              <div className="relative group">
+                <div className="glass-card p-8 lg:p-10 h-full motion-gentle hover:scale-[1.02]">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center">
+                      <Target className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">Sứ mệnh</h3>
+                  </div>
+                  
+                  <div className="space-y-4 text-muted leading-relaxed">
+                    <p className="text-base lg:text-lg">
+                      <strong className="text-foreground">Tạo ra kho dữ liệu du lịch minh bạch</strong> – xác thực – dễ tiếp cận cho mọi người, 
+                      giúp du khách có những quyết định thông minh cho chuyến đi.
+                    </p>
+                    <p>
+                      Mỗi chuyến du lịch đều có thể trở thành trải nghiệm ý nghĩa 
+                      khi có thông tin đúng đắn, được chia sẻ bởi cộng đồng với tinh thần cởi mở và trung thực.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vision Card with glass morphism */}
+              <div className="relative group">
+                <div className="glass-card p-8 lg:p-10 h-full motion-gentle hover:scale-[1.02]">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary to-purple-600 flex items-center justify-center">
+                      <Lightbulb className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">Tầm nhìn</h3>
+                  </div>
+                  
+                  <div className="space-y-4 text-muted leading-relaxed">
+                    <p className="text-base lg:text-lg">
+                      <strong className="text-foreground">Trở thành nguồn thông tin du lịch Việt Nam đáng tin cậy nhất</strong>, 
+                      được xây dựng và duy trì bởi chính cộng đồng yêu du lịch.
+                    </p>
+                    <p>
+                      Khát vọng của chúng tôi là giúp mọi người khám phá vẻ đẹp Việt Nam một cách bền vững, 
+                      có trách nhiệm và trọn vẹn nhất.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Core Values - Typography as Voice with Generous Spacing */}
+        <section className="container py-20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16 space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-bold">
+                <span className="gradient-text">Giá trị cốt lõi</span>
+              </h2>
+              <p className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+                Những nguyên tắc định hướng mọi quyết định và hoạt động của chúng tôi, 
+                như những viên đá tảng vững chắc trong dòng chảy.
               </p>
+              <div className="w-32 h-1 bg-gradient-to-r from-primary via-secondary to-purple-500 mx-auto rounded-full"></div>
+            </div>
 
-              <div className="grid sm:grid-cols-2 gap-6 mb-12">
-                <div className="glass-subtle p-6 rounded-xl hover:scale-105 transition-transform duration-200">
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+              {coreValues.map((value, index) => (
+                <div key={index} className="group">
+                  <div className="glass-card p-6 lg:p-8 text-center h-full motion-gentle hover:scale-105">
+                    {/* Icon with breathing space */}
+                    <div className="mb-6">
+                      <div className={`w-16 h-16 bg-gradient-to-r ${value.color} rounded-2xl flex items-center justify-center mx-auto shadow-soft`}>
+                        <value.icon className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                    
+                    {/* Typography hierarchy */}
+                    <h3 className="text-xl font-bold text-foreground mb-4">{value.title}</h3>
+                    <p className="text-muted text-sm leading-relaxed">{value.description}</p>
                   </div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Email</h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm mb-4">Gửi email cho chúng tôi</p>
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-none"
-                    asChild
-                  >
-                    <a href="mailto:hello@dulichviet.com">
-                      hello@dulichviet.com
-                    </a>
-                  </Button>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-                <div className="glass-subtle p-6 rounded-xl hover:scale-105 transition-transform duration-200">
-                  <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Github className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+        {/* Timeline - Journey with Gentle Motion */}
+        <section className="container py-20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16 space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-bold">
+                <span className="gradient-text">Hành trình</span> <span className="text-foreground">phát triển</span>
+              </h2>
+              <p className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+                Từ ý tưởng ban đầu đến cửa sổ kỹ thuật số mở ra vẻ đẹp Việt Nam
+              </p>
+              <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+              {milestones.map((milestone, index) => (
+                <div key={index} className="group relative">
+                  {/* Connecting line for larger screens */}
+                  {index < milestones.length - 1 && (
+                    <div className="hidden lg:block absolute top-6 left-full w-8 h-0.5 bg-gradient-to-r from-border to-transparent z-0"></div>
+                  )}
+                  
+                  <div className="glass-card p-6 lg:p-8 h-full motion-gentle hover:scale-105 relative z-10">
+                    {/* Icon with enhanced visual hierarchy */}
+                    <div className="mb-6">
+                      <div className={`w-14 h-14 bg-gradient-to-r ${milestone.color} rounded-2xl flex items-center justify-center shadow-soft`}>
+                        <milestone.icon className="w-7 h-7 text-white" />
+                      </div>
+                    </div>
+                    
+                    {/* Timeline badge */}
+                    <Badge className="mb-4 glass-subtle border-primary/20 text-primary">
+                      {milestone.date}
+                    </Badge>
+                    
+                    {/* Content with proper spacing */}
+                    <h3 className="text-lg font-bold text-foreground mb-3 leading-tight">{milestone.title}</h3>
+                    <p className="text-muted text-sm leading-relaxed">{milestone.description}</p>
                   </div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Open Source</h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm mb-4">Xem mã nguồn dự án</p>
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white border-none"
-                    asChild
-                  >
-                    <a href="https://github.com/dulichviet" target="_blank" rel="noopener noreferrer">
-                      GitHub →
-                    </a>
-                  </Button>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-              <div className="glass-subtle p-8 rounded-2xl bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Handshake className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+        {/* Team - Typography as Voice with Personal Touch */}
+        <section className="container py-20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16 space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-bold">
+                <span className="gradient-text">Đội ngũ</span> <span className="text-foreground">sáng lập</span>
+              </h2>
+              <p className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+                Những người tiên phong với đam mê xây dựng cửa sổ kỹ thuật số mở ra vẻ đẹp Việt Nam
+              </p>
+              <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {teamMembers.map((member, index) => (
+                <div key={index} className="group">
+                  <div className="glass-card p-6 lg:p-8 text-center h-full motion-gentle hover:scale-105">
+                    {/* Avatar with glass effect */}
+                    <div className="relative w-24 h-24 mx-auto mb-6">
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="w-full h-full rounded-full object-cover shadow-soft"
+                      />
+                      <div className="absolute inset-0 rounded-full ring-4 ring-white/20 group-hover:ring-primary/30 transition-all duration-300"></div>
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></div>
+                    </div>
+                    
+                    {/* Typography hierarchy */}
+                    <h3 className="text-lg font-bold text-foreground mb-2">{member.name}</h3>
+                    <p className="text-primary text-sm font-medium mb-4">{member.role}</p>
+                    <p className="text-muted text-sm leading-relaxed">{member.description}</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Quan tâm đến việc hợp tác?</h3>
-                <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-xl mx-auto">
-                  Chúng tôi luôn tìm kiếm các đối tác, tổ chức và cá nhân có cùng tầm nhìn 
-                  để cùng xây dựng nền tảng du lịch bền vững cho Việt Nam.
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Section - Clean Call to Action */}
+        <section className="container py-20">
+          <div className="max-w-4xl mx-auto">
+            {/* Glass card with background imagery */}
+            <div className="relative overflow-hidden rounded-3xl">
+              {/* Background with Vietnam scenery */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1559592413-7cec4d0d5d2d?q=80&w=2069')`
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-secondary/80"></div>
+              
+              {/* Content */}
+              <div className="relative glass-card border-0 p-8 sm:p-12 text-center text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+                  Cùng tạo nên <span className="text-white/90">cửa sổ Việt Nam</span>
+                </h2>
+                <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+                  Có câu hỏi, góp ý hoặc muốn hợp tác? Hãy liên hệ với chúng tôi. 
+                  Mỗi ý kiến đóng góp đều giúp chúng tôi hoàn thiện hơn.
                 </p>
-                <Button 
-                  className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
-                  asChild
-                >
-                  <Link href="/about/partnership">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Tìm hiểu về đối tác
-                  </Link>
-                </Button>
+
+                <div className="grid sm:grid-cols-2 gap-6 mb-8">
+                  <div className="glass-subtle p-6 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Mail className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="font-bold text-white mb-2">Email chúng tôi</h3>
+                    <p className="text-white/80 text-sm mb-4">Gửi thắc mắc hoặc ý kiến góp ý</p>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/20"
+                      asChild
+                    >
+                      <a href="mailto:hello@dulichviet.com">
+                        hello@dulichviet.com
+                      </a>
+                    </Button>
+                  </div>
+
+                  <div className="glass-subtle p-6 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Github className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="font-bold text-white mb-2">Mã nguồn mở</h3>
+                    <p className="text-white/80 text-sm mb-4">Tham gia phát triển dự án</p>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/20"
+                      asChild
+                    >
+                      <a href="https://github.com/dulichviet" target="_blank" rel="noopener noreferrer">
+                        GitHub
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Button 
+                    size="lg"
+                    className="bg-white text-primary hover:bg-white/90 shadow-soft motion-gentle hover:scale-105"
+                    asChild
+                  >
+                    <Link href="/about/contact">
+                      <Handshake className="w-5 h-5 mr-2" />
+                      Liên hệ chi tiết
+                    </Link>
+                  </Button>
+                  
+                  <p className="text-white/70 text-sm">
+                    Hoặc tham gia{" "}
+                    <Link href="/community" className="text-white hover:text-white/90 underline">
+                      cộng đồng Du Lịch Việt
+                    </Link>
+                  </p>
+                </div>
               </div>
             </div>
           </div>

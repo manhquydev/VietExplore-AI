@@ -85,66 +85,67 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     : provinces
 
   return (
-    <div className={cn("w-full space-y-4", className)}>
-      {/* Main Search Bar - Only essential search icon */}
+    <div className={cn("w-full space-y-3 sm:space-y-4", className)}>
+      {/* Main Search Bar - Mobile-optimized with proper touch targets */}
       <div className="relative">
         <div className="relative flex items-center">
-          <Icon name="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted" />
+          <Icon name="search" className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4 sm:w-5 sm:h-5" />
           <Input
             type="text"
             placeholder={placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="pl-12 pr-24 h-12 text-base bg-white shadow-soft border-border rounded-xl"
+            className="pl-10 sm:pl-12 pr-20 sm:pr-24 h-11 sm:h-12 text-sm sm:text-base bg-white shadow-soft border-border rounded-xl touch-target-44"
           />
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                "h-8 px-3",
+                "h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm touch-target-44",
                 activeFiltersCount > 0 && "bg-primary-50 text-primary"
               )}
             >
-              <Icon name="filter" className="w-4 h-4 mr-1" />
+              <Icon name="filter" className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Lọc</span>
               {activeFiltersCount > 0 && (
-                <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
+                <Badge variant="default" className="ml-1 h-4 sm:h-5 px-1 sm:px-1.5 text-xs">
                   {activeFiltersCount}
                 </Badge>
               )}
             </Button>
-            <Button onClick={handleSearch} className="h-8">
+            <Button onClick={handleSearch} className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm touch-target-44">
               Tìm
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Mobile-optimized layout */}
       {showFilters && (
-        <div className="p-4 bg-surface rounded-xl border border-border space-y-4">
+        <div className="p-3 sm:p-4 bg-surface rounded-xl border border-border space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-text">Bộ lọc tìm kiếm</h3>
+            <h3 className="font-medium text-foreground text-sm sm:text-base">Bộ lọc tìm kiếm</h3>
             {activeFiltersCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs sm:text-sm touch-target-44">
                 Xóa tất cả
               </Button>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {/* Region Filter */}
             <div>
-              <label className="text-sm font-medium text-text mb-2 block">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 block">
                 Vùng miền
               </label>
               <Select
                 value={localFilters.region}
                 onValueChange={(value) => updateFilter('region', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="touch-target-44">
                   <SelectValue placeholder="Chọn vùng" />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,7 +160,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
             {/* Province Filter */}
             <div>
-              <label className="text-sm font-medium text-text mb-2 block">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 block">
                 Tỉnh/Thành phố
               </label>
               <Select
@@ -167,7 +168,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 onValueChange={(value) => updateFilter('province', value)}
                 disabled={!localFilters.region}
               >
-                <SelectTrigger>
+                <SelectTrigger className="touch-target-44">
                   <SelectValue placeholder="Chọn tỉnh/thành" />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,14 +183,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
             {/* Type Filter */}
             <div>
-              <label className="text-sm font-medium text-text mb-2 block">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 block">
                 Loại hình
               </label>
               <Select
                 value={localFilters.type}
                 onValueChange={(value) => updateFilter('type', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="touch-target-44">
                   <SelectValue placeholder="Chọn loại hình" />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,7 +206,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </div>
       )}
 
-      {/* Active Filters Display */}
+      {/* Active Filters Display - Mobile-optimized */}
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2">
           {localFilters.region && (

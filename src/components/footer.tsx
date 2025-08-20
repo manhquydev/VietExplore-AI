@@ -32,16 +32,16 @@ export const Footer: React.FC = () => {
       {/* Gentle gradient background - Like evening mist */}
       <div className="absolute inset-0 bg-gradient-to-br from-surface via-bg to-primary/5" />
       
-      <div className="container mx-auto py-20 relative">
+      <div className="container mx-auto py-12 sm:py-16 lg:py-20 relative">
         {/* Main Footer Content - Elegant spacing */}
-        <div className="grid md:grid-cols-4 gap-16 text-sm mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 lg:gap-16 text-sm mb-12 sm:mb-16">
           {/* Brand Section - Typography as Voice */}
-          <div className="md:col-span-1 space-y-8">
+          <div className="sm:col-span-2 lg:col-span-1 space-y-6 lg:space-y-8">
             <div>
-              <h4 className="font-bold text-3xl text-primary mb-6 tracking-tight">
+              <h4 className="font-bold text-2xl sm:text-3xl text-primary mb-4 sm:mb-6 tracking-tight">
                 Du Lịch Việt
               </h4>
-              <p className="text-muted leading-relaxed text-base mb-8">
+              <p className="text-muted leading-relaxed text-sm sm:text-base mb-6 sm:mb-8">
                 Một cửa sổ trong suốt mở ra vẻ đẹp bất tận của Việt Nam. 
                 Nơi mỗi thông tin đều được kiểm chứng, mỗi gợi ý đều đáng tin cậy.
               </p>
@@ -112,15 +112,15 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Navigation Links - Generous spacing */}
-          <div>
-            <h5 className="font-bold text-text mb-8 text-lg">Giới thiệu</h5>
-            <nav className="space-y-5">
+          {/* Navigation Links - Enhanced mobile-responsive layout */}
+          <div className="space-y-4 sm:space-y-6">
+            <h5 className="font-bold text-foreground mb-4 sm:mb-6 text-base sm:text-lg">Giới thiệu</h5>
+            <nav className="space-y-3 sm:space-y-4">
               {footerLinks.about.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="block text-muted hover:text-primary motion-soft hover:translate-x-2 transform"
+                  className="block text-muted hover:text-primary motion-soft hover:translate-x-2 transform text-sm sm:text-base py-1 touch-target-44"
                 >
                   {link.name}
                 </Link>
@@ -128,14 +128,14 @@ export const Footer: React.FC = () => {
             </nav>
           </div>
 
-          <div>
-            <h5 className="font-bold text-text mb-8 text-lg">Tài nguyên</h5>
-            <nav className="space-y-5">
+          <div className="space-y-4 sm:space-y-6">
+            <h5 className="font-bold text-foreground mb-4 sm:mb-6 text-base sm:text-lg">Tài nguyên</h5>
+            <nav className="space-y-3 sm:space-y-4">
               {footerLinks.resources.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="block text-muted hover:text-primary motion-soft hover:translate-x-2 transform"
+                  className="block text-muted hover:text-primary motion-soft hover:translate-x-2 transform text-sm sm:text-base py-1 touch-target-44"
                 >
                   {link.name}
                 </Link>
@@ -143,14 +143,14 @@ export const Footer: React.FC = () => {
             </nav>
           </div>
 
-          <div>
-            <h5 className="font-bold text-text mb-8 text-lg">Điều khoản</h5>
-            <nav className="space-y-5">
+          <div className="space-y-4 sm:space-y-6">
+            <h5 className="font-bold text-foreground mb-4 sm:mb-6 text-base sm:text-lg">Điều khoản</h5>
+            <nav className="space-y-3 sm:space-y-4">
               {footerLinks.legal.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="block text-muted hover:text-primary motion-soft hover:translate-x-2 transform"
+                  className="block text-muted hover:text-primary motion-soft hover:translate-x-2 transform text-sm sm:text-base py-1 touch-target-44"
                 >
                   {link.name}
                 </Link>
@@ -159,28 +159,28 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Trust Badge Section - Preserved Icons with Glass Design */}
-        <div className="glass-card p-8 mb-16">
-          <div className="text-center space-y-8">
-            <h5 className="text-lg font-bold text-text">Hệ thống tin cậy</h5>
+        {/* Trust Badge Section - Mobile-optimized layout */}
+        <div className="glass-card p-6 sm:p-8 mb-12 sm:mb-16">
+          <div className="text-center space-y-6 sm:space-y-8">
+            <h5 className="text-base sm:text-lg font-bold text-foreground">Hệ thống tin cậy</h5>
             
-            <div className="flex justify-center items-center gap-12 flex-wrap">
-              <div className="flex items-center gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/verified.svg" alt="Verified" className="w-10 h-10" />
-                <span className="text-sm font-medium text-muted">UNESCO Heritage</span>
+            <div className="flex justify-center items-center gap-6 sm:gap-8 lg:gap-12 flex-wrap">
+              <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
+                <img src="/badges/verified.svg" alt="Verified" className="w-8 h-8 sm:w-10 sm:h-10" />
+                <span className="text-xs sm:text-sm font-medium text-muted">UNESCO Heritage</span>
               </div>
-              <div className="flex items-center gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/contributor.svg" alt="Contributor" className="w-10 h-10" />
-                <span className="text-sm font-medium text-muted">Expert Contributors</span>
+              <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
+                <img src="/badges/contributor.svg" alt="Contributor" className="w-8 h-8 sm:w-10 sm:h-10" />
+                <span className="text-xs sm:text-sm font-medium text-muted">Expert Contributors</span>
               </div>
-              <div className="flex items-center gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/community-partner.svg" alt="Partner" className="w-10 h-10" />
-                <span className="text-sm font-medium text-muted">Official Partners</span>
+              <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
+                <img src="/badges/community-partner.svg" alt="Partner" className="w-8 h-8 sm:w-10 sm:h-10" />
+                <span className="text-xs sm:text-sm font-medium text-muted">Official Partners</span>
               </div>
             </div>
             
             <div className="max-w-3xl mx-auto">
-              <p className="text-sm text-muted leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted leading-relaxed">
                 Du Lịch Việt cam kết cung cấp thông tin chính xác, đáng tin cậy với hệ thống kiểm duyệt nghiêm ngặt. 
                 Mỗi nội dung đều được xác minh bởi cộng đồng chuyên gia và đối tác chính thống.
               </p>
@@ -188,19 +188,19 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Section - Elegant & Clean */}
-        <div className="pt-8 border-t border-border/30">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-center md:text-left">
-              <p className="text-sm text-muted">
+        {/* Bottom Section - Mobile-first responsive layout */}
+        <div className="pt-6 sm:pt-8 border-t border-border/30">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6">
+            <div className="text-center sm:text-left">
+              <p className="text-xs sm:text-sm text-muted">
                 © 2025 Du Lịch Việt. Nền tảng phi lợi nhuận phục vụ cộng đồng.
               </p>
-              <p className="text-xs text-muted/70 mt-2">
+              <p className="text-xs text-muted/70 mt-1 sm:mt-2">
                 Một sản phẩm được tạo ra với tình yêu Việt Nam
               </p>
             </div>
             
-            <div className="flex items-center gap-6 text-sm text-muted">
+            <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted">
               <span className="glass-subtle px-3 py-1 rounded-lg">Phiên bản 1.0</span>
               <span className="flex items-center gap-2">
                 <span>Made with</span>

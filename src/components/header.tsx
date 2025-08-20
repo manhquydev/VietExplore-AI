@@ -81,17 +81,17 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/95 border-b border-border shadow-soft">
       <div className="container mx-auto">
-        <div className="flex h-[80px] items-center justify-between">
+        <div className="flex h-16 sm:h-20 items-center justify-between">
           {/* Enhanced Logo */}
           <Link href="/" className="flex items-center hover:scale-105 transition-all duration-200 group">
-            <div className="relative p-1 lg:p-2">
-              <Logo variant="horizontal" size="md" className="h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" />
+            <div className="relative p-1 sm:p-2">
+              <Logo variant="horizontal" size="md" className="h-10 sm:h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" />
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10"></div>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}

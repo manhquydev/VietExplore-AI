@@ -129,9 +129,9 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
   };
 
   return (
-    <Card className="glass-card overflow-hidden flex flex-col h-full motion-gentle hover:scale-105 hover:shadow-2xl">
+    <Card className="glass-card overflow-hidden flex flex-col h-full motion-gentle hover:scale-105 hover:shadow-2xl touch-target-44">
       <CardHeader className="p-0 relative">
-        <div className="relative h-56 w-full bg-surface">
+        <div className="relative h-48 sm:h-56 w-full bg-surface">
           {/* Loading skeleton */}
           {isImageLoading && !imageError && (
             <div className="absolute inset-0 bg-gradient-to-r from-surface via-border to-surface animate-pulse" />
@@ -143,8 +143,8 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
               <div className="text-center space-y-2">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
-                  width="48" 
-                  height="48" 
+                  width="40" 
+                  height="40" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
@@ -185,44 +185,44 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
         </div>
         {renderBadge()}
       </CardHeader>
-      <CardContent className="pt-6 flex-grow space-y-4">
+      <CardContent className="pt-4 sm:pt-6 flex-grow space-y-3 sm:space-y-4 px-4 sm:px-6">
         <div className="space-y-2">
-          <CardTitle className="text-2xl font-bold text-text leading-tight">
+          <CardTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground leading-tight line-clamp-2">
             {destination.name}
           </CardTitle>
-          <CardDescription className="text-muted text-lg flex items-center gap-2">
+          <CardDescription className="text-muted text-sm sm:text-base lg:text-lg flex items-center gap-2">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
+              width="14" 
+              height="14" 
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"
-              className="text-primary flex-shrink-0"
+              className="text-primary flex-shrink-0 sm:w-4 sm:h-4"
             >
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
               <circle cx="12" cy="9" r="2.5"/>
             </svg>
-            {destination.location}
+            <span className="line-clamp-1">{destination.location}</span>
           </CardDescription>
         </div>
-        <p className="text-muted leading-relaxed">
+        <p className="text-muted leading-relaxed text-sm sm:text-base line-clamp-3">
           {destination.description}
         </p>
       </CardContent>
       
-      <CardFooter className="glass-subtle border-t border-border/50 flex justify-between items-center p-6">
+      <CardFooter className="glass-subtle border-t border-border/50 flex justify-between items-center p-4 sm:p-6">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#0891B2" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#0891B2" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4">
               <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
             </svg>
-            <span className="font-bold text-primary">{destination.rating.toFixed(1)}</span>
+            <span className="font-bold text-primary text-sm sm:text-base">{destination.rating.toFixed(1)}</span>
           </div>
-          <span className="text-sm text-muted">({destination.reviews.toLocaleString()} đánh giá)</span>
+          <span className="text-xs sm:text-sm text-muted">({destination.reviews.toLocaleString()} đánh giá)</span>
         </div>
         
         <Button
@@ -230,7 +230,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
           size="sm"
           onClick={() => setIsSaved(!isSaved)}
           className={cn(
-            "glass-subtle motion-gentle hover:scale-105 p-2 rounded-lg",
+            "glass-subtle motion-gentle hover:scale-105 p-2 rounded-lg touch-target-44",
             isSaved 
               ? "text-danger hover:text-danger" 
               : "text-muted hover:text-primary"
@@ -239,15 +239,15 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            width="20" 
-            height="20" 
+            width="18" 
+            height="18" 
             viewBox="0 0 24 24" 
             fill={isSaved ? "currentColor" : "none"} 
             stroke="currentColor" 
             strokeWidth="2" 
             strokeLinecap="round" 
             strokeLinejoin="round"
-            className="transition-all duration-200"
+            className="transition-all duration-200 sm:w-5 sm:h-5"
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>

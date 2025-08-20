@@ -99,18 +99,18 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     : provinces
 
   return (
-    <div className={cn("sticky top-[72px] z-20 bg-surface border-b border-border", className)}>
-      <div className="container py-4">
-        <div className="flex flex-col gap-4">
-          {/* Filter Controls */}
-          <div className="flex flex-wrap gap-4">
+    <div className={cn("sticky top-[64px] sm:top-[72px] z-20 bg-surface border-b border-border", className)}>
+      <div className="container py-3 sm:py-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          {/* Filter Controls - Mobile-first responsive layout */}
+          <div className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4">
             {/* Region Filter */}
-            <div className="min-w-[160px]">
+            <div className="min-w-[140px] sm:min-w-[160px] flex-1 sm:flex-none">
               <Select
                 value={filters.region || ''}
                 onValueChange={(value) => updateFilter('region', value || undefined)}
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 sm:h-10 text-sm touch-target-44">
                   <SelectValue placeholder="Vùng miền" />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,13 +124,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </div>
 
             {/* Province Filter */}
-            <div className="min-w-[160px]">
+            <div className="min-w-[140px] sm:min-w-[160px] flex-1 sm:flex-none">
               <Select
                 value={filters.province || ''}
                 onValueChange={(value) => updateFilter('province', value || undefined)}
                 disabled={!filters.region}
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 sm:h-10 text-sm touch-target-44">
                   <SelectValue placeholder="Tỉnh/Thành phố" />
                 </SelectTrigger>
                 <SelectContent>
@@ -144,7 +144,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </div>
 
             {/* Type Filter */}
-            <div className="min-w-[140px]">
+            <div className="min-w-[120px] sm:min-w-[140px] flex-1 sm:flex-none">
               <Select
                 value={filters.type || ''}
                 onValueChange={(value) => updateFilter('type', value || undefined)}
