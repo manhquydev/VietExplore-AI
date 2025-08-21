@@ -161,10 +161,10 @@ export const Footer: React.FC = () => {
 
         {/* Trust Badge Section - Mobile-optimized layout */}
         <div className="glass-card p-6 sm:p-8 mb-12 sm:mb-16">
-          <div className="text-center space-y-6 sm:space-y-8">
+          <div className="text-left sm:text-center space-y-6 sm:space-y-8">
             <h5 className="text-base sm:text-lg font-bold text-foreground">Hệ thống tin cậy</h5>
             
-            <div className="flex justify-center items-center gap-6 sm:gap-8 lg:gap-12 flex-wrap">
+            <div className="flex flex-col sm:flex-row sm:justify-center items-start sm:items-center gap-4 sm:gap-8 lg:gap-12">
               <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
                 <img src="/badges/verified.svg" alt="Verified" className="w-8 h-8 sm:w-10 sm:h-10" />
                 <span className="text-xs sm:text-sm font-medium text-muted">UNESCO Heritage</span>
@@ -174,13 +174,13 @@ export const Footer: React.FC = () => {
                 <span className="text-xs sm:text-sm font-medium text-muted">Expert Contributors</span>
               </div>
               <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/community-partner.svg" alt="Partner" className="w-8 h-8 sm:w-10 sm:h-10" />
+                <img src="/badges/community-partner.svg" alt="Partner" className="w-9 h-9 sm:w-11 sm:h-11" />
                 <span className="text-xs sm:text-sm font-medium text-muted">Official Partners</span>
               </div>
             </div>
             
-            <div className="max-w-3xl mx-auto">
-              <p className="text-xs sm:text-sm text-muted leading-relaxed">
+            <div className="max-w-3xl sm:mx-auto">
+              <p className="text-xs sm:text-sm text-muted leading-relaxed text-left sm:text-center">
                 Du Lịch Việt cam kết cung cấp thông tin chính xác, đáng tin cậy với hệ thống kiểm duyệt nghiêm ngặt. 
                 Mỗi nội dung đều được xác minh bởi cộng đồng chuyên gia và đối tác chính thống.
               </p>
