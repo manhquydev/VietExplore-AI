@@ -164,17 +164,23 @@ export const Footer: React.FC = () => {
           <div className="text-left sm:text-center space-y-6 sm:space-y-8">
             <h5 className="text-base sm:text-lg font-bold text-foreground">Hệ thống tin cậy</h5>
             
-            <div className="flex flex-col sm:flex-row sm:justify-center items-start sm:items-center gap-4 sm:gap-8 lg:gap-12">
-              <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/verified.svg" alt="Verified" className="w-8 h-8 sm:w-10 sm:h-10" />
+            <div className="flex flex-col sm:flex-row sm:justify-center gap-4 sm:gap-8 lg:gap-12">
+              <div className="flex items-center gap-3 motion-gentle hover:scale-105">
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img src="/badges/verified.svg" alt="Verified" className="w-8 h-8 sm:w-10 sm:h-10" />
+                </div>
                 <span className="text-xs sm:text-sm font-medium text-muted">UNESCO Heritage</span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/contributor.svg" alt="Contributor" className="w-8 h-8 sm:w-10 sm:h-10" />
+              <div className="flex items-center gap-3 motion-gentle hover:scale-105">
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img src="/badges/contributor.svg" alt="Contributor" className="w-8 h-8 sm:w-10 sm:h-10" />
+                </div>
                 <span className="text-xs sm:text-sm font-medium text-muted">Expert Contributors</span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 motion-gentle hover:scale-105">
-                <img src="/badges/community-partner.svg" alt="Partner" className="w-9 h-9 sm:w-11 sm:h-11" />
+              <div className="flex items-center gap-3 motion-gentle hover:scale-105">
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img src="/badges/community-partner.svg" alt="Partner" className="w-9 h-9 sm:w-11 sm:h-11" />
+                </div>
                 <span className="text-xs sm:text-sm font-medium text-muted">Official Partners</span>
               </div>
             </div>
