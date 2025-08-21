@@ -56,6 +56,20 @@ VietExplore AI là nền tảng du lịch thông minh cho Việt Nam, sử dụn
    - Comprehensive reports handling
    - Real-time moderation dashboard
 
+5. **Realtime Database & Live Features (Tài liệu 5)**
+   - User presence system (online/offline)
+   - Moderator activity tracking với typing indicators
+   - Real-time moderation queue updates
+   - Live itinerary viewer counts
+   - Automatic cleanup và TTL management
+
+6. **RBAC System & Admin Management**
+   - Role-based access control (Guest → Traveler → Contributor → Partner → Moderator → Admin)
+   - Granular permission system với 20+ permissions
+   - Admin dashboard cho user management
+   - Complete audit trail và compliance tracking
+   - Initial setup system với security protection
+
 ## 📁 Project Structure
 
 ```

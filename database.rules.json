@@ -1,7 +1,44 @@
 {
-  /* Visit https://firebase.google.com/docs/database/security to learn more about security rules. */
   "rules": {
-    ".read": false,
-    ".write": false
+    ".read": false,               
+    ".write": false,
+
+    "status": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",                
+        ".write": "auth != null && auth.uid === $uid && auth.token.email_verified === true"
+      }
+    },
+
+    "moderation": {
+      ".read": "auth != null && (auth.token.role === 'moderator' || auth.token.role === 'admin')",
+      ".write": "auth != null && (auth.token.role === 'moderator' || auth.token.role === 'admin')",
+
+      "active": {
+        "$modUid": {
+          ".write": "auth != null && auth.uid === $modUid",         
+          ".read": true                                             
+        }
+      },
+
+      "queueIndex": {
+        ".read": true,
+        ".write": false                                             
+      },
+
+      "queueSummary": {
+        ".read": true,
+        ".write": false                                             
+      }
+    },
+
+    "itineraries": {
+      "live": {
+        "$itineraryId": {
+          ".read": true,
+          ".write": "auth != null && auth.token.email_verified === true"
+        }
+      }
+    }
   }
 }

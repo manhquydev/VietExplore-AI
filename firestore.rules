@@ -28,6 +28,45 @@ service cloud.firestore {
       return role() == 'moderator' || isAdmin(); 
     }
     
+    // RBAC Permission checking functions
+    function hasPermission(permission) {
+      let userRole = role();
+      
+      // Admin has all permissions
+      if (userRole == 'admin') {
+        return true;
+      }
+      
+      // Permission matrix based on RBAC documents
+      return (
+        // Content permissions (all roles)
+        (permission == 'content.view_public') ||
+        
+        // Traveler+ permissions
+        (userRole in ['traveler', 'contributor', 'partner', 'moderator'] && permission in [
+          'itinerary.create', 'itinerary.update_own', 'itinerary.view_own', 
+          'itinerary.share_public', 'itinerary.delete_own', 'place.suggest', 
+          'place.view_review_status', 'report.create'
+        ]) ||
+        
+        // Contributor+ permissions
+        (userRole in ['contributor', 'partner'] && permission in [
+          'place.create_draft', 'place.submit_review', 'place.edit_own_draft'
+        ]) ||
+        
+        // Moderator permissions
+        (userRole == 'moderator' && permission in [
+          'moderation.queue_view', 'moderation.approve', 'moderation.reject',
+          'moderation.request_changes', 'moderation.hide', 'moderation.resolve_report',
+          'report.view', 'admin.assign_verified_label', 'admin.view_audit_logs'
+        ])
+      );
+    }
+    
+    function canManageUser(targetUserId) {
+      return isAdmin() && request.auth.uid != targetUserId; // Prevent self-management
+    }
+    
     function isContributor() { 
       return role() == 'contributor'; 
     }
@@ -142,6 +181,17 @@ service cloud.firestore {
     match /system/counters/{id} { 
       allow read: if true; 
       allow write: if false; // Chỉ qua Cloud Functions
+    }
+    
+    // Rate limiting collection (functions only)
+    match /rateLimits/{document} {
+      allow read, write: if false; // Only functions can access
+    }
+    
+    // Admin-only collections
+    match /adminLogs/{document} {
+      allow read: if isAdmin();
+      allow write: if false; // Only functions can write
     }
 
     // Default deny all other documents

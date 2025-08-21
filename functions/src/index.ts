@@ -26,8 +26,8 @@ export { beforeSignIn } from './auth/beforeSignIn';
 // Moderation Functions
 export { submitPlaceForModeration, moderatePlace, autoModeratePlaceDraft } from './moderation/placeModeration';
 
-// User Management Functions
-export { toggleUserStatus, getUsers, requestRoleUpgrade, onUserProfileUpdate } from './user/userManagement';
+// User Management Functions  
+export { getUsers, requestRoleUpgrade, onUserProfileUpdate } from './user/userManagement';
 
 // Itinerary Functions
 export { createItineraryShare, duplicateItinerary, onItineraryCreate, reportContent } from './itinerary/itineraryHelpers';
@@ -54,3 +54,11 @@ export { modResolveReport, getReportsQueue, updateReportPriority, getModerationD
 
 // Content Moderation
 export { autoModerateContent, reviewFlaggedContent, getContentModerationQueue } from './moderation/contentModeration';
+
+// Realtime Database Functions (Tài liệu 5)
+export { syncQueueIndex, syncViewerCount } from './rtdb/queueSync';
+export { cleanupModeratorActivity, cleanupViewerEntries, cleanupOfflineStatus } from './rtdb/cleanup';
+
+// Admin & RBAC Functions
+export { assignUserRole, getAllUsers, promoteUser, toggleUserStatus, getAuditLogs } from './admin/roleManagement';
+export { createFirstAdmin, checkSetupStatus, emergencyPromoteAdmin } from './admin/initialSetup';
