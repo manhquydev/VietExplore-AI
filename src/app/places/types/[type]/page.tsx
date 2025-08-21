@@ -172,3 +172,5 @@ export default function PlaceTypePage({ params }: TypePageProps) {
   )
 }
 
+
+

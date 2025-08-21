@@ -73,3 +73,5 @@ Theo `tinh_nang_cốt_loi_lean_giai_doạn_1.md`:
 
 **Kết luận**: Role badge đã đủ thể hiện credibility, không cần redundant verification badge.
 
+
+
