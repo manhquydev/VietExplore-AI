@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card-c
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { MOCK_USERS, TEST_CREDENTIALS, switchToRole } from "@/lib/mock-data"
 

@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card-c
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Icon } from "@/components/ui/icon"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
 export default function RegisterPage() {

@@ -25,7 +25,7 @@ import {
   Eye
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 
 // Types
 interface ItineraryPlace {

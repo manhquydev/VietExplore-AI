@@ -23,7 +23,7 @@ import {
   Star,
   ChevronRight
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 
 interface ItineraryPageProps {
   params: {

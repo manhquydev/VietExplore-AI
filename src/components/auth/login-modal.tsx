@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { ForgotPasswordModal } from "./forgot-password-modal"
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -34,23 +36,60 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setError("")
 
     try {
-      // TODO: Implement actual login logic
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      const { login } = await import('@/components/auth/FirebaseAuthProvider');
+      // Use Firebase Auth login
+      await signInWithEmailAndPassword(auth, email, password);
       
-      // Mock success
-      console.log("Login successful", { email, password })
-      onClose()
-    } catch (error) {
-      console.error('Login error:', error)
-      setError("Email hoặc mật khẩu không đúng")
+      console.log("Login successful", { email });
+      onClose();
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      // Handle Firebase errors
+      switch (error.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+          setError('Email hoặc mật khẩu không đúng');
+          break;
+        case 'auth/too-many-requests':
+          setError('Quá nhiều lần thử. Vui lòng thử lại sau.');
+          break;
+        case 'auth/user-disabled':
+          setError('Tài khoản đã bị khóa');
+          break;
+        default:
+          setError(error.message || 'Đăng nhập thất bại');
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleLogin = () => {
-    console.log("Google login initiated")
-    // TODO: Implement Google OAuth
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+      
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      
+      console.log("Google login successful");
+      onClose();
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          setError('Đăng nhập bị hủy');
+          break;
+        case 'auth/popup-blocked':
+          setError('Popup bị chặn. Vui lòng cho phép popup và thử lại.');
+          break;
+        default:
+          setError(error.message || 'Đăng nhập Google thất bại');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

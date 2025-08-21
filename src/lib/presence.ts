@@ -3,8 +3,13 @@ import { ref, onDisconnect, set, serverTimestamp, onValue, off } from 'firebase/
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, rtdb } from './firebase';
 
-// User presence management
+// User presence management (disabled in development)
 export function initializePresence() {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🔧 Presence system disabled in development');
+    return () => {}; // Return empty unsubscribe function
+  }
+
   return onAuthStateChanged(auth, async (user) => {
     if (!user) {
       // User signed out, cleanup handled by onDisconnect

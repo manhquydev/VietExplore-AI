@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { Icon } from "@/components/ui/icon"
 import { redirect } from "next/navigation"
 

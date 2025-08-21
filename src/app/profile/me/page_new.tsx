@@ -28,7 +28,7 @@ import {
   Users,
   Globe
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 
 export default function ProfilePage() {

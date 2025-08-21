@@ -1,3 +1,4 @@
+// src/components/auth/forgot-password-modal.tsx
 "use client"
 
 import * as React from "react"
@@ -5,190 +6,176 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, CheckCircle } from "lucide-react"
+import { Mail, ArrowLeft, CheckCircle } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
+import { sendPasswordResetEmail } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 
 interface ForgotPasswordModalProps {
   isOpen: boolean
   onClose: () => void
-  onBackToLogin?: () => void
+  onSwitchToLogin?: () => void
 }
 
 export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   isOpen,
   onClose,
-  onBackToLogin,
+  onSwitchToLogin,
 }) => {
   const [email, setEmail] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
-  const [isSuccess, setIsSuccess] = React.useState(false)
   const [error, setError] = React.useState("")
+  const [success, setSuccess] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!email.trim()) {
-      setError("Vui lòng nhập email")
-      return
-    }
-
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Email không hợp lệ")
-      return
-    }
-
     setIsLoading(true)
     setError("")
 
     try {
-      // TODO: Implement actual forgot password logic
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await sendPasswordResetEmail(auth, email);
+      setSuccess(true);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
       
-      console.log("Forgot password email sent to:", email)
-      setIsSuccess(true)
-    } catch (error) {
-      console.error('Forgot password error:', error)
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+      switch (error.code) {
+        case 'auth/user-not-found':
+          setError('Không tìm thấy tài khoản với email này');
+          break;
+        case 'auth/invalid-email':
+          setError('Email không hợp lệ');
+          break;
+        default:
+          setError(error.message || 'Gửi email reset thất bại');
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleClose = () => {
-    setEmail("")
-    setError("")
-    setIsSuccess(false)
-    onClose()
-  }
-
   const handleBackToLogin = () => {
-    setEmail("")
-    setError("")
-    setIsSuccess(false)
-    if (onBackToLogin) {
-      onBackToLogin()
+    setSuccess(false);
+    setEmail("");
+    setError("");
+    if (onSwitchToLogin) {
+      onSwitchToLogin();
+    } else {
+      onClose();
     }
   }
 
+  const handleSendAgain = () => {
+    setSuccess(false);
+    setError("");
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden bg-white">
-        <div className="p-8 space-y-6">
-          <DialogHeader className="space-y-4">
-            {/* Logo */}
-            <div className="flex justify-center">
-              <Logo variant="horizontal" size="lg" className="h-12" />
+        <div className="relative">
+          {/* Header */}
+          <DialogHeader className="p-6 pb-4 text-center">
+            <div className="flex justify-center mb-4">
+              <Logo size="sm" />
             </div>
-            
-            <div className="space-y-2">
-              <DialogTitle className="text-center text-2xl font-bold text-slate-900">
-                {isSuccess ? "Kiểm tra email" : "Quên mật khẩu"}
-              </DialogTitle>
-              <DialogDescription className="text-center text-slate-600">
-                {isSuccess 
-                  ? "Chúng tôi đã gửi link đặt lại mật khẩu đến email của bạn"
-                  : "Nhập email để nhận link đặt lại mật khẩu"
-                }
-              </DialogDescription>
-            </div>
+            <DialogTitle className="text-2xl font-bold">
+              {success ? 'Email đã được gửi' : 'Quên mật khẩu?'}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {success 
+                ? `Chúng tôi đã gửi link reset mật khẩu đến ${email}`
+                : 'Nhập email để nhận link reset mật khẩu'
+              }
+            </DialogDescription>
           </DialogHeader>
 
-          {isSuccess ? (
-            /* Success State */
-            <div className="space-y-6">
-              <div className="flex justify-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-              </div>
-              
-              <div className="text-center space-y-4">
-                <p className="text-slate-600">
-                  Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email:
-                </p>
-                <p className="font-medium text-slate-900">{email}</p>
-                <p className="text-sm text-slate-500">
-                  Kiểm tra cả thư mục spam nếu bạn không thấy email trong hộp thư chính.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Button 
-                  onClick={handleClose}
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                >
-                  Đóng
-                </Button>
+          {/* Content */}
+          <div className="p-6 pt-0">
+            {success ? (
+              // Success State
+              <div className="text-center space-y-6">
+                <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
                 
-                {onBackToLogin && (
-                  <Button 
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Vui lòng kiểm tra email và click vào link để reset mật khẩu.
+                    Nếu không thấy email, hãy kiểm tra thư mục spam.
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <Button
                     onClick={handleBackToLogin}
-                    variant="ghost"
-                    className="w-full h-11 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    className="w-full"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Quay lại đăng nhập
                   </Button>
-                )}
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleSendAgain}
+                    className="w-full"
+                  >
+                    Gửi lại email
+                  </Button>
+                </div>
               </div>
-            </div>
-          ) : (
-            /* Form State */
-            <div className="space-y-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
+            ) : (
+              // Form State
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
                 {error && (
-                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                    {error}
+                  <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-md">
+                    <p className="text-sm text-destructive">{error}</p>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="forgot-email" className="text-slate-700 font-medium">
-                    Email
-                  </Label>
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-11"
-                    autoFocus
-                    required
-                  />
-                </div>
-
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                  disabled={isLoading}
+                  className="w-full"
+                  disabled={isLoading || !email}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Đang gửi...
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Đang gửi...</span>
                     </div>
                   ) : (
-                    "Gửi link đặt lại mật khẩu"
+                    <span>Gửi email reset</span>
                   )}
                 </Button>
-              </form>
 
-              {/* Back to Login */}
-              {onBackToLogin && (
-                <div className="text-center pt-4 border-t border-slate-200">
-                  <Button 
+                <div className="text-center">
+                  <button
+                    type="button"
                     onClick={handleBackToLogin}
-                    variant="ghost"
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center"
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 mr-1" />
                     Quay lại đăng nhập
-                  </Button>
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
+              </form>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

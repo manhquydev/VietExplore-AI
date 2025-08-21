@@ -1,7 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/components/auth/auth-provider";
+import { FirebaseAuthProvider } from "@/components/auth/FirebaseAuthProvider";
+import PresenceProvider from "@/components/providers/PresenceProvider";
 import { RoleSwitcher } from "@/components/dev/role-switcher";
 
 export const metadata: Metadata = {
@@ -50,11 +51,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-text antialiased">
-        <AuthProvider>
-          {children}
-          <Toaster />
-          <RoleSwitcher />
-        </AuthProvider>
+        <FirebaseAuthProvider>
+          <PresenceProvider>
+            {children}
+            <Toaster />
+            <RoleSwitcher />
+          </PresenceProvider>
+        </FirebaseAuthProvider>
       </body>
     </html>
   );

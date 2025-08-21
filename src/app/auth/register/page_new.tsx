@@ -27,7 +27,7 @@ import {
   CheckCircle2,
   Star
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
 export default function RegisterPage() {

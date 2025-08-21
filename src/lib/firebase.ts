@@ -8,12 +8,13 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAruiU_SkLHyOKE9tK5nWkc1FMCYJ4jfJc",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "vietexplore-ai.firebaseapp.com",
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://vietexplore-ai-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "vietexplore-ai",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "vietexplore-ai.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "366287046860",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:366287046860:web:1ab1d22c3be92ba2fd9a69",
 };
 
 // Initialize Firebase
@@ -23,8 +24,8 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const rtdb = getDatabase(app);
 
-// Initialize App Check for security
-if (typeof window !== 'undefined') {
+// Initialize App Check for security (disabled in development)
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
   const appCheckKey = process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY || '6Lcysq0rAAAAALEPzAMOrcdpMa63nQ5hqMecpg8X';
   try {
     initializeAppCheck(app, {
@@ -35,6 +36,12 @@ if (typeof window !== 'undefined') {
   } catch (error) {
     console.warn('⚠️ App Check initialization failed:', error);
   }
+} else if (typeof window !== 'undefined') {
+  console.log('🔧 App Check disabled in development mode');
 }
 
-export { app, db, auth, storage, rtdb };
+import { getFunctions } from "firebase/functions";
+
+const functions = getFunctions(app);
+
+export { app, db, auth, storage, rtdb, functions };

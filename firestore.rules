@@ -33,12 +33,7 @@ service cloud.firestore {
       let userRole = role();
       
       // Admin has all permissions
-      if (userRole == 'admin') {
-        return true;
-      }
-      
-      // Permission matrix based on RBAC documents
-      return (
+      return userRole == 'admin' || (
         // Content permissions (all roles)
         (permission == 'content.view_public') ||
         

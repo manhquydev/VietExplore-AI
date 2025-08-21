@@ -17,13 +17,14 @@ import {
   Lock, 
   ArrowRight
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
-import { TEST_CREDENTIALS } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/useAuth"
+import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
 
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, isAuthenticated } = useAuth()
+  const { loginWithGoogle } = useFirebaseAuth()
   
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -48,16 +49,23 @@ export default function LoginPage() {
     try {
       await login(email, password)
       router.push(redirectUrl)
-    } catch (err) {
-      setError("Email hoặc mật khẩu không đúng")
+    } catch (err: any) {
+      setError(err.message || "Email hoặc mật khẩu không đúng")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google login initiated")
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await loginWithGoogle();
+      router.push(redirectUrl);
+    } catch (error: any) {
+      setError(error.message || 'Đăng nhập Google thất bại');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const quickLogin = (role: string) => {

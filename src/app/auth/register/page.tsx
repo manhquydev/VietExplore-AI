@@ -19,12 +19,14 @@ import {
   User, 
   ArrowRight
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
+import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
 import { cn } from "@/lib/utils"
 
 export default function RegisterPage() {
   const router = useRouter()
   const { register, isAuthenticated } = useAuth()
+  const { loginWithGoogle } = useFirebaseAuth()
   
   const [formData, setFormData] = React.useState({
     fullName: "",
@@ -94,9 +96,9 @@ export default function RegisterPage() {
       })
       
       router.push('/')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error)
-      setErrors({ general: "Đã có lỗi xảy ra. Vui lòng thử lại." })
+      setErrors({ general: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại." })
     } finally {
       setIsLoading(false)
     }
@@ -109,9 +111,16 @@ export default function RegisterPage() {
     }
   }
 
-  const handleGoogleRegister = () => {
-    // Placeholder for Google OAuth implementation
-    console.log("Google register initiated")
+  const handleGoogleRegister = async () => {
+    try {
+      setIsLoading(true);
+      await loginWithGoogle();
+      router.push('/');
+    } catch (error: any) {
+      setErrors({ general: error.message || 'Đăng ký Google thất bại' });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

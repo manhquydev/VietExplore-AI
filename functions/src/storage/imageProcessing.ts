@@ -7,6 +7,7 @@ import * as logger from 'firebase-functions/logger';
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 
+// Use default storage bucket
 const storage = admin.storage();
 
 // Image processing configurations
@@ -299,10 +300,7 @@ export const uploadImageToDraft = onCall(async (req) => {
 });
 
 // Trigger khi có file upload vào drafts
-export const onDraftImageUpload = onObjectFinalized({
-  bucket: process.env.FIREBASE_STORAGE_BUCKET || 'default',
-  region: 'asia-east1'
-}, async (event) => {
+export const onDraftImageUpload = onObjectFinalized(async (event) => {
   const filePath = event.data.name;
   
   // Chỉ xử lý files trong drafts/places/

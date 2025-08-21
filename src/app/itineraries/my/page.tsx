@@ -29,7 +29,7 @@ import {
   BarChart3
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 
 // Mock data
 const mockItineraries = [

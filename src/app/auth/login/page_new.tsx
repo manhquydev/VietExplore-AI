@@ -19,7 +19,7 @@ import {
   UserCheck,
   Sparkles
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { TEST_CREDENTIALS } from "@/lib/mock-data"
 
 export default function LoginPage() {

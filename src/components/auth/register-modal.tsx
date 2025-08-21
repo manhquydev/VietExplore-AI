@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile, sendEmailVerification } from 'firebase/auth'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { auth, db } from '@/lib/firebase'
 
 interface RegisterModalProps {
   isOpen: boolean
@@ -75,22 +78,103 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     setErrors({})
 
     try {
-      // TODO: Implement actual registration logic
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Use Firebase Auth registration
+      const result = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       
-      console.log("Registration successful", formData)
-      onClose()
-    } catch (error) {
-      console.error('Registration error:', error)
-      setErrors({ general: "Đã có lỗi xảy ra. Vui lòng thử lại." })
+      // Update display name
+      await updateProfile(result.user, {
+        displayName: formData.fullName
+      });
+      
+      // Send email verification
+      await sendEmailVerification(result.user);
+      
+      // Create user profile in Firestore
+      const userProfile = {
+        email: formData.email,
+        displayName: formData.fullName,
+        role: 'traveler',
+        status: 'active',
+        verifiedContributor: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await setDoc(doc(db, 'users', result.user.uid), userProfile);
+      
+      console.log("Registration successful", formData.email);
+      setErrors({ general: "Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản." });
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      // Handle Firebase errors
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          setErrors({ general: 'Email này đã được sử dụng' });
+          break;
+        case 'auth/weak-password':
+          setErrors({ general: 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.' });
+          break;
+        case 'auth/invalid-email':
+          setErrors({ general: 'Email không hợp lệ' });
+          break;
+        default:
+          setErrors({ general: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại." });
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleRegister = () => {
-    console.log("Google registration initiated")
-    // TODO: Implement Google OAuth
+  const handleGoogleRegister = async () => {
+    try {
+      setIsLoading(true);
+      setErrors({});
+      
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      
+      // Check if user profile exists, create if not
+      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+      
+      if (!userDoc.exists()) {
+        const userProfile = {
+          email: result.user.email!,
+          displayName: result.user.displayName || '',
+          photoURL: result.user.photoURL || '',
+          role: 'traveler',
+          status: 'active',
+          verifiedContributor: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        await setDoc(doc(db, 'users', result.user.uid), userProfile);
+      }
+      
+      console.log("Google registration successful");
+      onClose();
+    } catch (error: any) {
+      console.error('Google registration error:', error);
+      
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          setErrors({ general: 'Đăng ký bị hủy' });
+          break;
+        case 'auth/popup-blocked':
+          setErrors({ general: 'Popup bị chặn. Vui lòng cho phép popup và thử lại.' });
+          break;
+        default:
+          setErrors({ general: error.message || 'Đăng ký Google thất bại' });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const updateFormData = (field: string, value: string | boolean) => {

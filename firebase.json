@@ -1,7 +1,6 @@
 {
   "firestore": {
     "database": "(default)",
-    "location": "asia-east1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
@@ -10,7 +9,6 @@
       "source": "functions",
       "codebase": "default",
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ],
       "ignore": [
