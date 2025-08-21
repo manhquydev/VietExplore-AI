@@ -1,0 +1,31 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /auth/*
+Disallow: /moderation/*
+Disallow: /settings/*
+Disallow: /profile/me
+Disallow: /*.json$
+Disallow: /private/*
+Disallow: /_next/*
+
+# Googlebot
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Host
+Host: https://viet-explore-ai.vercel.app
+
+# Sitemaps
+Sitemap: https://viet-explore-ai.vercel.app/sitemap.xml

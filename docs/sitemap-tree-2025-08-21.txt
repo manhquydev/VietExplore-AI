@@ -1,0 +1,176 @@
+🌳 VietExplore-AI Sitemap Tree Generator
+==================================================
+
+📁 App Directory Routes:
+└── /
+    ├── about
+    │   ├── contact
+    │   ├── mission
+    │   └── partnership
+    ├── admin
+    │   └── dashboard
+    ├── ai-assistant
+    │   ├── chat
+    │   └── plan
+    ├── auth
+    │   ├── forgot-password
+    │   ├── login
+    │   └── register
+    ├── community
+    │   ├── announcements
+    │   ├── guidelines
+    │   └── handbook
+    ├── contribute
+    │   ├── guide
+    │   ├── my-drafts
+    │   └── new-place
+    ├── help
+    │   └── faq
+    ├── itineraries
+    │   ├── builder
+    │   ├── my
+    │   └── [slug] [dynamic]
+    ├── legal
+    │   ├── content-policy
+    │   ├── privacy
+    │   └── terms
+    ├── moderation
+    │   ├── dashboard
+    │   └── review [dynamic]
+    │       └── [id] [dynamic]
+    ├── places
+    │   ├── map
+    │   ├── regions [dynamic]
+    │   │   └── [region] [dynamic]
+    │   ├── saved
+    │   ├── types [dynamic]
+    │   │   └── [type] [dynamic]
+    │   └── [...slug] [dynamic]
+    ├── profile
+    │   ├── me
+    │   └── [username] [dynamic]
+    ├── resources
+    └── settings
+
+📊 Total Routes: 37
+
+🗺️ Generated Sitemap URLs:
+
+Core Pages: (8 URLs)
+├── /
+├── /about/mission
+├── /about/partnership
+├── /resources
+├── /help/faq
+├── /about
+├── /about/contact
+└── /help
+
+Places: (55 URLs)
+├── /places/map
+├── /places/saved
+├── /places
+├── /places/vinh-ha-long
+├── /places/bai-bien-my-khe
+├── /places/pho-co-hoi-an
+├── /places/chu-a-mot-cot
+├── /places/bai-bien-quy-nhon
+├── /places/doi-che-moc-chau
+├── /places/thac-ban-gioc
+├── /places/dao-phu-quoc
+├── /places/thanh-pho-da-lat
+├── /places/vuon-quoc-gia-phong-nha
+├── /places/thanh-co-hue
+├── /places/lang-bac
+├── /places/bai-bien-nha-trang
+├── /places/cao-nguyen-dong-van
+├── /places/rung-tram-tra-su
+├── /places/chua-bai-dinh
+├── /places/ben-thanh-market
+├── /places/cu-chi-tunnels
+├── /places/mekong-delta
+├── /places/hoi-an-ancient-town
+├── /places/regions/bac-bo
+├── /places/regions/trung-bo
+├── /places/regions/nam-bo
+├── /places/regions/tay-nguyen
+├── /places/regions/dong-bang-song-cuu-long
+├── /places/types/bien
+├── /places/types/nui
+├── /places/types/chua-den
+├── /places/types/di-tich
+├── /places/types/thac-nuoc
+├── /places/types/vuon-quoc-gia
+├── /places/types/dao
+├── /places/types/thanh-pho
+├── /places/types/lang-co
+├── /places/types/bao-tang
+├── /places/types/khu-nghi-duong
+├── /places/types/cho-dem
+├── /places/provinces/ha-noi
+├── /places/provinces/ho-chi-minh
+├── /places/provinces/da-nang
+├── /places/provinces/hai-phong
+├── /places/provinces/can-tho
+├── /places/provinces/quang-ninh
+├── /places/provinces/lam-dong
+├── /places/provinces/khanh-hoa
+├── /places/provinces/phu-quoc
+├── /places/provinces/sa-pa
+├── /places/provinces/hoi-an
+├── /places/provinces/hue
+├── /places/provinces/nha-trang
+├── /places/provinces/da-lat
+└── /places/provinces/vung-tau
+
+Community: (4 URLs)
+├── /community/guidelines
+├── /community/announcements
+├── /community/handbook
+└── /community
+
+AI Assistant: (3 URLs)
+├── /ai-assistant/chat
+├── /ai-assistant/plan
+└── /ai-assistant
+
+Legal: (3 URLs)
+├── /legal/terms
+├── /legal/privacy
+└── /legal/content-policy
+
+Other: (23 URLs)
+├── /contribute/new-place
+├── /itineraries/my
+├── /itineraries/builder
+├── /contribute/guide
+├── /contribute/my-drafts
+├── /contribute
+├── /itineraries/ha-noi-3-ngay
+├── /itineraries/sapa-trekking-5-ngay
+├── /itineraries/ho-chi-minh-2-ngay
+├── /itineraries/da-nang-hoi-an-4-ngay
+├── /itineraries/phu-quoc-nghi-duong
+├── /itineraries/da-lat-romantic
+├── /itineraries/ha-long-cruise-2-days
+├── /itineraries/mekong-delta-tour
+├── /itineraries/hue-culture-trip
+├── /profile/dulich-viet
+├── /profile/vietnam-explorer
+├── /profile/travel-expert
+├── /profile/local-guide
+├── /profile/culture-enthusiast
+├── /profile/adventure-seeker
+├── /profile/food-lover
+└── /profile/photographer
+
+📊 Total Sitemap URLs: 96
+
+📈 Route Analysis:
+├── Static Routes: 31
+├── Dynamic Routes: 6
+└── Catch-all Routes: 0
+
+✨ Generation completed!
+
+Generated on: 2025-08-21T05:04:24.343Z
