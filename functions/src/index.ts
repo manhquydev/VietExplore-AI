@@ -38,3 +38,19 @@ export { createPlaceDraft, updatePlaceDraft, publishPlace, onPlaceDraftCreate } 
 
 // Storage Functions
 export { onDraftApproved, uploadImageToDraft, deleteImageFromDraft, togglePlaceImage, onDraftImageUpload } from './storage/imageProcessing';
+
+// Advanced Moderation Functions (Tài liệu 4)
+export { submitDraftForReview, getModerationQueue, claimModerationRequest } from './moderation/moderationSubmit';
+export { modDecisionApprove, modDecisionReject, modDecisionRequestEdit, getModerationStats } from './moderation/moderationActions';
+
+// Trust Label System
+export { setTrustLabel, onPlacePublished, getTrustLabelStats, manageTrustLabels } from './labels/trustLabelSystem';
+
+// SLA System
+export { slaSweepModerationHourly, getSLAMetrics, forceEscalateRequest } from './sla/slaSystem';
+
+// Reports Handling
+export { modResolveReport, getReportsQueue, updateReportPriority, getModerationDashboard } from './reports/reportHandling';
+
+// Content Moderation
+export { autoModerateContent, reviewFlaggedContent, getContentModerationQueue } from './moderation/contentModeration';
