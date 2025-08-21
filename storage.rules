@@ -1,10 +1,53 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+// Cloud Storage Security Rules (Tài liệu 3)
 service firebase.storage {
   match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+    function emailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function role() { return isSignedIn() ? request.auth.token.role : null; }
+    function isModerator() { return role() == 'moderator' || role() == 'admin'; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // Chỉ cho phép read công khai ở các biến thể web của ảnh đã publish
+    match /places/{placeId}/web/{folder}/{file} {
+      allow read: if true;                 // ảnh công khai cho website
+      allow write: if false;               // chỉ Functions ghi
+    }
+
+    // Ảnh gốc đã duyệt: không public
+    match /places/{placeId}/orig/{file} {
+      allow read, write: if false;         // chỉ Functions truy cập bằng Admin SDK
+    }
+
+    // Upload nháp: chỉ chủ draft hoặc Contributor/Partner đã xác minh
+    match /drafts/places/{draftId}/{file} {
+      allow read: if false;                // không public listing
+      allow write: if emailVerified()      // bắt buộc email verified
+        && (request.resource.size < 5 * 1024 * 1024)  // <= 5MB
+        && request.resource.contentType.matches('image/.*')
+        && request.time < timestamp.date(2100, 1, 1);
+      allow delete: if emailVerified();    // cho phép xóa ảnh nháp của chính mình
+    }
+
+    // Avatar người dùng: chỉ chủ sở hữu thao tác
+    match /users/{uid}/avatar/{file} {
+      allow read: if true;                 // có thể public, tùy UI
+      allow write, delete: if emailVerified() && isOwner(uid)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Evidence kèm report: cho phép upload kể cả user mới (nhưng cần App Check)
+    match /reports/{reportId}/evidence/{file} {
+      allow read: if false;
+      allow write: if request.time < timestamp.date(2100,1,1)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Default deny all other paths
     match /{allPaths=**} {
       allow read, write: if false;
     }

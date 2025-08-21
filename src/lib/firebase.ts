@@ -3,6 +3,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,5 +20,19 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+
+// Initialize App Check for security
+if (typeof window !== 'undefined') {
+  const appCheckKey = process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY || '6Lcysq0rAAAAALEPzAMOrcdpMa63nQ5hqMecpg8X';
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(appCheckKey),
+      isTokenAutoRefreshEnabled: true
+    });
+    console.log('✅ App Check initialized successfully');
+  } catch (error) {
+    console.warn('⚠️ App Check initialization failed:', error);
+  }
+}
 
 export { app, db, auth, storage };

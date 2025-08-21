@@ -12,13 +12,18 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"Tests will be added in next phase\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:functions": "cd functions && npm test",
     "analyze": "cross-env ANALYZE=true npm run build",
     "lighthouse": "lighthouse http://localhost:3000 --output-path=./lighthouse-report.html --save-assets --view",
     "sitemap:tree": "node scripts/generate-sitemap-tree.js",
     "sitemap:tree:file": "node scripts/generate-sitemap-tree.js --file",
     "sitemap:file": "node scripts/generate-sitemap-file.js",
-    "sitemap:routes": "tree /F /A src\\app"
+    "sitemap:routes": "tree /F /A src\\app",
+    "deploy:backend": "node scripts/deploy-backend.js",
+    "emulator": "firebase emulators:start --only auth,firestore,functions"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
@@ -61,6 +66,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.1",
@@ -68,12 +74,18 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "genkit-cli": "^1.14.1",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-jest": "^29.4.1",
     "typescript": "^5"
   }
 }

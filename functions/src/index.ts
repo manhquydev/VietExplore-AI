@@ -1,32 +1,40 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Cloud Functions for VietExplore-AI
+ * Authentication, authorization, and business logic functions
  */
 
-import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
+import { setGlobalOptions } from "firebase-functions";
+import * as admin from 'firebase-admin';
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+// Global configuration for cost control
+setGlobalOptions({ 
+  maxInstances: 10,
+  region: 'asia-east1'
+});
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// Authentication Functions
+export { onUserDocumentCreate } from './auth/onUserCreate';
+export { grantRole } from './auth/grantRole';
+export { beforeCreate } from './auth/beforeCreate';
+export { beforeSignIn } from './auth/beforeSignIn';
+
+// Moderation Functions
+export { submitPlaceForModeration, moderatePlace, autoModeratePlaceDraft } from './moderation/placeModeration';
+
+// User Management Functions
+export { toggleUserStatus, getUsers, requestRoleUpgrade, onUserProfileUpdate } from './user/userManagement';
+
+// Itinerary Functions
+export { createItineraryShare, duplicateItinerary, onItineraryCreate, reportContent } from './itinerary/itineraryHelpers';
+export { createItinerary, updateItinerary, createSuggestion, onItineraryCreated, onItineraryUpdated } from './itinerary/itineraryWorkflow';
+
+// Places Functions  
+export { createPlaceDraft, updatePlaceDraft, publishPlace, onPlaceDraftCreate } from './places/placeWorkflow';
+
+// Storage Functions
+export { onDraftApproved, uploadImageToDraft, deleteImageFromDraft, togglePlaceImage, onDraftImageUpload } from './storage/imageProcessing';
