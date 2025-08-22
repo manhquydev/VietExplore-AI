@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "vietexplore-ai"
-  }
+    "default": "vietexplore-ai",
+    "vietexplore-ai": "vietexplore-ai",
+    "dulichviet": "vietexplore-ai"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -23,7 +23,7 @@
     "sitemap:file": "node scripts/generate-sitemap-file.js",
     "sitemap:routes": "tree /F /A src\\app",
     "deploy:backend": "node scripts/deploy-backend.js",
-    "emulator": "firebase emulators:start --only auth,firestore,functions"
+    "emulator": "firebase emulators:start --only auth,firestore,functions,storage"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
