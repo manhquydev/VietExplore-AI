@@ -92,7 +92,7 @@ service cloud.firestore {
       allow read: if isOwner(uid) || isModerator() || isAdmin();
       allow update: if isOwner(uid) && emailVerified() &&
         request.resource.data.diff(resource.data).changedKeys().hasOnly(['displayName','photoURL','updatedAt']);
-      allow create, delete: if false; // chỉ qua Functions
+      allow create, delete: if false; // chỉ qua Functions (beforeCreate trigger)
     }
 
     // 4.2. places (công khai khi published)

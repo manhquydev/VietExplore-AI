@@ -16,7 +16,7 @@ async function setupAdmin() {
     console.log('🔧 Setting up admin user for VietExplore AI...');
     
     const adminEmail = 'manhquydev@gmail.com';
-    const adminUid = 'QQ986yaD9WUMjUyUDwhDDeL7VFu2';
+    const adminUid = 'zkYEfhCCEozYF2hdTFzTaOERpPjO';
     
     console.log(`👤 Setting up admin: ${adminEmail} (${adminUid})`);
     

@@ -1,53 +1,63 @@
-# VietExplore AI - Du Lịch Việt Platform
+# 🌏 VietExplore-AI: Du Lịch Việt Platform
 
-## 🌟 Giới Thiệu
+## 🚀 QUICK START
 
-VietExplore AI là nền tảng du lịch thông minh cho Việt Nam, sử dụng AI để gợi ý địa điểm và lên kế hoạch du lịch cá nhân hóa. Platform kết hợp nội dung do cộng đồng đóng góp với hệ thống kiểm duyệt chất lượng cao.
+### � **DEVELOPMENT (Khuyến nghị)**
+```bash
+npm install && cd functions && npm install && cd ..
+npm run dev:emulator
+```
+**👆 Sử dụng Firebase Emulators - An toàn cho testing**
 
-## 🚀 Tech Stack
+### 🌐 **PRODUCTION DEPLOY**
+```bash
+npm run deploy
+```
 
-- **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
+---
+
+## 📖 **DOCUMENTATION**
+
+- **📋 [Development Guide](./docs/DEVELOPMENT_GUIDE.md)** - Setup & Workflow
+- **🔧 [Technical Docs](./docs/)** - Complete backend implementation
+
+---
+
+## 🌟 **ABOUT PROJECT**
+
+VietExplore AI là nền tảng du lịch thông minh cho Việt Nam, sử dụng AI để gợi ý địa điểm và lên kế hoạch du lịch cá nhân hóa.
+
+### �️ **Tech Stack**
+- **Frontend**: Next.js 15 + TypeScript + Tailwind CSS
 - **Backend**: Firebase (Auth, Firestore, Functions, Storage)
-- **AI Integration**: Ready for OpenAI API, Gemini AI
-- **Testing**: Jest, Firebase Emulators
-- **Deployment**: Vercel (Frontend), Firebase (Backend)
+- **AI**: OpenAI API, Gemini AI ready
+- **Development**: Firebase Emulators + Hot reload
 
-## 🏗️ Architecture
+### 🏗️ **Architecture Highlights**
+- **35+ optimized routes** với SSG/SSR
+- **Role-based authentication** (traveler, contributor, partner, admin)
+- **50+ Cloud Functions** cho business logic
+- **Advanced security rules** và data validation
+- **Auto media optimization** (WebP, resize, CDN)
 
-### Frontend (Next.js App Router)
-- **Pages**: 35+ optimized routes với SSG/SSR
-- **Components**: Reusable UI components với Tailwind
-- **Auth**: Firebase Authentication integration
-- **State**: Context API cho global state management
+## ✅ **IMPLEMENTATION STATUS**
 
-### Backend (Firebase)
-- **Authentication**: Role-based với custom claims
-- **Database**: Firestore với advanced security rules  
-- **Functions**: 50+ Cloud Functions cho business logic
-- **Storage**: Media handling với automatic optimization
+### 🔐 **Authentication System**
+- ✅ User registration/login với role system
+- ✅ Email verification & password reset
+- ✅ Custom claims & blocking functions
+- ✅ Profile management
 
-## 🔧 Backend Implementation Status
+### 🗄️ **Database & Security**
+- ✅ Complete Firestore schema
+- ✅ Role-based security rules
+- ✅ Composite indexes
+- ✅ Data validation & integrity
 
-### ✅ Completed Components
-
-1. **Firebase Authentication (Tài liệu 1)**
-   - User registration/login với role system
-   - Custom claims (traveler, contributor, partner, moderator, admin)
-   - Email verification và MFA support
-   - Blocking functions cho security
-   - Profile management
-
-2. **Firestore Data Model (Tài liệu 2)**
-   - Complete schema cho tất cả collections
-   - Security rules với role-based access
-   - Composite indexes cho performance
-   - Data validation và integrity
-
-3. **Cloud Storage & Media (Tài liệu 3)**
-   - Image upload với security rules
-   - Automatic processing (resize, WebP conversion)
-   - EXIF data removal cho privacy
-   - CDN optimization
+### 📁 **Storage & Media**
+- ✅ Secure image upload
+- ✅ Auto processing (resize, WebP)
+- ✅ EXIF removal & CDN optimization
 
 4. **Advanced Moderation & Business Logic (Tài liệu 4)**
    - AI-enhanced content moderation system

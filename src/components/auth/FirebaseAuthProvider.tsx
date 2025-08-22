@@ -81,24 +81,52 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
           ...profileData
         });
       } else {
-        // Create new profile for first-time users
-        const newProfile: UserProfile = {
-          id: firebaseUser.uid,
-          email: firebaseUser.email!,
-          displayName: firebaseUser.displayName || '',
-          photoURL: firebaseUser.photoURL || '',
-          role: 'traveler',
-          status: 'active',
-          verifiedContributor: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        await setDoc(doc(db, 'users', firebaseUser.uid), newProfile);
-        setProfile(newProfile);
+        // Profile not found - This should not happen if beforeCreate function works
+        console.warn('User profile not found in Firestore:', firebaseUser.uid);
+        
+        // Wait a moment and retry once for new users
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const retryDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (retryDoc.exists()) {
+          const profileData = retryDoc.data() as UserProfile;
+          setProfile({
+            id: firebaseUser.uid,
+            ...profileData
+          });
+        } else {
+          // Still no profile - create a temporary one for the UI
+          console.error('Profile still not found after retry. Using temporary profile.');
+          const tempProfile: UserProfile = {
+            id: firebaseUser.uid,
+            email: firebaseUser.email!,
+            displayName: firebaseUser.displayName || '',
+            photoURL: firebaseUser.photoURL || '',
+            role: 'traveler',
+            status: 'active',
+            verifiedContributor: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          setProfile(tempProfile);
+        }
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
+      
+      // Create temporary profile on error to prevent app crash
+      const tempProfile: UserProfile = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email!,
+        displayName: firebaseUser.displayName || '',
+        photoURL: firebaseUser.photoURL || '',
+        role: 'traveler',
+        status: 'active',
+        verifiedContributor: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      setProfile(tempProfile);
     }
   };
 
@@ -165,20 +193,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
       // Send email verification
       await sendEmailVerification(result.user);
       
-      // Create user profile in Firestore
-      const userProfile: UserProfile = {
-        id: result.user.uid,
-        email: data.email,
-        displayName: data.fullName,
-        photoURL: '',
-        role: 'traveler',
-        status: 'active',
-        verifiedContributor: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      await setDoc(doc(db, 'users', result.user.uid), userProfile);
+      // 🔧 User document sẽ được tạo tự động bởi beforeCreate Cloud Function
+      // Không cần xử lý gì thêm ở client
       
       return result;
     } catch (error: any) {
@@ -203,24 +219,8 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     try {
       const result = await signInWithPopup(auth, googleProvider);
       
-      // Check if user profile exists, create if not
-      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-      
-      if (!userDoc.exists()) {
-        const userProfile: UserProfile = {
-          id: result.user.uid,
-          email: result.user.email!,
-          displayName: result.user.displayName || '',
-          photoURL: result.user.photoURL || '',
-          role: 'traveler',
-          status: 'active',
-          verifiedContributor: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        await setDoc(doc(db, 'users', result.user.uid), userProfile);
-      }
+      // 🔧 User document sẽ được tạo tự động bởi beforeCreate Cloud Function
+      // Không cần xử lý gì thêm ở client
       
       return result;
     } catch (error: any) {

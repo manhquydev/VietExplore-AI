@@ -1,7 +1,13 @@
 // functions/src/auth/beforeCreate.ts
 import { beforeUserCreated } from 'firebase-functions/v2/identity';
 import { HttpsError } from 'firebase-functions/v2/https';
+import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
+
+// Ensure admin is initialized
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 // Danh sách domain bị cấm (có thể mở rộng từ Firestore)
 const bannedDomains = [
@@ -20,8 +26,14 @@ const registrationTracker = new Map<string, number[]>();
 export const beforeCreate = beforeUserCreated({
   region: 'asia-east1'
 }, async (event) => {
-  const email = event.data?.email;
+  const userData = event.data;
   const ipAddress = event.ipAddress;
+  
+  if (!userData) {
+    throw new HttpsError('invalid-argument', 'User data is required');
+  }
+
+  const { uid, email, displayName, photoURL } = userData;
   
   if (!email) {
     throw new HttpsError('invalid-argument', 'Email là bắt buộc');
@@ -59,9 +71,39 @@ export const beforeCreate = beforeUserCreated({
       throw new HttpsError('invalid-argument', 'Định dạng email không hợp lệ');
     }
 
-    logger.info(`Allowing user creation for email: ${email}`, { ipAddress });
+    // 4. 🔧 TẠO USER DOCUMENT TRONG FIRESTORE
+    // Tạo user profile document trước khi user được tạo
+    const userProfile = {
+      id: uid,
+      email: email,
+      displayName: displayName || '',
+      photoURL: photoURL || '',
+      role: 'traveler',
+      status: 'active',
+      verifiedContributor: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      authProvider: userData.providerData?.[0]?.providerId || 'password',
+      emailVerified: false
+    };
+
+    // Tạo document trong Firestore với Admin SDK (bypass security rules)
+    await admin.firestore()
+      .collection('users')
+      .doc(uid)
+      .set(userProfile);
+
+    logger.info(`✅ User registration approved and profile created for ${email}`, { uid, ipAddress });
+
+    // Note: Custom claims sẽ được set trong onUserDocumentCreate trigger
+    // vì user chưa tồn tại trong Auth tại thời điểm beforeCreate
+
   } catch (error) {
-    logger.error('Error in beforeCreate function:', error);
-    throw error;
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    
+    logger.error('Error in beforeCreate trigger:', error);
+    throw new HttpsError('internal', 'Lỗi hệ thống khi xử lý đăng ký');
   }
 });
