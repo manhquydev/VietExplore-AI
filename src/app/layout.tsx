@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { FirebaseAuthProvider } from "@/components/auth/FirebaseAuthProvider";
 import PresenceProvider from "@/components/providers/PresenceProvider";
 import { RoleSwitcher } from "@/components/dev/role-switcher";
+import { AuthDebugger } from "@/components/debug/AuthDebugger";
+import { DirectFirestoreDebugger } from "@/components/debug/DirectFirestoreDebugger";
 
 export const metadata: Metadata = {
   title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
@@ -56,6 +58,8 @@ export default function RootLayout({
             {children}
             <Toaster />
             <RoleSwitcher />
+            <AuthDebugger />
+            <DirectFirestoreDebugger />
           </PresenceProvider>
         </FirebaseAuthProvider>
       </body>

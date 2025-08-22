@@ -31,7 +31,12 @@
     "sitemap:tree:file": "node scripts/generate-sitemap-tree.js --file",
     "sitemap:file": "node scripts/generate-sitemap-file.js",
     "sitemap:routes": "tree /F /A src\\app",
-    "deploy:backend": "node scripts/deploy-backend.js"
+    "deploy:backend": "node scripts/deploy-backend.js",
+    "setup:admin": "node scripts/setup-admin.js",
+    "setup:admin:local": "node scripts/setup-admin-local.js",
+    "setup:admin:guide": "node scripts/setup-admin-simple.js",
+    "setup:admin:manual": "node scripts/manual-admin-setup.js",
+    "fix:admin:password": "node scripts/fix-admin-password.js"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",

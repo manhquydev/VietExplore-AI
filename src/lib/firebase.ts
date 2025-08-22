@@ -35,33 +35,58 @@ if (typeof window !== 'undefined') {
   if (useEmulators && isDevelopment) {
     try {
       // Connect to Auth Emulator (check if not already connected)
-      if (!(auth.config as any).emulator) {
+      try {
         connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
         console.log('🔧 Connected to Auth Emulator');
+      } catch (authError: any) {
+        if (authError.code !== 'auth/emulator-config-failed') {
+          throw authError;
+        }
+        console.log('🔧 Auth Emulator already connected');
       }
       
       // Connect to Firestore Emulator (check if not already connected)
-      if (!(db as any)._delegate._settings?.host?.includes('127.0.0.1')) {
+      try {
         connectFirestoreEmulator(db, '127.0.0.1', 8081);
         console.log('🔧 Connected to Firestore Emulator');
+      } catch (firestoreError: any) {
+        if (firestoreError.code !== 'firestore/failed-precondition') {
+          throw firestoreError;
+        }
+        console.log('🔧 Firestore Emulator already connected');
       }
       
       // Connect to Storage Emulator (check if not already connected)
-      if (!(storage as any)._bucket?.includes('127.0.0.1')) {
+      try {
         connectStorageEmulator(storage, '127.0.0.1', 9199);
         console.log('🔧 Connected to Storage Emulator');
+      } catch (storageError: any) {
+        if (storageError.code !== 'storage/emulator-config-failed') {
+          throw storageError;
+        }
+        console.log('🔧 Storage Emulator already connected');
       }
       
       // Connect to Realtime Database Emulator (check if not already connected)
-      if (!(rtdb as any)._delegate?._databaseURL?.includes('127.0.0.1')) {
+      try {
         connectDatabaseEmulator(rtdb, '127.0.0.1', 9000);
         console.log('🔧 Connected to Database Emulator');
+      } catch (dbError: any) {
+        if (dbError.code !== 'database/emulator-config-failed') {
+          throw dbError;
+        }
+        console.log('🔧 Database Emulator already connected');
       }
       
       // Connect to Functions Emulator (check if not already connected)
-      if (!(functions as any)._region?.includes('127.0.0.1')) {
+      try {
         connectFunctionsEmulator(functions, '127.0.0.1', 5002);
         console.log('🔧 Connected to Functions Emulator');
+      } catch (functionsError: any) {
+        if (functionsError.code !== 'functions/emulator-config-failed') {
+          throw functionsError;
+        }
+        console.log('🔧 Functions Emulator already connected');
       }
       
       console.log('✅ All Firebase Emulators connected successfully');
