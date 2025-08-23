@@ -1,0 +1,8 @@
+11:45:46.481 [NamespaceSystem-akka.actor.default-dispatcher-6] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+11:45:47.752 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9777
+11:46:23.134 [NamespaceSystem-akka.actor.default-dispatcher-6] INFO com.firebase.core.namespace.NamespaceActor - vietexplore-ai-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 314ms, init: 0ms
+11:46:23.514 [NamespaceSystem-blocking-namespace-operation-dispatcher-8] INFO com.firebase.core.namespace.StateManager - Namespace vietexplore-ai-default-rtdb status Active to Active
+12:04:51.126 [Thread-0] INFO com.firebase.server.forge.App$ - Attempting graceful shutdown.
+12:04:51.206 [NamespaceSystem-akka.actor.default-dispatcher-11] INFO com.firebase.core.namespace.Terminator$Terminator - 1 actors left to terminate: vietexplore-ai-default-rtdb
+12:04:51.260 [NamespaceSystem-akka.actor.default-dispatcher-11] INFO com.firebase.core.namespace.NamespaceActor - stopped namespace actor for vietexplore-ai-default-rtdb
+12:04:51.284 [Thread-0] INFO com.firebase.server.forge.App$ - Graceful shutdown complete.
