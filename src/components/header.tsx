@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoginModal } from "@/components/auth/login-modal"
 import { RegisterModal } from "@/components/auth/register-modal"
 import { useAuth } from "@/hooks/useAuth"
+import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
 import { Icon, IconButton } from "@/components/ui/icon"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { Logo } from "@/components/ui/logo"
@@ -42,7 +43,7 @@ const navigation = [
 
 export const Header: React.FC = () => {
   const pathname = usePathname()
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, profile, isAuthenticated, logout } = useFirebaseAuth()
   const [isDark, setIsDark] = React.useState(false)
   const [isOpen, setIsOpen] = React.useState(false)
   const [showLoginModal, setShowLoginModal] = React.useState(false)
@@ -139,9 +140,9 @@ export const Header: React.FC = () => {
                   <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 hover:scale-105 transition-all duration-200">
                     <div className="relative">
                       <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-sky-200/50 dark:hover:ring-sky-400/30 transition-all duration-200">
-                        <AvatarImage src={user.avatar} alt={user.fullName} />
+                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || user.email || ''} />
                         <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
-                          {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {(user.displayName || user.email || '?').split(' ').map(n => n[0]).join('').toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       {/* Online status indicator */}
@@ -159,16 +160,16 @@ export const Header: React.FC = () => {
                   <div className="p-4 bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
-                        <AvatarImage src={user.avatar} alt={user.fullName} />
+                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || user.email || ''} />
                         <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold text-lg">
-                          {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {(user.displayName || user.email || '?').split(' ').map(n => n[0]).join('').toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white truncate">{user.displayName || user.email}</p>
                         <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
                         <UserRoleDisplay 
-                          role={user.role}
+                          role={profile?.role || 'traveler'}
                           variant="compact"
                           className="mt-1"
                         />
@@ -246,7 +247,7 @@ export const Header: React.FC = () => {
                     </div>
 
                     {/* Admin/Moderator Section */}
-                    {(user.role === 'moderator' || user.role === 'admin') && (
+                    {(profile?.role === 'moderator' || profile?.role === 'admin') && (
                       <>
                         <DropdownMenuSeparator className="my-2" />
                         <div className="mb-1">
@@ -263,18 +264,60 @@ export const Header: React.FC = () => {
                       </>
                     )}
 
-                    {user.role === 'admin' && (
-                      <div className="mb-1">
-                        <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
-                          <Link href="/admin/dashboard" className="flex items-center gap-3 px-3">
-                            <Award className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                            <div className="flex-1">
-                              <div className="font-medium text-slate-900 dark:text-white">Quản trị hệ thống</div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">Bảng điều khiển admin</div>
-                            </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      </div>
+                    {profile?.role === 'admin' && (
+                      <>
+                        <div className="mb-1">
+                          <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <Link href="/admin/setup" className="flex items-center gap-3 px-3">
+                              <Settings className="w-5 h-5 text-red-600 dark:text-red-400" />
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-900 dark:text-white">Admin Setup</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Thiết lập admin</div>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <Link href="/admin/dashboard" className="flex items-center gap-3 px-3">
+                              <Award className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-900 dark:text-white">Quản trị hệ thống</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Bảng điều khiển admin</div>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <Link href="/admin/users" className="flex items-center gap-3 px-3">
+                              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-900 dark:text-white">Quản lý người dùng</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Phân quyền & vai trò</div>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <Link href="/admin/content" className="flex items-center gap-3 px-3">
+                              <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-900 dark:text-white">Quản lý nội dung</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Nhãn tin cậy & ẩn/hiện</div>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <Link href="/admin/analytics" className="flex items-center gap-3 px-3">
+                              <BookOpen className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                              <div className="flex-1">
+                                <div className="font-medium text-slate-900 dark:text-white">Thống kê & báo cáo</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Analytics dashboard</div>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                        </div>
+                      </>
                     )}
 
                     <DropdownMenuSeparator className="my-2" />
@@ -357,23 +400,23 @@ export const Header: React.FC = () => {
                       <>
                         <div className="flex items-center gap-3 p-3 glass-subtle rounded-xl">
                           <Avatar className="h-10 w-10 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
-                            <AvatarImage src={user.avatar} alt={user.fullName} />
+                            <AvatarImage src={user.photoURL || ''} alt={user.displayName || user.email || ''} />
                             <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
-                              {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              {(user.displayName || user.email || '?').split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{user.displayName || user.email}</p>
                             <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
                             <UserRoleDisplay 
-                              role={user.role}
+                              role={profile?.role || 'traveler'}
                               variant="compact"
                               className="mt-1"
                             />
                           </div>
                         </div>
                         <Button 
-                          variant="outline" 
+                          variant="secondary" 
                           className="w-full glass-subtle hover:bg-red-50 dark:hover:bg-red-900/20" 
                           onClick={handleLogout}
                         >
@@ -386,7 +429,7 @@ export const Header: React.FC = () => {
                         <Button className="w-full bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white" onClick={openLoginModal}>
                           Bắt đầu với AI
                         </Button>
-                        <Button variant="outline" className="w-full glass-subtle" onClick={openRegisterModal}>
+                        <Button variant="secondary" className="w-full glass-subtle" onClick={openRegisterModal}>
                           Tạo tài khoản
                         </Button>
                       </>

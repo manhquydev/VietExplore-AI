@@ -1,4 +1,4 @@
-// src/lib/auth-guards.ts - Route guards and middleware
+// src/lib/auth-guards.tsx - Route guards and middleware
 import { useAuth, roleHelpers } from './auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -131,5 +131,3 @@ export function useRouteGuard(options: {
 
   return { loading, authorized: !loading && user };
 }
-
-

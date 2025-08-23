@@ -306,3 +306,51 @@ export const onPlaceDraftCreate = onDocumentCreated('placeDrafts/{draftId}', asy
     logger.error('Error in onPlaceDraftCreate:', error);
   }
 });
+
+// Function lấy drafts của user (Contributor, Partner, Moderator, Admin)
+export const getUserDrafts = onCall(async (req) => {
+  try {
+    if (!req.auth) {
+      throw new HttpsError('unauthenticated', 'Vui lòng đăng nhập');
+    }
+
+    const { userId } = req.data;
+    const requestUserId = userId || req.auth.uid;
+    
+    // Chỉ cho phép lấy drafts của chính mình, trừ Admin/Moderator
+    const userDoc = await admin.firestore().doc(`users/${req.auth.uid}`).get();
+    const userRole = userDoc.data()?.role || 'traveler';
+    
+    if (!['admin', 'moderator'].includes(userRole) && requestUserId !== req.auth.uid) {
+      throw new HttpsError('permission-denied', 'Không có quyền xem drafts của user khác');
+    }
+
+    const db = admin.firestore();
+    
+    // Query drafts
+    let query = db.collection('placeDrafts')
+      .where('submitter', '==', requestUserId)
+      .orderBy('updatedAt', 'desc')
+      .limit(50);
+
+    const snapshot = await query.get();
+    
+    const drafts = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    return {
+      success: true,
+      drafts,
+      count: drafts.length
+    };
+    
+  } catch (error) {
+    logger.error('Error getting user drafts:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', 'Lỗi server khi lấy drafts');
+  }
+});

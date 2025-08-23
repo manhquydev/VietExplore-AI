@@ -1,0 +1,278 @@
+#!/usr/bin/env node
+/**
+ * Script tạo tài khoản test cho tất cả các role trong dự án VietExplore-AI
+ * Sử dụng: node scripts/setup-test-accounts.js
+ */
+
+const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
+
+// Initialize Firebase Admin SDK
+const serviceAccountPath = path.join(__dirname, '..', 'vietexplore-ai-firebase-adminsdk-fbsvc-3554e3a673.json');
+
+if (!fs.existsSync(serviceAccountPath)) {
+  console.error('❌ Không tìm thấy service account file:', serviceAccountPath);
+  process.exit(1);
+}
+
+const serviceAccount = require(serviceAccountPath);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  projectId: 'vietexplore-ai'
+});
+
+const auth = admin.auth();
+const firestore = admin.firestore();
+
+// Định nghĩa test accounts cho từng role
+const TEST_ACCOUNTS = [
+  {
+    email: 'guest@vietexplore.test',
+    password: 'guest123456',
+    role: 'guest',
+    displayName: 'Test Guest User',
+    description: 'Tài khoản test cho khách vãng lai'
+  },
+  {
+    email: 'traveler@vietexplore.test', 
+    password: 'traveler123456',
+    role: 'traveler',
+    displayName: 'Test Traveler User',
+    description: 'Tài khoản test cho du khách'
+  },
+  {
+    email: 'contributor@vietexplore.test',
+    password: 'contributor123456', 
+    role: 'contributor',
+    displayName: 'Test Contributor User',
+    description: 'Tài khoản test cho cộng tác viên'
+  },
+  {
+    email: 'partner@vietexplore.test',
+    password: 'partner123456',
+    role: 'partner', 
+    displayName: 'Test Partner User',
+    description: 'Tài khoản test cho đối tác cộng đồng'
+  },
+  {
+    email: 'moderator@vietexplore.test',
+    password: 'moderator123456',
+    role: 'moderator',
+    displayName: 'Test Moderator User', 
+    description: 'Tài khoản test cho kiểm duyệt viên'
+  },
+  {
+    email: 'admin2@vietexplore.test',
+    password: 'admin123456',
+    role: 'admin',
+    displayName: 'Test Admin User',
+    description: 'Tài khoản test cho admin (backup)'
+  }
+];
+
+/**
+ * Tạo user trong Firebase Auth
+ */
+async function createAuthUser(account) {
+  try {
+    const userRecord = await auth.createUser({
+      email: account.email,
+      password: account.password,
+      displayName: account.displayName,
+      emailVerified: true // Auto verify for test accounts
+    });
+    
+    console.log(`✅ Created Auth user: ${account.email} (${userRecord.uid})`);
+    return userRecord;
+  } catch (error) {
+    if (error.code === 'auth/email-already-exists') {
+      console.log(`⚠️  User ${account.email} already exists in Auth`);
+      const existingUser = await auth.getUserByEmail(account.email);
+      return existingUser;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Tạo user profile trong Firestore
+ */
+async function createUserProfile(userRecord, account) {
+  try {
+    const userProfile = {
+      uid: userRecord.uid,
+      email: userRecord.email,
+      displayName: account.displayName,
+      role: account.role,
+      status: 'active',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      emailVerified: true,
+      testAccount: true, // Flag để dễ cleanup sau
+      description: account.description
+    };
+
+    // Thêm metadata specific cho từng role
+    if (account.role === 'contributor') {
+      userProfile.verifiedContributor = true;
+      userProfile.contributorBadge = 'verified';
+    }
+
+    if (account.role === 'partner') {
+      userProfile.partnerId = `test-partner-${userRecord.uid.substring(0, 8)}`;
+      userProfile.partnerType = 'test-organization';
+    }
+
+    if (account.role === 'moderator') {
+      userProfile.moderatorLevel = 'standard';
+      userProfile.moderatorPermissions = ['review_content', 'manage_reports'];
+    }
+
+    if (account.role === 'admin') {
+      userProfile.adminLevel = 'super';
+      userProfile.adminPermissions = ['all'];
+    }
+
+    await firestore.collection('users').doc(userRecord.uid).set(userProfile);
+    console.log(`✅ Created Firestore profile for: ${account.email}`);
+    
+    return userProfile;
+  } catch (error) {
+    console.error(`❌ Error creating profile for ${account.email}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Setup test data cho các role
+ */
+async function setupTestDataForRole(userRecord, account) {
+  try {
+    const batch = firestore.batch();
+
+    // Setup data cho Contributor
+    if (account.role === 'contributor') {
+      // Tạo 1-2 place drafts
+      const draftRef1 = firestore.collection('placeDrafts').doc();
+      batch.set(draftRef1, {
+        title: 'Địa điểm test từ Contributor',
+        description: 'Mô tả địa điểm test',
+        region: 'Miền Bắc',
+        province: 'Hà Nội',
+        type: 'cultural',
+        submitter: userRecord.uid,
+        submitterRole: 'contributor',
+        status: 'draft',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    // Setup data cho Partner
+    if (account.role === 'partner') {
+      const draftRef2 = firestore.collection('placeDrafts').doc();
+      batch.set(draftRef2, {
+        title: 'Địa điểm chính thức từ Partner',
+        description: 'Thông tin chính thức từ đối tác',
+        region: 'Miền Nam', 
+        province: 'TP.HCM',
+        type: 'business',
+        submitter: userRecord.uid,
+        submitterRole: 'partner',
+        status: 'submitted',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    // Setup moderation queue cho Moderator test
+    if (account.role === 'moderator') {
+      const modRef = firestore.collection('moderationQueue').doc();
+      batch.set(modRef, {
+        contentId: 'test-content-id',
+        contentType: 'place',
+        priority: 'normal',
+        status: 'pending',
+        submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        assignedModerator: null
+      });
+    }
+
+    await batch.commit();
+    console.log(`✅ Setup test data for role: ${account.role}`);
+  } catch (error) {
+    console.warn(`⚠️  Could not setup test data for ${account.role}:`, error.message);
+  }
+}
+
+/**
+ * Main function
+ */
+async function main() {
+  console.log('🚀 Bắt đầu tạo test accounts cho VietExplore-AI...\n');
+
+  const results = [];
+  
+  for (const account of TEST_ACCOUNTS) {
+    try {
+      console.log(`\n📝 Tạo tài khoản: ${account.email} (${account.role})`);
+      
+      // Step 1: Create Auth user
+      const userRecord = await createAuthUser(account);
+      
+      // Step 2: Create Firestore profile  
+      const userProfile = await createUserProfile(userRecord, account);
+      
+      // Step 3: Setup test data
+      await setupTestDataForRole(userRecord, account);
+      
+      results.push({
+        email: account.email,
+        uid: userRecord.uid,
+        role: account.role,
+        status: 'success'
+      });
+      
+    } catch (error) {
+      console.error(`❌ Lỗi tạo tài khoản ${account.email}:`, error);
+      results.push({
+        email: account.email,
+        role: account.role,
+        status: 'error',
+        error: error.message
+      });
+    }
+  }
+
+  // Summary
+  console.log('\n' + '='.repeat(60));
+  console.log('📊 KẾT QUẢ TẠO TEST ACCOUNTS');
+  console.log('='.repeat(60));
+  
+  results.forEach(result => {
+    const status = result.status === 'success' ? '✅' : '❌';
+    console.log(`${status} ${result.email} (${result.role})`);
+    if (result.uid) console.log(`   UID: ${result.uid}`);
+    if (result.error) console.log(`   Error: ${result.error}`);
+  });
+
+  console.log('\n🔐 THÔNG TIN ĐĂNG NHẬP:');
+  console.log('Password cho tất cả test accounts: {role}123456');
+  console.log('Ví dụ: traveler@vietexplore.test / traveler123456\n');
+
+  // Cleanup
+  await admin.app().delete();
+  console.log('✅ Hoàn thành!');
+}
+
+// Handle errors
+process.on('unhandledRejection', (error) => {
+  console.error('❌ Unhandled rejection:', error);
+  process.exit(1);
+});
+
+// Run main function
+if (require.main === module) {
+  main().catch(console.error);
+}
+
+module.exports = { TEST_ACCOUNTS };

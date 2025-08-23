@@ -3,10 +3,11 @@
 
 import { useState, useEffect } from 'react';
 import { User, Shield, Eye, UserX, UserCheck, ChevronDown, Search, Filter } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
-import { hasPermission, getUserRole, UserRole, getRoleDisplayName } from '@/lib/rbac';
+import { useFirebaseAuth } from '@/components/auth/FirebaseAuthProvider';
+import { UserRole, getRoleDisplayName } from '@/lib/rbac';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 interface UserData {
   id: string;
@@ -26,7 +27,8 @@ const toggleUserStatus = httpsCallable(functions, 'toggleUserStatus');
 const promoteUser = httpsCallable(functions, 'promoteUser');
 
 export default function UserManagement() {
-  const { user } = useAuth();
+  const { user, profile, loading: authLoading } = useFirebaseAuth();
+  const router = useRouter();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
@@ -36,14 +38,21 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
 
-  const userRole = getUserRole(user);
-  const canManageUsers = hasPermission(userRole, 'admin.manage_roles');
-
   useEffect(() => {
-    if (canManageUsers) {
-      loadUsers();
+    if (authLoading) return;
+    
+    if (!user) {
+      router.push('/auth/login');
+      return;
     }
-  }, [canManageUsers, roleFilter, statusFilter]);
+    
+    if (!profile || profile.role !== 'admin') {
+      router.push('/');
+      return;
+    }
+    
+    loadUsers();
+  }, [user, profile, authLoading, router, roleFilter, statusFilter]);
 
   const loadUsers = async () => {
     try {
@@ -144,7 +153,18 @@ export default function UserManagement() {
       : 'bg-red-100 text-red-800';
   };
 
-  if (!canManageUsers) {
+  // Show loading state during auth check
+  if (authLoading || loading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Đang tải...</p>
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!user || !profile || profile.role !== 'admin') {
     return (
       <div className="p-8 text-center">
         <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />

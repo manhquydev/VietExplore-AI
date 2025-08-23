@@ -36,7 +36,7 @@ if (typeof window !== 'undefined') {
     try {
       // Connect to Auth Emulator (check if not already connected)
       try {
-        connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+        connectAuthEmulator(auth, 'http://127.0.0.1:9888', { disableWarnings: true });
         console.log('🔧 Connected to Auth Emulator');
       } catch (authError: any) {
         if (authError.code !== 'auth/emulator-config-failed') {
@@ -47,7 +47,7 @@ if (typeof window !== 'undefined') {
       
       // Connect to Firestore Emulator (check if not already connected)
       try {
-        connectFirestoreEmulator(db, '127.0.0.1', 8081);
+        connectFirestoreEmulator(db, '127.0.0.1', 8888);
         console.log('🔧 Connected to Firestore Emulator');
       } catch (firestoreError: any) {
         if (firestoreError.code !== 'firestore/failed-precondition') {
@@ -58,7 +58,7 @@ if (typeof window !== 'undefined') {
       
       // Connect to Storage Emulator (check if not already connected)
       try {
-        connectStorageEmulator(storage, '127.0.0.1', 9199);
+        connectStorageEmulator(storage, '127.0.0.1', 9666);
         console.log('🔧 Connected to Storage Emulator');
       } catch (storageError: any) {
         if (storageError.code !== 'storage/emulator-config-failed') {
@@ -69,7 +69,7 @@ if (typeof window !== 'undefined') {
       
       // Connect to Realtime Database Emulator (check if not already connected)
       try {
-        connectDatabaseEmulator(rtdb, '127.0.0.1', 9000);
+        connectDatabaseEmulator(rtdb, '127.0.0.1', 9777);
         console.log('🔧 Connected to Database Emulator');
       } catch (dbError: any) {
         if (dbError.code !== 'database/emulator-config-failed') {
@@ -80,7 +80,7 @@ if (typeof window !== 'undefined') {
       
       // Connect to Functions Emulator (check if not already connected)
       try {
-        connectFunctionsEmulator(functions, '127.0.0.1', 5002);
+        connectFunctionsEmulator(functions, '127.0.0.1', 5555);
         console.log('🔧 Connected to Functions Emulator');
       } catch (functionsError: any) {
         if (functionsError.code !== 'functions/emulator-config-failed') {

@@ -3,9 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseAuthProvider } from "@/components/auth/FirebaseAuthProvider";
 import PresenceProvider from "@/components/providers/PresenceProvider";
-import { RoleSwitcher } from "@/components/dev/role-switcher";
-import { AuthDebugger } from "@/components/debug/AuthDebugger";
-import { DirectFirestoreDebugger } from "@/components/debug/DirectFirestoreDebugger";
+import { DevDebugPanel } from "@/components/debug/DevDebugPanel";
 
 export const metadata: Metadata = {
   title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
@@ -57,9 +55,7 @@ export default function RootLayout({
           <PresenceProvider>
             {children}
             <Toaster />
-            <RoleSwitcher />
-            <AuthDebugger />
-            <DirectFirestoreDebugger />
+            <DevDebugPanel />
           </PresenceProvider>
         </FirebaseAuthProvider>
       </body>

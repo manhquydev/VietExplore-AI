@@ -26,11 +26,12 @@ import {
   RefreshCw
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
+import { useAuth } from "@/lib/auth"
+import { getUserRole, hasPermission } from "@/lib/rbac"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { httpsCallable } from "firebase/functions"
 import { functions } from "@/lib/firebase"
-import { useRouter } from "next/navigation"
+import { redirect } from "next/navigation"
 
 interface ModerationItem {
   id: string
@@ -86,8 +87,7 @@ const typeConfig = {
 }
 
 export default function ModerationDashboard() {
-  const { user, profile, loading: authLoading } = useFirebaseAuth()
-  const router = useRouter()
+  const { user } = useAuth()
   const [moderationItems, setModerationItems] = React.useState<ModerationItem[]>([])
   const [loading, setLoading] = React.useState(true)
   const [stats, setStats] = React.useState({
@@ -103,21 +103,16 @@ export default function ModerationDashboard() {
   const [priorityFilter, setPriorityFilter] = React.useState<string>('all')
   const [typeFilter, setTypeFilter] = React.useState<string>('all')
 
+  const userRole = getUserRole(user)
+  const canModerate = hasPermission(userRole, 'moderation.queue_view')
+
   React.useEffect(() => {
-    if (authLoading) return
-    
-    if (!user) {
-      router.push('/auth/login')
+    if (!user || !canModerate) {
+      redirect('/auth/login')
       return
     }
-    
-    if (!profile || (profile.role !== 'moderator' && profile.role !== 'admin')) {
-      router.push('/')
-      return
-    }
-    
     loadModerationData()
-  }, [user, profile, authLoading, router, activeTab, statusFilter, priorityFilter, typeFilter])
+  }, [user, canModerate, activeTab, statusFilter, priorityFilter, typeFilter])
 
   const loadModerationData = async () => {
     try {
@@ -199,7 +194,11 @@ export default function ModerationDashboard() {
     return matchesSearch && matchesTab
   })
 
-  if (authLoading || loading) {
+  if (!user || !canModerate) {
+    return null
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-bg text-text">
         <Header />
@@ -230,7 +229,7 @@ export default function ModerationDashboard() {
               Làm mới
             </Button>
             <Badge variant="warning">
-              {profile?.role === 'admin' ? 'Admin' : 'Moderator'} Access
+              {userRole === 'admin' ? 'Admin' : 'Moderator'} Access
             </Badge>
           </div>
         </div>
@@ -441,7 +440,7 @@ function ModerationItemCard({
               <div className="flex items-center gap-1">
                 <User className="w-4 h-4" />
                 <span>{item.submittedBy.name}</span>
-                <UserRoleDisplay role={item.submittedBy.role as any} variant="compact" />
+                <UserRoleDisplay role={item.submittedBy.role as any} size="sm" />
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />

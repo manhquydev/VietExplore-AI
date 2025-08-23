@@ -279,3 +279,65 @@ export const onItineraryUpdated = onDocumentUpdated('itineraries/{itineraryId}',
     logger.error('Error handling itinerary update:', error);
   }
 });
+
+// Function lấy itineraries của user (Traveler+)
+export const getUserItineraries = onCall(async (req) => {
+  try {
+    if (!req.auth) {
+      throw new HttpsError('unauthenticated', 'Vui lòng đăng nhập');
+    }
+
+    const { userId, visibility, limit = 20 } = req.data;
+    const requestUserId = userId || req.auth.uid;
+    
+    // Chỉ cho phép lấy itineraries của chính mình, trừ Admin/Moderator
+    const userDoc = await admin.firestore().doc(`users/${req.auth.uid}`).get();
+    const userRole = userDoc.data()?.role || 'traveler';
+    
+    if (!['admin', 'moderator'].includes(userRole) && requestUserId !== req.auth.uid) {
+      throw new HttpsError('permission-denied', 'Không có quyền xem itineraries của user khác');
+    }
+
+    const db = admin.firestore();
+    
+    // Build query
+    let query = db.collection('itineraries')
+      .where('ownerId', '==', requestUserId)
+      .orderBy('updatedAt', 'desc')
+      .limit(limit);
+
+    // Filter by visibility if specified
+    if (visibility && ['public', 'private'].includes(visibility)) {
+      query = query.where('visibility', '==', visibility);
+    }
+
+    const snapshot = await query.get();
+    
+    const itineraries = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Get user stats
+    const userStatsDoc = await db.doc(`users/${requestUserId}`).get();
+    const userStats = userStatsDoc.data()?.stats || {};
+
+    return {
+      success: true,
+      itineraries,
+      count: itineraries.length,
+      userStats: {
+        totalItineraries: userStats.itinerariesTotal || 0,
+        publicItineraries: userStats.itinerariesPublic || 0,
+        privateItineraries: (userStats.itinerariesTotal || 0) - (userStats.itinerariesPublic || 0)
+      }
+    };
+    
+  } catch (error) {
+    logger.error('Error getting user itineraries:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', 'Lỗi server khi lấy itineraries');
+  }
+});

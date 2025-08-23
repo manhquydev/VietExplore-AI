@@ -33,10 +33,10 @@ export { getUsers, requestRoleUpgrade, onUserProfileUpdate } from './user/userMa
 
 // Itinerary Functions
 export { createItineraryShare, duplicateItinerary, onItineraryCreate, reportContent } from './itinerary/itineraryHelpers';
-export { createItinerary, updateItinerary, createSuggestion, onItineraryCreated, onItineraryUpdated } from './itinerary/itineraryWorkflow';
+export { createItinerary, updateItinerary, createSuggestion, onItineraryCreated, onItineraryUpdated, getUserItineraries } from './itinerary/itineraryWorkflow';
 
 // Places Functions  
-export { createPlaceDraft, updatePlaceDraft, publishPlace, onPlaceDraftCreate } from './places/placeWorkflow';
+export { createPlaceDraft, updatePlaceDraft, publishPlace, onPlaceDraftCreate, getUserDrafts } from './places/placeWorkflow';
 
 // Storage Functions
 export { onDraftApproved, uploadImageToDraft, deleteImageFromDraft, togglePlaceImage, onDraftImageUpload } from './storage/imageProcessing';
@@ -64,3 +64,4 @@ export { cleanupModeratorActivity, cleanupViewerEntries, cleanupOfflineStatus } 
 // Admin & RBAC Functions
 export { assignUserRole, getAllUsers, promoteUser, toggleUserStatus, getAuditLogs } from './admin/roleManagement';
 export { createFirstAdmin, checkSetupStatus, emergencyPromoteAdmin } from './admin/initialSetup';
+export { getDashboardStats, getRecentActivities, getPlatformAnalytics } from './admin/analytics';

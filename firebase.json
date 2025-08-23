@@ -1,6 +1,5 @@
 {
   "firestore": {
-    "database": "(default)",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
@@ -8,9 +7,6 @@
     {
       "source": "functions",
       "codebase": "default",
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ],
       "ignore": [
         "node_modules",
         ".git",
@@ -20,52 +16,32 @@
       ]
     }
   ],
-  "storage": {
-    "rules": "storage.rules"
-  },
   "database": {
     "rules": "database.rules.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "emulators": {
     "auth": {
-      "port": 9099
+      "port": 9888
     },
     "functions": {
-      "port": 5002
+      "port": 5555
     },
     "firestore": {
-      "port": 8081
+      "port": 8888
     },
     "database": {
-      "port": 9000
+      "port": 9777
     },
     "storage": {
-      "port": 9199
+      "port": 9666
     },
     "ui": {
-      "enabled": true
+      "enabled": true,
+      "port": 4444
     },
-    "singleProjectMode": true,
-    "apphosting": {
-      "port": 5002,
-      "rootDirectory": "./",
-      "startCommand": "npm run dev"
-    },
-    "hosting": {
-      "port": 5000
-    },
-    "pubsub": {
-      "port": 8085
-    },
-    "eventarc": {
-      "port": 9299
-    },
-    "dataconnect": {
-      "port": 9399,
-      "dataDir": "dataconnect/.dataconnect/pgliteData"
-    },
-    "tasks": {
-      "port": 9499
-    }
+    "singleProjectMode": true
   }
 }

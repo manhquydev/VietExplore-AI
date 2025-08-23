@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
     "dev:emulator": "concurrently \"firebase emulators:start --only auth,firestore,functions,storage,database\" \"npm run dev\"",
+    "dev:complete": "node scripts/dev-complete.js",
     "dev:production": "cross-env NEXT_PUBLIC_USE_FIREBASE_EMULATOR=false npm run dev",
     "dev:local": "npm run dev:emulator",
     "build": "next build",
@@ -36,7 +37,9 @@
     "setup:admin:local": "node scripts/setup-admin-local.js",
     "setup:admin:guide": "node scripts/setup-admin-simple.js",
     "setup:admin:manual": "node scripts/manual-admin-setup.js",
-    "fix:admin:password": "node scripts/fix-admin-password.js"
+    "fix:admin:password": "node scripts/fix-admin-password.js",
+    "test:accounts": "node scripts/setup-test-accounts-local.js",
+    "test:accounts:cleanup": "node scripts/cleanup-test-accounts-local.js"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
