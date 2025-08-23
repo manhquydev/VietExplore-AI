@@ -2,10 +2,10 @@
 const admin = require('firebase-admin');
 
 // Set emulator hosts BEFORE initializing admin
-process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8081';
-process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:9099';
-process.env.FIREBASE_DATABASE_EMULATOR_HOST = '127.0.0.1:9000';
-process.env.FIREBASE_STORAGE_EMULATOR_HOST = '127.0.0.1:9199';
+process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8181';
+process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:9199';
+process.env.FIREBASE_DATABASE_EMULATOR_HOST = '127.0.0.1:9100';
+process.env.FIREBASE_STORAGE_EMULATOR_HOST = '127.0.0.1:9299';
 
 // Initialize Firebase Admin for LOCAL EMULATOR (no credentials needed for emulator)
 if (!admin.apps.length) {
@@ -20,9 +20,9 @@ async function setupLocalAdmin() {
   try {
     console.log('🔧 Setting up admin user for LOCAL EMULATOR...');
     console.log('📡 Connecting to Firebase Emulators:');
-    console.log('   - Auth: 127.0.0.1:9099');
-    console.log('   - Firestore: 127.0.0.1:8081');
-    console.log('   - Database: 127.0.0.1:9000');
+    console.log('   - Auth: 127.0.0.1:9199');
+    console.log('   - Firestore: 127.0.0.1:8181');
+    console.log('   - Database: 127.0.0.1:9100');
     
     const adminEmail = 'manhquydev@gmail.com';
     
@@ -128,9 +128,9 @@ async function setupLocalAdmin() {
     
     console.log('\n🔗 Emulator URLs:');
     console.log('   - App: http://localhost:9002');
-    console.log('   - Firebase UI: http://127.0.0.1:4000');
-    console.log('   - Auth UI: http://127.0.0.1:4000/auth');
-    console.log('   - Firestore UI: http://127.0.0.1:4000/firestore');
+    console.log('   - Firebase UI: http://127.0.0.1:4100');
+    console.log('   - Auth UI: http://127.0.0.1:4100/auth');
+    console.log('   - Firestore UI: http://127.0.0.1:4100/firestore');
     
   } catch (error) {
     console.error('❌ Error setting up local admin:', error);
