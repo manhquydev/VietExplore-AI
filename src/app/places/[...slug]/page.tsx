@@ -28,6 +28,8 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
 import Link from "next/link"
+import { SuggestEditModal } from "@/components/places/SuggestEditModal"
+import { ReportViolationModal } from "@/components/places/ReportViolationModal"
 
 interface PlaceData {
   id: string
@@ -72,78 +74,6 @@ interface PlaceData {
   }
 }
 
-// Mock data - trong thực tế sẽ fetch từ API
-const mockPlace: PlaceData = {
-  id: "bai-bien-my-khe-da-nang",
-  name: "Bãi biển Mỹ Khê",
-  shortDescription: "Một trong những bãi biển đẹp nhất Việt Nam với cát trắng mịn và nước biển trong xanh",
-  description: `Bãi biển Mỹ Khê là một trong những bãi biển đẹp nhất Đà Nẵng và được tạp chí Forbes bình chọn là một trong 6 bãi biển quyến rũ nhất hành tinh.
-
-Với đường bờ biển dài khoảng 20km, cát trắng mịn màng và làn nước trong xanh, Mỹ Khê là điểm đến lý tưởng cho những ai yêu thích hoạt động thể thao biển và thư giãn.
-
-Đặc biệt, bãi biển này có hướng Đông Nam nên rất thuận lợi cho việc ngắm bình minh. Khu vực xung quanh có nhiều resort, khách sạn cao cấp và nhà hàng hải sản tươi ngon.
-
-Các hoạt động phổ biến tại đây bao gồm tắm biển, lướt sóng, chơi thể thao bãi biển, và thưởng thức hải sản tại các quán ven biển.`,
-  type: "bien",
-  region: "trung-bo",
-  province: "da-nang",
-  address: "Phường Phước Mỹ, Quận Sơn Trà, Đà Nẵng",
-  coordinates: {
-    lat: 16.0544,
-    lng: 108.2277
-  },
-  images: [
-    {
-      id: "img1",
-      url: "https://images.unsplash.com/photo-1539650116574-75c0c6d73c6e?w=800",
-      alt: "Toàn cảnh bãi biển Mỹ Khê",
-      caption: "Bãi biển Mỹ Khê vào buổi sáng với cát trắng mịn",
-      isPrimary: true
-    },
-    {
-      id: "img2", 
-      url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800",
-      alt: "Hoạt động lướt sóng tại Mỹ Khê",
-      caption: "Du khách lướt sóng tại bãi biển",
-      isPrimary: false
-    },
-    {
-      id: "img3",
-      url: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=800", 
-      alt: "Cầu Rồng nhìn từ bãi biển",
-      caption: "Cầu Rồng nhìn từ bãi biển Mỹ Khê",
-      isPrimary: false
-    }
-  ],
-  openingHours: "24/7",
-  entryFee: "Miễn phí",
-  bestTimeToVisit: "Tháng 3 - 8",
-  facilities: ["Bãi đỗ xe", "Nhà vệ sinh", "Khu thay đồ", "Nhà hàng", "Cửa hàng lưu niệm", "WiFi miễn phí"],
-  tags: ["biển", "gia đình", "thể thao", "check-in", "bình minh"],
-  sources: [
-    {
-      type: "website",
-      url: "https://danang.gov.vn",
-      description: "Website chính thức thành phố Đà Nẵng"
-    },
-    {
-      type: "social",
-      url: "https://facebook.com/danangfantasticity",
-      description: "Fanpage du lịch Đà Nẵng"
-    }
-  ],
-  trustLevel: "partner",
-  authorRole: "partner",
-  authorName: "Sở Du lịch Đà Nẵng",
-  createdAt: "2024-01-15",
-  updatedAt: "2024-02-20", 
-  stats: {
-    views: 15420,
-    likes: 892,
-    saves: 234,
-    reviews: 67
-  }
-}
 
 const typeLabels = {
   bien: "Biển",
@@ -161,15 +91,52 @@ const regionLabels = {
 
 export default function PlaceDetailPage({ params }: { params: { slug: string[] } }) {
   const { user, isAuthenticated } = useAuth()
+  const [place, setPlace] = React.useState<PlaceData | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
   const [isLiked, setIsLiked] = React.useState(false)
   const [isSaved, setIsSaved] = React.useState(false)
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = React.useState(false)
+  const [isReportModalOpen, setIsReportModalOpen] = React.useState(false)
   
-  // In real app, fetch place data based on params.slug
-  const place = mockPlace
+  React.useEffect(() => {
+    const fetchPlaceData = async () => {
+      if (!params.slug || params.slug.length === 0) {
+        setError("Invalid slug.");
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const slug = params.slug.join('/');
+        const response = await fetch(`/api/places/${slug}`);
+        if (!response.ok) {
+          throw new Error('Place not found');
+        }
+        const data = await response.json();
+        setPlace(data.place);
+      } catch (err: any) {
+        setError(err.message);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlaceData();
+  }, [params.slug]);
   
-  if (!place) {
-    notFound()
+  if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center">
+            <p>Loading place...</p>
+        </div>
+    );
+  }
+
+  if (error || !place) {
+    notFound();
   }
 
   const nextImage = () => {
@@ -499,11 +466,11 @@ export default function PlaceDetailPage({ params }: { params: { slug: string[] }
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-3">Hành động</h3>
                     <div className="space-y-2">
-                      <Button variant="secondary" className="w-full justify-start">
+                      <Button variant="secondary" className="w-full justify-start" onClick={() => setIsSuggestModalOpen(true)} disabled={!isAuthenticated}>
                         <Edit className="w-4 h-4 mr-2" />
                         Đề xuất chỉnh sửa
                       </Button>
-                      <Button variant="secondary" className="w-full justify-start text-danger hover:text-danger">
+                      <Button variant="secondary" className="w-full justify-start text-danger hover:text-danger" onClick={() => setIsReportModalOpen(true)} disabled={!isAuthenticated}>
                         <Flag className="w-4 h-4 mr-2" />
                         Báo cáo vi phạm
                       </Button>
@@ -535,6 +502,23 @@ export default function PlaceDetailPage({ params }: { params: { slug: string[] }
 
         <Footer />
       </div>
+
+      {isSuggestModalOpen && (
+        <SuggestEditModal
+            placeId={place.id}
+            placeName={place.name}
+            onClose={() => setIsSuggestModalOpen(false)}
+        />
+      )}
+
+      {isReportModalOpen && (
+          <ReportViolationModal
+            targetId={place.id}
+            targetType="place"
+            targetName={place.name}
+            onClose={() => setIsReportModalOpen(false)}
+          />
+      )}
     </div>
   )
 }
