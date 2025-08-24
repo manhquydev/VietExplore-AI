@@ -15,20 +15,10 @@ import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
-export interface Destination {
-  id: number;
-  name: string;
-  location: string;
-  description: string;
-  image: string;
-  'data-ai-hint': string;
-  rating: number;
-  reviews: number;
-  type: 'contributor' | 'partner' | 'verified';
-}
+import { Place } from '@/types/firestore'; // Assuming a Place type exists
 
-interface DestinationCardProps {
-  readonly destination: Destination;
+export interface DestinationCardProps {
+  readonly destination: Place;
 }
 
 export default function DestinationCard({ destination }: DestinationCardProps) {
@@ -36,12 +26,31 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
+  const primaryImage = destination.photos?.find(p => p.variants?.lg)?.variants?.lg || destination.photos?.[0]?.path || '';
+
+
   const renderBadge = () => {
     // Chỉ có Contributor và Partner mới có thể đăng địa điểm
     // Traveler chỉ có thể đề xuất, không đăng bài
     // Verified là Admin gán thêm cho địa điểm đặc biệt quan trọng
+    const trustLabel = destination.trustLabel || 'community';
     
     const badgeContent = {
+      community: {
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 96 96" className="inline-block">
+            <defs>
+              <linearGradient id="grad-community-dest" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#888"/>
+                <stop offset="100%" stopColor="#555"/>
+              </linearGradient>
+            </defs>
+            <circle cx="48" cy="40" r="28" fill="url(#grad-community-dest)"/>
+          </svg>
+        ),
+        label: 'Cộng đồng',
+        className: 'bg-gray-400/90 backdrop-blur border border-white/20 shadow-lg',
+      },
       contributor: {
         icon: (
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 96 96" className="inline-block">
@@ -110,7 +119,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
       },
     };
 
-    const badge = badgeContent[destination.type];
+    const badge = badgeContent[trustLabel as keyof typeof badgeContent] || badgeContent.community;
 
     return (
       <TooltipProvider>
@@ -162,15 +171,14 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
             </div>
           ) : (
             <Image
-              src={destination.image}
-              alt={`${destination.name} - ${destination.location}`}
+              src={primaryImage}
+              alt={`${destination.name} - ${destination.province}`}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className={cn(
                 "object-cover motion-gentle",
                 isImageLoading ? "opacity-0" : "opacity-100"
               )}
-              data-ai-hint={destination['data-ai-hint']}
               onLoad={() => setIsImageLoading(false)}
               onError={() => {
                 setImageError(true);
@@ -206,7 +214,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
               <circle cx="12" cy="9" r="2.5"/>
             </svg>
-            <span className="line-clamp-1">{destination.location}</span>
+            <span className="line-clamp-1">{destination.province}</span>
           </CardDescription>
         </div>
         <p className="text-muted leading-relaxed text-sm sm:text-base line-clamp-3">
@@ -216,13 +224,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
       
       <CardFooter className="glass-subtle border-t border-border/50 flex justify-between items-center p-4 sm:p-6">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#0891B2" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4">
-              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-            </svg>
-            <span className="font-bold text-primary text-sm sm:text-base">{destination.rating.toFixed(1)}</span>
-          </div>
-          <span className="text-xs sm:text-sm text-muted">({destination.reviews.toLocaleString()} đánh giá)</span>
+           {/* Rating and reviews can be added back when stats are implemented on places */}
         </div>
         
         <Button

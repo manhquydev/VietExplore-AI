@@ -1,75 +1,52 @@
-import DestinationCard, { type Destination } from './destination-card';
-
-const destinations: Destination[] = [
-  {
-    id: 1,
-    name: 'Vịnh Hạ Long',
-    location: 'Quảng Ninh',
-    description: 'Di sản Thế giới UNESCO nổi tiếng với vùng nước xanh ngọc và hàng nghìn đảo đá vôi cao chót vót.',
-    image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': 'ha long bay',
-    rating: 4.9,
-    reviews: 2450,
-    type: 'verified',
-  },
-  {
-    id: 2,
-    name: 'Phố cổ Hội An',
-    location: 'Quảng Nam',
-    description: 'Thị trấn cổ được bảo tồn tốt, được biết đến với kiến trúc, những con kênh và đèn lồng đầy màu sắc.',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': 'hoi an old town',
-    rating: 4.8,
-    reviews: 1890,
-    type: 'contributor',
-  },
-  {
-    id: 3,
-    name: 'Thành phố Hồ Chí Minh',
-    location: 'Sài Gòn',
-    description: 'Thành phố sôi động và nhộn nhịp, nổi tiếng với vai trò lịch sử và cuộc sống đường phố sôi động.',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': 'ho chi minh city',
-    rating: 4.7,
-    reviews: 3120,
-    type: 'partner',
-  },
-  {
-    id: 4,
-    name: 'Hà Nội',
-    location: 'Thủ đô Việt Nam',
-    description: 'Thủ đô của Việt Nam, sự pha trộn quyến rũ giữa ảnh hưởng của Đông Nam Á, Trung Quốc và Pháp.',
-    image: 'https://images.unsplash.com/photo-1540611025311-01df3cef54b5?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': 'hanoi city',
-    rating: 4.8,
-    reviews: 2800,
-    type: 'contributor',
-  },
-  {
-    id: 5,
-    name: 'Sa Pa',
-    location: 'Lào Cai',
-    description: 'Một thị trấn miền núi đẹp như tranh vẽ, nổi tiếng với những ruộng bậc thang và những chuyến đi bộ đường dài.',
-    image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': 'sapa landscape',
-    rating: 4.9,
-    reviews: 1500,
-    type: 'contributor',
-  },
-  {
-    id: 6,
-    name: 'Đồng bằng sông Cửu Long',
-    location: 'Miền Nam Việt Nam',
-    description: 'Một mạng lưới sông ngòi, đầm lầy và đảo rộng lớn, nơi có chợ nổi và chùa chiền Khmer.',
-    image: 'https://images.unsplash.com/photo-1559291001-693fb9166cba?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': 'mekong delta',
-    rating: 4.6,
-    reviews: 980,
-    type: 'partner',
-  },
-];
+import { useEffect, useState } from 'react';
+import DestinationCard from './destination-card';
+import { Place } from '@/types/firestore';
 
 export default function DestinationGrid() {
+  const [destinations, setDestinations] = useState<Place[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFeaturedPlaces = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/places/featured');
+        if (!response.ok) {
+          throw new Error('Failed to fetch featured places');
+        }
+        const data = await response.json();
+        if (data.success) {
+          setDestinations(data.places);
+        } else {
+          throw new Error(data.error || 'API returned an error');
+        }
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedPlaces();
+  }, []);
+
+  if (loading) {
+    // Optional: Render skeleton loaders
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-gray-200 animate-pulse rounded-lg h-96"></div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p className="text-red-500">Could not load destinations: {error}</p>;
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
       {destinations.map((destination) => (

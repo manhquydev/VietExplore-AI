@@ -10,117 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 
-// Mock data - sẽ được thay thế bằng API calls
-const mockPlaces = [
-  {
-    id: "place_001",
-    slug: "bai-bien-my-khe",
-    name: "Bãi biển Mỹ Khê",
-    shortDescription: "Bãi biển đẹp nhất Đà Nẵng với cát trắng mịn và nước trong xanh",
-    province: "Đà Nẵng",
-    type: "biển",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop",
-        alt: "Bãi biển Mỹ Khê",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "verified" as const,
-    rating: { average: 4.8, count: 1250 },
-    tags: ["biển", "du lịch gia đình", "thể thao nước"]
-  },
-  {
-    id: "place_002",
-    slug: "pho-co-hoi-an",
-    name: "Phố cổ Hội An",
-    shortDescription: "Di sản văn hóa thế giới với kiến trúc cổ độc đáo",
-    province: "Quảng Nam",
-    type: "văn hóa",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=500&h=300&fit=crop",
-        alt: "Phố cổ Hội An",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "partner" as const,
-    rating: { average: 4.9, count: 2100 },
-    tags: ["văn hóa", "di sản", "ẩm thực"]
-  },
-  {
-    id: "place_003",
-    slug: "vinh-ha-long",
-    name: "Vịnh Hạ Long",
-    shortDescription: "Kỳ quan thiên nhiên thế giới với hàng nghìn đảo đá vôi",
-    province: "Quảng Ninh",
-    type: "thiên nhiên",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=500&h=300&fit=crop",
-        alt: "Vịnh Hạ Long",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "verified" as const,
-    rating: { average: 4.7, count: 3450 },
-    tags: ["thiên nhiên", "du thuyền", "kỳ quan"]
-  },
-  {
-    id: "place_004",
-    slug: "sa-pa",
-    name: "Sa Pa",
-    shortDescription: "Thành phố trong mây với ruộng bậc thang tuyệt đẹp",
-    province: "Lào Cai",
-    type: "núi",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1583311640151-4e18a3e41d49?w=500&h=300&fit=crop",
-        alt: "Sa Pa",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "verified" as const,
-    rating: { average: 4.6, count: 890 },
-    tags: ["núi", "trekking", "văn hóa dân tộc"]
-  },
-  {
-    id: "place_005",
-    slug: "ban-gioc",
-    name: "Thác Bản Giốc",
-    shortDescription: "Thác nước hùng vĩ trên biên giới Việt - Trung",
-    province: "Cao Bằng",
-    type: "thác nước",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop",
-        alt: "Thác Bản Giốc",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "partner" as const,
-    rating: { average: 4.6, count: 650 },
-    tags: ["núi", "thác nước", "biên giới"]
-  },
-  {
-    id: "place_006",
-    slug: "phu-quoc",
-    name: "Đảo Phú Quốc",
-    shortDescription: "Đảo ngọc phương Nam với biển xanh và hải sản tươi ngon",
-    province: "Kiên Giang",
-    type: "biển",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop",
-        alt: "Đảo Phú Quốc",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "partner" as const,
-    rating: { average: 4.8, count: 1890 },
-    tags: ["biển", "đảo", "hải sản"]
-  }
-]
+import { Place } from "@/types/firestore";
 
 interface SearchFilters {
   region?: string
@@ -129,42 +19,62 @@ interface SearchFilters {
 }
 
 export default function PlacesPage() {
-  const [places] = React.useState(mockPlaces)
-  const [filteredPlaces, setFilteredPlaces] = React.useState(mockPlaces)
-  const [loading, setLoading] = React.useState(false)
+  const [places, setPlaces] = React.useState<Place[]>([])
+  const [filteredPlaces, setFilteredPlaces] = React.useState<Place[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filters, setFilters] = React.useState<SearchFilters>({})
   const [currentPage, setCurrentPage] = React.useState(1)
+  const [totalPlaces, setTotalPlaces] = React.useState(0);
   const itemsPerPage = 12
 
-  // Filter logic
+  // Data fetching logic
   React.useEffect(() => {
-    let filtered = places
+    const fetchPlaces = async () => {
+      setLoading(true);
+      const queryParams = new URLSearchParams({
+        limit: '100', // Fetch a larger batch for client-side search
+      });
+      if (filters.region) queryParams.append('region', filters.region);
+      if (filters.province) queryParams.append('province', filters.province);
+      if (filters.type) queryParams.append('type', filters.type);
 
-    // Text search
+      try {
+        const response = await fetch(`/api/places?${queryParams.toString()}`);
+        const data = await response.json();
+        if (data.success) {
+          setPlaces(data.places);
+          setTotalPlaces(data.total);
+        } else {
+          console.error("API error:", data.error);
+          setPlaces([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch places:", error);
+        setPlaces([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlaces();
+  }, [filters]);
+
+
+  // Client-side search logic
+  React.useEffect(() => {
+    let filtered = places;
     if (searchQuery) {
-      filtered = filtered.filter(place => 
-        place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        place.shortDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        place.province.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        place.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
+      const lowercasedQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(place =>
+        place.name.toLowerCase().includes(lowercasedQuery) ||
+        (place.description && place.description.toLowerCase().includes(lowercasedQuery)) ||
+        place.province.toLowerCase().includes(lowercasedQuery)
+      );
     }
-
-    // Province filter
-    if (filters.province) {
-      filtered = filtered.filter(place => place.province === filters.province)
-    }
-
-    // Type filter
-    if (filters.type) {
-      filtered = filtered.filter(place => place.type === filters.type)
-    }
-
-    setFilteredPlaces(filtered)
-    setCurrentPage(1) // Reset to first page on filter change
-  }, [searchQuery, filters, places])
+    setFilteredPlaces(filtered);
+    setCurrentPage(1);
+  }, [searchQuery, places]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)

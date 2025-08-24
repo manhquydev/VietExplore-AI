@@ -30,16 +30,23 @@ import {
   Camera
 } from "lucide-react"
 
-const navigation = [
+const baseNavigation = [
   { name: "Trang chủ", href: "/" },
   { name: "Địa điểm", href: "/places" },
   { name: "Lịch trình", href: "/itineraries/builder" },
-  { name: "Đóng góp", href: "/contribute/new-place" },
   { name: "Trợ lý AI", href: "/ai-assistant/chat" },
   { name: "Cộng đồng", href: "/community" },
-  { name: "Tài nguyên", href: "/resources" },
-  { name: "Về dự án", href: "/about" },
-]
+];
+
+const contributorNavigation = [
+    { name: "Đóng góp", href: "/contribute/new-place" },
+];
+
+const aboutNavigation = [
+    { name: "Tài nguyên", href: "/resources" },
+    { name: "Về dự án", href: "/about" },
+];
+
 
 export const Header: React.FC = () => {
   const pathname = usePathname()
@@ -48,6 +55,17 @@ export const Header: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false)
   const [showLoginModal, setShowLoginModal] = React.useState(false)
   const [showRegisterModal, setShowRegisterModal] = React.useState(false)
+
+  const navigation = React.useMemo(() => {
+    const canContribute = profile && ['contributor', 'partner', 'moderator', 'admin'].includes(profile.role);
+    let nav = [...baseNavigation];
+    if (canContribute) {
+        nav.push(...contributorNavigation);
+    }
+    nav.push(...aboutNavigation);
+    return nav;
+  }, [profile]);
+
 
   // Initialize dark mode from localStorage or system preference
   React.useEffect(() => {
