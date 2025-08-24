@@ -13,7 +13,7 @@ import { auth } from '@/lib/firebase'; // Assuming you have a central firebase i
 export async function callApi<T = any>(
   endpoint: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'POST',
-  data?: object
+  params?: object
 ): Promise<T> {
   const user = auth.currentUser;
   if (!user) {
@@ -32,11 +32,18 @@ export async function callApi<T = any>(
     headers,
   };
 
-  if (data && (method === 'POST' || method === 'PUT')) {
-    config.body = JSON.stringify(data);
+  let url = `/api/${endpoint}`;
+
+  if (params) {
+    if (method === 'GET') {
+      const queryParams = new URLSearchParams(params as Record<string, string>);
+      url += `?${queryParams.toString()}`;
+    } else if (method === 'POST' || method === 'PUT') {
+      config.body = JSON.stringify(params);
+    }
   }
 
-  const response = await fetch(`/api/${endpoint}`, config);
+  const response = await fetch(url, config);
 
   if (!response.ok) {
     let errorData;

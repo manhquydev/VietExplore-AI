@@ -116,19 +116,28 @@ export default function ModerationDashboard() {
   }, [user, profile, authLoading, router, activeTab, statusFilter, priorityFilter, typeFilter])
 
   const loadModerationData = async () => {
-    // TODO: Implement with a new API route
-    console.log("loadModerationData needs to be migrated to a new API route.");
-    setLoading(false);
-    // try {
-    //   setLoading(true)
-    //   const result = await callApi('moderation/queue', 'GET', { ...filters });
-    //   setModerationItems(result.items);
-    //   setStats(result.stats);
-    // } catch (error) {
-    //   console.error('Error loading moderation data:', error)
-    // } finally {
-    //   setLoading(false)
-    // }
+    try {
+      setLoading(true)
+      const params = {
+        status: statusFilter,
+        priority: priorityFilter,
+        type: typeFilter,
+        limit: '50',
+      };
+      const result = await callApi('moderation/queue', 'GET', params);
+
+      const items = result.requests || [];
+      setModerationItems(items);
+
+      const statsResult = await callApi('moderation/stats', 'GET');
+      setStats(statsResult.stats);
+
+    } catch (error) {
+      console.error('Error loading moderation data:', error);
+      alert('Lỗi khi tải hàng đợi kiểm duyệt: ' + (error as any).message);
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleClaimRequest = async (requestId: string) => {
@@ -143,12 +152,11 @@ export default function ModerationDashboard() {
 
   const handleApprove = async (requestId: string, reason?: string) => {
     try {
-      // TODO: Call the new API route when it's ready
-      // await callApi('moderation/approve', 'POST', { requestId, notes: reason });
-      alert("Chức năng duyệt chưa được di chuyển sang API Route mới.");
-      // loadModerationData()
+      await callApi('moderation/approve', 'POST', { requestId, notes: reason });
+      loadModerationData();
     } catch (error) {
       console.error('Error approving request:', error);
+      alert('Lỗi khi duyệt: ' + (error as any).message);
     }
   }
 

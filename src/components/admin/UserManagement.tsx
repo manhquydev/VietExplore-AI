@@ -54,18 +54,22 @@ export default function UserManagement() {
   }, [user, profile, authLoading, router, roleFilter, statusFilter]);
 
   const loadUsers = async () => {
-    // TODO: Implement user loading with a new API route
-    console.log("loadUsers needs to be migrated to a new API route.");
-    setLoading(false);
-    // try {
-    //   setLoading(true);
-    //   const result = await callApi('admin/users', 'GET');
-    //   setUsers(result.users);
-    // } catch (error) {
-    //   console.error('Error loading users:', error);
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      setLoading(true);
+      const params = {
+        role: roleFilter,
+        status: statusFilter,
+        limit: '50',
+      };
+      const result = await callApi('admin/users', 'GET', params);
+      setUsers(result.users || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      alert('Lỗi khi tải danh sách người dùng: ' + (error as any).message);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAssignRole = async (targetUserId: string, newRole: UserRole, reason: string) => {
@@ -89,17 +93,10 @@ export default function UserManagement() {
 
   const handleToggleStatus = async (targetUserId: string, action: 'suspend' | 'activate', reason: string) => {
     try {
-      const result = await toggleUserStatus({
-        targetUserId,
-        action,
-        reason
-      });
-      
-      if (result.data.success) {
-        await loadUsers(); // Reload users
-        setShowStatusModal(false);
-        setSelectedUser(null);
-      }
+      await callApi(`admin/users/${targetUserId}/status`, 'POST', { action, reason });
+      setUsers(users.map(u => u.id === targetUserId ? { ...u, status: action === 'activate' ? 'active' : 'suspended' } : u));
+      setShowStatusModal(false);
+      setSelectedUser(null);
     } catch (error) {
       console.error('Error toggling status:', error);
       alert('Lỗi khi thay đổi trạng thái: ' + (error as any).message);
@@ -108,14 +105,8 @@ export default function UserManagement() {
 
   const handlePromoteUser = async (targetUserId: string, reason: string) => {
     try {
-      const result = await promoteUser({
-        targetUserId,
-        reason
-      });
-      
-      if (result.data.success) {
-        await loadUsers(); // Reload users
-      }
+      await callApi(`admin/users/${targetUserId}/promote`, 'POST', { reason });
+      await loadUsers(); // Reload to get the new role
     } catch (error) {
       console.error('Error promoting user:', error);
       alert('Lỗi khi thăng cấp: ' + (error as any).message);

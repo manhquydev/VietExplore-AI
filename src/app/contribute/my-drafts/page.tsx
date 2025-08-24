@@ -115,19 +115,17 @@ export default function MyDraftsPage() {
   }, [user, profile, authLoading, router])
 
   const loadUserDrafts = async () => {
-    // TODO: Implement with a new API route
-    console.log("loadUserDrafts needs to be migrated to a new API route.");
-    setLoading(false);
-    // try {
-    //   setLoading(true)
-    //   const result = await callApi('drafts', 'GET');
-    //   setDrafts(result.drafts || [])
-    // } catch (error) {
-    //   console.error('Error loading drafts:', error)
-    //   setDrafts([])
-    // } finally {
-    //   setLoading(false)
-    // }
+    try {
+      setLoading(true)
+      const result = await callApi('drafts', 'GET');
+      setDrafts(result.drafts || [])
+    } catch (error) {
+      console.error('Error loading drafts:', error)
+      alert('Lỗi khi tải danh sách bản nháp: ' + (error as any).message);
+      setDrafts([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Filter drafts
@@ -154,15 +152,14 @@ export default function MyDraftsPage() {
 
   const handleDelete = async (draftId: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa bản nháp này?")) return;
-    // TODO: Implement with a new API route
-    alert("Chức năng xóa chưa được di chuyển sang API Route mới.");
-    // try {
-    //   await callApi(`drafts/${draftId}`, 'DELETE');
-    //   await loadUserDrafts()
-    // } catch (error) {
-    //   console.error('Error deleting draft:', error)
-    //   alert('Lỗi khi xóa bản nháp')
-    // }
+    try {
+      await callApi(`drafts/${draftId}`, 'DELETE');
+      // Optimistically update UI
+      setDrafts(drafts.filter(d => d.id !== draftId));
+    } catch (error) {
+      console.error('Error deleting draft:', error)
+      alert('Lỗi khi xóa bản nháp: ' + (error as any).message);
+    }
   }
 
   const handleSubmitForReview = async (draftId: string) => {
