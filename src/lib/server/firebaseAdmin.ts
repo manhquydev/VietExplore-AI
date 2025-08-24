@@ -1,39 +1,39 @@
 import * as admin from 'firebase-admin';
 
 /**
- * Initializes the Firebase Admin SDK, reusing a cached instance if available.
- * This function is the single source of truth for the admin app. It reads credentials
- * from the `FIREBASE_ADMIN_SDK_JSON` environment variable.
- * @returns The initialized Firebase Admin app instance.
+ * A function that initializes the Firebase Admin SDK if it hasn't been already.
+ * This approach, combined with dynamic imports in the API routes, ensures that
+ * the Admin SDK is only initialized when an API route is actually called,
+ * preventing build errors in environments where secrets are not available.
+ * @returns An object containing the admin app instance and its services.
  */
-function initializeFirebaseAdmin() {
-  // Check if we've already initialized
+export const getFirebaseAdmin = () => {
   if (admin.apps.length > 0) {
-    return admin.app();
+    return {
+      adminApp: admin.app(),
+      adminAuth: admin.auth(),
+      adminDb: admin.firestore(),
+      adminStorage: admin.storage(),
+    };
   }
 
-  // Read credentials from environment variable
   const serviceAccountJson = process.env.FIREBASE_ADMIN_SDK_JSON;
   if (!serviceAccountJson) {
-    throw new Error(
-      'FIREBASE_ADMIN_SDK_JSON environment variable is not set. ' +
-      'Please provide the service account key as a JSON string.'
-    );
+    // In a serverless environment, this error will only be thrown at runtime
+    // if the environment variable is missing.
+    throw new Error('FIREBASE_ADMIN_SDK_JSON is not set.');
   }
 
-  try {
-    const serviceAccount = JSON.parse(serviceAccountJson);
-    return admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: `https://${serviceAccount.project_id}-default-rtdb.asia-southeast1.firebasedatabase.app`,
-    });
-  } catch (error: any) {
-    throw new Error(`Failed to parse FIREBASE_ADMIN_SDK_JSON: ${error.message}`);
-  }
-}
+  const serviceAccount = JSON.parse(serviceAccountJson);
+  const adminApp = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: `https://${serviceAccount.project_id}-default-rtdb.asia-southeast1.firebasedatabase.app`,
+  });
 
-// Initialize and export the admin instance for use in other server-side modules.
-export const firebaseAdmin = initializeFirebaseAdmin();
-export const adminAuth = firebaseAdmin.auth();
-export const adminDb = firebaseAdmin.firestore();
-export const adminStorage = firebaseAdmin.storage();
+  return {
+    adminApp,
+    adminAuth: adminApp.auth(),
+    adminDb: adminApp.firestore(),
+    adminStorage: adminApp.storage(),
+  };
+};

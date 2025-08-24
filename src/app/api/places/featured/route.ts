@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getFirebaseAdmin } from '@/lib/server/firebaseAdmin';
 
 // This route is public and does not require authentication
 export async function GET(request: NextRequest) {
   try {
+    const { adminDb } = getFirebaseAdmin();
     const placesRef = adminDb.collection('places');
     const query = placesRef
       .where('status', '==', 'published')

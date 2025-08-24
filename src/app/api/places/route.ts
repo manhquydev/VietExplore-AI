@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getFirebaseAdmin } from '@/lib/server/firebaseAdmin';
 import { Query } from 'firebase-admin/firestore';
 
 export async function GET(request: NextRequest) {
   try {
+    const { adminDb } = getFirebaseAdmin();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '12', 10);
     const region = searchParams.get('region');

@@ -6,7 +6,8 @@ export async function GET(
   context: { params: { identifier: string } }
 ) {
   try {
-    const { adminDb } = await import('@/lib/server/firebaseAdmin');
+    const { getFirebaseAdmin } = await import('@/lib/server/firebaseAdmin');
+    const { adminDb } = getFirebaseAdmin();
     const { identifier } = context.params;
 
     if (!identifier) {

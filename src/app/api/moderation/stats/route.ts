@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/server/auth';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getFirebaseAdmin } from '@/lib/server/firebaseAdmin';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import * as admin from 'firebase-admin';
 
 const getStatsHandler = async (
   request: NextRequest,
   context: { user: DecodedIdToken }
 ) => {
   try {
+    const { adminDb } = getFirebaseAdmin();
     const moderationItemsRef = adminDb.collection('moderation/requests/items');
 
     // Get counts by status

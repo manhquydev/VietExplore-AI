@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { adminAuth } from './firebaseAdmin';
+import { getFirebaseAdmin } from './firebaseAdmin';
 import { DecodedIdToken } from 'firebase-admin/auth';
 
 /**
@@ -39,6 +39,7 @@ export async function verifyAuth(
   }
 
   try {
+    const { adminAuth } = getFirebaseAdmin();
     const decodedToken = await adminAuth.verifyIdToken(token);
     return decodedToken;
   } catch (error: any) {

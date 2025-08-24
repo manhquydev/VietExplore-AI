@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/server/auth';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getFirebaseAdmin } from '@/lib/server/firebaseAdmin';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { Query } from 'firebase-admin/firestore';
 
@@ -9,6 +9,7 @@ const getQueueHandler = async (
   context: { user: DecodedIdToken }
 ) => {
   try {
+    const { adminDb } = getFirebaseAdmin();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '20', 10);
     const status = searchParams.get('status');
