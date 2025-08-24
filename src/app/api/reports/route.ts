@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/server/auth';
-import { adminDb } from '@/lib/server/firebaseAdmin';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import * as admin from 'firebase-admin';
 
 interface ReportData {
   targetType: 'place' | 'itinerary' | 'user' | 'comment';
@@ -28,6 +26,7 @@ const createReportHandler = async (
   }
 
   try {
+    const { adminDb, firebaseAdmin } = await import('@/lib/server/firebaseAdmin');
     const reportsRef = adminDb.collection('reports');
 
     // Check for duplicate reports from the same user
@@ -55,8 +54,8 @@ const createReportHandler = async (
         },
         status: 'received', // 'received' is the initial status for the queue
         priority: 'medium',
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
     };
 
     const reportRef = await reportsRef.add(reportData);

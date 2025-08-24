@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/server/auth';
-import { adminDb } from '@/lib/server/firebaseAdmin';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import * as admin from 'firebase-admin';
 
 interface SuggestionData {
   proposed: {
@@ -14,10 +12,10 @@ interface SuggestionData {
 
 const createSuggestionHandler = async (
   request: NextRequest,
-  context: { params: { placeId: string }; user: DecodedIdToken }
+  context: { params: { identifier: string }; user: DecodedIdToken }
 ) => {
   const { user } = context;
-  const { placeId } = context.params;
+  const { identifier: placeId } = context.params; // Treat the identifier as a placeId
   const { proposed }: SuggestionData = await request.json();
 
   if (!placeId) {
@@ -28,6 +26,7 @@ const createSuggestionHandler = async (
   }
 
   try {
+    const { adminDb, firebaseAdmin } = await import('@/lib/server/firebaseAdmin');
     const placeRef = adminDb.doc(`places/${placeId}`);
     const placeDoc = await placeRef.get();
 
@@ -46,8 +45,8 @@ const createSuggestionHandler = async (
         proposed,
         submitter: user.uid,
         status: 'submitted',
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
     };
     batch.set(suggestionRef, suggestionData);
 
@@ -64,7 +63,7 @@ const createSuggestionHandler = async (
         submitterRole: user.role || 'traveler',
         status: 'queued',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
     };
     batch.set(moderationRequestRef, moderationRequestData);
 
@@ -75,7 +74,7 @@ const createSuggestionHandler = async (
       action: 'create_suggestion',
       target: { collection: 'places', id: placeId },
       metadata: { suggestionId: suggestionRef.id },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
     });
 
     await batch.commit();
