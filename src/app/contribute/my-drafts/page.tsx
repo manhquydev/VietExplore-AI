@@ -12,8 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Icon } from "@/components/ui/icon"
 import { cn } from "@/lib/utils"
 import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
-import { httpsCallable } from "firebase/functions"
-import { functions } from "@/lib/firebase"
+import { callApi } from "@/lib/client/api"
 import { useRouter } from "next/navigation"
 
 interface Draft {
@@ -35,10 +34,9 @@ interface Draft {
   moderatorNotes?: string
 }
 
-// Firebase Functions
-const getUserDrafts = httpsCallable(functions, 'getUserDrafts')
-const deleteDraft = httpsCallable(functions, 'deletePlaceDraft')
-const submitDraftForReview = httpsCallable(functions, 'submitDraftForReview')
+// TODO: Migrate these functions to API routes
+// const getUserDrafts = httpsCallable(functions, 'getUserDrafts')
+// const deleteDraft = httpsCallable(functions, 'deletePlaceDraft')
 
 const statusConfig = {
   draft: {
@@ -117,20 +115,19 @@ export default function MyDraftsPage() {
   }, [user, profile, authLoading, router])
 
   const loadUserDrafts = async () => {
-    try {
-      setLoading(true)
-      const result = await getUserDrafts({ userId: user?.uid })
-      
-      const data = result.data as any
-      if (data.success) {
-        setDrafts(data.drafts || [])
-      }
-    } catch (error) {
-      console.error('Error loading drafts:', error)
-      setDrafts([])
-    } finally {
-      setLoading(false)
-    }
+    // TODO: Implement with a new API route
+    console.log("loadUserDrafts needs to be migrated to a new API route.");
+    setLoading(false);
+    // try {
+    //   setLoading(true)
+    //   const result = await callApi('drafts', 'GET');
+    //   setDrafts(result.drafts || [])
+    // } catch (error) {
+    //   console.error('Error loading drafts:', error)
+    //   setDrafts([])
+    // } finally {
+    //   setLoading(false)
+    // }
   }
 
   // Filter drafts
@@ -156,24 +153,26 @@ export default function MyDraftsPage() {
   }, [drafts, searchQuery, statusFilter])
 
   const handleDelete = async (draftId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa bản nháp này?")) return
-    
-    try {
-      await deleteDraft({ draftId })
-      await loadUserDrafts()
-    } catch (error) {
-      console.error('Error deleting draft:', error)
-      alert('Lỗi khi xóa bản nháp')
-    }
+    if (!confirm("Bạn có chắc chắn muốn xóa bản nháp này?")) return;
+    // TODO: Implement with a new API route
+    alert("Chức năng xóa chưa được di chuyển sang API Route mới.");
+    // try {
+    //   await callApi(`drafts/${draftId}`, 'DELETE');
+    //   await loadUserDrafts()
+    // } catch (error) {
+    //   console.error('Error deleting draft:', error)
+    //   alert('Lỗi khi xóa bản nháp')
+    // }
   }
 
   const handleSubmitForReview = async (draftId: string) => {
     try {
-      await submitDraftForReview({ draftId })
-      await loadUserDrafts()
+      await callApi('drafts/submit', 'POST', { draftId });
+      // Optimistically update UI or reload
+      setDrafts(drafts.map(d => d.id === draftId ? { ...d, status: 'submitted' } : d));
     } catch (error) {
-      console.error('Error submitting for review:', error)
-      alert('Lỗi khi gửi duyệt')
+      console.error('Error submitting for review:', error);
+      alert('Lỗi khi gửi duyệt: ' + (error as any).message);
     }
   }
 

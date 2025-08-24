@@ -5,8 +5,7 @@ import { useState, useEffect } from 'react';
 import { User, Shield, Eye, UserX, UserCheck, ChevronDown, Search, Filter } from 'lucide-react';
 import { useFirebaseAuth } from '@/components/auth/FirebaseAuthProvider';
 import { UserRole, getRoleDisplayName } from '@/lib/rbac';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { callApi } from '@/lib/client/api';
 import { useRouter } from 'next/navigation';
 
 interface UserData {
@@ -21,10 +20,10 @@ interface UserData {
   partnerId?: string;
 }
 
-const getAllUsers = httpsCallable(functions, 'getAllUsers');
-const assignUserRole = httpsCallable(functions, 'assignUserRole');
-const toggleUserStatus = httpsCallable(functions, 'toggleUserStatus');
-const promoteUser = httpsCallable(functions, 'promoteUser');
+// TODO: Migrate these functions to API routes
+// const getAllUsers = httpsCallable(functions, 'getAllUsers');
+// const toggleUserStatus = httpsCallable(functions, 'toggleUserStatus');
+// const promoteUser = httpsCallable(functions, 'promoteUser');
 
 export default function UserManagement() {
   const { user, profile, loading: authLoading } = useFirebaseAuth();
@@ -55,37 +54,33 @@ export default function UserManagement() {
   }, [user, profile, authLoading, router, roleFilter, statusFilter]);
 
   const loadUsers = async () => {
-    try {
-      setLoading(true);
-      const result = await getAllUsers({
-        limit: 50,
-        role: roleFilter === 'all' ? undefined : roleFilter,
-        status: statusFilter === 'all' ? undefined : statusFilter
-      });
-      
-      if (result.data.success) {
-        setUsers(result.data.users);
-      }
-    } catch (error) {
-      console.error('Error loading users:', error);
-    } finally {
-      setLoading(false);
-    }
+    // TODO: Implement user loading with a new API route
+    console.log("loadUsers needs to be migrated to a new API route.");
+    setLoading(false);
+    // try {
+    //   setLoading(true);
+    //   const result = await callApi('admin/users', 'GET');
+    //   setUsers(result.users);
+    // } catch (error) {
+    //   console.error('Error loading users:', error);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const handleAssignRole = async (targetUserId: string, newRole: UserRole, reason: string) => {
     try {
-      const result = await assignUserRole({
-        targetUserId,
-        newRole,
-        reason
+      await callApi('admin/role', 'POST', {
+        uid: targetUserId,
+        role: newRole,
+        // reason: reason, // The new route can be updated to accept this for audit logs
       });
       
-      if (result.data.success) {
-        await loadUsers(); // Reload users
-        setShowRoleModal(false);
-        setSelectedUser(null);
-      }
+      // Optimistically update the UI or reload
+      setUsers(users.map(u => u.id === targetUserId ? { ...u, role: newRole } : u));
+      setShowRoleModal(false);
+      setSelectedUser(null);
+
     } catch (error) {
       console.error('Error assigning role:', error);
       alert('Lỗi khi gán quyền: ' + (error as any).message);

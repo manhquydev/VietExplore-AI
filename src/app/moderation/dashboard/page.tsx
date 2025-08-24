@@ -28,8 +28,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
-import { httpsCallable } from "firebase/functions"
-import { functions } from "@/lib/firebase"
+import { callApi } from "@/lib/client/api"
 import { useRouter } from "next/navigation"
 
 interface ModerationItem {
@@ -56,13 +55,10 @@ interface ModerationItem {
   reportReason?: string
 }
 
-// Firebase Functions
-const getModerationQueue = httpsCallable(functions, 'getModerationQueue')
-const claimModerationRequest = httpsCallable(functions, 'claimModerationRequest')
-const modDecisionApprove = httpsCallable(functions, 'modDecisionApprove')
-const modDecisionReject = httpsCallable(functions, 'modDecisionReject')
-const modDecisionRequestEdit = httpsCallable(functions, 'modDecisionRequestEdit')
-const getModerationStats = httpsCallable(functions, 'getModerationStats')
+// TODO: Migrate these functions to API routes
+// const getModerationQueue = httpsCallable(functions, 'getModerationQueue')
+// const modDecisionApprove = httpsCallable(functions, 'modDecisionApprove')
+// const getModerationStats = httpsCallable(functions, 'getModerationStats')
 
 const statusConfig = {
   pending: { label: "Chờ duyệt", variant: "warning" as const, icon: Clock },
@@ -120,72 +116,59 @@ export default function ModerationDashboard() {
   }, [user, profile, authLoading, router, activeTab, statusFilter, priorityFilter, typeFilter])
 
   const loadModerationData = async () => {
-    try {
-      setLoading(true)
-      
-      // Load moderation queue
-      const queueResult = await getModerationQueue({
-        status: statusFilter === 'all' ? undefined : statusFilter,
-        priority: priorityFilter === 'all' ? undefined : priorityFilter,
-        type: typeFilter === 'all' ? undefined : typeFilter,
-        limit: 50
-      })
-      
-      const items = (queueResult.data as any)?.items || []
-      setModerationItems(items)
-
-      // Load stats
-      const statsResult = await getModerationStats()
-      const statsData = (statsResult.data as any) || {}
-      
-      setStats({
-        total: items.length,
-        pending: items.filter((item: ModerationItem) => item.status === 'pending').length,
-        approved: items.filter((item: ModerationItem) => item.status === 'approved').length,
-        rejected: items.filter((item: ModerationItem) => item.status === 'rejected').length,
-        urgent: items.filter((item: ModerationItem) => item.priority === 'urgent').length
-      })
-
-    } catch (error) {
-      console.error('Error loading moderation data:', error)
-    } finally {
-      setLoading(false)
-    }
+    // TODO: Implement with a new API route
+    console.log("loadModerationData needs to be migrated to a new API route.");
+    setLoading(false);
+    // try {
+    //   setLoading(true)
+    //   const result = await callApi('moderation/queue', 'GET', { ...filters });
+    //   setModerationItems(result.items);
+    //   setStats(result.stats);
+    // } catch (error) {
+    //   console.error('Error loading moderation data:', error)
+    // } finally {
+    //   setLoading(false)
+    // }
   }
 
   const handleClaimRequest = async (requestId: string) => {
     try {
-      await claimModerationRequest({ requestId })
-      loadModerationData() // Refresh data
+      await callApi('moderation/claim', 'POST', { requestId });
+      loadModerationData(); // Refresh data
     } catch (error) {
-      console.error('Error claiming request:', error)
+      console.error('Error claiming request:', error);
+      alert('Lỗi khi nhận việc: ' + (error as any).message);
     }
   }
 
   const handleApprove = async (requestId: string, reason?: string) => {
     try {
-      await modDecisionApprove({ requestId, reason })
-      loadModerationData()
+      // TODO: Call the new API route when it's ready
+      // await callApi('moderation/approve', 'POST', { requestId, notes: reason });
+      alert("Chức năng duyệt chưa được di chuyển sang API Route mới.");
+      // loadModerationData()
     } catch (error) {
-      console.error('Error approving request:', error)
+      console.error('Error approving request:', error);
     }
   }
 
   const handleReject = async (requestId: string, reason: string) => {
     try {
-      await modDecisionReject({ requestId, reason })
-      loadModerationData()
+      await callApi('moderation/reject', 'POST', { requestId, notes: reason });
+      loadModerationData();
     } catch (error) {
-      console.error('Error rejecting request:', error)
+      console.error('Error rejecting request:', error);
+      alert('Lỗi khi từ chối: ' + (error as any).message);
     }
   }
 
   const handleRequestEdit = async (requestId: string, changes: string) => {
     try {
-      await modDecisionRequestEdit({ requestId, changes })
-      loadModerationData()
+      await callApi('moderation/request-edit', 'POST', { requestId, notes: changes });
+      loadModerationData();
     } catch (error) {
-      console.error('Error requesting edit:', error)
+      console.error('Error requesting edit:', error);
+      alert('Lỗi khi yêu cầu chỉnh sửa: ' + (error as any).message);
     }
   }
 
