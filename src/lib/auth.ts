@@ -268,7 +268,7 @@ export const roleHelpers = {
   },
   
   requiresEmailVerification: (user: User | null) => {
-    return user && !user.emailVerified;
+    return !!(user && !user.emailVerified);
   }
 };
 
