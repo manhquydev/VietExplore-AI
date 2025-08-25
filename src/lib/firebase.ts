@@ -37,11 +37,11 @@ if (typeof window !== 'undefined') {
       console.log('🔧 Connecting to Firebase Emulators...');
       
       // Correct ports from firebase.json
-      connectAuthEmulator(auth, `http://${emulatorHost}:9199`, { disableWarnings: true });
-      connectFirestoreEmulator(db, emulatorHost, 8181);
-      connectStorageEmulator(storage, emulatorHost, 9299);
-      connectDatabaseEmulator(rtdb, emulatorHost, 9100);
-      connectFunctionsEmulator(functions, emulatorHost, 5556);
+      connectAuthEmulator(auth, `http://${emulatorHost}:9099`, { disableWarnings: true }); // Default port is 9099
+      connectFirestoreEmulator(db, emulatorHost, 8080); // Default port is 8080
+      connectStorageEmulator(storage, emulatorHost, 9199);
+      connectDatabaseEmulator(rtdb, emulatorHost, 9000);
+      connectFunctionsEmulator(functions, emulatorHost, 5001);
       
       console.log('✅ All Firebase Emulators connected successfully');
       console.log('🔒 Using LOCAL EMULATORS - Safe for development');

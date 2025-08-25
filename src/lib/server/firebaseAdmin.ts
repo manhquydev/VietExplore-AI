@@ -26,6 +26,11 @@ export const getFirebaseAdmin = () => {
     // For emulators, we don't need credentials.
     // The Admin SDK will automatically connect if the appropriate
     // environment variables (e.g., FIREBASE_AUTH_EMULATOR_HOST) are set.
+    // We MUST set these env vars for the Admin SDK to connect.
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
+    process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
+    process.env.FIREBASE_STORAGE_EMULATOR_HOST = "127.0.0.1:9199";
+
     console.log("🔧 Initializing Firebase Admin SDK for EMULATOR");
     const adminApp = admin.initializeApp({
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'vietexplore-ai',
@@ -49,7 +54,8 @@ export const getFirebaseAdmin = () => {
     console.log("🌐 Initializing Firebase Admin SDK for PRODUCTION");
     const adminApp = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: `https://${serviceAccount.project_id}-default-rtdb.asia-southeast1.firebasedatabase.app`,
+      databaseURL: `https://vietexplore-ai-default-rtdb.asia-southeast1.firebasedatabase.app`,
+      storageBucket: `vietexplore-ai.appspot.com`
     });
 
     return {
