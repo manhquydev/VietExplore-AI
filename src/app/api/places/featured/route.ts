@@ -8,11 +8,10 @@ export async function GET(request: NextRequest) {
     const { adminDb } = getFirebaseAdmin();
     const placesRef = adminDb.collection('places');
     
-    // Query without ordering by createdAt to avoid needing a composite index immediately.
-    // We will sort the results in memory.
     const query = placesRef
       .where('status', '==', 'published')
-      .limit(20); // Fetch a bit more to sort and get the latest 6
+      .orderBy('createdAt', 'desc')
+      .limit(6);
 
     const snapshot = await query.get();
 
@@ -24,10 +23,10 @@ export async function GET(request: NextRequest) {
         const data = doc.data() as Omit<Place, 'id'>;
         // Ensure createdAt is a serializable format (ISO string)
         if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-            data.createdAt = data.createdAt.toDate().toISOString();
+            data.createdAt = data.createdAt.toDate().toISOString() as any;
         }
         if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
-            data.updatedAt = data.updatedAt.toDate().toISOString();
+            data.updatedAt = data.updatedAt.toDate().toISOString() as any;
         }
         return {
             id: doc.id,
@@ -35,19 +34,16 @@ export async function GET(request: NextRequest) {
         } as Place;
     });
 
-    // Sort in memory by createdAt date, descending
-    const sortedPlaces = places.sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return dateB - dateA;
-    });
-
-    // Return the latest 6 places
-    const featuredPlaces = sortedPlaces.slice(0, 6);
-
-    return NextResponse.json({ success: true, places: featuredPlaces });
+    return NextResponse.json({ success: true, places: places });
   } catch (error: any) {
     console.error('Error fetching featured places:', error);
+    // Specifically check for the failed-precondition error which indicates a missing index
+    if (error.code === 'failed-precondition') {
+        return NextResponse.json(
+          { success: false, error: 'Query requires a composite index. Please create it in your Firestore console or by deploying firestore.indexes.json.' },
+          { status: 500 }
+        );
+    }
     return NextResponse.json(
       { success: false, error: 'An internal server error occurred.' },
       { status: 500 }
