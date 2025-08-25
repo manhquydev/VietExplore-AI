@@ -1,4 +1,3 @@
-// src/components/auth/forgot-password-modal.tsx
 "use client"
 
 import * as React from "react"
@@ -72,16 +71,16 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden bg-white">
-        <div className="relative">
+        <div className="p-8 space-y-6">
           {/* Header */}
-          <DialogHeader className="p-6 pb-4 text-center">
+          <DialogHeader className="space-y-4">
             <div className="flex justify-center mb-4">
               <Logo size="sm" />
             </div>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-center text-2xl font-bold">
               {success ? 'Email đã được gửi' : 'Quên mật khẩu?'}
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-center text-slate-600">
               {success 
                 ? `Chúng tôi đã gửi link reset mật khẩu đến ${email}`
                 : 'Nhập email để nhận link reset mật khẩu'
@@ -90,14 +89,14 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           </DialogHeader>
 
           {/* Content */}
-          <div className="p-6 pt-0">
+          <div className="pt-0">
             {success ? (
               // Success State
               <div className="text-center space-y-6">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
                 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-slate-600">
                     Vui lòng kiểm tra email và click vào link để reset mật khẩu.
                     Nếu không thấy email, hãy kiểm tra thư mục spam.
                   </p>
@@ -125,32 +124,32 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               // Form State
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
+                  <Label htmlFor="email-forgot" className="text-sm font-medium">
                     Email
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                      id="email"
+                      id="email-forgot"
                       type="email"
                       placeholder="your.email@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 h-11"
                       required
                     />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-md">
-                    <p className="text-sm text-destructive">{error}</p>
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                    {error}
                   </div>
                 )}
 
                 <Button 
                   type="submit" 
-                  className="w-full"
+                  className="w-full h-11 bg-blue-600 hover:bg-blue-700"
                   disabled={isLoading || !email}
                 >
                   {isLoading ? (
@@ -167,7 +166,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   <button
                     type="button"
                     onClick={handleBackToLogin}
-                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center"
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     Quay lại đăng nhập

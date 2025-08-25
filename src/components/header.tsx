@@ -9,7 +9,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoginModal } from "@/components/auth/login-modal"
 import { RegisterModal } from "@/components/auth/register-modal"
-import { useAuth } from "@/hooks/useAuth"
 import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider"
 import { Icon, IconButton } from "@/components/ui/icon"
 import { UserRoleDisplay } from "@/components/ui/role-badge"

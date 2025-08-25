@@ -36,16 +36,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setError("")
 
     try {
-      const { login } = await import('@/components/auth/FirebaseAuthProvider');
-      // Use Firebase Auth login
       await signInWithEmailAndPassword(auth, email, password);
-      
       console.log("Login successful", { email });
       onClose();
     } catch (error: any) {
       console.error('Login error:', error);
       
-      // Handle Firebase errors
       switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
@@ -92,6 +88,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   }
 
+  const handleOpenForgotPassword = () => {
+    onClose(); // Close login modal
+    setTimeout(() => setShowForgotPassword(true), 150); // Open forgot password modal after a short delay
+  }
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -117,7 +118,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             {/* Google Login */}
             <Button
               onClick={handleGoogleLogin}
-              variant="secondary"
+              variant="outline"
               className="w-full h-12 border-2 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -200,7 +201,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </label>
                 <button 
                   type="button"
-                  onClick={() => setShowForgotPassword(true)}
+                  onClick={handleOpenForgotPassword}
                   className="text-blue-600 hover:text-blue-700"
                 >
                   Quên mật khẩu?
@@ -242,12 +243,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       </DialogContent>
       </Dialog>
       
-      {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
-        onBackToLogin={() => setShowForgotPassword(false)}
+        onSwitchToLogin={() => {
+            setShowForgotPassword(false);
+            setTimeout(() => setShowLoginModal(true), 150);
+        }}
       />
     </>
-  )
-}
+  );
+};

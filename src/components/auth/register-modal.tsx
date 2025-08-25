@@ -208,7 +208,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
             {/* Google Register */}
             <Button
               onClick={handleGoogleRegister}
-              variant="secondary"
+              variant="outline"
               className="w-full h-12 border-2 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
