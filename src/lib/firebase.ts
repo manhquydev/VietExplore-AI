@@ -24,70 +24,24 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const rtdb = getDatabase(app);
-const functions = getFunctions(app);
+const functions = getFunctions(app, 'asia-southeast1');
 
 // Connect to Firebase Emulators in development
 if (typeof window !== 'undefined') {
-  // Check if we should use emulators
   const useEmulators = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true';
   const isDevelopment = process.env.NODE_ENV === 'development';
   
   if (useEmulators && isDevelopment) {
     try {
-      // Connect to Auth Emulator (check if not already connected)
-      try {
-        connectAuthEmulator(auth, 'http://127.0.0.1:9888', { disableWarnings: true });
-        console.log('🔧 Connected to Auth Emulator');
-      } catch (authError: any) {
-        if (authError.code !== 'auth/emulator-config-failed') {
-          throw authError;
-        }
-        console.log('🔧 Auth Emulator already connected');
-      }
+      const emulatorHost = '127.0.0.1';
+      console.log('🔧 Connecting to Firebase Emulators...');
       
-      // Connect to Firestore Emulator (check if not already connected)
-      try {
-        connectFirestoreEmulator(db, '127.0.0.1', 8888);
-        console.log('🔧 Connected to Firestore Emulator');
-      } catch (firestoreError: any) {
-        if (firestoreError.code !== 'firestore/failed-precondition') {
-          throw firestoreError;
-        }
-        console.log('🔧 Firestore Emulator already connected');
-      }
-      
-      // Connect to Storage Emulator (check if not already connected)
-      try {
-        connectStorageEmulator(storage, '127.0.0.1', 9666);
-        console.log('🔧 Connected to Storage Emulator');
-      } catch (storageError: any) {
-        if (storageError.code !== 'storage/emulator-config-failed') {
-          throw storageError;
-        }
-        console.log('🔧 Storage Emulator already connected');
-      }
-      
-      // Connect to Realtime Database Emulator (check if not already connected)
-      try {
-        connectDatabaseEmulator(rtdb, '127.0.0.1', 9777);
-        console.log('🔧 Connected to Database Emulator');
-      } catch (dbError: any) {
-        if (dbError.code !== 'database/emulator-config-failed') {
-          throw dbError;
-        }
-        console.log('🔧 Database Emulator already connected');
-      }
-      
-      // Connect to Functions Emulator (check if not already connected)
-      try {
-        connectFunctionsEmulator(functions, '127.0.0.1', 5555);
-        console.log('🔧 Connected to Functions Emulator');
-      } catch (functionsError: any) {
-        if (functionsError.code !== 'functions/emulator-config-failed') {
-          throw functionsError;
-        }
-        console.log('🔧 Functions Emulator already connected');
-      }
+      // Correct ports from firebase.json
+      connectAuthEmulator(auth, `http://${emulatorHost}:9199`, { disableWarnings: true });
+      connectFirestoreEmulator(db, emulatorHost, 8181);
+      connectStorageEmulator(storage, emulatorHost, 9299);
+      connectDatabaseEmulator(rtdb, emulatorHost, 9100);
+      connectFunctionsEmulator(functions, emulatorHost, 5556);
       
       console.log('✅ All Firebase Emulators connected successfully');
       console.log('🔒 Using LOCAL EMULATORS - Safe for development');
