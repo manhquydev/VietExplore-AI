@@ -33,8 +33,8 @@ if (typeof window !== 'undefined') {
   
   if (useEmulators && isDevelopment) {
     try {
-      const emulatorHost = '127.0.0.1';
-      console.log('🔧 Connecting to Firebase Emulators...');
+      const emulatorHost = window.location.hostname;
+      console.log(`🔧 Connecting to Firebase Emulators on host: ${emulatorHost}`);
       
       // Correct ports from firebase.json
       connectAuthEmulator(auth, `http://${emulatorHost}:9199`, { disableWarnings: true });
