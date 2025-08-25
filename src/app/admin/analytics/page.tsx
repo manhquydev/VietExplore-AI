@@ -61,53 +61,29 @@ export default function AdminAnalyticsPage() {
 
   const loadAnalyticsData = async () => {
     try {
-      setLoading(true)
-      
-      // For now, using mock data - can be replaced with real Firebase Functions calls
-      const mockData: AnalyticsData = {
-        platformMetrics: {
-          totalDestinations: 1247,
-          publishedContent: 1189,
-          pendingModeration: 38,
-          hiddenContent: 20
-        },
-        userGrowth: {
-          newUsersThisMonth: 156,
-          activeUsers: 892,
-          retentionRate: 73.5,
-          usersByRole: [
-            { role: 'traveler', count: 723, percentage: 81.1 },
-            { role: 'contributor', count: 89, percentage: 10.0 },
-            { role: 'partner', count: 67, percentage: 7.5 },
-            { role: 'moderator', count: 10, percentage: 1.1 },
-            { role: 'admin', count: 3, percentage: 0.3 }
-          ]
-        },
-        moderationMetrics: {
-          avgReviewTime: '2.4 giờ',
-          approvalRate: 87.3,
-          totalReviews: 234,
-          slaCompliance: 94.2
-        },
-        trafficMetrics: {
-          pageViews: 15480,
-          uniqueVisitors: 3247,
-          avgSessionDuration: '4m 32s',
-          topPages: [
-            { page: '/destinations/ha-long-bay', views: 1247 },
-            { page: '/destinations/hoi-an', views: 986 },
-            { page: '/destinations/da-lat', views: 823 },
-            { page: '/itinerary-builder', views: 672 },
-            { page: '/destinations/sapa', views: 543 }
-          ]
-        }
+      setLoading(true);
+      const result = await callApi('admin/analytics', 'GET');
+      if (result.success) {
+        // Merge real data with placeholder data for fields not yet implemented
+        const mockTraffic = {
+            pageViews: 0,
+            uniqueVisitors: 0,
+            avgSessionDuration: 'N/A',
+            topPages: []
+        };
+        const mergedData = {
+            ...result.analyticsData,
+            trafficMetrics: mockTraffic,
+        };
+        setAnalyticsData(mergedData);
+      } else {
+        throw new Error(result.error || 'Failed to fetch analytics');
       }
-
-      setAnalyticsData(mockData)
     } catch (error) {
-      console.error('Error loading analytics:', error)
+      console.error('Error loading analytics:', error);
+      alert('Could not load analytics data.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 

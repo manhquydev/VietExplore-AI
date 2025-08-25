@@ -61,77 +61,19 @@ export default function AdminContentPage() {
 
   const loadContentData = async () => {
     try {
-      setLoading(true)
-      
-      // Mock data - can be replaced with real Firebase Functions calls
-      const mockStats: ContentStats = {
-        totalPlaces: 1247,
-        publishedPlaces: 1189,
-        pendingReview: 38,
-        hiddenPlaces: 20,
-        trustBadgeStats: {
-          contributor: 523,
-          partner: 341,
-          verified: 275,
-          community: 108
-        }
+      setLoading(true);
+      const result = await callApi('admin/content', 'GET');
+      if (result.success) {
+        setContentStats(result.contentStats);
+        setRecentContent(result.recentContent);
+      } else {
+        throw new Error(result.error || 'Failed to fetch content data');
       }
-
-      const mockContent: ContentItem[] = [
-        {
-          id: "1",
-          name: "Vịnh Hạ Long",
-          province: "Quảng Ninh",
-          type: "Điểm tham quan",
-          status: "published",
-          trustBadge: "verified",
-          submittedBy: "partner@sdt.qn.gov.vn",
-          submittedAt: "2 giờ trước",
-          reviewedBy: "admin@system",
-          reviewedAt: "1 giờ trước"
-        },
-        {
-          id: "2",
-          name: "Phố cổ Hội An",
-          province: "Quảng Nam",
-          type: "Khu vực lịch sử",
-          status: "published",
-          trustBadge: "partner",
-          submittedBy: "partner@hoian.tourism",
-          submittedAt: "4 giờ trước",
-          reviewedBy: "moderator@system",
-          reviewedAt: "3 giờ trước"
-        },
-        {
-          id: "3",
-          name: "Thác Sekumpul Bali",
-          province: "Đà Lạt",
-          type: "Thác nước",
-          status: "pending",
-          trustBadge: "contributor",
-          submittedBy: "contributor_traveler_123",
-          submittedAt: "1 ngày trước"
-        },
-        {
-          id: "4",
-          name: "Resort XYZ",
-          province: "Nha Trang",
-          type: "Khách sạn", 
-          status: "hidden",
-          trustBadge: "community",
-          submittedBy: "spam_user_456",
-          submittedAt: "2 ngày trước",
-          reviewedBy: "moderator@system",
-          reviewedAt: "1 ngày trước"
-        }
-      ]
-
-      setContentStats(mockStats)
-      setRecentContent(mockContent)
     } catch (error) {
-      console.error('Error loading content data:', error)
+      console.error('Error loading content data:', error);
+      alert('Could not load content data.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 

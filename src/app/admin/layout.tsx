@@ -3,8 +3,6 @@
 import { usePermissions } from "@/lib/auth-guards"
 import { useRouter } from "next/navigation"
 import { useEffect, ReactNode } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -35,16 +33,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Show loading while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="flex items-center justify-center min-h-[70vh]">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground">Đang kiểm tra quyền truy cập...</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <main className="flex items-center justify-center min-h-[70vh]">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-sm text-muted-foreground">Đang kiểm tra quyền truy cập...</p>
+        </div>
+      </main>
     )
   }
 
@@ -55,22 +49,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Render admin content if authorized
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              Bảng Điều Khiển Quản Trị
-            </h1>
-            <p className="text-muted-foreground">
-              Quản lý hệ thống VietExplore-AI
-            </p>
-          </div>
-          {children}
+    <main>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Bảng Điều Khiển Quản Trị
+          </h1>
+          <p className="text-muted-foreground">
+            Quản lý hệ thống VietExplore-AI
+          </p>
         </div>
-      </main>
-      <Footer />
-    </div>
+        {children}
+      </div>
+    </main>
   )
 }
