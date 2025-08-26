@@ -1,7 +1,3 @@
-/**
- * API Client for VietExplore-AI
- * Centralized API calls with authentication handling
- */
 
 import { auth } from '@/lib/firebase';
 import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
@@ -58,7 +54,6 @@ class ApiClient {
     }
   }
 
-  // Authentication APIs
   auth = {
     login: async (email: string, password: string) => {
       return this.request('/auth/login', {
@@ -90,7 +85,6 @@ class ApiClient {
     },
   };
 
-  // Places APIs
   places = {
     list: async (filters: PlaceFilters = {}) => {
       const params = new URLSearchParams();
@@ -129,7 +123,6 @@ class ApiClient {
     },
   };
 
-  // Admin APIs
   admin = {
     users: {
       list: async (filters: { role?: UserRole; search?: string; limit?: number; offset?: number } = {}) => {
@@ -150,10 +143,23 @@ class ApiClient {
           body: JSON.stringify({ newRole, reason }),
         });
       },
+
+      sendPasswordReset: async (email: string) => {
+        return this.request(`/admin/users/reset-password`, {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+      },
+
+      toggleUserStatus: async (userId: string, disabled: boolean) => {
+        return this.request(`/admin/users/${userId}/status`, {
+          method: 'PUT',
+          body: JSON.stringify({ disabled }),
+        });
+      },
     },
   };
 
-  // Moderation APIs
   moderation = {
     queue: {
       list: async (filters: {
@@ -184,22 +190,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
-
-// Helper hooks for React components
-export function useApiClient() {
-  return apiClient;
-}
-
-// Error handling helper
-export function handleApiError(error: string | undefined): string {
-  const errorMessages: Record<string, string> = {
-    'auth/invalid-credential': 'Email hoặc mật khẩu không đúng',
-    'auth/email-already-in-use': 'Email đã được sử dụng',
-    'auth/weak-password': 'Mật khẩu quá yếu',
-    'auth/invalid-email': 'Email không hợp lệ',
-    'auth/too-many-requests': 'Quá nhiều lần thử. Vui lòng thử lại sau',
-  };
-
-  return errorMessages[error || ''] || error || 'Có lỗi xảy ra';
-}
-

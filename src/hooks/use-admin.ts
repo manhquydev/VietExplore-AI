@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { User, UserRole } from '@/lib/types/auth';
 import { useAuth } from '@/components/auth/auth-provider';
@@ -14,50 +15,67 @@ export function useAdminUsers(filters: {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await apiClient.admin.users.list(filters);
+      
+      if (result.success && result.data) {
+        setUsers(result.data);
+      } else {
+        setError(result.error || 'Không thể tải danh sách người dùng');
+      }
+    } catch (err) {
+      setError('Có lỗi xảy ra khi tải dữ liệu');
+      console.error('Error fetching users:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [JSON.stringify(filters)]);
+
   useEffect(() => {
     if (!user || user.role !== 'admin') {
       setLoading(false);
       return;
     }
-
-    async function fetchUsers() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const result = await apiClient.admin.users.list(filters);
-        
-        if (result.success && result.data) {
-          setUsers(result.data);
-        } else {
-          setError(result.error || 'Không thể tải danh sách người dùng');
-        }
-      } catch (err) {
-        setError('Có lỗi xảy ra khi tải dữ liệu');
-        console.error('Error fetching users:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchUsers();
-  }, [JSON.stringify(filters), user]);
+  }, [fetchUsers, user]);
 
   const changeUserRole = async (userId: string, newRole: UserRole, reason?: string) => {
     try {
       const result = await apiClient.admin.users.changeRole(userId, newRole, reason);
-      
       if (result.success) {
-        // Update local state
-        setUsers(prevUsers => 
-          prevUsers.map(u => 
-            u.id === userId ? { ...u, role: newRole } : u
-          )
-        );
+        await fetchUsers(); // Refresh user list
         return { success: true, message: result.message };
-      } else {
-        return { success: false, error: result.error };
       }
+      return { success: false, error: result.error };
+    } catch (err) {
+      return { success: false, error: 'Có lỗi xảy ra' };
+    }
+  };
+
+  const sendPasswordReset = async (email: string) => {
+    try {
+      const result = await apiClient.admin.users.sendPasswordReset(email);
+      if(result.success) {
+        return { success: true, message: result.message };
+      }
+      return { success: false, error: result.error };
+    } catch (err) {
+      return { success: false, error: 'Có lỗi xảy ra' };
+    }
+  };
+  
+  const toggleUserStatus = async (userId: string, disabled: boolean) => {
+    try {
+      const result = await apiClient.admin.users.toggleUserStatus(userId, disabled);
+      if(result.success) {
+        await fetchUsers(); // Refresh user list
+        return { success: true, message: result.message };
+      }
+      return { success: false, error: result.error };
     } catch (err) {
       return { success: false, error: 'Có lỗi xảy ra' };
     }
@@ -67,7 +85,9 @@ export function useAdminUsers(filters: {
     users,
     loading,
     error,
-    changeUserRole
+    changeUserRole,
+    sendPasswordReset,
+    toggleUserStatus
   };
 }
 
@@ -121,7 +141,6 @@ export function useModerationQueue(filters: {
       const result = await apiClient.moderation.queue.review(itemId, action, reviewNotes, newTrustLabel);
       
       if (result.success) {
-        // Remove item from queue or update status
         setItems(prevItems => 
           prevItems.filter(item => item.id !== itemId)
         );
@@ -141,4 +160,3 @@ export function useModerationQueue(filters: {
     reviewItem
   };
 }
-

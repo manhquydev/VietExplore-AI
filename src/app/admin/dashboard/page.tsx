@@ -5,19 +5,21 @@ import * as React from "react"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminUsers, useModerationQueue } from "@/hooks/use-admin"
 import { UserRole } from "@/lib/types/auth"
-import { Users, MapPin, FileText, AlertTriangle, Shield, Settings } from "lucide-react"
+import { Users, MapPin, FileText, AlertTriangle, Shield, Settings, MoreHorizontal, UserCheck, UserX, KeyRound } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast"
 
-const getInitials = (fullName: string | undefined, email: string | undefined) => {
+const getInitials = (fullName?: string, email?: string) => {
   if (fullName) {
     return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
   }
@@ -31,7 +33,6 @@ export default function AdminDashboardPage() {
   const { user } = useAuth()
   const router = useRouter()
   
-  // Redirect if not admin
   React.useEffect(() => {
     if (user && user.role !== 'admin') {
       router.push('/')
@@ -127,7 +128,6 @@ export default function AdminDashboardPage() {
   )
 }
 
-// Stats Card Component
 function StatsCard({ 
   title, 
   value, 
@@ -167,12 +167,12 @@ function StatsCard({
   )
 }
 
-// User Management Component
 function UserManagement() {
+  const { toast } = useToast()
   const [selectedRole, setSelectedRole] = React.useState<string>('all')
   const [searchTerm, setSearchTerm] = React.useState('')
   
-  const { users, loading, error, changeUserRole } = useAdminUsers({
+  const { users, loading, error, changeUserRole, sendPasswordReset, toggleUserStatus } = useAdminUsers({
     role: selectedRole !== 'all' ? selectedRole as UserRole : undefined,
     search: searchTerm || undefined
   })
@@ -180,10 +180,30 @@ function UserManagement() {
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     const result = await changeUserRole(userId, newRole, 'Thay đổi bởi admin')
     if (result.success) {
-      // Show success message
-      alert('Đã thay đổi vai trò thành công!')
+      toast({ title: "Thành công", description: result.message })
     } else {
-      alert(`Lỗi: ${result.error}`)
+      toast({ title: "Lỗi", description: result.error, variant: "destructive" })
+    }
+  }
+
+  const handlePasswordReset = async (email: string) => {
+    const result = await sendPasswordReset(email)
+    if (result.success) {
+      toast({ title: "Thành công", description: `Email đặt lại mật khẩu đã được gửi đến ${email}` })
+    } else {
+      toast({ title: "Lỗi", description: result.error, variant: "destructive" })
+    }
+  }
+  
+  const handleToggleStatus = async (userId: string, disabled: boolean) => {
+    const action = disabled ? "vô hiệu hóa" : "kích hoạt"
+    if (!confirm(`Bạn có chắc muốn ${action} tài khoản này?`)) return
+    
+    const result = await toggleUserStatus(userId, disabled)
+    if (result.success) {
+      toast({ title: "Thành công", description: result.message })
+    } else {
+      toast({ title: "Lỗi", description: result.error, variant: "destructive" })
     }
   }
 
@@ -196,7 +216,6 @@ function UserManagement() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-        {/* Filters */}
         <div className="flex gap-4 mb-6">
           <Input
             placeholder="Tìm kiếm người dùng..."
@@ -219,7 +238,6 @@ function UserManagement() {
           </Select>
         </div>
 
-        {/* Users List */}
         {loading ? (
           <div className="text-center py-8">Đang tải...</div>
         ) : error ? (
@@ -230,23 +248,16 @@ function UserManagement() {
               <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.fullName || 'User Avatar'} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      <span className="text-sm font-medium">{getInitials(user.fullName, user.email)}</span>
-                    )}
+                    <span className="text-sm font-medium">{getInitials(user.fullName, user.email)}</span>
                   </div>
                   <div>
                     <p className="font-medium">{user.fullName || 'N/A'}</p>
                     <p className="text-sm text-gray-600">{user.email}</p>
+                    {user.disabled && <Badge variant="destructive" className="mt-1">Vô hiệu hóa</Badge>}
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
-                    {user.role}
-                    </Badge>
-                  
                   <Select 
                     value={user.role} 
                     onValueChange={(newRole: UserRole) => handleRoleChange(user.id, newRole)}
@@ -262,6 +273,32 @@ function UserManagement() {
                       <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="w-4 h-4"/>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handlePasswordReset(user.email)}>
+                        <KeyRound className="w-4 h-4 mr-2" />
+                        Reset Mật khẩu
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, !user.disabled)}>
+                        {user.disabled ? (
+                          <>
+                            <UserCheck className="w-4 h-4 mr-2" />
+                            Kích hoạt
+                          </>
+                        ) : (
+                          <>
+                            <UserX className="w-4 h-4 mr-2" />
+                            Vô hiệu hóa
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   </div>
                 </div>
               ))}
@@ -272,7 +309,6 @@ function UserManagement() {
   )
 }
 
-// Moderation Management Component
 function ModerationManagement() {
   const { items, loading, error, reviewItem } = useModerationQueue()
 
@@ -357,7 +393,6 @@ function ModerationManagement() {
   )
 }
 
-// Content Management Component
 function ContentManagement() {
   return (
       <Card>
@@ -376,7 +411,6 @@ function ContentManagement() {
   )
 }
 
-// System Settings Component
 function SystemSettings() {
   return (
     <Card>

@@ -1,5 +1,6 @@
+
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { requirePermission } from '@/lib/auth-middleware';
 import { UserRole } from '@/lib/types/auth';
 
@@ -9,9 +10,8 @@ export async function PUT(
   { params }: { params: { userId: string } }
 ) {
   try {
-    // Only admin can change roles
     const authResult = await requirePermission(request, 'all_permissions');
-    if (!authResult.success || !authResult.user) {
+    if (!authResult.success || !authResult.user || authResult.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
         { status: 403 }
@@ -49,15 +49,16 @@ export async function PUT(
       );
     }
 
-    // Prevent admin from demoting themselves
-    if (params.userId === admin.id && newRole !== 'admin') {
+    if (params.userId === admin.id) {
       return NextResponse.json(
         { error: 'Bạn không thể thay đổi vai trò của chính mình' },
         { status: 400 }
       );
     }
+    
+    // Set custom claims for role-based access control
+    await adminAuth.setCustomUserClaims(params.userId, { role: newRole });
 
-    // Update user role with history tracking
     const now = new Date().toISOString();
     const roleHistoryEntry = {
       previousRole: currentRole,
@@ -73,7 +74,6 @@ export async function PUT(
       roleHistory: adminDb.FieldValue.arrayUnion(roleHistoryEntry)
     });
 
-    // Log the role change
     await adminDb.collection('admin_logs').add({
       type: 'role_change',
       adminId: admin.id,
@@ -103,4 +103,3 @@ export async function PUT(
     );
   }
 }
-
