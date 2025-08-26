@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, getAdminAuth } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { UserRole } from '@/lib/types/auth';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // PUT /api/admin/users/[userId]/role - Change user role (Admin only)
 export async function PUT(
@@ -73,7 +74,7 @@ export async function PUT(
     await adminDb.collection('users').doc(params.userId).update({
       role: newRole,
       updatedAt: now,
-      roleHistory: admin.firestore.FieldValue.arrayUnion(roleHistoryEntry)
+      roleHistory: FieldValue.arrayUnion(roleHistoryEntry)
     });
 
     await adminDb.collection('admin_logs').add({

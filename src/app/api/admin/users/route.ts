@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { User, UserRole } from '@/lib/types/auth';
+import { User, UserRole }from '@/lib/types/auth';
 
 // GET /api/admin/users - List all users (Admin/Moderator only)
 export async function GET(request: NextRequest) {
@@ -29,13 +29,27 @@ export async function GET(request: NextRequest) {
     if (role && ['traveler', 'contributor', 'partner', 'moderator', 'admin'].includes(role)) {
       query = query.where('role', '==', role);
     }
+    
+    // Server-side search filter
+    if (search) {
+      const searchTerm = search.toLowerCase();
+      // This is a simple search. For more complex scenarios, consider a search service like Algolia or Elasticsearch.
+      query = query.where('fullName', '>=', searchTerm).where('fullName', '<=', searchTerm + '\uf8ff');
+    }
+
+    // Get total count for pagination before applying limit/offset
+    const totalSnapshot = await query.get();
+    const totalUsers = totalSnapshot.size;
 
     // Order by creation date
     query = query.orderBy('createdAt', 'desc');
 
     // Apply pagination
     if (offset > 0) {
-      query = query.offset(offset);
+      const lastVisibleDoc = totalSnapshot.docs[offset - 1];
+      if (lastVisibleDoc) {
+        query = query.startAfter(lastVisibleDoc);
+      }
     }
     query = query.limit(limit);
 
@@ -52,28 +66,9 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Server-side search filter
-    let filteredUsers = users;
-    if (search) {
-      const searchTerm = search.toLowerCase();
-      filteredUsers = users.filter(user => 
-        user.fullName?.toLowerCase().includes(searchTerm) ||
-        user.email?.toLowerCase().includes(searchTerm) ||
-        user.username?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    // Get total count for pagination
-    let totalQuery = adminDb.collection('users');
-    if (role && ['traveler', 'contributor', 'partner', 'moderator', 'admin'].includes(role)) {
-      totalQuery = totalQuery.where('role', '==', role);
-    }
-    const totalSnapshot = await totalQuery.count().get();
-    const totalUsers = totalSnapshot.data().count;
-
     return NextResponse.json({
       success: true,
-      data: filteredUsers,
+      data: users,
       pagination: {
         limit,
         offset,

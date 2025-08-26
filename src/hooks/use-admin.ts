@@ -23,16 +23,13 @@ export function useAdminStats() {
     async function fetchStats() {
       setLoading(true);
       try {
-        const [usersResult, placesResult, moderationResult] = await Promise.all([
-          apiClient.admin.users.list({ limit: 1 }), // We only need total count, but no endpoint for that yet
-          apiClient.places.list({ limit: 1 }), // Same here
+        const [usersResult, moderationResult] = await Promise.all([
+          apiClient.admin.users.list({ limit: 1000 }), // Fetch all to get count
           apiClient.moderation.queue.list({ status: 'pending' })
         ]);
 
-        // This is a temporary solution until the backend provides total counts
-        // A proper implementation would have dedicated API endpoints like /api/admin/stats
         setStats({
-          totalUsers: (usersResult as any).pagination?.total || 1234, // Simulated
+          totalUsers: usersResult.pagination?.total || 0,
           totalPlaces: 456, // Simulated
           pendingModeration: moderationResult.data?.length || 0,
           openReports: 8, // Simulated
