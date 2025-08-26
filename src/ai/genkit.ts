@@ -1,5 +1,5 @@
 // src/ai/genkit.ts
-import { genkit } from '@genkit-ai/core';
+import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 
 // Kiểm tra API key với error message rõ ràng

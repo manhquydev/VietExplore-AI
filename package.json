@@ -24,7 +24,7 @@
     "sitemap:routes": "tree /F /A src\\app"
   },
   "dependencies": {
-    "@genkit-ai/googleai": "^1.14.1",
+    "@genkit-ai/googleai": "^1.17.1",
     "@genkit-ai/next": "^1.14.1",
     "@google/genai": "^1.15.0",
     "@hello-pangea/dnd": "^18.0.1",
@@ -58,7 +58,7 @@
     "embla-carousel-react": "^8.6.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
-    "genkit": "^1.14.1",
+    "genkit": "^1.17.1",
     "lucide-react": "^0.475.0",
     "next": "15.3.3",
     "next-sitemap": "^4.2.3",
