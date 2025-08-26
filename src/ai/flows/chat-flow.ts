@@ -10,9 +10,6 @@ const ChatInputSchema = z.object({
   })).optional().default([])
 });
 
-// Định nghĩa model Gemini 2.5 Pro cho Vertex AI
-const gemini25Pro = ai.model('gemini-2.5-pro');
-
 export const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
@@ -21,16 +18,24 @@ export const chatFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      console.log('🔄 Processing chat with Vertex AI Gemini 2.5 Pro...');
+      console.log('🔄 Processing chat with Google AI Gemini Pro...');
       
-      const history = (input.history || []).map(item => ({
-        role: item.role,
-        content: [{ text: item.content }]
-      }));
+      // Build conversation history for context
+      let conversationMessages = [];
+      if (input.history && input.history.length > 0) {
+        conversationMessages = input.history.map(item => 
+          `${item.role === 'user' ? 'User' : 'Assistant'}: ${item.content}`
+        );
+      }
       
-      const result = await gemini25Pro.generate({
-        prompt: input.message,
-        history: history,
+      // Create the full prompt with history context
+      const fullPrompt = conversationMessages.length > 0 
+        ? `Previous conversation:\n${conversationMessages.join('\n')}\n\nUser: ${input.message}`
+        : input.message;
+      
+      const result = await ai.generate({
+        model: 'googleai/gemini-1.5-flash',
+        prompt: fullPrompt,
         config: {
           temperature: 0.7,
           maxOutputTokens: 2048,
@@ -39,20 +44,20 @@ export const chatFlow = ai.defineFlow(
         }
       });
       
-      const responseText = result.text();
-      console.log('✅ Success with Vertex AI model: gemini-2.5-pro');
+      const responseText = typeof result.text === 'function' ? result.text() : result.text || result.output?.text || 'No response received';
+      console.log('✅ Success with Google AI model: gemini-1.5-flash');
       return responseText;
       
     } catch (error) {
-      console.error('❌ Chat flow error with Vertex AI:', error);
+      console.error('❌ Chat flow error with Google AI:', error);
       // Cung cấp thông báo lỗi chi tiết hơn
       if (error.message.includes('PERMISSION_DENIED')) {
-        throw new Error('Permission denied. Please check if the Service Account has the "Vertex AI User" role in GCP IAM.');
+        throw new Error('Permission denied. Please check if the Google AI API key is valid.');
       }
       if (error.message.includes('NOT_FOUND')) {
-        throw new Error(`Model 'gemini-2.5-pro' not found in Vertex AI. Ensure it's enabled in the correct region (asia-southeast1).`);
+        throw new Error(`Model not found in Google AI. Error: ${error.message}`);
       }
-      throw new Error(`An unexpected error occurred with Vertex AI: ${error.message}`);
+      throw new Error(`An unexpected error occurred with Google AI: ${error.message}`);
     }
   }
 );

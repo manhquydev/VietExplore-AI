@@ -1,19 +1,17 @@
 // src/ai/genkit.ts
 import { genkit } from 'genkit';
-import { vertexAI } from '@genkit-ai/vertexai';
+import { googleAI } from '@genkit-ai/googleai';
 
-// Genkit sẽ tự động sử dụng GOOGLE_APPLICATION_CREDENTIALS
-// khi không có apiKey nào được cung cấp.
-console.log('🚀 Initializing Genkit with Vertex AI (Service Account)...');
+// Try using Google AI instead of Vertex AI for better compatibility
+console.log('🚀 Initializing Genkit with Google AI...');
 
 export const ai = genkit({
   plugins: [
-    vertexAI({
-      projectId: process.env.FIREBASE_PROJECT_ID || 'vietexplore-ai',
-      location: 'asia-southeast1', // Quan trọng: Phải khớp với region bạn đã enable Vertex AI
+    googleAI({
+      apiKey: process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY,
     }),
   ],
   enableTracingAndMetrics: process.env.NODE_ENV === 'development',
 });
 
-console.log('✅ Genkit initialized successfully with Vertex AI.');
+console.log('✅ Genkit initialized successfully with Google AI.');
