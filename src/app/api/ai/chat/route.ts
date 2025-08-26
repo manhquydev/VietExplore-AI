@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     });
     
     const response = await Promise.race([
-      chatFlow({ message, history: history.map(h => ({ content: h.text, role: h.role})) }),
+      chatFlow({ message, history }),
       timeoutPromise
     ]);
     
