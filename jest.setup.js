@@ -1,12 +1,13 @@
 // Jest setup for backend testing
 
 // Mock Firebase Admin SDK for testing
-jest.mock('./src/lib/firebase-admin', () => ({
+jest.mock('./src/lib/server/firebaseAdmin', () => ({
   adminAuth: {
     verifyIdToken: jest.fn(),
     createCustomToken: jest.fn(),
     createUser: jest.fn(),
     updateUser: jest.fn(),
+    setCustomUserClaims: jest.fn(),
   },
   adminDb: {
     collection: jest.fn(() => ({
@@ -55,6 +56,7 @@ jest.mock('./src/lib/firebase', () => ({
     createUserWithEmailAndPassword: jest.fn(),
     signOut: jest.fn(),
     onAuthStateChanged: jest.fn(),
+    signInWithCustomToken: jest.fn(),
   },
   db: {},
   storage: {},

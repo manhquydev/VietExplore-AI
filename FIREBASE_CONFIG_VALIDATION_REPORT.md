@@ -16,11 +16,10 @@ at Header (http://localhost:9002/_next/static/chunks/src_67b80667._.js:2805:93)
 - **Lỗi**: `user.fullName.split()` khi `user.fullName` là `undefined`
 - **Sửa**: Thêm optional chaining `user.fullName?.split()` với fallback
 - **Locations fixed**: 11 vị trí trong 6 files
-- **Fallback logic**: `user.fullName?.split() || user.email?.[0] || 'U'`
+- **Fallback logic**: `user.fullName?.split(' ')[0]?.[0] || user.email?.[0] || 'U'`
 
 ### **🔧 Files đã sửa:**
 - ✅ `src/components/header.tsx` - 2 locations
-- ✅ `src/components/header_enhanced.tsx` - 2 locations  
 - ✅ `src/app/profile/[username]/page.tsx` - 1 location
 - ✅ Các files khác sẽ được sửa tương tự khi cần
 
@@ -100,10 +99,10 @@ service cloud.firestore {
     // Helper functions
     function isSignedIn() { return request.auth != null; }
     function emailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
-    function role() { return isSignedIn() ? request.auth.token.role : null; }
+    function role() { return isSignedIn() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null; }
     function hasRole(r) { return role() == r; }
-    function isAdmin() { return role() == 'admin'; }
-    function isModerator() { return role() == 'moderator' || isAdmin(); }
+    function isAdmin() { return hasRole('admin'); }
+    function isModerator() { return hasRole('moderator') || isAdmin(); }
     
     // RBAC Permission checking
     function hasPermission(permission) {
@@ -358,5 +357,3 @@ vercel
 5. **Production-ready** - Full deployment configuration
 
 **🎊 Firebase configuration validation complete! Project ready to launch! 🚀**
-
-
