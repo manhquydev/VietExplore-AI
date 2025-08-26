@@ -25,6 +25,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import ReactMarkdown from 'react-markdown'
+import { chat, ChatInput } from "@/ai/flows/chat-flow"
 
 interface Message {
   id: string
@@ -57,7 +59,7 @@ const mockMessages: Message[] = [
   {
     id: "msg_1",
     role: "assistant",
-    content: "Xin chào! Tôi là AI trợ lý du lịch của Du Lịch Việt. Tôi có thể giúp bạn:\n\n• Tạo lịch trình du lịch cá nhân hóa\n• Tìm kiếm địa điểm phù hợp\n• Tư vấn chi phí và thời gian\n• Gợi ý ẩm thực và hoạt động\n\nBạn muốn đi đâu và khi nào?",
+    content: "Xin chào! Tôi là **AI Hướng Dẫn Viên** của Du Lịch Việt. Tôi có thể giúp bạn:\n\n* Tạo lịch trình du lịch cá nhân hóa\n* Tìm kiếm địa điểm phù hợp\n* Tư vấn chi phí và thời gian\n* Gợi ý ẩm thực và hoạt động\n\nBạn muốn đi đâu và khi nào?",
     timestamp: new Date().toISOString(),
     metadata: {
       suggestions: [
@@ -98,21 +100,26 @@ export default function AIChatPage() {
     setIsLoading(true)
 
     try {
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const history = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      const chatInput: ChatInput = {
+        history: history,
+        message: content.trim()
+      }
       
-      const aiResponse: Message = {
+      const aiResponse = await chat(chatInput);
+
+      const aiMessage: Message = {
         id: `msg_${Date.now()}_ai`,
         role: "assistant", 
-        content: generateMockAIResponse(content),
+        content: aiResponse.message,
         timestamp: new Date().toISOString(),
-        metadata: {
-          suggestions: generateSuggestions(content),
-          quickActions: generateQuickActions(content)
-        }
       }
 
-      setMessages(prev => [...prev, aiResponse])
+      setMessages(prev => [...prev, aiMessage])
     } catch (error) {
       console.error('AI response error:', error)
       const errorMessage: Message = {
@@ -139,7 +146,7 @@ export default function AIChatPage() {
   }
 
   const clearChat = () => {
-    setMessages(mockMessages)
+    setMessages(mockMessages.slice(0, 1))
   }
 
   const copyMessage = (content: string) => {
@@ -163,8 +170,8 @@ export default function AIChatPage() {
           
           <div className="relative container">
             <div className="glass-card text-center p-8 mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bot className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bot className="w-8 h-8 text-sky-600 dark:text-sky-400" />
               </div>
               <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
                 AI Trợ lý Du lịch
@@ -216,8 +223,8 @@ export default function AIChatPage() {
                         )}
                       >
                         {message.role === "assistant" && (
-                          <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                            <Bot className="w-5 h-5 text-white" />
+                          <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <Bot className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                           </div>
                         )}
 
@@ -231,9 +238,9 @@ export default function AIChatPage() {
                               ? "bg-gradient-to-r from-sky-500 to-teal-500 text-white"
                               : "glass-subtle border border-white/20 dark:border-slate-700/50"
                           )}>
-                            <p className="whitespace-pre-wrap leading-relaxed text-sm">
-                              {message.content}
-                            </p>
+                            <div className="prose prose-sm dark:prose-invert prose-p:my-2 prose-headings:my-3 max-w-none">
+                              <ReactMarkdown>{message.content}</ReactMarkdown>
+                            </div>
                           </div>
 
                           {/* Quick Actions */}
@@ -331,8 +338,8 @@ export default function AIChatPage() {
                     {/* Loading indicator */}
                     {isLoading && (
                       <div className="flex gap-4 justify-start">
-                        <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                         </div>
                         <div className="glass-subtle border border-white/20 dark:border-slate-700/50 rounded-2xl px-4 py-3">
                           <div className="flex items-center gap-3">
@@ -372,7 +379,7 @@ export default function AIChatPage() {
                   </div>
                   
                   {/* Input suggestions when empty */}
-                  {!inputValue && messages.length === 1 && (
+                  {!inputValue && messages.length <= 1 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {quickSuggestions.slice(0, 3).map((suggestion, index) => (
                         <Button
@@ -396,8 +403,8 @@ export default function AIChatPage() {
               {/* Quick Suggestions */}
               <div className="glass-card p-6">
                 <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   </div>
                   Gợi ý nhanh
                 </h3>
@@ -421,8 +428,8 @@ export default function AIChatPage() {
                 <h3 className="font-bold mb-4 text-lg text-slate-900 dark:text-white">Tôi có thể giúp bạn</h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-gradient-to-r from-sky-100 to-sky-200 dark:from-sky-900 dark:to-sky-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-sky-600" />
+                    <div className="w-10 h-10 bg-sky-50 dark:bg-sky-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Tìm địa điểm</p>
@@ -431,8 +438,8 @@ export default function AIChatPage() {
                   </div>
                   
                   <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-gradient-to-r from-teal-100 to-teal-200 dark:from-teal-900 dark:to-teal-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-5 h-5 text-teal-600" />
+                    <div className="w-10 h-10 bg-teal-50 dark:bg-teal-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Lập lịch trình</p>
@@ -441,8 +448,8 @@ export default function AIChatPage() {
                   </div>
                   
                   <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <DollarSign className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Tính chi phí</p>
@@ -455,8 +462,8 @@ export default function AIChatPage() {
               {/* Tips */}
               <div className="glass-card p-6">
                 <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800 rounded-xl flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-yellow-600" />
+                  <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                   </div>
                   Mẹo sử dụng
                 </h3>
@@ -487,118 +494,4 @@ export default function AIChatPage() {
       <Footer />
     </div>
   )
-}
-
-// Helper functions for generating mock AI responses
-function generateMockAIResponse(userMessage: string): string {
-  const message = userMessage.toLowerCase()
-  
-  if (message.includes('đà nẵng')) {
-    return `Đà Nẵng là lựa chọn tuyệt vời! Đây là gợi ý lịch trình 3 ngày:
-
-**Ngày 1: Khám phá thành phố**
-• Sáng: Tham quan Cầu Rồng và bờ sông Hàn
-• Chiều: Thư giãn tại bãi biển Mỹ Khê
-• Tối: Thưởng thức hải sản tại chợ đêm Helio
-
-**Ngày 2: Hội An cổ kính**
-• Cả ngày: Khám phá phố cổ Hội An
-• Hoạt động: Thả đèn hoa đăng, mua sắm
-• Ẩm thực: Cao lầu, bánh mì Phượng
-
-**Ngày 3: Thiên nhiên & văn hóa**
-• Sáng: Tham quan Chùa Linh Ứng (Bà Nà Hills)
-• Chiều: Nghỉ ngơi tại resort
-
-Chi phí ước tính: 3-5 triệu VND/người cho 3 ngày`
-  }
-  
-  if (message.includes('chi phí') || message.includes('ngân sách')) {
-    return `Để tư vấn chi phí chính xác, tôi cần biết thêm:
-
-• Điểm đến cụ thể
-• Số ngày du lịch
-• Số người tham gia
-• Loại hình du lịch (tiết kiệm/trung bình/cao cấp)
-
-**Tham khảo chi phí trung bình:**
-• Miền Bắc: 1.5-3 triệu/người/ngày
-• Miền Trung: 1.2-2.5 triệu/người/ngày  
-• Miền Nam: 1.8-3.5 triệu/người/ngày
-
-Chi phí bao gồm ăn ở, di chuyển, vé tham quan.`
-  }
-  
-  if (message.includes('thời tiết') || message.includes('mùa')) {
-    return `**Thời tiết du lịch Việt Nam:**
-
-**Mùa khô (Nov-Apr):** Thời tiết đẹp, ít mưa
-• Miền Bắc: Lạnh, có sương mù (Dec-Feb)
-• Miền Trung: Mát mẻ, nắng đẹp
-• Miền Nam: Nóng, khô ráo
-
-🌧️ **Mùa mưa (May-Oct):** Mưa nhiều, ẩm ướt
-• Miền Bắc: Nóng ẩm, mưa dông
-• Miền Trung: Mưa bão (Sep-Nov)
-• Miền Nam: Mưa chiều, sáng nắng
-
-**Thời gian lý tưởng:** Tháng 3-4 và tháng 10-11`
-  }
-  
-  return `Cảm ơn bạn đã hỏi! Tôi sẽ giúp bạn tìm hiểu về "${userMessage}".
-
-Để đưa ra gợi ý phù hợp nhất, bạn có thể cho tôi biết thêm:
-• Bạn muốn đi đâu?
-• Khi nào và bao lâu?
-• Đi với ai? (một mình/cặp đôi/gia đình/bạn bè)
-• Ngân sách dự kiến?
-• Sở thích cá nhân?
-
-Tôi sẽ tạo lịch trình chi tiết và gợi ý những địa điểm tuyệt vời nhất cho bạn!`
-}
-
-function generateSuggestions(userMessage: string): string[] {
-  const message = userMessage.toLowerCase()
-  
-  if (message.includes('đà nẵng')) {
-    return [
-      "Chi phí du lịch Đà Nẵng 3 ngày",
-      "Ẩm thực đặc sản Đà Nẵng",
-      "Kết hợp Đà Nẵng - Hội An"
-    ]
-  }
-  
-  if (message.includes('chi phí')) {
-    return [
-      "Cách tiết kiệm chi phí du lịch",
-      "So sánh giá khách sạn",
-      "Ăn uống bình dân ngon"
-    ]
-  }
-  
-  return [
-    "Tạo lịch trình mới",
-    "Tìm địa điểm gần đây",
-    "Xem thời tiết hiện tại"
-  ]
-}
-
-function generateQuickActions(userMessage: string): Array<{label: string, action: string, data?: any}> {
-  const message = userMessage.toLowerCase()
-  
-  if (message.includes('lịch trình') || message.includes('kế hoạch')) {
-    return [
-      { label: "🗓️ Tạo lịch trình", action: "create_itinerary" },
-      { label: "Tìm địa điểm", action: "search_places", data: { query: "popular" } }
-    ]
-  }
-  
-  if (message.includes('đà nẵng')) {
-    return [
-      { label: "🏖️ Xem bãi biển Đà Nẵng", action: "search_places", data: { query: "đà nẵng biển" } },
-      { label: "🗓️ Tạo lịch trình Đà Nẵng", action: "create_itinerary" }
-    ]
-  }
-  
-  return []
 }

@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 /**
  * @fileOverview A travel assistant AI flow that handles conversational chat.
@@ -8,9 +8,9 @@
  * - ChatOutput - The return type for the chat function.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { Part, Role } from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
+import { Part, Role } from "genkit";
 
 // Define the structure for a single message in the chat history
 const ChatMessageSchema = z.object({
@@ -39,7 +39,7 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 // Define the Genkit flow for the chat
 const chatFlow = ai.defineFlow(
   {
-    name: 'chatFlow',
+    name: "chatFlow",
     inputSchema: ChatInputSchema,
     outputSchema: ChatOutputSchema,
   },
@@ -52,7 +52,7 @@ const chatFlow = ai.defineFlow(
       })) || [];
 
     const result = await ai.generate({
-      model: 'gemini-1.5-flash',
+      model: "gemini-1.5-flash",
       history: history,
       prompt: input.message,
       config: {
@@ -70,7 +70,7 @@ const chatFlow = ai.defineFlow(
       **Ví dụ cách trả lời:**
       - Khi được hỏi về một địa điểm: "Hội An là một lựa chọn tuyệt vời! Đây là một thành phố cổ kính được UNESCO công nhận, nổi tiếng với những con phố đèn lồng và ẩm thực đặc sắc. Bạn có muốn tôi gợi ý một vài hoạt động không thể bỏ lỡ ở Hội An không?"
       - Khi được hỏi về lịch trình: "Chắc chắn rồi! Để tạo lịch trình tốt nhất cho bạn, bạn có thể cho tôi biết thêm về thời gian chuyến đi, ngân sách dự kiến và sở thích của bạn là gì không? Ví dụ: bạn thích khám phá thiên nhiên, văn hóa hay ẩm thực?"
-      `
+      `,
     });
 
     return {
