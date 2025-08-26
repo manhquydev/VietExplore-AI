@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/server/firebaseAdmin';
 import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { hasPermission } from '@/lib/types/auth';
 
 // GET /api/places - Fetch places with filtering
 export async function GET(request: NextRequest) {
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
     const user = authResult.user;
 
     // Check permissions
-    if (!['contributor', 'partner', 'moderator', 'admin'].includes(user.role)) {
+    if (!hasPermission(user, 'create_place')) {
       return NextResponse.json(
         { error: 'Bạn không có quyền tạo địa điểm' },
         { status: 403 }

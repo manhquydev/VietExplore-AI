@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/server/firebaseAdmin';
-import { requirePermission } from '@/lib/server/auth-middleware';
-import { UserRole } from '@/lib/types/auth';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { UserRole, rolePermissions } from '@/lib/types/auth';
 
 // PUT /api/admin/users/[userId]/role - Change user role (Admin only)
 export async function PUT(
@@ -9,10 +9,10 @@ export async function PUT(
   { params }: { params: { userId: string } }
 ) {
   try {
-    const authResult = await requirePermission(request, 'admin'); // Yêu cầu quyền admin
-    if (!authResult.success || !authResult.user) {
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success || !authResult.user || authResult.user.role !== 'admin') {
       return NextResponse.json(
-        { error: authResult.error || 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
+        { error: 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
         { status: 403 }
       );
     }

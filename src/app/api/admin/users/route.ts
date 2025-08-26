@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/server/firebaseAdmin';
-import { requirePermission } from '@/lib/server/auth-middleware';
-import { UserRole } from '@/lib/types/auth';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { User, UserRole, rolePermissions } from '@/lib/types/auth';
 
 // GET /api/admin/users - List all users (Admin/Moderator only)
 export async function GET(request: NextRequest) {
   try {
-    // Corrected permission check
-    const authResult = await requirePermission(request, 'manage_users');
-    if (!authResult.success || !authResult.user) {
+    const authResult = await verifyAuthToken(request);
+    
+    // Admin và Moderator có quyền xem danh sách người dùng
+    if (!authResult.success || !authResult.user || !['admin', 'moderator'].includes(authResult.user.role)) {
       return NextResponse.json(
         { error: 'Bạn không có quyền xem danh sách người dùng' },
         { status: 403 }

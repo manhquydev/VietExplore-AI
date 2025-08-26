@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/server/firebaseAdmin';
-import { requirePermission } from '@/lib/server/auth-middleware';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { hasPermission } from '@/lib/types/auth';
 
 // GET /api/moderation/queue - Get moderation queue (Moderator/Admin only)
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requirePermission(request, 'view_moderation_queue');
-    if (!authResult.success || !authResult.user) {
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success || !authResult.user || !hasPermission(authResult.user, 'view_moderation_queue')) {
       return NextResponse.json(
         { error: 'Bạn không có quyền xem hàng đợi kiểm duyệt' },
         { status: 403 }

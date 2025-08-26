@@ -30,6 +30,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        "child_process": false,
+        "fs": false,
+        "net": false,
+        "tls": false,
+        "cardinal": false,
+      };
+    }
+    // Important: return the modified config
+    return config;
+  },
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],

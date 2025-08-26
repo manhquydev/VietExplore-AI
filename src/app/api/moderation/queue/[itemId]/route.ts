@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/server/firebaseAdmin';
-import { requirePermission } from '@/lib/server/auth-middleware';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { hasPermission } from '@/lib/types/auth';
 
 // PUT /api/moderation/queue/[itemId] - Review moderation item
 export async function PUT(
@@ -8,8 +9,8 @@ export async function PUT(
   { params }: { params: { itemId: string } }
 ) {
   try {
-    const authResult = await requirePermission(request, 'review_content');
-    if (!authResult.success || !authResult.user) {
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success || !authResult.user || !hasPermission(authResult.user, 'review_content')) {
       return NextResponse.json(
         { error: 'Bạn không có quyền duyệt nội dung' },
         { status: 403 }
