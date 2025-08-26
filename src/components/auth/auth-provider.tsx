@@ -108,7 +108,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          fullName: data.fullName,
+          acceptTerms: data.agreeToTerms // Changed from agreeToTerms to acceptTerms
+        }),
       })
 
       const result = await response.json()
@@ -150,4 +155,3 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
-
