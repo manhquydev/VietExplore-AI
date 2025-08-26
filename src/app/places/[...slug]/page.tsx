@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { notFound } from "next/navigation"
 import { Header } from "@/components/header"
@@ -72,7 +70,61 @@ interface PlaceData {
   }
 }
 
-// Mock data - trong thực tế sẽ fetch từ API
+// Fetch real place data from API
+async function getPlaceData(id: string): Promise<PlaceData | null> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+    const response = await fetch(`${baseUrl}/api/places/${id}`, {
+      next: { revalidate: 300 } // Cache for 5 minutes
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    const result = await response.json();
+    if (!result.success || !result.data) {
+      return null;
+    }
+    
+    // Transform API data to PlaceData format
+    const place = result.data;
+    return {
+      id: place.id,
+      name: place.name,
+      shortDescription: place.shortDescription || '',
+      description: place.description || '',
+      type: place.type,
+      region: place.region,
+      province: place.province,
+      address: place.address || '',
+      coordinates: place.coordinates || { lat: 0, lng: 0 },
+      images: place.images || [],
+      openingHours: place.openingHours,
+      entryFee: place.entryFee,
+      bestTimeToVisit: place.bestTimeToVisit,
+      facilities: place.facilities || [],
+      tags: place.tags || [],
+      sources: place.sources || [],
+      trustLevel: place.trustLabel || 'community',
+      authorRole: place.source?.type === 'partner' ? 'partner' : 'contributor',
+      authorName: place.source?.partnerName || 'Cộng đồng',
+      createdAt: place.createdAt,
+      updatedAt: place.updatedAt,
+      stats: {
+        views: place.viewCount || 0,
+        likes: place.likeCount || 0,
+        saves: 0, // Not implemented yet
+        reviews: 0 // Not implemented yet
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching place data:', error);
+    return null;
+  }
+}
+
+// Fallback mock data for development
 const mockPlace: PlaceData = {
   id: "bai-bien-my-khe-da-nang",
   name: "Bãi biển Mỹ Khê",
@@ -159,18 +211,25 @@ const regionLabels = {
   "nam-bo": "Miền Nam"
 }
 
-export default function PlaceDetailPage({ params }: { params: { slug: string[] } }) {
-  const { user, isAuthenticated } = useAuth()
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
-  const [isLiked, setIsLiked] = React.useState(false)
-  const [isSaved, setIsSaved] = React.useState(false)
+export default async function PlaceDetailPage({ params }: { params: { slug: string[] } }) {
+  const { slug } = params;
+  const placeId = slug[0]; // First part of slug is the ID
   
-  // In real app, fetch place data based on params.slug
-  const place = mockPlace
+  // Fetch real place data
+  const place = await getPlaceData(placeId);
   
   if (!place) {
     notFound()
   }
+  
+  return <PlaceDetailContent place={place} />
+}
+
+function PlaceDetailContent({ place }: { place: PlaceData }) {
+  const { user, isAuthenticated } = useAuth()
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
+  const [isLiked, setIsLiked] = React.useState(false)
+  const [isSaved, setIsSaved] = React.useState(false)
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % place.images.length)

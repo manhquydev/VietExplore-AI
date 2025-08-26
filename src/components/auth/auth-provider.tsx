@@ -67,9 +67,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.error('Failed to fetch user data')
             setUser(null)
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error fetching user data:', error)
           setUser(null)
+          
+          // Show user-friendly error message for specific cases
+          if (error?.code === 'auth/token-expired') {
+            console.warn('Authentication token expired, user needs to re-login')
+          }
         }
       } else {
         setUser(null)

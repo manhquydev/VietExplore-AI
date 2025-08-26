@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { hasPermission } from '@/lib/auth/permissions';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // PUT /api/moderation/queue/[itemId] - Review moderation item
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
-    if (!authResult.success || !authResult.user || !hasPermission(authResult.user, 'review_content')) {
+    if (!authResult.success || !authResult.user || !['moderator', 'admin'].includes(authResult.user.role)) {
       return NextResponse.json(
         { error: 'Bạn không có quyền duyệt nội dung' },
         { status: 403 }
       );
     }
 
+    const { itemId } = await params;
     const moderator = authResult.user;
     const { action, reviewNotes, newTrustLabel } = await request.json();
 
@@ -30,7 +31,7 @@ export async function PUT(
     }
 
     // Get moderation item
-    const itemDoc = await adminDb.collection('moderation_queue').doc(params.itemId).get();
+    const itemDoc = await adminDb.collection('moderation_queue').doc(itemId).get();
     if (!itemDoc.exists) {
       return NextResponse.json(
         { error: 'Không tìm thấy mục cần duyệt' },
@@ -55,7 +56,7 @@ export async function PUT(
       updateData.escalationReason = reviewNotes;
     }
 
-    await adminDb.collection('moderation_queue').doc(params.itemId).update(updateData);
+    await adminDb.collection('moderation_queue').doc(itemId).update(updateData);
 
     // Update the actual content based on action
     if (itemData!.contentType === 'place') {
@@ -74,19 +75,21 @@ export async function PUT(
         }
         
         // Add to moderation history
-        placeUpdate.moderationHistory = admin.firestore.FieldValue.arrayUnion({
+        placeUpdate.moderationHistory = FieldValue.arrayUnion({
           action: 'approved',
           moderatorId: moderator.id,
-          reason: reviewNotes,
+          reason: reviewNotes || '',
           createdAt: now
         });
 
       } else if (action === 'reject') {
-        placeUpdate.status = 'hidden';
-        placeUpdate.moderationHistory = admin.firestore.FieldValue.arrayUnion({
+        placeUpdate.status = 'rejected';
+        placeUpdate.rejectedAt = now;
+        placeUpdate.rejectionReason = reviewNotes || '';
+        placeUpdate.moderationHistory = FieldValue.arrayUnion({
           action: 'rejected',
           moderatorId: moderator.id,
-          reason: reviewNotes,
+          reason: reviewNotes || '',
           createdAt: now
         });
       }
@@ -100,7 +103,7 @@ export async function PUT(
         
         if (placeData?.createdBy) {
           await adminDb.collection('users').doc(placeData.createdBy).update({
-            'stats.placesContributed': admin.firestore.FieldValue.increment(1),
+            'stats.placesPublished': FieldValue.increment(1),
             updatedAt: now
           });
         }
@@ -109,12 +112,12 @@ export async function PUT(
 
     // Log the moderation action
     await adminDb.collection('moderation_logs').add({
-      moderationItemId: params.itemId,
+      moderationItemId: itemId,
       contentType: itemData!.contentType,
       contentId: itemData!.contentId,
       action,
       moderatorId: moderator.id,
-      reviewNotes,
+      reviewNotes: reviewNotes || '',
       timestamp: now
     });
 
@@ -124,7 +127,7 @@ export async function PUT(
                action === 'reject' ? 'Nội dung đã bị từ chối' :
                'Nội dung đã được chuyển lên cấp cao hơn',
       data: {
-        itemId: params.itemId,
+        itemId: itemId,
         action,
         reviewedBy: moderator.fullName,
         reviewedAt: now

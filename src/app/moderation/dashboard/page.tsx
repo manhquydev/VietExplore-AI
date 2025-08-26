@@ -27,104 +27,36 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
+import { useModerationQueue } from "@/hooks/use-admin"
 
 interface ModerationItem {
   id: string
-  type: "place" | "itinerary" | "user" | "report"
-  targetId: string
-  title: string
-  description: string
-  status: "pending" | "approved" | "rejected" | "hidden"
-  priority: "low" | "medium" | "high" | "urgent"
-  submittedBy: {
-    id: string
-    name: string
-    avatar?: string
-    role: string
-  }
+  contentType: "place" | "itinerary" | "user_report" | "suggestion"
+  contentId: string
+  submittedBy: string
   submittedAt: string
-  assignedTo?: {
-    id: string
-    name: string
+  status: "pending" | "approved" | "rejected" | "escalated"
+  priority: "low" | "medium" | "high" | "urgent"
+  content: {
+    title: string
+    description: string
+    changes: string
+    region?: string
+    province?: string
+    type?: string
+    trustLabel?: string
   }
-  moderatorNotes?: string
-  category?: string
-  reportReason?: string
+  submitterInfo?: {
+    fullName: string
+    role: string
+    avatar?: string
+  }
+  reviewedBy?: string
+  reviewedAt?: string
+  reviewNotes?: string
 }
 
-// Mock moderation data
-const mockModerationItems: ModerationItem[] = [
-  {
-    id: "mod_001",
-    type: "place",
-    targetId: "place_new_001",
-    title: "Bãi biển Quy Nhon",
-    description: "Bãi biển hoang sơ với cát vàng và nước biển trong xanh",
-    status: "pending",
-    priority: "medium",
-    submittedBy: {
-      id: "user_001",
-      name: "Nguyễn Văn A",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      role: "contributor"
-    },
-    submittedAt: "2024-03-15T10:30:00Z",
-    category: "biển"
-  },
-  {
-    id: "mod_002",
-    type: "report",
-    targetId: "place_002",
-    title: "Báo cáo: Thông tin sai lệch về giờ mở cửa",
-    description: "Địa điểm này không mở cửa 24/7 như đã ghi",
-    status: "pending",
-    priority: "high",
-    submittedBy: {
-      id: "user_002",
-      name: "Trần Thị B",
-      role: "traveler"
-    },
-    submittedAt: "2024-03-15T08:15:00Z",
-    reportReason: "Thông tin sai lệch",
-    assignedTo: {
-      id: "mod_001",
-      name: "Moderator A"
-    }
-  },
-  {
-    id: "mod_003",
-    type: "place",
-    targetId: "place_new_002",
-    title: "Đồi chè Mộc Châu",
-    description: "Cảnh quan đồi chè bạt ngàn với không khí trong lành",
-    status: "approved",
-    priority: "low",
-    submittedBy: {
-      id: "user_003",
-      name: "Lê Văn C",
-      role: "partner"
-    },
-    submittedAt: "2024-03-14T16:45:00Z",
-    category: "núi",
-    moderatorNotes: "Thông tin đầy đủ và chính xác"
-  },
-  {
-    id: "mod_004",
-    type: "itinerary",
-    targetId: "itinerary_new_001",
-    title: "Hà Nội - Sa Pa 5 ngày",
-    description: "Lịch trình khám phá miền Bắc cho gia đình",
-    status: "pending",
-    priority: "low",
-    submittedBy: {
-      id: "user_004",
-      name: "Phạm Thị D",
-      role: "traveler"
-    },
-    submittedAt: "2024-03-14T14:20:00Z",
-    category: "lịch trình"
-  }
-]
+// The moderation data now comes from the API via useModerationQueue hook
 
 const statusConfig = {
   pending: { label: "Chờ duyệt", variant: "warning" as const, icon: Clock },
@@ -143,18 +75,25 @@ const priorityConfig = {
 const typeConfig = {
   place: { label: "Địa điểm", icon: MapPin },
   itinerary: { label: "Lịch trình", icon: Calendar },
-  user: { label: "Người dùng", icon: User },
-  report: { label: "Báo cáo", icon: Flag }
+  user_report: { label: "Báo cáo", icon: Flag },
+  suggestion: { label: "Đề xuất", icon: User }
 }
 
 export default function ModerationDashboard() {
   const { user, isAuthenticated } = useAuth()
-  const [items, setItems] = React.useState(mockModerationItems)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<keyof typeof statusConfig | "all">("all")
-  const [typeFilter, setTypeFilter] = React.useState<keyof typeof typeConfig | "all">("all")
+  const [typeFilter, setTypeFilter] = React.useState<string>("all")
   const [priorityFilter, setPriorityFilter] = React.useState<keyof typeof priorityConfig | "all">("all")
   const [activeTab, setActiveTab] = React.useState("queue")
+  
+  // Get real moderation data
+  const { items, loading, error, reviewItem } = useModerationQueue({
+    status: statusFilter !== 'all' ? statusFilter as any : undefined,
+    contentType: typeFilter !== 'all' ? typeFilter as any : undefined,
+    priority: priorityFilter !== 'all' ? priorityFilter as any : undefined,
+    limit: 50
+  })
 
   // Check permissions
   const isModerator = user?.role === 'moderator' || user?.role === 'admin'
@@ -165,9 +104,9 @@ export default function ModerationDashboard() {
 
     if (searchQuery) {
       filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.submittedBy.name.toLowerCase().includes(searchQuery.toLowerCase())
+        item.content.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.content.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.submitterInfo?.fullName || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
@@ -176,7 +115,7 @@ export default function ModerationDashboard() {
     }
 
     if (typeFilter !== "all") {
-      filtered = filtered.filter(item => item.type === typeFilter)
+      filtered = filtered.filter(item => item.contentType === typeFilter)
     }
 
     if (priorityFilter !== "all") {
@@ -204,28 +143,30 @@ export default function ModerationDashboard() {
       approved: items.filter(i => i.status === 'approved').length,
       rejected: items.filter(i => i.status === 'rejected').length,
       urgent: items.filter(i => i.priority === 'urgent').length,
-      reports: items.filter(i => i.type === 'report').length
+      reports: items.filter(i => i.contentType === 'user_report').length
     }
   }, [items])
 
   const handleAction = async (itemId: string, action: 'approve' | 'reject' | 'hide', notes?: string) => {
-    setItems(prev => prev.map(item => 
-      item.id === itemId 
-        ? { 
-            ...item, 
-            status: action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'hidden',
-            moderatorNotes: notes || item.moderatorNotes
-          }
-        : item
-    ))
+    try {
+      const apiAction = action === 'hide' ? 'reject' : action
+      const result = await reviewItem(itemId, apiAction, notes)
+      
+      if (!result.success) {
+        console.error('Failed to review item:', result.error)
+        // Show error to user - you might want to add toast notification here
+        alert(`Lỗi: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error reviewing item:', error)
+      alert('Có lỗi xảy ra khi xử lý yêu cầu')
+    }
   }
 
   const assignToSelf = (itemId: string) => {
-    setItems(prev => prev.map(item =>
-      item.id === itemId
-        ? { ...item, assignedTo: { id: user!.id, name: user!.fullName } }
-        : item
-    ))
+    // This would require an API endpoint for assignment
+    // For now, we'll just show it's assigned locally
+    console.log(`Assigning item ${itemId} to ${user?.fullName}`)
   }
 
   if (!isAuthenticated || !isModerator) {
@@ -368,10 +309,10 @@ export default function ModerationDashboard() {
 
             {/* Moderation Queue */}
             <div className="space-y-4">
-              {filteredItems.filter(item => item.type !== 'report').map((item) => {
+              {filteredItems.filter(item => item.contentType !== 'user_report').map((item) => {
                 const statusInfo = statusConfig[item.status]
                 const priorityInfo = priorityConfig[item.priority]
-                const typeInfo = typeConfig[item.type]
+                const typeInfo = typeConfig[item.contentType]
                 
                 return (
                   <Card key={item.id} className={cn(
@@ -384,8 +325,8 @@ export default function ModerationDashboard() {
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex-1">
-                              <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
-                              <p className="text-muted text-sm line-clamp-2">{item.description}</p>
+                              <h3 className="font-semibold text-lg mb-1">{item.content.title}</h3>
+                              <p className="text-muted text-sm line-clamp-2">{item.content.description}</p>
                             </div>
                             
                             <div className="flex gap-2 ml-4">
@@ -408,10 +349,10 @@ export default function ModerationDashboard() {
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4 text-muted" />
                               <span className="text-muted mr-2">
-                                {item.submittedBy.name}
+                                {item.submitterInfo?.fullName || 'Unknown User'}
                               </span>
                               <UserRoleDisplay 
-                                role={item.submittedBy.role}
+                                role={item.submitterInfo?.role || 'traveler'}
                                 variant="compact"
                               />
                             </div>
@@ -423,17 +364,17 @@ export default function ModerationDashboard() {
                               </span>
                             </div>
 
-                            {item.assignedTo && (
+                            {item.reviewedBy && (
                               <div className="flex items-center gap-2">
-                                <span className="text-muted">Phụ trách: {item.assignedTo.name}</span>
+                                <span className="text-muted">Đã xử lý bởi: {item.reviewedBy}</span>
                               </div>
                             )}
                           </div>
 
-                          {item.moderatorNotes && (
+                          {item.reviewNotes && (
                             <div className="p-3 bg-primary-50 rounded-md mb-4">
                               <p className="text-sm text-primary">
-                                <strong>Ghi chú:</strong> {item.moderatorNotes}
+                                <strong>Ghi chú:</strong> {item.reviewNotes}
                               </p>
                             </div>
                           )}
@@ -448,15 +389,13 @@ export default function ModerationDashboard() {
                             
                             {item.status === 'pending' && (
                               <>
-                                {!item.assignedTo && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => assignToSelf(item.id)}
-                                  >
-                                    Nhận xử lý
-                                  </Button>
-                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => assignToSelf(item.id)}
+                                >
+                                  Nhận xử lý
+                                </Button>
                                 
                                 <Button
                                   variant="secondary"
@@ -490,7 +429,7 @@ export default function ModerationDashboard() {
           <TabsContent value="reports" className="space-y-6">
             {/* Reports List */}
             <div className="space-y-4">
-              {filteredItems.filter(item => item.type === 'report').map((item) => {
+              {filteredItems.filter(item => item.contentType === 'user_report').map((item) => {
                 const statusInfo = statusConfig[item.status]
                 const priorityInfo = priorityConfig[item.priority]
                 
@@ -505,9 +444,9 @@ export default function ModerationDashboard() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                             <Flag className="w-5 h-5 text-danger" />
-                            {item.title}
+                            {item.content.title}
                           </h3>
-                          <p className="text-muted text-sm">{item.description}</p>
+                          <p className="text-muted text-sm">{item.content.description}</p>
                         </div>
                         
                         <div className="flex gap-2 ml-4">
@@ -523,18 +462,18 @@ export default function ModerationDashboard() {
 
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-muted">
                         <div className="flex items-center gap-2">
-                          <span>Báo cáo bởi: {item.submittedBy.name}</span>
+                          <span>Báo cáo bởi: {item.submitterInfo?.fullName || 'Unknown User'}</span>
                           <UserRoleDisplay 
-                            role={item.submittedBy.role}
+                            role={item.submitterInfo?.role || 'traveler'}
                             variant="compact"
                           />
                         </div>
                         <span>•</span>
                         <span>{new Date(item.submittedAt).toLocaleDateString('vi-VN')}</span>
-                        {item.reportReason && (
+                        {item.content.reportType && (
                           <>
                             <span>•</span>
-                            <span>Lý do: {item.reportReason}</span>
+                            <span>Lý do: {item.content.reportType}</span>
                           </>
                         )}
                       </div>
@@ -577,8 +516,37 @@ export default function ModerationDashboard() {
           </TabsContent>
         </Tabs>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">⏳</div>
+            <h3 className="text-xl font-semibold mb-2">
+              Đang tải dữ liệu...
+            </h3>
+            <p className="text-muted">
+              Vui lòng chờ trong giây lát
+            </p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold mb-2">
+              Có lỗi xảy ra
+            </h3>
+            <p className="text-muted mb-4">
+              {error}
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Tải lại trang
+            </Button>
+          </div>
+        )}
+
         {/* Empty State */}
-        {filteredItems.length === 0 && (
+        {!loading && !error && filteredItems.length === 0 && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">📋</div>
             <h3 className="text-xl font-semibold mb-2">

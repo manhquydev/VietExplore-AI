@@ -102,11 +102,47 @@ export async function PUT(
 
   } catch (error: any) {
     console.error('Error changing user role:', error);
-    // Gửi về thông báo lỗi chi tiết hơn nếu có thể
-    const errorMessage = error.message || 'Không thể thay đổi vai trò người dùng';
+    
+    // Provide more detailed error messages
+    let errorMessage = 'Không thể thay đổi vai trò người dùng';
+    let statusCode = 500;
+    
+    if (error.code === 'auth/user-not-found') {
+      errorMessage = 'Không tìm thấy tài khoản người dùng trong hệ thống xác thực';
+      statusCode = 404;
+    } else if (error.code === 'auth/invalid-uid') {
+      errorMessage = 'ID người dùng không hợp lệ';
+      statusCode = 400;
+    } else if (error.code === 'permission-denied') {
+      errorMessage = 'Không đủ quyền để thực hiện thao tác này';
+      statusCode = 403;
+    } else if (error.code === 'not-found') {
+      errorMessage = 'Không tìm thấy tài liệu người dùng trong cơ sở dữ liệu';
+      statusCode = 404;
+    } else if (error.code === 9) { // FAILED_PRECONDITION - missing index
+      errorMessage = 'Cần tạo chỉ mục cơ sở dữ liệu. Vui lòng liên hệ quản trị viên.';
+      statusCode = 503;
+    } else if (error.message) {
+      errorMessage = `Lỗi hệ thống: ${error.message}`;
+    }
+    
+    // Log detailed error for debugging
+    console.error('Detailed error info:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack,
+      userId: params.userId
+    });
+    
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? {
+          code: error.code,
+          originalMessage: error.message
+        } : undefined
+      },
+      { status: statusCode }
     );
   }
 }

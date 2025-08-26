@@ -3,6 +3,10 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { RoleSwitcher } from "@/components/dev/role-switcher";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ToastProvider } from "@/components/providers/toast-provider";
+import { ToastNotifications } from "@/components/ui/toast-notifications";
+import { NetworkStatus } from "@/components/ui/network-status";
 
 export const metadata: Metadata = {
   title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
@@ -50,11 +54,17 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-text antialiased">
-        <AuthProvider>
-          {children}
-          <Toaster />
-          <RoleSwitcher />
-        </AuthProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+              <RoleSwitcher />
+              <ToastNotifications />
+              <NetworkStatus />
+            </AuthProvider>
+          </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

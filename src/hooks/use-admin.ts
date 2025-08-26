@@ -23,19 +23,28 @@ export function useAdminStats() {
     async function fetchStats() {
       setLoading(true);
       try {
-        const [usersResult, moderationResult] = await Promise.all([
+        const [usersResult, moderationResult, placesResult] = await Promise.all([
           apiClient.admin.users.list({ limit: 1000 }), // Fetch all to get count
-          apiClient.moderation.queue.list({ status: 'pending' })
+          apiClient.moderation.queue.list({ status: 'pending' }),
+          apiClient.places.list({ limit: 1000 }) // Get places count
         ]);
 
         setStats({
-          totalUsers: usersResult.pagination?.total || 0,
-          totalPlaces: 456, // Simulated
+          totalUsers: usersResult.pagination?.total || usersResult.data?.length || 0,
+          totalPlaces: placesResult.total || placesResult.data?.length || 0,
           pendingModeration: moderationResult.data?.length || 0,
-          openReports: 8, // Simulated
+          openReports: 0, // TODO: Implement reports system later
         });
       } catch (error) {
         console.error("Failed to fetch admin stats", error);
+        // Fallback to some reasonable defaults on error
+        setStats(prev => ({
+          ...prev,
+          totalUsers: 0,
+          totalPlaces: 0,
+          pendingModeration: 0,
+          openReports: 0,
+        }));
       } finally {
         setLoading(false);
       }

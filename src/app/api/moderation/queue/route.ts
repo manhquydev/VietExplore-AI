@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { hasPermission } from '@/lib/auth/permissions';
 
 // GET /api/moderation/queue - Get moderation queue (Moderator/Admin only)
 export async function GET(request: NextRequest) {
   try {
     const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
-    if (!authResult.success || !authResult.user || !hasPermission(authResult.user, 'view_moderation_queue')) {
+    if (!authResult.success || !authResult.user || !['moderator', 'admin'].includes(authResult.user.role)) {
       return NextResponse.json(
         { 
           success: false,

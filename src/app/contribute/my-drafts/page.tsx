@@ -12,76 +12,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Icon } from "@/components/ui/icon"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import { useUserDrafts } from "@/hooks/use-user-drafts"
+import { UserDraft } from "@/app/api/places/my-drafts/route"
+import { Skeleton } from "@/components/ui/skeleton"
+import { LoadingCard, LoadingSpinner } from "@/components/ui/loading-spinner"
+import { useToast } from "@/components/providers/toast-provider"
 
-interface Draft {
-  id: string
-  name: string
-  shortDescription: string
-  type: string
-  province: string
-  status: "draft" | "submitted" | "in_review" | "published" | "rejected"
-  createdAt: string
-  updatedAt: string
-  submittedAt?: string
-  reviewedAt?: string
-  publishedAt?: string
-  coverImage?: string
-  moderatorNotes?: string
-}
+// UserDraft interface is now imported from API types
 
-// Mock drafts data
-const mockDrafts: Draft[] = [
-  {
-    id: "draft_001",
-    name: "Bãi biển Quy Nhon",
-    shortDescription: "Bãi biển hoang sơ với cát vàng và nước biển trong xanh",
-    type: "biển",
-    province: "Bình Định",
-    status: "in_review",
-    createdAt: "2024-03-10T10:00:00Z",
-    updatedAt: "2024-03-12T15:30:00Z",
-    submittedAt: "2024-03-12T15:30:00Z",
-    coverImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
-  },
-  {
-    id: "draft_002",
-    name: "Đồi chè Mộc Châu",
-    shortDescription: "Cảnh quan đồi chè bạt ngàn với không khí trong lành",
-    type: "núi",
-    province: "Sơn La",
-    status: "draft",
-    createdAt: "2024-03-08T14:20:00Z",
-    updatedAt: "2024-03-08T14:20:00Z",
-    coverImage: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop"
-  },
-  {
-    id: "draft_003",
-    name: "Chùa Bái Đính",
-    shortDescription: "Quần thể chùa lớn nhất Việt Nam với kiến trúc uy nghi",
-    type: "văn hóa",
-    province: "Ninh Bình",
-    status: "published",
-    createdAt: "2024-02-20T09:15:00Z",
-    updatedAt: "2024-02-25T11:40:00Z",
-    submittedAt: "2024-02-22T16:20:00Z",
-    reviewedAt: "2024-02-24T10:30:00Z",
-    publishedAt: "2024-02-25T11:40:00Z",
-    coverImage: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=300&h=200&fit=crop"
-  },
-  {
-    id: "draft_004",
-    name: "Quán cà phê vợt Sài Gòn",
-    shortDescription: "Quán cà phê độc đáo với không gian vintage",
-    type: "ẩm thực",
-    province: "TP. Hồ Chí Minh",
-    status: "rejected",
-    createdAt: "2024-02-05T11:30:00Z",
-    updatedAt: "2024-02-10T14:15:00Z",
-    submittedAt: "2024-02-08T16:45:00Z",
-    reviewedAt: "2024-02-10T14:15:00Z",
-    moderatorNotes: "Thông tin chưa đủ chi tiết, cần bổ sung địa chỉ cụ thể và giờ mở cửa"
-  }
-]
+// Real drafts data is now fetched from API
 
 const statusConfig = {
   draft: {
@@ -118,60 +57,70 @@ const statusConfig = {
 
 export default function MyDraftsPage() {
   const { user, isAuthenticated } = useAuth()
-  const [drafts, setDrafts] = React.useState(mockDrafts)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<keyof typeof statusConfig | "all">("all")
+  const [actionLoading, setActionLoading] = React.useState<string | null>(null)
+  const toast = useToast()
+  
+  // Fetch real user drafts
+  const { 
+    drafts, 
+    stats, 
+    loading, 
+    error, 
+    deleteDraft, 
+    duplicateDraft, 
+    submitForReview 
+  } = useUserDrafts({
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    search: searchQuery.trim() || undefined,
+    autoRefresh: true
+  })
 
-  // Filter drafts
-  const filteredDrafts = React.useMemo(() => {
-    let filtered = drafts
-
-    if (searchQuery) {
-      filtered = filtered.filter(draft =>
-        draft.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        draft.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(draft => draft.status === statusFilter)
-    }
-
-    return filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-  }, [drafts, searchQuery, statusFilter])
+  // Drafts are already filtered by the API based on search and status
 
   const handleDelete = async (draftId: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa bản nháp này?")) return
     
-    setDrafts(prev => prev.filter(d => d.id !== draftId))
+    setActionLoading(`delete-${draftId}`)
+    try {
+      const result = await deleteDraft(draftId)
+      if (!result.success) {
+        toast.error(result.error || 'Không thể xóa bản nháp')
+      } else {
+        toast.success('Đã xóa bản nháp thành công')
+      }
+    } finally {
+      setActionLoading(null)
+    }
   }
 
-  const handleDuplicate = async (draft: Draft) => {
-    const duplicated = {
-      ...draft,
-      id: `draft_${Date.now()}`,
-      name: `${draft.name} (Sao chép)`,
-      status: "draft" as const,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      submittedAt: undefined,
-      reviewedAt: undefined,
-      publishedAt: undefined,
-      moderatorNotes: undefined
+  const handleDuplicate = async (draft: UserDraft) => {
+    setActionLoading(`duplicate-${draft.id}`)
+    try {
+      const result = await duplicateDraft(draft)
+      if (!result.success) {
+        toast.error(result.error || 'Không thể sao chép bản nháp')
+      } else {
+        toast.success('Đã sao chép bản nháp thành công')
+      }
+    } finally {
+      setActionLoading(null)
     }
-    
-    setDrafts(prev => [duplicated, ...prev])
   }
 
   const handleSubmit = async (draftId: string) => {
-    setDrafts(prev => prev.map(d => 
-      d.id === draftId ? { 
-        ...d, 
-        status: "submitted",
-        submittedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      } : d
-    ))
+    setActionLoading(`submit-${draftId}`)
+    try {
+      const result = await submitForReview(draftId)
+      if (!result.success) {
+        toast.error(result.error || 'Không thể gửi duyệt')
+      } else {
+        toast.success('Đã gửi bản nháp để duyệt thành công')
+      }
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   if (!isAuthenticated) {
@@ -246,23 +195,67 @@ export default function MyDraftsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{drafts.length}</div>
-            <div className="text-sm text-muted">Tổng số</div>
-          </div>
-          {Object.entries(statusConfig).map(([status, config]) => (
-            <div key={status} className="text-center">
-              <div className="text-2xl font-bold text-primary">
-                {drafts.filter(d => d.status === status).length}
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="text-center">
+                <Skeleton className="h-8 w-12 mx-auto mb-1" />
+                <Skeleton className="h-4 w-16 mx-auto" />
               </div>
-              <div className="text-sm text-muted">{config.label}</div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.total}</div>
+              <div className="text-sm text-muted">Tổng số</div>
             </div>
-          ))}
-        </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.draft}</div>
+              <div className="text-sm text-muted">{statusConfig.draft.label}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.in_review}</div>
+              <div className="text-sm text-muted">{statusConfig.in_review.label}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.published}</div>
+              <div className="text-sm text-muted">{statusConfig.published.label}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.rejected}</div>
+              <div className="text-sm text-muted">{statusConfig.rejected.label}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold mb-2">Có lỗi xảy ra</h3>
+            <p className="text-muted mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Tải lại trang</Button>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <LoadingCard 
+                key={i} 
+                lines={3} 
+                showImage={true} 
+                showAvatar={false}
+                className="border rounded-lg p-6"
+              />
+            ))}
+          </div>
+        )}
 
         {/* Drafts List */}
-        {filteredDrafts.length === 0 ? (
+        {!loading && !error && drafts.length === 0 ? (
           <div className="text-center py-16">
             <svg className="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -286,9 +279,9 @@ export default function MyDraftsPage() {
               </Link>
             </Button>
           </div>
-        ) : (
+        ) : !loading && !error && (
           <div className="space-y-4">
-            {filteredDrafts.map((draft) => {
+            {drafts.map((draft) => {
               const statusInfo = statusConfig[draft.status]
               return (
                 <Card key={draft.id} className="overflow-hidden">
@@ -351,14 +344,28 @@ export default function MyDraftsPage() {
                                 </DropdownMenuItem>
                               )}
                               
-                              <DropdownMenuItem onClick={() => handleDuplicate(draft)}>
-                                <Icon name="plus" className="mr-2" />
+                              <DropdownMenuItem 
+                                onClick={() => handleDuplicate(draft)}
+                                disabled={actionLoading === `duplicate-${draft.id}`}
+                              >
+                                {actionLoading === `duplicate-${draft.id}` ? (
+                                  <LoadingSpinner size="sm" className="mr-2" />
+                                ) : (
+                                  <Icon name="plus" className="mr-2" />
+                                )}
                                 Sao chép
                               </DropdownMenuItem>
                               
                               {draft.status === "draft" && (
-                                <DropdownMenuItem onClick={() => handleSubmit(draft.id)}>
-                                  <Icon name="check-circle" className="mr-2" />
+                                <DropdownMenuItem 
+                                  onClick={() => handleSubmit(draft.id)}
+                                  disabled={actionLoading === `submit-${draft.id}`}
+                                >
+                                  {actionLoading === `submit-${draft.id}` ? (
+                                    <LoadingSpinner size="sm" className="mr-2" />
+                                  ) : (
+                                    <Icon name="check-circle" className="mr-2" />
+                                  )}
                                   Gửi duyệt
                                 </DropdownMenuItem>
                               )}
@@ -366,9 +373,14 @@ export default function MyDraftsPage() {
                               {draft.status !== "published" && (
                                 <DropdownMenuItem 
                                   onClick={() => handleDelete(draft.id)}
+                                  disabled={actionLoading === `delete-${draft.id}`}
                                   className="text-danger"
                                 >
-                                  <Icon name="trash-2" className="mr-2" />
+                                  {actionLoading === `delete-${draft.id}` ? (
+                                    <LoadingSpinner size="sm" className="mr-2" />
+                                  ) : (
+                                    <Icon name="trash-2" className="mr-2" />
+                                  )}
                                   Xóa
                                 </DropdownMenuItem>
                               )}

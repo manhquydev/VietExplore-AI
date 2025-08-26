@@ -16,7 +16,8 @@ import { UserRole } from "@/lib/types/auth"
 import { Users, MapPin, FileText, AlertTriangle, Shield, Settings, MoreHorizontal, UserCheck, UserX, KeyRound, Clock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/providers/toast-provider"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 const getInitials = (fullName?: string, email?: string) => {
   if (fullName) {
@@ -314,7 +315,9 @@ function UserManagement() {
 }
 
 function ModerationManagement() {
-  const { items, loading, error, reviewItem } = useModerationQueue()
+  const { toast } = useToast()
+  const [selectedStatus, setSelectedStatus] = React.useState('pending')
+  const { items, loading, error, reviewItem } = useModerationQueue({ status: selectedStatus })
 
   const handleReview = async (
     itemId: string, 
@@ -323,77 +326,174 @@ function ModerationManagement() {
   ) => {
     const result = await reviewItem(itemId, action, notes)
     if (result.success) {
-      alert('Đã xử lý thành công!')
+      toast.success('Đã xử lý thành công!')
     } else {
-      alert(`Lỗi: ${result.error}`)
+      toast.error(`Lỗi: ${result.error}`)
     }
   }
 
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch {
+      return 'N/A'
+    }
+  }
+
+  const getPriorityColor = (priority: number) => {
+    if (priority >= 3) return 'destructive'
+    if (priority >= 2) return 'default'
+    return 'secondary'
+  }
+
   return (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Hàng đợi kiểm duyệt
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Hàng đợi kiểm duyệt
+          </CardTitle>
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Lọc theo trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Chờ duyệt</SelectItem>
+              <SelectItem value="approved">Đã duyệt</SelectItem>
+              <SelectItem value="rejected">Từ chối</SelectItem>
+              <SelectItem value="escalated">Chuyển lên</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent>
         {loading ? (
-          <div className="text-center py-8">Đang tải...</div>
+          <div className="flex items-center justify-center py-8">
+            <LoadingSpinner size="lg" />
+            <span className="ml-2">Đang tải dữ liệu kiểm duyệt...</span>
+          </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-600">{error}</div>
+          <div className="text-center py-8">
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 font-medium">{error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-2">
+              Thử lại
+            </Button>
+          </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-8 text-gray-600">Không có nội dung cần duyệt</div>
+          <div className="text-center py-8">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">
+              {selectedStatus === 'pending' 
+                ? 'Không có nội dung cần duyệt' 
+                : `Không có nội dung ${selectedStatus === 'approved' ? 'đã duyệt' : selectedStatus === 'rejected' ? 'bị từ chối' : 'được chuyển lên'}`}
+            </p>
+          </div>
         ) : (
-            <div className="space-y-4">
+          <div className="space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="p-4 border rounded-lg">
+              <div key={item.id} className="p-6 border rounded-lg hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-medium">{item.content.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{item.content.description}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">{item.contentType}</Badge>
-                      <Badge variant={item.priority === 'high' ? 'destructive' : 'secondary'}>
-                        {item.priority}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2">
+                      {item.metadata?.title || item.contentDetails?.name || 'Không có tiêu đề'}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      {item.contentDetails?.description || item.contentDetails?.shortDescription || 'Không có mô tả'}
+                    </p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Badge variant="outline" className="capitalize">
+                        {item.contentType === 'place' ? 'Địa điểm' : item.contentType}
                       </Badge>
+                      <Badge variant={getPriorityColor(item.priority)}>
+                        Ưu tiên: {item.priority}
+                      </Badge>
+                      {item.metadata?.type && (
+                        <Badge variant="secondary">{item.metadata.type}</Badge>
+                      )}
+                      {item.metadata?.region && (
+                        <Badge variant="outline">
+                          {item.metadata.region === 'bac-bo' ? 'Miền Bắc' : 
+                           item.metadata.region === 'trung-bo' ? 'Miền Trung' : 'Miền Nam'}
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right text-sm text-gray-500">
-                    <p>Gửi bởi: {item.submitter.fullName}</p>
-                    <p>{new Date(item.submittedAt).toLocaleDateString('vi-VN')}</p>
+                  <div className="text-right text-sm text-gray-500 ml-4">
+                    <p className="font-medium">
+                      {item.submitter?.fullName || 'N/A'}
+                    </p>
+                    <p className="text-xs">
+                      {item.submitter?.role && (
+                        <Badge variant="outline" className="mr-1 text-xs">
+                          {item.submitter.role}
+                        </Badge>
+                      )}
+                    </p>
+                    <p className="mt-1">{formatDate(item.submittedAt)}</p>
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleReview(item.id, 'approve')}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Phê duyệt
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => handleReview(item.id, 'reject', 'Không đáp ứng yêu cầu')}
-                  >
-                    Từ chối
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => handleReview(item.id, 'escalate', 'Cần xem xét thêm')}
-                  >
-                    Chuyển lên
-                  </Button>
+                {selectedStatus === 'pending' && (
+                  <div className="flex gap-3 pt-4 border-t">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleReview(item.id, 'approve')}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      ✓ Phê duyệt
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => {
+                        const reason = prompt('Lý do từ chối:')
+                        if (reason) handleReview(item.id, 'reject', reason)
+                      }}
+                    >
+                      ✕ Từ chối
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        const reason = prompt('Lý do chuyển lên:')
+                        if (reason) handleReview(item.id, 'escalate', reason)
+                      }}
+                    >
+                      ↑ Chuyển lên
+                    </Button>
+                    {item.contentType === 'place' && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => window.open(`/admin/review/${item.id}`, '_blank')}
+                      >
+                        👁 Xem chi tiết
+                      </Button>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                )}
+                
+                {selectedStatus !== 'pending' && (
+                  <div className="pt-4 border-t text-sm text-gray-600">
+                    <p>Đã xử lý vào: {formatDate(item.reviewedAt || item.submittedAt)}</p>
+                    {item.reviewNotes && <p>Ghi chú: {item.reviewNotes}</p>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
-          </CardContent>
-        </Card>
+      </CardContent>
+    </Card>
   )
 }
 

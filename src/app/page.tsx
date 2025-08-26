@@ -9,63 +9,7 @@ import { Button } from '@/components/ui/button';
 import AiPlanner from '@/components/ai-planner';
 import DestinationGrid from '@/components/destination-grid';
 
-// Mock data cho demo
-const featuredPlaces = [
-  {
-    id: "place_001",
-    slug: "bai-bien-my-khe",
-    name: "Bãi biển Mỹ Khê",
-    shortDescription: "Bãi biển đẹp nhất Đà Nẵng với cát trắng mịn và nước trong xanh",
-    province: "Đà Nẵng",
-    type: "biển",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop",
-        alt: "Bãi biển Mỹ Khê",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "partner" as const,
-    rating: { average: 4.8, count: 1250 },
-    tags: ["biển", "du lịch gia đình", "thể thao nước"]
-  },
-  {
-    id: "place_002",
-    slug: "pho-co-hoi-an",
-    name: "Phố cổ Hội An",
-    shortDescription: "Di sản văn hóa thế giới với kiến trúc cổ độc đáo",
-    province: "Quảng Nam",
-    type: "văn hóa",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=500&h=300&fit=crop",
-        alt: "Phố cổ Hội An",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "contributor" as const,
-    rating: { average: 4.9, count: 2100 },
-    tags: ["văn hóa", "di sản", "ẩm thực"]
-  },
-  {
-    id: "place_003",
-    slug: "doi-che-cau-dat",
-    name: "Đồi chè Cầu Đất",
-    shortDescription: "Cảnh quan núi đồi thơ mộng với những thảm chè xanh mướt",
-    province: "Đà Lạt",
-    type: "núi",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop",
-        alt: "Đồi chè Cầu Đất",
-        isPrimary: true
-      }
-    ],
-    trustLabel: "verified" as const,
-    rating: { average: 4.7, count: 890 },
-    tags: ["núi", "thiên nhiên", "check-in"]
-  }
-]
+// Real featured places are now loaded via the DestinationGrid component
 
 const regions = [
   {
@@ -186,12 +130,14 @@ export default function Home() {
                 Những địa điểm được cộng đồng du lịch tin cậy và yêu thích nhất
               </p>
             </div>
-            <Button 
-              variant="ghost" 
-              className="glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40 hidden lg:flex"
-            >
-              Xem tất cả →
-            </Button>
+            <Link href="/places">
+              <Button 
+                variant="ghost" 
+                className="glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40 hidden lg:flex"
+              >
+                Xem tất cả →
+              </Button>
+            </Link>
           </div>
 
           <div className="glass-card p-6 lg:p-8">

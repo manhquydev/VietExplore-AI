@@ -46,13 +46,25 @@ async function callApi<T>(
     return data;
   } catch (error: any) {
     console.error(`API call to ${endpoint} failed:`, error);
+    
+    // Handle different types of errors
+    if (error?.name === 'TypeError' && error?.message === 'Failed to fetch') {
+      throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối internet.');
+    }
+    
+    if (error?.code === 'auth/token-expired') {
+      throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    }
+    
     let errorData;
     try {
       errorData = error;
     } catch (e) {
-      errorData = { error: 'An unknown error occurred.' };
+      errorData = { error: 'Có lỗi không xác định xảy ra.' };
     }
-    throw new Error(errorData.error || `Request failed`);
+    
+    const errorMessage = errorData.error || errorData.message || `Yêu cầu API thất bại`;
+    throw new Error(errorMessage);
   }
 }
 

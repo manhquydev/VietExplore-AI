@@ -28,6 +28,9 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import { auth } from "@/lib/firebase"
+import { ImageUpload, type ImageData } from "@/components/image-upload"
+import { LoadingSpinner, LoadingOverlay } from "@/components/ui/loading-spinner"
 
 interface PlaceFormData {
   // Step 1: Basic Information
@@ -46,14 +49,7 @@ interface PlaceFormData {
   }
   
   // Step 3: Media & Sources
-  images: Array<{
-    id: string
-    file: File | null
-    url: string
-    alt: string
-    caption: string
-    isPrimary: boolean
-  }>
+  images: ImageData[]
   sources: Array<{
     type: "website" | "social" | "document" | "personal"
     url: string
@@ -204,32 +200,7 @@ export default function NewPlacePage() {
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
-  const addImage = () => {
-    const newImage = {
-      id: `img_${Date.now()}`,
-      file: null,
-      url: "",
-      alt: "",
-      caption: "",
-      isPrimary: formData.images.length === 0
-    }
-    updateFormData("images", [...formData.images, newImage])
-  }
-
-  const updateImage = (imageId: string, updates: Partial<PlaceFormData['images'][0]>) => {
-    updateFormData("images", formData.images.map(img => 
-      img.id === imageId ? { ...img, ...updates } : img
-    ))
-  }
-
-  const removeImage = (imageId: string) => {
-    const updatedImages = formData.images.filter(img => img.id !== imageId)
-    // If removed image was primary, make first image primary
-    if (updatedImages.length > 0 && !updatedImages.some(img => img.isPrimary)) {
-      updatedImages[0].isPrimary = true
-    }
-    updateFormData("images", updatedImages)
-  }
+  // Image handling is now managed by ImageUpload component
 
   const addSource = () => {
     updateFormData("sources", [...formData.sources, { type: "website", url: "", description: "" }])
@@ -272,16 +243,68 @@ export default function NewPlacePage() {
 
     setIsSubmitting(true)
     try {
-      // TODO: Submit to API
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Get authentication token
+      if (!user) {
+        throw new Error('Bạn cần đăng nhập để đóng góp địa điểm')
+      }
+
+      // Prepare form data for submission
+      const submissionData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        shortDescription: formData.shortDescription.trim(),
+        type: formData.type,
+        region: formData.region,
+        province: formData.province,
+        address: formData.address.trim(),
+        coordinates: formData.coordinates.lat && formData.coordinates.lng 
+          ? { lat: formData.coordinates.lat, lng: formData.coordinates.lng }
+          : { lat: null, lng: null },
+        images: formData.images.filter(img => img.url && img.alt), // Only include complete images
+        sources: formData.sources.filter(source => source.url.trim()), // Only include sources with URLs
+        openingHours: formData.openingHours?.trim() || null,
+        entryFee: formData.entryFee?.trim() || null,
+        bestTimeToVisit: formData.bestTimeToVisit?.trim() || null,
+        facilities: formData.facilities,
+        tags: formData.tags
+      }
+
+      console.log('Submitting place:', submissionData)
       
-      console.log('Submitting place:', formData)
+      // Call the API with proper authentication
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        throw new Error('Không thể lấy thông tin xác thực. Vui lòng đăng nhập lại.');
+      }
       
-      // Redirect to drafts page
-      router.push('/contribute/my-drafts')
-    } catch (error) {
+      const token = await firebaseUser.getIdToken();
+
+      const response = await fetch('/api/places', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(submissionData),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || 'Submission failed')
+      }
+      
+      // Success - redirect to drafts page
+      router.push('/contribute/my-drafts?success=created')
+    } catch (error: any) {
       console.error('Submission failed:', error)
-      setErrors({ general: "Có lỗi xảy ra khi gửi thông tin. Vui lòng thử lại." })
+      setErrors({ 
+        general: error.message || "Có lỗi xảy ra khi gửi thông tin. Vui lòng thử lại." 
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -587,7 +610,8 @@ export default function NewPlacePage() {
       <Header />
       
       <main className="container py-8">
-        <div className="max-w-4xl mx-auto">
+        <LoadingOverlay isLoading={isSubmitting} loadingText="Đang gửi địa điểm để kiểm duyệt...">
+          <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Đóng góp địa điểm mới</h1>
@@ -900,104 +924,11 @@ export default function NewPlacePage() {
               {currentStep === 3 && (
                 <>
                   <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <Label>Hình ảnh *</Label>
-                      <Button variant="outline" size="sm" onClick={addImage}>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Thêm ảnh
-                      </Button>
-                    </div>
-                    
-                    {formData.images.length === 0 ? (
-                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                        <Camera className="w-12 h-12 text-muted mx-auto mb-4" />
-                        <p className="text-muted mb-4">Chưa có hình ảnh nào</p>
-                        <Button variant="outline" onClick={addImage}>
-                          Thêm hình ảnh đầu tiên
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {formData.images.map((image, index) => (
-                          <div key={image.id} className="border border-border rounded-lg p-4">
-                            <div className="flex items-start gap-4">
-                              <div className="w-24 h-18 bg-surface rounded border flex items-center justify-center flex-shrink-0">
-                                {image.url ? (
-                                  <img src={image.url} alt="" className="w-full h-full object-cover rounded" />
-                                ) : (
-                                  <Camera className="w-8 h-8 text-muted" />
-                                )}
-                              </div>
-                              
-                              <div className="flex-1 space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium">Ảnh {index + 1}</span>
-                                    {image.isPrimary && (
-                                      <Badge variant="default" className="text-xs">Ảnh chính</Badge>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-2">
-                                    {!image.isPrimary && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                          // Set as primary
-                                          updateFormData("images", formData.images.map(img => ({
-                                            ...img,
-                                            isPrimary: img.id === image.id
-                                          })))
-                                        }}
-                                      >
-                                        Đặt làm ảnh chính
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeImage(image.id)}
-                                      className="text-danger hover:text-danger"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                                
-                                <div className="grid sm:grid-cols-2 gap-3">
-                                  <div>
-                                    <Label className="text-xs">URL hình ảnh</Label>
-                                    <Input
-                                      placeholder="https://example.com/image.jpg"
-                                      value={image.url}
-                                      onChange={(e) => updateImage(image.id, { url: e.target.value })}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">Mô tả ảnh</Label>
-                                    <Input
-                                      placeholder="Mô tả ngắn về hình ảnh"
-                                      value={image.alt}
-                                      onChange={(e) => updateImage(image.id, { alt: e.target.value })}
-                                    />
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <Label className="text-xs">Chú thích (tuỳ chọn)</Label>
-                                  <Input
-                                    placeholder="Chú thích chi tiết cho hình ảnh"
-                                    value={image.caption}
-                                    onChange={(e) => updateImage(image.id, { caption: e.target.value })}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
+                    <ImageUpload
+                      images={formData.images}
+                      onChange={(images) => updateFormData("images", images)}
+                      maxImages={10}
+                    />
                     {errors.images && <p className="text-sm text-danger mt-1">{errors.images}</p>}
                   </div>
 
@@ -1112,14 +1043,24 @@ export default function NewPlacePage() {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={submitForm} loading={isSubmitting}>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isSubmitting ? "Đang gửi..." : "Gửi để duyệt"}
+                <Button onClick={submitForm} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <LoadingSpinner size="sm" className="mr-2" />
+                      Đang gửi...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Gửi để duyệt
+                    </>
+                  )}
                 </Button>
               )}
             </div>
           </div>
         </div>
+        </LoadingOverlay>
       </main>
 
       <Footer />

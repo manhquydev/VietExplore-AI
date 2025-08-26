@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { hasPermission } from '@/lib/auth/permissions';
 
 // GET /api/places - Fetch places with filtering
 export async function GET(request: NextRequest) {
@@ -41,32 +40,17 @@ export async function GET(request: NextRequest) {
       query = query.where('trustLabel', '==', filters.trustLabel);
     }
 
-    // Apply sorting
-    switch (filters.sortBy) {
-      case 'oldest':
-        query = query.orderBy('createdAt', 'asc');
-        break;
-      case 'rating':
-        query = query.orderBy('rating.average', 'desc');
-        break;
-      case 'popular':
-        query = query.orderBy('viewCount', 'desc');
-        break;
-      default: // newest
-        query = query.orderBy('createdAt', 'desc');
-    }
-
-    // Apply pagination
-    if (filters.offset && filters.offset > 0) {
-      query = query.offset(filters.offset);
-    }
+    // For now, just use basic ordering to avoid complex indexes
+    // We'll sort in memory for better performance without needing Firebase composite indexes
+    query = query.orderBy('createdAt', 'desc');
     
     if (filters.limit) {
-      query = query.limit(filters.limit);
+      // Get more data for in-memory sorting
+      query = query.limit(Math.min(filters.limit * 2, 100));
     }
 
     const snapshot = await query.get();
-    const places: Place[] = [];
+    let places: Place[] = [];
 
     snapshot.forEach(doc => {
       places.push({
@@ -74,6 +58,30 @@ export async function GET(request: NextRequest) {
         ...doc.data()
       } as Place);
     });
+
+    // Apply sorting in memory
+    switch (filters.sortBy) {
+      case 'oldest':
+        places.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        break;
+      case 'rating':
+        places.sort((a, b) => (b.rating?.average || 0) - (a.rating?.average || 0));
+        break;
+      case 'popular':
+        places.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+        break;
+      default: // newest - already sorted by query
+        break;
+    }
+
+    // Apply pagination after sorting
+    if (filters.offset && filters.offset > 0) {
+      places = places.slice(filters.offset);
+    }
+    
+    if (filters.limit) {
+      places = places.slice(0, filters.limit);
+    }
 
     // If search term provided, filter by name/description (client-side for now)
     let filteredPlaces = places;
@@ -117,8 +125,8 @@ export async function POST(request: NextRequest) {
 
     const user = authResult.user;
 
-    // Check permissions
-    if (!hasPermission(user, 'create_place')) {
+    // Check permissions - only allow contributor, partner, or admin roles to create places
+    if (!['contributor', 'partner', 'admin'].includes(user.role)) {
       return NextResponse.json(
         { error: 'Bạn không có quyền tạo địa điểm' },
         { status: 403 }
@@ -180,6 +188,32 @@ export async function POST(request: NextRequest) {
 
     const docRef = await adminDb.collection('places').add(placeData);
 
+    // Add to moderation queue if not a partner (partners get fast-track approval)
+    if (user.role !== 'partner') {
+      const priorityMap = {
+        'contributor': 3,
+        'traveler': 2,
+        'guest': 1
+      };
+
+      await adminDb.collection('moderation_queue').add({
+        contentType: 'place',
+        contentId: docRef.id,
+        submittedBy: user.id,
+        submittedAt: new Date().toISOString(),
+        status: 'pending',
+        priority: priorityMap[user.role] || 1,
+        metadata: {
+          title: formData.name,
+          type: formData.type,
+          region: formData.region,
+          province: formData.province,
+          hasImages: (formData.images?.length || 0) > 0,
+          hasCoordinates: !!(formData.coordinates?.lat && formData.coordinates?.lng)
+        }
+      });
+    }
+
     // Update user stats
     await adminDb.collection('users').doc(user.id).update({
       'stats.placesContributed': (user.stats?.placesContributed || 0) + 1,
@@ -194,7 +228,7 @@ export async function POST(request: NextRequest) {
       },
       message: user.role === 'partner' 
         ? 'Địa điểm đã được tạo và xuất bản thành công'
-        : 'Địa điểm đã được gửi để kiểm duyệt'
+        : 'Địa điểm đã được gửi để kiểm duyệt. Chúng tôi sẽ xem xét trong vòng 24-48 giờ.'
     });
 
   } catch (error) {

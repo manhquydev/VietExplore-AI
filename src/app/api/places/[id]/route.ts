@@ -6,11 +6,12 @@ import { Place } from '@/lib/types/places';
 // GET /api/places/[id] - Get single place
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const adminDb = getAdminDb();
-    const placeDoc = await adminDb.collection('places').doc(params.id).get();
+    const placeDoc = await adminDb.collection('places').doc(id).get();
     
     if (!placeDoc.exists) {
       return NextResponse.json(
@@ -35,7 +36,7 @@ export async function GET(
     }
 
     // Increment view count
-    await adminDb.collection('places').doc(params.id).update({
+    await adminDb.collection('places').doc(id).update({
       viewCount: (placeData.viewCount || 0) + 1
     });
 
@@ -60,9 +61,10 @@ export async function GET(
 // PUT /api/places/[id] - Update place
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user) {
@@ -73,7 +75,7 @@ export async function PUT(
     }
 
     const user = authResult.user;
-    const placeDoc = await adminDb.collection('places').doc(params.id).get();
+    const placeDoc = await adminDb.collection('places').doc(id).get();
     
     if (!placeDoc.exists) {
       return NextResponse.json(
@@ -112,7 +114,65 @@ export async function PUT(
       updateData.status = 'in_review';
     }
 
-    await adminDb.collection('places').doc(params.id).update(updateData);
+    await adminDb.collection('places').doc(id).update(updateData);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Địa điểm đã được cập nhật thành công'
+    });
+
+  } catch (error) {
+    console.error('Error updating place:', error);
+    return NextResponse.json(
+      { error: 'Không thể cập nhật địa điểm' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/places/[id] - Partial update place (for status changes, etc.)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const adminDb = getAdminDb();
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: 'Bạn cần đăng nhập để cập nhật địa điểm' },
+        { status: 401 }
+      );
+    }
+
+    const user = authResult.user;
+    const placeDoc = await adminDb.collection('places').doc(id).get();
+    
+    if (!placeDoc.exists) {
+      return NextResponse.json(
+        { error: 'Không tìm thấy địa điểm' },
+        { status: 404 }
+      );
+    }
+
+    const placeData = placeDoc.data() as Place;
+    
+    // Check permissions - owner can update their own places
+    if (placeData.createdBy !== user.id && 
+        !['moderator', 'admin'].includes(user.role)) {
+      return NextResponse.json(
+        { error: 'Bạn không có quyền cập nhật địa điểm này' },
+        { status: 403 }
+      );
+    }
+
+    const updateData = await request.json();
+    
+    // Add update timestamp
+    updateData.updatedAt = new Date().toISOString();
+
+    await adminDb.collection('places').doc(id).update(updateData);
 
     return NextResponse.json({
       success: true,
@@ -131,9 +191,10 @@ export async function PUT(
 // DELETE /api/places/[id] - Delete place
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user) {
@@ -144,7 +205,7 @@ export async function DELETE(
     }
 
     const user = authResult.user;
-    const placeDoc = await adminDb.collection('places').doc(params.id).get();
+    const placeDoc = await adminDb.collection('places').doc(id).get();
     
     if (!placeDoc.exists) {
       return NextResponse.json(
@@ -165,7 +226,7 @@ export async function DELETE(
     }
 
     // Soft delete - just hide the place
-    await adminDb.collection('places').doc(params.id).update({
+    await adminDb.collection('places').doc(id).update({
       status: 'hidden',
       updatedAt: new Date().toISOString(),
       hiddenBy: user.id,

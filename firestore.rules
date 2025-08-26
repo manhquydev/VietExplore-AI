@@ -90,8 +90,10 @@ service cloud.firestore {
     // 4.1. users (theo Tài liệu 2)
     match /users/{uid} {
       allow read: if isOwner(uid) || isModerator() || isAdmin();
-      allow update: if isOwner(uid) && emailVerified() &&
-        request.resource.data.diff(resource.data).changedKeys().hasOnly(['displayName','photoURL','updatedAt']);
+      allow list: if isAdmin(); // Allow admin to list all users
+      allow update: if (isOwner(uid) && emailVerified() &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['displayName','photoURL','updatedAt']))
+        || (isAdmin() && canManageUser(uid)); // Allow admin to update user roles
       allow create, delete: if false; // chỉ qua Functions (beforeCreate trigger)
     }
 
@@ -195,6 +197,12 @@ service cloud.firestore {
     match /adminLogs/{document} {
       allow read: if isAdmin();
       allow write: if false; // Only functions can write
+    }
+    
+    match /admin_logs/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin(); // Allow admin to create logs
+      allow write: if false; // Prevent updates after creation
     }
 
     // Default deny all other documents
