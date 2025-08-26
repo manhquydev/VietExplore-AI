@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
 import { User, Permission } from '@/lib/types/auth';
-import { hasPermission } from '@/lib/auth/permissions';
+import { hasPermission, rolePermissions } from '@/lib/auth/permissions';
 
 export interface AuthResult {
   success: boolean;
