@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { ForgotPasswordModal } from "./forgot-password-modal"
+import { useAuth } from "./auth-provider"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onSwitchToRegister,
 }) => {
+  const { login } = useAuth()
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [showPassword, setShowPassword] = React.useState(false)
@@ -34,15 +36,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setError("")
 
     try {
-      // TODO: Implement actual login logic
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      
-      // Mock success
-      console.log("Login successful", { email, password })
+      await login(email, password)
       onClose()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error)
-      setError("Email hoặc mật khẩu không đúng")
+      setError(error.message || "Email hoặc mật khẩu không đúng")
     } finally {
       setIsLoading(false)
     }

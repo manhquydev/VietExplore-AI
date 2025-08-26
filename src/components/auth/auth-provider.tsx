@@ -1,27 +1,9 @@
 "use client"
 
 import * as React from "react"
-
-export interface User {
-  id: string
-  email: string
-  fullName: string
-  username: string
-  avatar?: string
-  role: "guest" | "traveler" | "contributor" | "partner" | "moderator" | "admin"
-  verified: boolean
-  createdAt: string
-  profile?: {
-    bio?: string
-    location?: string
-    website?: string
-  }
-  stats?: {
-    placesContributed: number
-    itinerariesCreated: number
-    helpfulVotes: number
-  }
-}
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { User } from '@/lib/types/auth'
 
 interface AuthContextType {
   user: User | null
@@ -59,73 +41,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
-  // Initialize auth state
+  // Initialize auth state with Firebase
   React.useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // Check for existing session
-        const token = localStorage.getItem('auth_token')
-        if (token) {
-          // TODO: Validate token with API
-          // For now, use mock user data
-          const mockUser: User = {
-            id: "user_001",
-            email: "user@example.com",
-            fullName: "Nguyễn Văn A",
-            username: "nguyen_van_a",
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-            role: "traveler",
-            verified: false,
-            createdAt: new Date().toISOString(),
-            profile: {
-              bio: "Yêu thích khám phá những địa điểm mới",
-              location: "Hà Nội, Việt Nam"
-            },
-            stats: {
-              placesContributed: 0,
-              itinerariesCreated: 2,
-              helpfulVotes: 5
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Get user data from our API
+          const token = await firebaseUser.getIdToken()
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
             }
+          })
+          
+          if (response.ok) {
+            const { user } = await response.json()
+            setUser(user)
+          } else {
+            console.error('Failed to fetch user data')
+            setUser(null)
           }
-          setUser(mockUser)
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+          setUser(null)
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error)
-        localStorage.removeItem('auth_token')
-      } finally {
-        setIsLoading(false)
+      } else {
+        setUser(null)
       }
-    }
+      setIsLoading(false)
+    })
 
-    initAuth()
+    return () => unsubscribe()
   }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // TODO: Implement actual login API call
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-      // Mock successful login
-      const mockUser: User = {
-        id: "user_001",
-        email,
-        fullName: "Nguyễn Văn A",
-        username: email.split('@')[0],
-        role: "traveler",
-        verified: false,
-        createdAt: new Date().toISOString(),
-        stats: {
-          placesContributed: 0,
-          itinerariesCreated: 0,
-          helpfulVotes: 0
-        }
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Đăng nhập thất bại')
       }
 
-      setUser(mockUser)
-      localStorage.setItem('auth_token', 'mock_token_' + Date.now())
-    } catch (error) {
-      throw new Error('Đăng nhập thất bại')
+      // Firebase auth state will be updated automatically via onAuthStateChanged
+      // setUser will be called there
+    } catch (error: any) {
+      throw new Error(error.message || 'Đăng nhập thất bại')
     } finally {
       setIsLoading(false)
     }
@@ -134,37 +103,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (data: RegisterData) => {
     setIsLoading(true)
     try {
-      // TODO: Implement actual registration API call
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API call
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
-      // Mock successful registration
-      const mockUser: User = {
-        id: "user_" + Date.now(),
-        email: data.email,
-        fullName: data.fullName,
-        username: data.email.split('@')[0],
-        role: "traveler",
-        verified: false,
-        createdAt: new Date().toISOString(),
-        stats: {
-          placesContributed: 0,
-          itinerariesCreated: 0,
-          helpfulVotes: 0
-        }
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Đăng ký thất bại')
       }
 
-      setUser(mockUser)
-      localStorage.setItem('auth_token', 'mock_token_' + Date.now())
-    } catch (error) {
-      throw new Error('Đăng ký thất bại')
+      // Firebase auth state will be updated automatically via onAuthStateChanged
+    } catch (error: any) {
+      throw new Error(error.message || 'Đăng ký thất bại')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('auth_token')
+  const logout = async () => {
+    try {
+      await signOut(auth)
+      // Firebase auth state will be updated automatically via onAuthStateChanged
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
   }
 
   const updateUser = (data: Partial<User>) => {

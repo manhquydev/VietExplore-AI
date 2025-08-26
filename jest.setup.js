@@ -1,0 +1,81 @@
+// Jest setup for backend testing
+
+// Mock Firebase Admin SDK for testing
+jest.mock('./src/lib/firebase-admin', () => ({
+  adminAuth: {
+    verifyIdToken: jest.fn(),
+    createCustomToken: jest.fn(),
+    createUser: jest.fn(),
+    updateUser: jest.fn(),
+  },
+  adminDb: {
+    collection: jest.fn(() => ({
+      doc: jest.fn(() => ({
+        get: jest.fn(),
+        set: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      })),
+      add: jest.fn(),
+      where: jest.fn(() => ({
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn(),
+          })),
+          get: jest.fn(),
+        })),
+        limit: jest.fn(() => ({
+          get: jest.fn(),
+        })),
+        get: jest.fn(),
+      })),
+      orderBy: jest.fn(() => ({
+        limit: jest.fn(() => ({
+          get: jest.fn(),
+        })),
+        get: jest.fn(),
+      })),
+      get: jest.fn(),
+    })),
+    FieldValue: {
+      arrayUnion: jest.fn(),
+      increment: jest.fn(),
+    },
+  },
+  adminStorage: {
+    bucket: jest.fn(),
+  },
+}))
+
+// Mock Firebase Client SDK
+jest.mock('./src/lib/firebase', () => ({
+  auth: {
+    currentUser: null,
+    signInWithEmailAndPassword: jest.fn(),
+    createUserWithEmailAndPassword: jest.fn(),
+    signOut: jest.fn(),
+    onAuthStateChanged: jest.fn(),
+  },
+  db: {},
+  storage: {},
+}))
+
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}))
+
+// Global test setup
+global.fetch = jest.fn()
+
+// Setup environment variables for testing
+process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test-project'
+process.env.FIREBASE_PROJECT_ID = 'test-project'
+process.env.FIREBASE_CLIENT_EMAIL = 'test@test-project.iam.gserviceaccount.com'
+process.env.FIREBASE_PRIVATE_KEY = 'test-private-key'

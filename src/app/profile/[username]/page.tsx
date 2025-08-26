@@ -57,7 +57,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               <Avatar className="w-24 h-24">
                 <AvatarImage src={user.avatar} alt={user.fullName} />
                 <AvatarFallback className="text-2xl">
-                  {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               

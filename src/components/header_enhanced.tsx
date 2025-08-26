@@ -136,7 +136,7 @@ export const Header: React.FC = () => {
                       <Avatar className="h-12 w-12 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
                         <AvatarImage src={user.avatar} alt={user.fullName} />
                         <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold text-lg">
-                          {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -348,7 +348,7 @@ export const Header: React.FC = () => {
                           <Avatar className="h-10 w-10 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
                             <AvatarImage src={user.avatar} alt={user.fullName} />
                             <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
-                              {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">

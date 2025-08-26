@@ -1,0 +1,197 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions (từ Tài liệu 2)
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function emailVerified() { 
+      return isSignedIn() && request.auth.token.email_verified == true; 
+    }
+    
+    function role() { 
+      return isSignedIn() ? request.auth.token.role : null; 
+    }
+    
+    function hasRole(r) { 
+      return role() == r; 
+    }
+    
+    function isAdmin() { 
+      return role() == 'admin'; 
+    }
+    
+    function isModerator() { 
+      return role() == 'moderator' || isAdmin(); 
+    }
+    
+    // RBAC Permission checking functions
+    function hasPermission(permission) {
+      let userRole = role();
+      
+      // Admin has all permissions
+      return userRole == 'admin' || (
+        // Content permissions (all roles)
+        (permission == 'content.view_public') ||
+        
+        // Traveler+ permissions
+        (userRole in ['traveler', 'contributor', 'partner', 'moderator'] && permission in [
+          'itinerary.create', 'itinerary.update_own', 'itinerary.view_own', 
+          'itinerary.share_public', 'itinerary.delete_own', 'place.suggest', 
+          'place.view_review_status', 'report.create'
+        ]) ||
+        
+        // Contributor+ permissions
+        (userRole in ['contributor', 'partner'] && permission in [
+          'place.create_draft', 'place.submit_review', 'place.edit_own_draft'
+        ]) ||
+        
+        // Moderator permissions
+        (userRole == 'moderator' && permission in [
+          'moderation.queue_view', 'moderation.approve', 'moderation.reject',
+          'moderation.request_changes', 'moderation.hide', 'moderation.resolve_report',
+          'report.view', 'admin.assign_verified_label', 'admin.view_audit_logs'
+        ])
+      );
+    }
+    
+    function canManageUser(targetUserId) {
+      return isAdmin() && request.auth.uid != targetUserId; // Prevent self-management
+    }
+    
+    function isContributor() { 
+      return role() == 'contributor'; 
+    }
+    
+    function isPartner() { 
+      return role() == 'partner'; 
+    }
+    
+    function isOwner(uid) { 
+      return isSignedIn() && request.auth.uid == uid; 
+    }
+    
+    function nowTs() { 
+      return request.time; 
+    }
+  
+    // Validators
+    function isNonEmptyString(f) { 
+      return f is string && f.size() > 0 && f.size() <= 20000; 
+    }
+    
+    function isSlug(s) { 
+      return s is string && s.size() > 0 && s.size() <= 120 && s.matches("^[a-z0-9-]+$"); 
+    }
+
+    // 4.1. users (theo Tài liệu 2)
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isModerator() || isAdmin();
+      allow update: if isOwner(uid) && emailVerified() &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['displayName','photoURL','updatedAt']);
+      allow create, delete: if false; // chỉ qua Functions (beforeCreate trigger)
+    }
+
+    // 4.2. places (công khai khi published)
+    match /places/{placeId} {
+      allow read: if resource.data.status == 'published';
+      allow list: if true; // vẫn chỉ trả published vì read filter
+      allow create, update, delete: if false; // publish qua Functions/Moderator
+    }
+
+    // 4.3. placeDrafts
+    match /placeDrafts/{draftId} {
+      allow read: if isOwner(resource.data.submitter) || isModerator() || isAdmin();
+      allow create: if emailVerified() && (isContributor() || hasRole('traveler') || isPartner());
+      allow update: if emailVerified() && (
+        (isOwner(resource.data.submitter) && resource.data.status in ['draft','changes_requested'])
+        || isModerator()
+      );
+      allow delete: if (isOwner(resource.data.submitter) && resource.data.status == 'draft') || isAdmin();
+
+      // Ràng buộc trường tối thiểu
+      allow create, update: if request.resource.data.keys().hasAll(['title','region','province','type','description','sources','submitter','status'])
+        && isNonEmptyString(request.resource.data.title)
+        && request.resource.data.region in ['bac-bo','trung-bo','nam-bo']
+        && request.resource.data.type in ['bien','nui','van-hoa','am-thuc','check-in']
+        && request.resource.data.sources.size() > 0;
+    }
+
+    // 4.4. suggestions (đề xuất chỉnh sửa)
+    match /suggestions/{id} {
+      allow read: if isOwner(resource.data.submitter) || isModerator() || isAdmin();
+      allow create: if emailVerified();
+      allow update: if emailVerified() && (
+        (isOwner(resource.data.submitter) && resource.data.status == 'submitted') 
+        || isModerator()
+      );
+    }
+
+    // 4.5. itineraries
+    match /itineraries/{itineraryId} {
+      allow read: if resource.data.visibility == 'public' || isOwner(resource.data.ownerId) || isModerator() || isAdmin();
+      allow create: if emailVerified();
+      allow update, delete: if emailVerified() && isOwner(resource.data.ownerId);
+    }
+
+    // 4.6. itineraryShares
+    match /itineraryShares/{shareId} {
+      allow read: if true; // public link resolver
+      allow create: if emailVerified() && isOwner(get(/databases/$(database)/documents/itineraries/$(request.resource.data.itineraryId)).data.ownerId);
+      allow delete: if emailVerified() && isOwner(get(/databases/$(database)/documents/itineraries/$(resource.data.itineraryId)).data.ownerId);
+    }
+
+    // 4.7. reports
+    match /reports/{reportId} {
+      allow create: if true; // cho phép guest gửi (reporter có thể null)
+      allow read: if isModerator() || isAdmin() || (isSignedIn() && isOwner(resource.data.reporter));
+      allow update: if isModerator() || isAdmin();
+    }
+
+    // 4.8. partners
+    match /partners/{partnerId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 4.9. moderation/requests
+    match /moderation/requests/{requestId} {
+      allow read, create, update: if isModerator() || isAdmin();
+    }
+
+    // 4.10. labels, audits, system
+    match /labels/{id} { 
+      allow read: if true; 
+      allow write: if isAdmin(); 
+    }
+    
+    match /audits/{id} { 
+      allow read: if isModerator() || isAdmin(); 
+      allow write: if false; // Chỉ qua Cloud Functions
+    }
+    
+    match /system/counters/{id} { 
+      allow read: if true; 
+      allow write: if false; // Chỉ qua Cloud Functions
+    }
+    
+    // Rate limiting collection (functions only)
+    match /rateLimits/{document} {
+      allow read, write: if false; // Only functions can access
+    }
+    
+    // Admin-only collections
+    match /adminLogs/{document} {
+      allow read: if isAdmin();
+      allow write: if false; // Only functions can write
+    }
+
+    // Default deny all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
