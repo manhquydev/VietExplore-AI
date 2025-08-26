@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { hasPermission } from '@/lib/types/auth';
+import { hasPermission } from '@/lib/auth/permissions';
 
 // PUT /api/moderation/queue/[itemId] - Review moderation item
 export async function PUT(
@@ -9,6 +9,7 @@ export async function PUT(
   { params }: { params: { itemId: string } }
 ) {
   try {
+    const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user || !hasPermission(authResult.user, 'review_content')) {
       return NextResponse.json(
@@ -73,7 +74,7 @@ export async function PUT(
         }
         
         // Add to moderation history
-        placeUpdate.moderationHistory = adminDb.FieldValue.arrayUnion({
+        placeUpdate.moderationHistory = admin.firestore.FieldValue.arrayUnion({
           action: 'approved',
           moderatorId: moderator.id,
           reason: reviewNotes,
@@ -82,7 +83,7 @@ export async function PUT(
 
       } else if (action === 'reject') {
         placeUpdate.status = 'hidden';
-        placeUpdate.moderationHistory = adminDb.FieldValue.arrayUnion({
+        placeUpdate.moderationHistory = admin.firestore.FieldValue.arrayUnion({
           action: 'rejected',
           moderatorId: moderator.id,
           reason: reviewNotes,
@@ -99,7 +100,7 @@ export async function PUT(
         
         if (placeData?.createdBy) {
           await adminDb.collection('users').doc(placeData.createdBy).update({
-            'stats.placesContributed': adminDb.FieldValue.increment(1),
+            'stats.placesContributed': admin.firestore.FieldValue.increment(1),
             updatedAt: now
           });
         }

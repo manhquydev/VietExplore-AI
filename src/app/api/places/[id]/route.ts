@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { Place } from '@/lib/types/places';
 
@@ -9,6 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminDb = getAdminDb();
     const placeDoc = await adminDb.collection('places').doc(params.id).get();
     
     if (!placeDoc.exists) {
@@ -62,6 +63,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
@@ -132,6 +134,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { User, UserRole, rolePermissions } from '@/lib/types/auth';
+import { User, UserRole } from '@/lib/types/auth';
 
 // GET /api/admin/users - List all users (Admin/Moderator only)
 export async function GET(request: NextRequest) {
   try {
+    const adminDb = getAdminDb();
     const authResult = await verifyAuthToken(request);
     
     // Admin và Moderator có quyền xem danh sách người dùng

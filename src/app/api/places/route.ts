@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/server/firebaseAdmin';
+import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { hasPermission } from '@/lib/types/auth';
+import { hasPermission } from '@/lib/auth/permissions';
 
 // GET /api/places - Fetch places with filtering
 export async function GET(request: NextRequest) {
   try {
+    const adminDb = getAdminDb();
     const { searchParams } = new URL(request.url);
     
     const filters: PlaceFilters = {
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
 // POST /api/places - Create new place
 export async function POST(request: NextRequest) {
   try {
+    const adminDb = getAdminDb();
     // Verify authentication
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user) {

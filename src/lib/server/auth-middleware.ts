@@ -1,6 +1,6 @@
 // This file is server-side only. Do not import it on the client.
 import { NextRequest } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
+import { getAdminAuth, getAdminDb } from '@/lib/server/firebaseAdmin';
 import { User, Permission } from '@/lib/types/auth';
 import { hasPermission } from '@/lib/auth/permissions';
 
@@ -11,14 +11,10 @@ export interface AuthResult {
 }
 
 export async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
-  if (!adminAuth || !adminDb) {
-    return {
-      success: false,
-      error: 'Firebase Admin SDK not initialized'
-    };
-  }
-
   try {
+    const adminAuth = getAdminAuth();
+    const adminDb = getAdminDb();
+    
     const authHeader = request.headers.get('Authorization');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

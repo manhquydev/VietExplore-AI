@@ -1,38 +1,60 @@
 // src/lib/server/firebaseAdmin.ts
-import *d from "dotenv";
-d.config({ path: ".env.local" });
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 
 import * as admin from 'firebase-admin';
 import { ServiceAccount } from 'firebase-admin/app';
 
-let app: admin.app.App;
+let app: admin.app.App | undefined;
 
-try {
+function initializeFirebaseAdmin() {
+  if (admin.apps.length > 0) {
+    app = admin.apps[0];
+    return;
+  }
+
   const serviceAccount: ServiceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
   };
 
-  if (!admin.apps.length) {
-    app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    });
-    console.log('✅ Firebase Admin SDK initialized successfully.');
+  if (serviceAccount.projectId && serviceAccount.clientEmail && serviceAccount.privateKey) {
+    try {
+      app = admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
+      });
+      console.log('Firebase Admin SDK initialized successfully.');
+    } catch (error: any) {
+      console.error('Firebase Admin SDK initialization error:', error);
+      app = undefined; // Ensure app is undefined on error
+    }
   } else {
-    app = admin.apps[0]!;
+    console.warn('Firebase Admin SDK not initialized: Missing environment variables.');
+    app = undefined;
   }
-} catch (error: any) {
-  console.error('❌ Firebase Admin SDK initialization error:', error.stack);
-  // Prevent app from running with faulty config
-  // process.exit(1); // This can be too aggressive for dev environments
 }
 
-// Export admin services
-export const adminAuth = app! ? admin.auth() : null;
-export const adminDb = app! ? admin.firestore() : null;
-export const adminStorage = app! ? admin.storage() : null;
+// Initialize on first import
+initializeFirebaseAdmin();
 
-export default app!;
+function getInitializedApp(): admin.app.App {
+  if (!app) {
+    throw new Error('Firebase Admin SDK has not been initialized. Check your environment variables.');
+  }
+  return app;
+}
+
+export function getAdminAuth(): admin.auth.Auth {
+  return admin.auth(getInitializedApp());
+}
+
+export function getAdminDb(): admin.firestore.Firestore {
+  return admin.firestore(getInitializedApp());
+}
+
+export function getAdminStorage(): admin.storage.Storage {
+  return admin.storage(getInitializedApp());
+}
