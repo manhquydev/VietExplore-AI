@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoginModal } from "@/components/auth/login-modal"
 import { RegisterModal } from "@/components/auth/register-modal"
 import { useAuth } from "@/components/auth/auth-provider"
-import { Icon, IconButton } from "@/components/ui/icon"
+import { IconButton } from "@/components/ui/icon"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { Logo } from "@/components/ui/logo"
 import { cn } from "@/lib/utils"
@@ -20,12 +20,8 @@ import {
   Settings, 
   Shield, 
   Calendar, 
-  MapPin, 
-  Award, 
-  FileText, 
   LogOut,
   HelpCircle,
-  BookOpen,
   Camera
 } from "lucide-react"
 
@@ -33,11 +29,9 @@ const navigation = [
   { name: "Trang chủ", href: "/" },
   { name: "Địa điểm", href: "/places" },
   { name: "Lịch trình", href: "/itineraries/builder" },
-  { name: "Đóng góp", href: "/contribute/new-place" },
   { name: "Trợ lý AI", href: "/ai-assistant/chat" },
   { name: "Cộng đồng", href: "/community" },
   { name: "Tài nguyên", href: "/resources" },
-  { name: "Về dự án", href: "/about" },
 ]
 
 export const Header: React.FC = () => {
@@ -99,6 +93,16 @@ export const Header: React.FC = () => {
     setShowRegisterModal(false)
     setShowLoginModal(true)
   }
+  
+  const getInitials = (name: string | undefined, email: string | undefined) => {
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return 'U';
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95 dark:bg-slate-950/95 border-b border-slate-200 dark:border-slate-800 shadow-soft">
@@ -119,10 +123,10 @@ export const Header: React.FC = () => {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-[15px] font-medium transition-colors hover:text-white dark:hover:text-white",
+                  "text-[15px] font-medium transition-colors hover:text-slate-900 dark:hover:text-white",
                   pathname === item.href 
                     ? "text-slate-900 dark:text-white font-semibold" 
-                    : "text-slate-600 dark:text-slate-200 hover:text-slate-900"
+                    : "text-slate-600 dark:text-slate-200"
                 )}
               >
                 {item.name}
@@ -139,9 +143,9 @@ export const Header: React.FC = () => {
                   <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 hover:scale-105 transition-all duration-200">
                     <div className="relative">
                       <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-sky-200/50 dark:hover:ring-sky-400/30 transition-all duration-200">
-                        <AvatarImage src={user.avatar} alt={user.fullName} />
+                        <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
                         <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
-                          {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
                       {/* Online status indicator */}
@@ -159,13 +163,13 @@ export const Header: React.FC = () => {
                   <div className="p-4 bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
-                        <AvatarImage src={user.avatar} alt={user.fullName} />
+                        <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
                         <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold text-lg">
-                          {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                          {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white truncate">{user.fullName || 'User'}</p>
                         <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
                         <UserRoleDisplay 
                           role={user.role}
@@ -357,13 +361,13 @@ export const Header: React.FC = () => {
                       <>
                         <div className="flex items-center gap-3 p-3 glass-subtle rounded-xl">
                           <Avatar className="h-10 w-10 ring-2 ring-sky-200/50 dark:ring-sky-400/30">
-                            <AvatarImage src={user.avatar} alt={user.fullName} />
+                            <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
                             <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
-                              {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                              {getInitials(user.fullName, user.email)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{user.fullName || 'User'}</p>
                             <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
                             <UserRoleDisplay 
                               role={user.role}

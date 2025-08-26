@@ -75,6 +75,16 @@ export default function ProfilePage() {
     })
     setIsEditing(false)
   }
+  
+  const getInitials = (name: string | undefined, email: string | undefined) => {
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return 'U';
+  }
 
   if (!isAuthenticated || !user) {
     return (
@@ -108,9 +118,9 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="relative">
                 <Avatar className="w-24 h-24 ring-4 ring-white/20">
-                  <AvatarImage src={user.avatar} alt={user.fullName} />
+                  <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
                   <AvatarFallback className="text-2xl bg-gradient-to-r from-sky-500 to-teal-500 text-white">
-                    {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {getInitials(user.fullName, user.email)}
                   </AvatarFallback>
                 </Avatar>
                 <Button
@@ -186,7 +196,7 @@ export default function ProfilePage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h1 className="text-2xl font-bold mb-1 flex items-center gap-2 text-slate-900 dark:text-white">
-                          {user.fullName}
+                          {user.fullName || 'User'}
                           {user.verified && (
                             <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0">
                               <Award className="w-3 h-3 mr-1" />
@@ -266,7 +276,7 @@ export default function ProfilePage() {
                 {/* Stats Cards */}
                 <div className="grid sm:grid-cols-3 gap-6">
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <div className="w-12 h-12 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <MapPin className="w-6 h-6 text-sky-600 dark:text-sky-400" />
                     </div>
                     <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -276,7 +286,7 @@ export default function ProfilePage() {
                   </div>
                   
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -286,7 +296,7 @@ export default function ProfilePage() {
                   </div>
                   
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <Heart className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -306,8 +316,8 @@ export default function ProfilePage() {
                     {user.badges && user.badges.length > 0 ? (
                       user.badges.map((badge, index) => (
                         <div key={index} className="flex items-center gap-3 p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl">
-                          <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-                            <Award className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                          <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                            <Award className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-white">{badge}</div>
@@ -317,8 +327,8 @@ export default function ProfilePage() {
                       ))
                     ) : (
                       <div className="col-span-full text-center py-8">
-                        <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
-                          <Award className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                        <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
+                          <Award className="w-8 h-8 text-white" />
                         </div>
                         <p className="text-slate-600 dark:text-slate-300 mb-2">Chưa có huy hiệu nào</p>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Đóng góp nội dung để nhận huy hiệu đầu tiên!</p>
@@ -330,8 +340,8 @@ export default function ProfilePage() {
 
               <TabsContent value="contributions" className="p-6">
                 <div className="glass-subtle p-8 rounded-2xl text-center">
-                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
-                    <MapPin className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-sky-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
+                    <MapPin className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Chưa có đóng góp nào</h3>
                   <p className="text-slate-600 dark:text-slate-300 mb-6">Bắt đầu chia sẻ những địa điểm tuyệt vời bạn đã khám phá!</p>
@@ -349,8 +359,8 @@ export default function ProfilePage() {
 
               <TabsContent value="itineraries" className="p-6">
                 <div className="glass-subtle p-8 rounded-2xl text-center">
-                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
-                    <BookOpen className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
+                    <BookOpen className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Chưa có lịch trình nào</h3>
                   <p className="text-slate-600 dark:text-slate-300 mb-6">Tạo lịch trình đầu tiên để lưu kế hoạch du lịch!</p>
@@ -376,8 +386,8 @@ export default function ProfilePage() {
 
               <TabsContent value="activity" className="p-6">
                 <div className="glass-subtle p-8 rounded-2xl text-center">
-                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
-                    <BarChart3 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
+                    <BarChart3 className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Chưa có hoạt động nào</h3>
                   <p className="text-slate-600 dark:text-slate-300">Hoạt động của bạn sẽ được hiển thị ở đây</p>
