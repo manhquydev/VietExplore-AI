@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
 
 export async function POST(request: NextRequest) {
+  if (!adminAuth || !adminDb) {
+    return NextResponse.json(
+      { error: 'Firebase Admin SDK not initialized' },
+      { status: 503 }
+    );
+  }
+  
   try {
     const { email, password } = await request.json();
 
@@ -11,12 +18,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // For now, we'll just verify the user exists in Firestore
-    // In production, you should implement proper authentication
-    // This is a simplified version for backend testing
     
-    // Find user by email in Firestore
     const usersSnapshot = await adminDb.collection('users')
       .where('email', '==', email)
       .limit(1)
@@ -34,14 +36,12 @@ export async function POST(request: NextRequest) {
 
     const userData = userDoc.data();
     
-    // Create custom token for session management
     const customToken = await adminAuth.createCustomToken(firebaseUser.uid);
 
     return NextResponse.json({
       success: true,
       user: {
         id: firebaseUser.uid,
-        email: firebaseUser.email,
         ...userData
       },
       token: customToken
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     
     let errorMessage = 'Đăng nhập thất bại';
     
-    if (error.code === 'auth/invalid-credential') {
+    if (error.code === 'auth/invalid-credential' || error.message.includes('INVALID_LOGIN_CREDENTIALS')) {
       errorMessage = 'Email hoặc mật khẩu không đúng';
     } else if (error.code === 'auth/too-many-requests') {
       errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau';

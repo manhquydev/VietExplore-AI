@@ -3,10 +3,16 @@ import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
 import { User } from '@/lib/types/auth';
 
 export async function POST(request: NextRequest) {
+  if (!adminAuth || !adminDb) {
+    return NextResponse.json(
+      { error: 'Firebase Admin SDK not initialized' },
+      { status: 503 }
+    );
+  }
+
   try {
     const { email, password, fullName, acceptTerms } = await request.json();
 
-    // Validation
     if (!email || !password || !fullName) {
       return NextResponse.json(
         { error: 'Tất cả các trường là bắt buộc' },
@@ -28,22 +34,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user with Firebase Auth Admin SDK
     const userRecord = await adminAuth.createUser({
       email,
       password,
       displayName: fullName,
     });
 
-    // Create username from email
     const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    // Create user document in Firestore
     const userData: Omit<User, 'id'> = {
       email: userRecord.email!,
       fullName,
       username,
-      role: 'traveler', // Default role for new users
+      role: 'traveler',
       verified: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -56,7 +59,6 @@ export async function POST(request: NextRequest) {
 
     await adminDb.collection('users').doc(userRecord.uid).set(userData);
 
-    // Create custom token
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
     return NextResponse.json({

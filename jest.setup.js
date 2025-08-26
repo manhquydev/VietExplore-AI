@@ -1,7 +1,7 @@
 // Jest setup for backend testing
 
 // Mock Firebase Admin SDK for testing
-jest.mock('./src/lib/server/firebaseAdmin', () => ({
+jest.mock('@/lib/server/firebaseAdmin', () => ({
   adminAuth: {
     verifyIdToken: jest.fn(),
     createCustomToken: jest.fn(),
@@ -37,6 +37,9 @@ jest.mock('./src/lib/server/firebaseAdmin', () => ({
         get: jest.fn(),
       })),
       get: jest.fn(),
+      count: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({ data: () => ({ count: 0 }) }),
+      })),
     })),
     FieldValue: {
       arrayUnion: jest.fn(),
@@ -46,10 +49,11 @@ jest.mock('./src/lib/server/firebaseAdmin', () => ({
   adminStorage: {
     bucket: jest.fn(),
   },
-}))
+}));
+
 
 // Mock Firebase Client SDK
-jest.mock('./src/lib/firebase', () => ({
+jest.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: null,
     signInWithEmailAndPassword: jest.fn(),
@@ -77,7 +81,6 @@ jest.mock('next/navigation', () => ({
 global.fetch = jest.fn()
 
 // Setup environment variables for testing
-process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test-project'
 process.env.FIREBASE_PROJECT_ID = 'test-project'
 process.env.FIREBASE_CLIENT_EMAIL = 'test@test-project.iam.gserviceaccount.com'
 process.env.FIREBASE_PRIVATE_KEY = 'test-private-key'

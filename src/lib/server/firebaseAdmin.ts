@@ -1,45 +1,38 @@
+// src/lib/server/firebaseAdmin.ts
+import *d from "dotenv";
+d.config({ path: ".env.local" });
+
 import * as admin from 'firebase-admin';
+import { ServiceAccount } from 'firebase-admin/app';
 
-// Check if the necessary environment variables are set
-const hasServiceAccount = 
-  process.env.FIREBASE_PROJECT_ID &&
-  process.env.FIREBASE_CLIENT_EMAIL &&
-  process.env.FIREBASE_PRIVATE_KEY;
+let app: admin.app.App;
 
-if (!admin.apps.length) {
-  if (hasServiceAccount) {
-    try {
-      const serviceAccount = {
-        projectId: process.env.FIREBASE_PROJECT_ID!,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
-      };
-      
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      });
+try {
+  const serviceAccount: ServiceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  };
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Firebase Admin SDK initialized successfully.');
-        // Emulator connection logic can be added here if needed
-        // process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
-        // process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
-        // process.env.FIREBASE_STORAGE_EMULATOR_HOST = "127.0.0.1:9199";
-      }
-    } catch (error: any) {
-      console.error('Firebase Admin SDK initialization error:', error.stack);
-    }
+  if (!admin.apps.length) {
+    app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    });
+    console.log('✅ Firebase Admin SDK initialized successfully.');
   } else {
-    // This will run in environments where service account keys are not set,
-    // like a client-side only development setup or if the env variables are missing.
-    console.warn('Firebase Admin SDK not initialized. Missing environment variables.');
+    app = admin.apps[0]!;
   }
+} catch (error: any) {
+  console.error('❌ Firebase Admin SDK initialization error:', error.stack);
+  // Prevent app from running with faulty config
+  // process.exit(1); // This can be too aggressive for dev environments
 }
 
-export const adminAuth = admin.apps.length ? admin.auth() : null;
-export const adminDb = admin.apps.length ? admin.firestore() : null;
-export const adminStorage = admin.apps.length ? admin.storage() : null;
+// Export admin services
+export const adminAuth = app! ? admin.auth() : null;
+export const adminDb = app! ? admin.firestore() : null;
+export const adminStorage = app! ? admin.storage() : null;
 
-export default admin.apps.length ? admin.apps[0] : null;
+export default app!;

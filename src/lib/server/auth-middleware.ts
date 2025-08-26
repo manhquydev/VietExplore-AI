@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
 import { User, Permission } from '@/lib/types/auth';
-import { hasPermission, rolePermissions } from '@/lib/auth/permissions';
+import { hasPermission } from '@/lib/auth/permissions';
 
 export interface AuthResult {
   success: boolean;
@@ -11,6 +11,13 @@ export interface AuthResult {
 }
 
 export async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
+  if (!adminAuth || !adminDb) {
+    return {
+      success: false,
+      error: 'Firebase Admin SDK not initialized'
+    };
+  }
+
   try {
     const authHeader = request.headers.get('Authorization');
     
@@ -23,10 +30,8 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
 
     const token = authHeader.split('Bearer ')[1];
     
-    // Verify the Firebase token
     const decodedToken = await adminAuth.verifyIdToken(token);
     
-    // Get user data from Firestore
     const userDoc = await adminDb.collection('users').doc(decodedToken.uid).get();
     
     if (!userDoc.exists) {
@@ -56,7 +61,6 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
   }
 }
 
-// Middleware to check specific permissions
 export async function requirePermission(
   request: NextRequest, 
   requiredPermission: Permission
