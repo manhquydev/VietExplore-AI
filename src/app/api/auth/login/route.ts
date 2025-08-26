@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/server/firebaseAdmin';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,23 +24,48 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const usersSnapshot = await adminDb.collection('users')
-      .where('email', '==', email)
-      .limit(1)
-      .get();
-    
-    if (usersSnapshot.empty) {
+    // First, validate credentials with Firebase Auth
+    let firebaseUser;
+    try {
+      // This will throw an error if credentials are invalid
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      firebaseUser = userCredential.user;
+    } catch (authError: any) {
+      console.error('Firebase auth error:', authError);
+      
+      let errorMessage = 'Email hoặc mật khẩu không đúng';
+      
+      if (authError.code === 'auth/user-not-found') {
+        errorMessage = 'Người dùng không tồn tại';
+      } else if (authError.code === 'auth/wrong-password') {
+        errorMessage = 'Mật khẩu không đúng';
+      } else if (authError.code === 'auth/invalid-email') {
+        errorMessage = 'Email không hợp lệ';
+      } else if (authError.code === 'auth/user-disabled') {
+        errorMessage = 'Tài khoản đã bị vô hiệu hóa';
+      } else if (authError.code === 'auth/too-many-requests') {
+        errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau';
+      }
+
       return NextResponse.json(
-        { error: 'Người dùng không tồn tại' },
+        { error: errorMessage },
+        { status: 401 }
+      );
+    }
+    
+    // Get user data from Firestore
+    const userDoc = await adminDb.collection('users').doc(firebaseUser.uid).get();
+    
+    if (!userDoc.exists) {
+      return NextResponse.json(
+        { error: 'Thông tin người dùng không tồn tại' },
         { status: 404 }
       );
     }
 
-    const userDoc = usersSnapshot.docs[0];
-    const firebaseUser = { uid: userDoc.id, email: userDoc.data().email };
-
     const userData = userDoc.data();
     
+    // Create custom token for the frontend
     const customToken = await adminAuth.createCustomToken(firebaseUser.uid);
 
     return NextResponse.json({
