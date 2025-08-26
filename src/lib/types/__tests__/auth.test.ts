@@ -1,9 +1,8 @@
-
 /**
  * @jest-environment node
  */
 
-import { hasPermission, rolePermissions } from '../auth'
+import { hasPermission, rolePermissions } from '../../auth/permissions'
 import type { User } from '../auth'
 
 describe('Auth Types and Permissions', () => {
@@ -31,7 +30,7 @@ describe('Auth Types and Permissions', () => {
 
     it('should return true for admin with any permission', () => {
       const adminUser = createMockUser('admin')
-      const result = hasPermission(adminUser, 'any_permission')
+      const result = hasPermission(adminUser, 'any_permission' as any)
       expect(result).toBe(true)
     })
 
@@ -94,19 +93,18 @@ describe('Auth Types and Permissions', () => {
     })
 
     it('should maintain role hierarchy in permissions', () => {
-      // Contributor should have all traveler permissions plus their own
       const travelerPerms = rolePermissions.traveler
-      const contributorPerms = rolePermissions.contributor
+      const contributorUser = createMockUser('contributor')
       
       travelerPerms.forEach(perm => {
-        expect(contributorPerms).toContain(perm)
+        expect(hasPermission(contributorUser, perm)).toBe(true)
       })
 
-      // Partner should have contributor-level permissions plus their own
-      const partnerPerms = rolePermissions.partner
-      expect(partnerPerms).toContain('create_itinerary')
-      expect(partnerPerms).toContain('save_places')
-      expect(partnerPerms).toContain('report_content')
+      const contributorUserForPartnerCheck = createMockUser('partner')
+      const contributorPerms = rolePermissions.contributor
+      contributorPerms.forEach(perm => {
+        expect(hasPermission(contributorUserForPartnerCheck, perm)).toBe(true)
+      })
     })
   })
 
