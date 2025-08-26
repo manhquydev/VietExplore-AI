@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -12,16 +11,20 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/components/auth/auth-provider"
-import { useAdminUsers, useModerationQueue } from "@/hooks/use-admin"
+import { useAdminUsers, useModerationQueue, useAdminStats } from "@/hooks/use-admin"
 import { UserRole } from "@/lib/types/auth"
-import { Users, MapPin, FileText, AlertTriangle, Shield, Settings, MoreHorizontal, UserCheck, UserX, KeyRound } from "lucide-react"
+import { Users, MapPin, FileText, AlertTriangle, Shield, Settings, MoreHorizontal, UserCheck, UserX, KeyRound, Clock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 
 const getInitials = (fullName?: string, email?: string) => {
   if (fullName) {
-    return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+    const names = fullName.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return names[0].substring(0, 2).toUpperCase();
   }
   if (email) {
     return email[0].toUpperCase();
@@ -32,6 +35,7 @@ const getInitials = (fullName?: string, email?: string) => {
 export default function AdminDashboardPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const { stats, loading: statsLoading } = useAdminStats();
   
   React.useEffect(() => {
     if (user && user.role !== 'admin') {
@@ -72,25 +76,25 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Tổng người dùng"
-            value="1,234"
+            value={statsLoading ? '...' : stats.totalUsers.toLocaleString()}
             icon={<Users className="h-6 w-6" />}
             color="blue"
           />
           <StatsCard
             title="Địa điểm"
-            value="456"
+            value={statsLoading ? '...' : stats.totalPlaces.toLocaleString()}
             icon={<MapPin className="h-6 w-6" />}
             color="green"
           />
           <StatsCard
             title="Chờ duyệt"
-            value="23"
-            icon={<FileText className="h-6 w-6" />}
+            value={statsLoading ? '...' : stats.pendingModeration.toLocaleString()}
+            icon={<Clock className="h-6 w-6" />}
             color="yellow"
           />
           <StatsCard
             title="Báo cáo"
-            value="8"
+            value={statsLoading ? '...' : stats.openReports.toLocaleString()}
             icon={<AlertTriangle className="h-6 w-6" />}
             color="red"
           />

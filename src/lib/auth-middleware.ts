@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin-safe';
-import { User } from '@/lib/types/auth';
+import { User, UserRole } from '@/lib/types/auth';
 
 export interface AuthResult {
   success: boolean;
@@ -54,10 +54,24 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
   }
 }
 
+// Permission types
+export type Permission = 'create_place' | 'review_content' | 'manage_users' | 'admin' | 'all_permissions';
+
+// Role-to-permission mapping
+const rolePermissions: Record<UserRole, Permission[]> = {
+  guest: [],
+  traveler: [],
+  contributor: ['create_place'],
+  partner: ['create_place'],
+  moderator: ['review_content'],
+  admin: ['admin'], // 'admin' implies all permissions
+};
+
+
 // Middleware to check specific permissions
 export async function requirePermission(
   request: NextRequest, 
-  permission: string
+  requiredPermission: Permission
 ): Promise<AuthResult> {
   const authResult = await verifyAuthToken(request);
   
@@ -72,18 +86,9 @@ export async function requirePermission(
     return authResult;
   }
 
-  // Check role-specific permissions
-  const rolePermissions = {
-    guest: [],
-    traveler: ["create_itinerary", "save_places", "report_content"],
-    contributor: ["create_place", "create_itinerary", "save_places", "report_content", "manage_drafts"],
-    partner: ["create_place_priority", "create_itinerary", "save_places", "report_content", "partner_badge", "fast_review"],
-    moderator: ["review_content", "approve_content", "reject_content", "hide_content", "handle_reports", "view_moderation_queue"]
-  };
-
   const userPermissions = rolePermissions[user.role] || [];
   
-  if (!userPermissions.includes(permission)) {
+  if (!userPermissions.includes(requiredPermission)) {
     return {
       success: false,
       error: 'Bạn không có quyền thực hiện hành động này'

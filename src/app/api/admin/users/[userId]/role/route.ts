@@ -1,3 +1,4 @@
+"use client"
 
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
@@ -10,10 +11,10 @@ export async function PUT(
   { params }: { params: { userId: string } }
 ) {
   try {
-    const authResult = await requirePermission(request, 'all_permissions');
-    if (!authResult.success || !authResult.user || authResult.user.role !== 'admin') {
+    const authResult = await requirePermission(request, 'admin'); // Yêu cầu quyền admin
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { error: 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
+        { error: authResult.error || 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
         { status: 403 }
       );
     }
@@ -77,7 +78,9 @@ export async function PUT(
     await adminDb.collection('admin_logs').add({
       type: 'role_change',
       adminId: admin.id,
+      adminName: admin.fullName || admin.email,
       targetUserId: params.userId,
+      targetUserName: userData?.fullName || userData?.email,
       action: `Changed role from ${currentRole} to ${newRole}`,
       reason,
       timestamp: now
@@ -95,10 +98,12 @@ export async function PUT(
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error changing user role:', error);
+    // Gửi về thông báo lỗi chi tiết hơn nếu có thể
+    const errorMessage = error.message || 'Không thể thay đổi vai trò người dùng';
     return NextResponse.json(
-      { error: 'Không thể thay đổi vai trò người dùng' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
