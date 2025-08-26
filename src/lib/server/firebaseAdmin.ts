@@ -42,6 +42,10 @@ initializeFirebaseAdmin();
 
 function getInitializedApp(): admin.app.App {
   if (!app) {
+    console.error('Firebase Admin SDK not initialized. Environment variables:');
+    console.error('PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
+    console.error('CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
+    console.error('PRIVATE_KEY length:', process.env.FIREBASE_PRIVATE_KEY?.length || 0);
     throw new Error('Firebase Admin SDK has not been initialized. Check your environment variables.');
   }
   return app;

@@ -7,7 +7,11 @@ export async function GET(request: NextRequest) {
     
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { error: authResult.error || 'Không có quyền truy cập' },
+        { 
+          success: false,
+          error: authResult.error || 'Không có quyền truy cập',
+          user: null
+        },
         { status: 401 }
       );
     }
@@ -20,7 +24,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching user data:', error);
     return NextResponse.json(
-      { error: 'Không thể tải thông tin người dùng' },
+      { 
+        success: false,
+        error: 'Không thể tải thông tin người dùng',
+        user: null
+      },
       { status: 500 }
     );
   }

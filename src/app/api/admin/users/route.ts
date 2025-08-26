@@ -12,7 +12,12 @@ export async function GET(request: NextRequest) {
     // Admin và Moderator có quyền xem danh sách người dùng
     if (!authResult.success || !authResult.user || !['admin', 'moderator'].includes(authResult.user.role)) {
       return NextResponse.json(
-        { error: 'Bạn không có quyền xem danh sách người dùng' },
+        { 
+          success: false,
+          error: 'Bạn không có quyền xem danh sách người dùng',
+          data: [],
+          pagination: null
+        },
         { status: 403 }
       );
     }
@@ -80,7 +85,12 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
-      { error: 'Không thể tải danh sách người dùng' },
+      { 
+        success: false,
+        error: 'Không thể tải danh sách người dùng',
+        data: [],
+        pagination: null
+      },
       { status: 500 }
     );
   }

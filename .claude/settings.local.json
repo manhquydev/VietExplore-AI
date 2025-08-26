@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm install:*)",
+      "Bash(npx jest:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck:*)",
+      "Bash(firebase --version)",
+      "Bash(firebase deploy:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

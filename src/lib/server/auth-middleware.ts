@@ -18,6 +18,7 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
     const authHeader = request.headers.get('Authorization');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No auth header or invalid format');
       return {
         success: false,
         error: 'Token xác thực không hợp lệ'
@@ -26,11 +27,21 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
 
     const token = authHeader.split('Bearer ')[1];
     
+    if (!token) {
+      console.log('No token found in auth header');
+      return {
+        success: false,
+        error: 'Token xác thực không hợp lệ'
+      };
+    }
+    
     const decodedToken = await adminAuth.verifyIdToken(token);
+    console.log('Token verified for user:', decodedToken.uid);
     
     const userDoc = await adminDb.collection('users').doc(decodedToken.uid).get();
     
     if (!userDoc.exists) {
+      console.log('User document not found for UID:', decodedToken.uid);
       return {
         success: false,
         error: 'Người dùng không tồn tại'
@@ -38,6 +49,7 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
     }
 
     const userData = userDoc.data();
+    console.log('User found with role:', userData?.role);
     
     return {
       success: true,

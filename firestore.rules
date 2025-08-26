@@ -157,12 +157,20 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    // 4.9. moderation/requests
+    // 4.9. moderation_queue (Hàng đợi kiểm duyệt)
+    match /moderation_queue/{itemId} {
+      allow read, list: if isModerator() || isAdmin();
+      allow create: if emailVerified() && (isContributor() || isPartner() || hasRole('traveler'));
+      allow update: if isModerator() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // 4.10. moderation/requests (legacy)
     match /moderation/requests/{requestId} {
       allow read, create, update: if isModerator() || isAdmin();
     }
 
-    // 4.10. labels, audits, system
+    // 4.11. labels, audits, system
     match /labels/{id} { 
       allow read: if true; 
       allow write: if isAdmin(); 

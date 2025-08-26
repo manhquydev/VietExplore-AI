@@ -28,9 +28,18 @@ async function callApi<T>(
       headers,
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      const text = await response.text();
+      console.log(`API Response for ${endpoint}:`, { status: response.status, text });
+      data = text ? JSON.parse(text) : {};
+    } catch (parseError) {
+      console.error('Failed to parse response as JSON:', parseError);
+      data = { success: false, error: 'Invalid response format' };
+    }
 
     if (!response.ok) {
+      console.error(`API Error for ${endpoint}:`, { status: response.status, data });
       throw data;
     }
 

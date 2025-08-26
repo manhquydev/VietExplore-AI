@@ -10,7 +10,12 @@ export async function GET(request: NextRequest) {
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user || !hasPermission(authResult.user, 'view_moderation_queue')) {
       return NextResponse.json(
-        { error: 'Bạn không có quyền xem hàng đợi kiểm duyệt' },
+        { 
+          success: false,
+          error: 'Bạn không có quyền xem hàng đợi kiểm duyệt',
+          data: [],
+          total: 0
+        },
         { status: 403 }
       );
     }
@@ -87,7 +92,12 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching moderation queue:', error);
     return NextResponse.json(
-      { error: 'Không thể tải hàng đợi kiểm duyệt' },
+      { 
+        success: false,
+        error: 'Không thể tải hàng đợi kiểm duyệt',
+        data: [],
+        total: 0
+      },
       { status: 500 }
     );
   }
