@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import Link from "next/link"
 
+import { Place } from "@/lib/types/places"
+
 interface PlaceData {
   id: string
   name: string
@@ -138,7 +140,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
         {place.images && place.images.length > 0 ? (
           <>
             <img
-              src={place.images[currentImageIndex]?.url || '/placeholder-image.jpg'}
+              src={place.images[currentImageIndex]?.url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'}
               alt={place.images[currentImageIndex]?.alt || place.name}
               className="absolute inset-0 w-full h-full object-cover"
             />
@@ -181,9 +183,17 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
             )}
           </>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-            <span className="text-gray-500">Không có hình ảnh</span>
-          </div>
+          <>
+            <img
+              src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+              alt={place.name}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white text-lg">Không có hình ảnh</span>
+            </div>
+          </>
         )}
         
         {/* Overlay Content */}
@@ -254,7 +264,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 <Flag className="h-4 w-4" />
                 Báo cáo
               </Button>
-              {user?.id === place.id && (
+              {(user && (user.role === 'admin' || user.role === 'moderator')) && (
                 <Button variant="outline" size="sm" className="gap-1">
                   <Edit className="h-4 w-4" />
                   Chỉnh sửa
