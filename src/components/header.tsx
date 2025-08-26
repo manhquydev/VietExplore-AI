@@ -22,7 +22,8 @@ import {
   Calendar, 
   LogOut,
   HelpCircle,
-  Camera
+  Camera,
+  Award
 } from "lucide-react"
 
 const navigation = [
