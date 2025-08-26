@@ -7,11 +7,11 @@
  */
 
 import { ai } from "@/ai/genkit";
-import { z } from "genkit";
+import { z } from "zod";
 import { Part } from "genkit";
 
 // Define the structure for a single message in the chat history
-// Using z.enum ensures type safety for roles. "assistant" is mapped to "model" for the Gemini API.
+// Using z.enum ensures type safety for roles.
 const ChatMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string(),
@@ -46,16 +46,15 @@ const chatFlow = ai.defineFlow(
     // Convert the message history from the input schema to the format expected by the model
     // The role 'assistant' from the frontend corresponds to the 'model' role in the Gemini API.
     const history: Part[] =
-      (input.history || []).map((msg) => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
+      (input.history ?? []).map((msg) => ({
+        role: msg.role === "assistant" ? "model" : "user",
         text: msg.content,
       }));
 
-    // Add the current user message to the history
     history.push({ role: "user", text: input.message });
 
     const result = await ai.generate({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-pro',
       history: history,
       config: {
         temperature: 0.7,
