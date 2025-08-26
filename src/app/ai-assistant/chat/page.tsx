@@ -115,7 +115,7 @@ export default function AIChatPage() {
       const aiMessage: Message = {
         id: `msg_${Date.now()}_ai`,
         role: "assistant", 
-        content: aiResponse.message,
+        content: aiResponse.response, // Corrected from aiResponse.message
         timestamp: new Date().toISOString(),
       }
 
