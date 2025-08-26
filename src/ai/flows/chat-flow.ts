@@ -55,6 +55,7 @@ const chatFlow = ai.defineFlow(
     history.push({ role: "user", text: input.message });
 
     const result = await ai.generate({
+      model: 'gemini-1.5-flash',
       history: history,
       config: {
         temperature: 0.7,

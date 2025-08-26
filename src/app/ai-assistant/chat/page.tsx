@@ -33,16 +33,6 @@ interface Message {
   role: "user" | "assistant"
   content: string
   timestamp: string
-  metadata?: {
-    suggestions?: string[]
-    itineraryGenerated?: boolean
-    placesReferenced?: string[]
-    quickActions?: Array<{
-      label: string
-      action: string
-      data?: any
-    }>
-  }
 }
 
 // Mock suggestions
@@ -54,26 +44,19 @@ const quickSuggestions = [
   "Thời tiết tốt nhất để đi Sa Pa"
 ]
 
-// Mock conversation history
-const mockMessages: Message[] = [
+// Initial message from the assistant
+const initialMessages: Message[] = [
   {
     id: "msg_1",
     role: "assistant",
-    content: "Xin chào! Tôi là **AI Hướng Dẫn Viên** của Du Lịch Việt. Tôi có thể giúp bạn:\n\n* Tạo lịch trình du lịch cá nhân hóa\n* Tìm kiếm địa điểm phù hợp\n* Tư vấn chi phí và thời gian\n* Gợi ý ẩm thực và hoạt động\n\nBạn muốn đi đâu và khi nào?",
+    content: "Xin chào! Tôi là **AI Hướng Dẫn Viên** của Du Lịch Việt. Tôi có thể giúp bạn lên kế hoạch cho chuyến đi sắp tới. Bạn muốn đi đâu?",
     timestamp: new Date().toISOString(),
-    metadata: {
-      suggestions: [
-        "Tạo lịch trình 3 ngày ở Đà Nẵng",
-        "Tìm địa điểm du lịch miền Bắc",
-        "Gợi ý ẩm thực Hội An"
-      ]
-    }
   }
 ]
 
 export default function AIChatPage() {
   const { user } = useAuth()
-  const [messages, setMessages] = React.useState<Message[]>(mockMessages)
+  const [messages, setMessages] = React.useState<Message[]>(initialMessages)
   const [inputValue, setInputValue] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const scrollAreaRef = React.useRef<HTMLDivElement>(null)
@@ -95,29 +78,33 @@ export default function AIChatPage() {
       timestamp: new Date().toISOString()
     }
 
-    setMessages(prev => [...prev, userMessage])
+    // Add user message to the UI immediately
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages)
     setInputValue("")
     setIsLoading(true)
 
     try {
-      const historyForApi = messages.map(msg => ({
+      // Prepare history for API call, including the new user message
+      const historyForApi = updatedMessages.map(msg => ({
         role: msg.role,
         content: msg.content
       }));
-
+      
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          history: historyForApi,
-          message: content.trim()
+          history: historyForApi.slice(0, -1), // Send all but the last message as history
+          message: content.trim() // Send the last message as the current prompt
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorData = await response.text();
+        throw new Error(`Network response was not ok. Status: ${response.status}. Details: ${errorData}`);
       }
 
       const aiResponse = await response.json();
@@ -130,12 +117,12 @@ export default function AIChatPage() {
       }
 
       setMessages(prev => [...prev, aiMessage])
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI response error:', error)
       const errorMessage: Message = {
         id: `msg_${Date.now()}_error`,
         role: "assistant",
-        content: "Xin lỗi, tôi gặp sự cố khi xử lý yêu cầu của bạn. Vui lòng thử lại sau.",
+        content: `Xin lỗi, tôi gặp sự cố khi xử lý yêu cầu của bạn. Lỗi: ${error.message}`,
         timestamp: new Date().toISOString()
       }
       setMessages(prev => [...prev, errorMessage])
@@ -156,17 +143,17 @@ export default function AIChatPage() {
   }
 
   const clearChat = () => {
-    setMessages(mockMessages.slice(0, 1))
+    setMessages(initialMessages)
   }
 
   const copyMessage = (content: string) => {
     navigator.clipboard.writeText(content)
-    // Show toast notification
+    // You can add a toast notification here to confirm copy
   }
 
   const rateMessage = (messageId: string, rating: 'up' | 'down') => {
     console.log('Rating message:', messageId, rating)
-    // Send feedback to API when backend is available
+    // TODO: Send feedback to API when backend is available
   }
 
   return (
@@ -252,46 +239,6 @@ export default function AIChatPage() {
                               <ReactMarkdown>{message.content}</ReactMarkdown>
                             </div>
                           </div>
-
-                          {/* Quick Actions */}
-                          {message.metadata?.quickActions && (
-                            <div className="flex flex-wrap gap-2">
-                              {message.metadata.quickActions.map((action, index) => (
-                                <Button
-                                  key={index}
-                                  variant="secondary"
-                                  size="sm"
-                                  className="h-8 text-xs rounded-full glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
-                                  onClick={() => {
-                                    if (action.action === 'create_itinerary') {
-                                      window.open('/itineraries/builder', '_blank')
-                                    } else if (action.action === 'search_places') {
-                                      window.open(`/places?search=${action.data?.query}`, '_blank')
-                                    }
-                                  }}
-                                >
-                                  {action.label}
-                                </Button>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Suggestions */}
-                          {message.metadata?.suggestions && (
-                            <div className="flex flex-wrap gap-2">
-                              {message.metadata.suggestions.map((suggestion, index) => (
-                                <Button
-                                  key={index}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 text-xs rounded-full glass-subtle hover:bg-sky-50/50 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400"
-                                  onClick={() => handleQuickSuggestion(suggestion)}
-                                >
-                                  {suggestion}
-                                </Button>
-                              ))}
-                            </div>
-                          )}
 
                           {/* Message Actions */}
                           {message.role === "assistant" && (
@@ -413,7 +360,7 @@ export default function AIChatPage() {
               {/* Quick Suggestions */}
               <div className="glass-card p-6">
                 <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                     <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   </div>
                   Gợi ý nhanh
