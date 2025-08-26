@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { requirePermission } from '@/lib/auth-middleware';
+import { adminDb } from '@/lib/server/firebaseAdmin';
+import { requirePermission } from '@/lib/server/auth-middleware';
 import { UserRole } from '@/lib/types/auth';
 
 // GET /api/admin/users - List all users (Admin/Moderator only)
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requirePermission(request, 'view_moderation_queue');
+    // Corrected permission check
+    const authResult = await requirePermission(request, 'manage_users');
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
         { error: 'Bạn không có quyền xem danh sách người dùng' },
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const search = searchParams.get('search');
 
-    let query = adminDb.collection('users');
+    let query: FirebaseFirestore.Query = adminDb.collection('users');
 
     // Filter by role
     if (role && ['traveler', 'contributor', 'partner', 'moderator', 'admin'].includes(role)) {
@@ -41,39 +42,41 @@ export async function GET(request: NextRequest) {
 
     snapshot.forEach(doc => {
       const userData = doc.data();
+      // Ensure sensitive data is not returned
+      const { password, ...userSafeData } = userData;
       users.push({
         id: doc.id,
-        email: userData.email,
-        fullName: userData.fullName,
-        username: userData.username,
-        avatar: userData.avatar,
-        role: userData.role,
-        verified: userData.verified,
-        createdAt: userData.createdAt,
-        stats: userData.stats,
-        roleHistory: userData.roleHistory || []
+        ...userSafeData
       });
     });
 
-    // Client-side search filter (for now)
+    // Server-side search filter
     let filteredUsers = users;
     if (search) {
       const searchTerm = search.toLowerCase();
       filteredUsers = users.filter(user => 
-        user.fullName.toLowerCase().includes(searchTerm) ||
-        user.email.toLowerCase().includes(searchTerm) ||
-        user.username.toLowerCase().includes(searchTerm)
+        user.fullName?.toLowerCase().includes(searchTerm) ||
+        user.email?.toLowerCase().includes(searchTerm) ||
+        user.username?.toLowerCase().includes(searchTerm)
       );
     }
+
+    // Get total count for pagination
+    let totalQuery = adminDb.collection('users');
+    if (role && ['traveler', 'contributor', 'partner', 'moderator', 'admin'].includes(role)) {
+      totalQuery = totalQuery.where('role', '==', role);
+    }
+    const totalSnapshot = await totalQuery.count().get();
+    const totalUsers = totalSnapshot.data().count;
 
     return NextResponse.json({
       success: true,
       data: filteredUsers,
-      total: filteredUsers.length,
       pagination: {
         limit,
         offset,
-        hasMore: snapshot.size === limit
+        total: totalUsers,
+        hasMore: (offset + users.length) < totalUsers
       }
     });
 
@@ -85,4 +88,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

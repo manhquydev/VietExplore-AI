@@ -295,7 +295,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     <div>
                       <Label className="text-sm font-medium text-muted">Mô tả chi tiết</Label>
                       <div className="mt-1 prose prose-sm max-w-none">
-                        {reviewItem.content.description.split('\n\n').map((paragraph, index) => (
+                        {reviewItem.content.description.split('\\n\\n').map((paragraph, index) => (
                           <p key={index} className="text-base leading-relaxed mb-4 last:mb-0">
                             {paragraph}
                           </p>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { verifyAuthToken } from '@/lib/auth-middleware';
+import { adminDb } from '@/lib/server/firebaseAdmin';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { Place } from '@/lib/types/places';
 
 // GET /api/places/[id] - Get single place
@@ -182,4 +182,3 @@ export async function DELETE(
     );
   }
 }
-

@@ -1,8 +1,6 @@
-"use client"
-
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, adminAuth } from '@/lib/firebase-admin';
-import { requirePermission } from '@/lib/auth-middleware';
+import { adminDb, adminAuth } from '@/lib/server/firebaseAdmin';
+import { requirePermission } from '@/lib/server/auth-middleware';
 import { UserRole } from '@/lib/types/auth';
 
 // PUT /api/admin/users/[userId]/role - Change user role (Admin only)

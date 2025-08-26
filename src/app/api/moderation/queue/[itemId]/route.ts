@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { requirePermission } from '@/lib/auth-middleware';
+import { adminDb } from '@/lib/server/firebaseAdmin';
+import { requirePermission } from '@/lib/server/auth-middleware';
 
 // PUT /api/moderation/queue/[itemId] - Review moderation item
 export async function PUT(
@@ -56,7 +56,7 @@ export async function PUT(
     await adminDb.collection('moderation_queue').doc(params.itemId).update(updateData);
 
     // Update the actual content based on action
-    if (itemData.contentType === 'place') {
+    if (itemData!.contentType === 'place') {
       const placeUpdate: any = {
         updatedAt: now,
         moderatedBy: moderator.id
@@ -89,11 +89,11 @@ export async function PUT(
         });
       }
 
-      await adminDb.collection('places').doc(itemData.contentId).update(placeUpdate);
+      await adminDb.collection('places').doc(itemData!.contentId).update(placeUpdate);
 
       // Update user stats if approved
       if (action === 'approve') {
-        const placeDoc = await adminDb.collection('places').doc(itemData.contentId).get();
+        const placeDoc = await adminDb.collection('places').doc(itemData!.contentId).get();
         const placeData = placeDoc.data();
         
         if (placeData?.createdBy) {
@@ -108,8 +108,8 @@ export async function PUT(
     // Log the moderation action
     await adminDb.collection('moderation_logs').add({
       moderationItemId: params.itemId,
-      contentType: itemData.contentType,
-      contentId: itemData.contentId,
+      contentType: itemData!.contentType,
+      contentId: itemData!.contentId,
       action,
       moderatorId: moderator.id,
       reviewNotes,
@@ -137,4 +137,3 @@ export async function PUT(
     );
   }
 }
-

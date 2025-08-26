@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { requirePermission } from '@/lib/auth-middleware';
+import { adminDb } from '@/lib/server/firebaseAdmin';
+import { requirePermission } from '@/lib/server/auth-middleware';
 
 // GET /api/moderation/queue - Get moderation queue (Moderator/Admin only)
 export async function GET(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const priority = searchParams.get('priority');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    let query = adminDb.collection('moderation_queue');
+    let query: FirebaseFirestore.Query = adminDb.collection('moderation_queue');
 
     // Filter by status
     if (status) {
@@ -90,4 +90,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

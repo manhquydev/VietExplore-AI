@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/client/api';
 import { User, UserRole } from '@/lib/types/auth';
 import { useAuth } from '@/components/auth/auth-provider';
 
@@ -31,10 +30,9 @@ export function useAdminStats() {
         ]);
 
         // This is a temporary solution until the backend provides total counts
-        // For now, we are simulating some numbers.
         // A proper implementation would have dedicated API endpoints like /api/admin/stats
         setStats({
-          totalUsers: 1234, // Simulated
+          totalUsers: (usersResult as any).pagination?.total || 1234, // Simulated
           totalPlaces: 456, // Simulated
           pendingModeration: moderationResult.data?.length || 0,
           openReports: 8, // Simulated
@@ -99,8 +97,8 @@ export function useAdminUsers(filters: {
         return { success: true, message: result.message };
       }
       return { success: false, error: result.error };
-    } catch (err) {
-      return { success: false, error: 'Có lỗi xảy ra' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Có lỗi xảy ra' };
     }
   };
 
@@ -111,8 +109,8 @@ export function useAdminUsers(filters: {
         return { success: true, message: result.message };
       }
       return { success: false, error: result.error };
-    } catch (err) {
-      return { success: false, error: 'Có lỗi xảy ra' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Có lỗi xảy ra' };
     }
   };
   
@@ -124,8 +122,8 @@ export function useAdminUsers(filters: {
         return { success: true, message: result.message };
       }
       return { success: false, error: result.error };
-    } catch (err) {
-      return { success: false, error: 'Có lỗi xảy ra' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Có lỗi xảy ra' };
     }
   };
 
@@ -196,8 +194,8 @@ export function useModerationQueue(filters: {
       } else {
         return { success: false, error: result.error };
       }
-    } catch (err) {
-      return { success: false, error: 'Có lỗi xảy ra' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Có lỗi xảy ra' };
     }
   };
 

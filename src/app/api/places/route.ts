@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin-safe';
+import { adminDb } from '@/lib/server/firebaseAdmin';
 import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
-import { verifyAuthToken } from '@/lib/auth-middleware';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
 
 // GET /api/places - Fetch places with filtering
 export async function GET(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       offset: parseInt(searchParams.get('offset') || '0')
     };
 
-    let query = adminDb.collection('places')
+    let query: FirebaseFirestore.Query = adminDb.collection('places')
       .where('status', '==', 'published');
 
     // Apply filters
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
       const searchTerm = filters.search.toLowerCase();
       filteredPlaces = places.filter(place => 
         place.name.toLowerCase().includes(searchTerm) ||
-        place.description.toLowerCase().includes(searchTerm) ||
-        place.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+        (place.description && place.description.toLowerCase().includes(searchTerm)) ||
+        (place.tags && place.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
       );
     }
 

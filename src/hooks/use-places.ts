@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/client/api';
 import { Place, PlaceFilters } from '@/lib/types/places';
 
 export function usePlaces(filters: PlaceFilters = {}) {
@@ -31,8 +31,24 @@ export function usePlaces(filters: PlaceFilters = {}) {
     fetchPlaces();
   }, [JSON.stringify(filters)]);
 
-  const refetch = () => {
-    fetchPlaces();
+  const refetch = async () => {
+     setLoading(true);
+      setError(null);
+
+      try {
+        const result = await apiClient.places.list(filters);
+        
+        if (result.success && result.data) {
+          setPlaces(result.data);
+        } else {
+          setError(result.error || 'Không thể tải danh sách địa điểm');
+        }
+      } catch (err) {
+        setError('Có lỗi xảy ra khi tải dữ liệu');
+        console.error('Error fetching places:', err);
+      } finally {
+        setLoading(false);
+      }
   };
 
   return {
@@ -80,4 +96,3 @@ export function usePlace(id: string) {
     error
   };
 }
-

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuthToken } from '@/lib/auth-middleware';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,4 +25,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
