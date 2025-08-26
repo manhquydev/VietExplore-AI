@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin-safe';
+import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userDoc = usersSnapshot.docs[0];
-    const firebaseUser = { uid: userDoc.id };
+    const firebaseUser = { uid: userDoc.id, email: userDoc.data().email };
 
     const userData = userDoc.data();
     
