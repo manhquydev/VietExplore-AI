@@ -1,4 +1,3 @@
-"use server";
 
 /**
  * @fileOverview A travel assistant AI flow that handles conversational chat.
@@ -10,11 +9,12 @@
 
 import { ai } from "@/ai/genkit";
 import { z } from "genkit";
-import { Part, Role } from "genkit";
+import { Part } from "genkit";
 
 // Define the structure for a single message in the chat history
+// Using z.enum ensures type safety for roles. "assistant" is mapped to "model" for the Gemini API.
 const ChatMessageSchema = z.object({
-  role: z.string(), // Use z.string() for more flexibility with roles
+  role: z.enum(["user", "assistant"]),
   content: z.string(),
 });
 
@@ -45,9 +45,10 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     // Convert the message history from the input schema to the format expected by the model
-    let history: Part[] =
+    // The role 'assistant' from the frontend corresponds to the 'model' role in the Gemini API.
+    const history: Part[] =
       input.history?.map((msg) => ({
-        role: msg.role as Role,
+        role: msg.role === 'assistant' ? 'model' : 'user',
         text: msg.content,
       })) || [];
 
