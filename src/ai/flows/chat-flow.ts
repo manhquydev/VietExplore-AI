@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview A travel assistant AI flow that handles conversational chat.
  *
@@ -47,10 +46,10 @@ const chatFlow = ai.defineFlow(
     // Convert the message history from the input schema to the format expected by the model
     // The role 'assistant' from the frontend corresponds to the 'model' role in the Gemini API.
     const history: Part[] =
-      input.history?.map((msg) => ({
+      (input.history || []).map((msg) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
         text: msg.content,
-      })) || [];
+      }));
 
     // Add the current user message to the history
     history.push({ role: "user", text: input.message });

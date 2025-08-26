@@ -26,7 +26,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import ReactMarkdown from 'react-markdown'
-import { chat, ChatInput } from "@/ai/flows/chat-flow"
+import { ChatInput } from "@/ai/flows/chat-flow"
 
 interface Message {
   id: string
@@ -78,33 +78,36 @@ export default function AIChatPage() {
       timestamp: new Date().toISOString()
     }
 
-    // Add user message to the UI immediately
+    // Add user message to the UI immediately and prepare for API call
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages)
     setInputValue("")
     setIsLoading(true)
 
     try {
-      // Prepare history for API call, including the new user message
-      const historyForApi = updatedMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
+      const historyForApi = updatedMessages
+        .slice(0, -1) // Exclude the last message (the one being sent)
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+
+      const input: ChatInput = {
+        history: historyForApi,
+        message: content.trim()
+      }
       
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          history: historyForApi.slice(0, -1), // Send all but the last message as history
-          message: content.trim() // Send the last message as the current prompt
-        }),
+        body: JSON.stringify(input),
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Network response was not ok. Status: ${response.status}. Details: ${errorData}`);
+        const errorText = await response.text();
+        throw new Error(`Network response was not ok. Status: ${response.status}. Details: ${errorText}`);
       }
 
       const aiResponse = await response.json();
