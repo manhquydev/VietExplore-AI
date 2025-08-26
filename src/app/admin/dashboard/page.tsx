@@ -1,6 +1,8 @@
+
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,6 +16,16 @@ import { useAdminUsers, useModerationQueue } from "@/hooks/use-admin"
 import { UserRole } from "@/lib/types/auth"
 import { Users, MapPin, FileText, AlertTriangle, Shield, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
+
+const getInitials = (fullName: string | undefined, email: string | undefined) => {
+  if (fullName) {
+    return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+  if (email) {
+    return email[0].toUpperCase();
+  }
+  return 'U';
+}
 
 export default function AdminDashboardPage() {
   const { user } = useAuth()
@@ -219,13 +231,13 @@ function UserManagement() {
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
                     {user.avatar ? (
-                      <img src={user.avatar} alt={user.fullName} className="w-full h-full rounded-full object-cover" />
+                      <img src={user.avatar} alt={user.fullName || 'User Avatar'} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <span className="text-sm font-medium">{user.fullName[0]}</span>
+                      <span className="text-sm font-medium">{getInitials(user.fullName, user.email)}</span>
                     )}
                   </div>
                   <div>
-                    <p className="font-medium">{user.fullName}</p>
+                    <p className="font-medium">{user.fullName || 'N/A'}</p>
                     <p className="text-sm text-gray-600">{user.email}</p>
                   </div>
                 </div>
