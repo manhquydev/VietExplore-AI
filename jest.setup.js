@@ -2,14 +2,14 @@
 
 // Mock Firebase Admin SDK for testing
 jest.mock('@/lib/server/firebaseAdmin', () => ({
-  adminAuth: {
+  getAdminAuth: jest.fn(() => ({
     verifyIdToken: jest.fn(),
     createCustomToken: jest.fn(),
     createUser: jest.fn(),
     updateUser: jest.fn(),
     setCustomUserClaims: jest.fn(),
-  },
-  adminDb: {
+  })),
+  getAdminDb: jest.fn(() => ({
     collection: jest.fn(() => ({
       doc: jest.fn(() => ({
         get: jest.fn(),
@@ -45,10 +45,10 @@ jest.mock('@/lib/server/firebaseAdmin', () => ({
       arrayUnion: jest.fn(),
       increment: jest.fn(),
     },
-  },
-  adminStorage: {
+  })),
+  getAdminStorage: jest.fn(() => ({
     bucket: jest.fn(),
-  },
+  })),
 }));
 
 

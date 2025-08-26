@@ -1,3 +1,5 @@
+"use server"
+
 // src/lib/server/firebaseAdmin.ts
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
@@ -5,11 +7,11 @@ dotenv.config({ path: ".env.local" });
 import * as admin from 'firebase-admin';
 import { ServiceAccount } from 'firebase-admin/app';
 
-let app: admin.app.App | undefined;
+let app: admin.app.App;
 
 function initializeFirebaseAdmin() {
   if (admin.apps.length > 0) {
-    app = admin.apps[0];
+    app = admin.apps[0]!;
     return;
   }
 
@@ -29,36 +31,46 @@ function initializeFirebaseAdmin() {
       console.log('Firebase Admin SDK initialized successfully.');
     } catch (error: any) {
       console.error('Firebase Admin SDK initialization error:', error);
-      app = undefined; // Ensure app is undefined on error
+      // app will be undefined
     }
   } else {
     console.warn('Firebase Admin SDK not initialized: Missing environment variables.');
-    app = undefined;
+    // app will be undefined
   }
 }
 
-// Initialize on first import
 initializeFirebaseAdmin();
 
 function getInitializedApp(): admin.app.App {
   if (!app) {
-    console.error('Firebase Admin SDK not initialized. Environment variables:');
-    console.error('PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
-    console.error('CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
-    console.error('PRIVATE_KEY length:', process.env.FIREBASE_PRIVATE_KEY?.length || 0);
-    throw new Error('Firebase Admin SDK has not been initialized. Check your environment variables.');
+    throw new Error('Firebase Admin SDK has not been initialized. Check server logs for details.');
   }
   return app;
 }
 
-export function getAdminAuth(): admin.auth.Auth {
-  return admin.auth(getInitializedApp());
+export function getAdminAuth(): admin.auth.Auth | null {
+  try {
+    return admin.auth(getInitializedApp());
+  } catch (error) {
+    console.error("Failed to get Firebase Auth instance:", error);
+    return null;
+  }
 }
 
-export function getAdminDb(): admin.firestore.Firestore {
-  return admin.firestore(getInitializedApp());
+export function getAdminDb(): admin.firestore.Firestore | null {
+  try {
+    return admin.firestore(getInitializedApp());
+  } catch (error) {
+    console.error("Failed to get Firestore instance:", error);
+    return null;
+  }
 }
 
-export function getAdminStorage(): admin.storage.Storage {
-  return admin.storage(getInitializedApp());
+export function getAdminStorage(): admin.storage.Storage | null {
+  try {
+    return admin.storage(getInitializedApp());
+  } catch (error) {
+    console.error("Failed to get Firebase Storage instance:", error);
+    return null;
+  }
 }

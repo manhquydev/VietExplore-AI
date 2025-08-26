@@ -5,6 +5,13 @@ export async function POST(request: NextRequest) {
   try {
     const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
+
+    if (!adminAuth || !adminDb) {
+      return NextResponse.json(
+        { error: 'Lỗi cấu hình server. Vui lòng thử lại sau.' },
+        { status: 503 }
+      );
+    }
     
     const { email, password } = await request.json();
 
