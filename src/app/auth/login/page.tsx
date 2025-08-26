@@ -48,8 +48,8 @@ export default function LoginPage() {
     try {
       await login(email, password)
       router.push(redirectUrl)
-    } catch (err) {
-      setError("Email hoặc mật khẩu không đúng")
+    } catch (err: any) {
+      setError(err.message || "Email hoặc mật khẩu không đúng")
     } finally {
       setIsLoading(false)
     }

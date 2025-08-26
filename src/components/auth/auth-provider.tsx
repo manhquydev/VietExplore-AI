@@ -1,7 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  signInWithCustomToken 
+} from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { User } from '@/lib/types/auth'
 
@@ -90,9 +96,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!response.ok) {
         throw new Error(data.error || 'Đăng nhập thất bại')
       }
+      
+      // Sign in on client with custom token
+      await signInWithCustomToken(auth, data.token)
+      setUser(data.user)
 
-      // Firebase auth state will be updated automatically via onAuthStateChanged
-      // setUser will be called there
     } catch (error: any) {
       throw new Error(error.message || 'Đăng nhập thất bại')
     } finally {
@@ -112,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: data.email,
           password: data.password,
           fullName: data.fullName,
-          acceptTerms: data.agreeToTerms // Changed from agreeToTerms to acceptTerms
+          acceptTerms: data.agreeToTerms
         }),
       })
 
@@ -121,8 +129,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!response.ok) {
         throw new Error(result.error || 'Đăng ký thất bại')
       }
+      
+      // Sign in on client with custom token from register response
+      await signInWithCustomToken(auth, result.token)
+      setUser(result.user)
 
-      // Firebase auth state will be updated automatically via onAuthStateChanged
     } catch (error: any) {
       throw new Error(error.message || 'Đăng ký thất bại')
     } finally {
@@ -133,7 +144,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth)
-      // Firebase auth state will be updated automatically via onAuthStateChanged
+      setUser(null)
     } catch (error) {
       console.error('Logout error:', error)
     }
