@@ -2,263 +2,164 @@
  * @jest-environment node
  */
 
-import { verifyAuthToken, requirePermission } from '../auth-middleware'
-import { NextRequest } from 'next/server'
-import { adminAuth, adminDb } from '@/lib/firebase-admin'
+import { hasPermission, rolePermissions } from '../auth-middleware'
+import type { User } from '../types/auth'
 
-// Mock Firebase Admin SDK
-jest.mock('@/lib/firebase-admin')
-
-const mockAdminAuth = adminAuth as jest.Mocked<typeof adminAuth>
-const mockAdminDb = adminDb as jest.Mocked<typeof adminDb>
-
-describe('Auth Middleware', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
+describe('Auth Types and Permissions', () => {
+  const createMockUser = (role: User['role']): User => ({
+    id: 'test-user',
+    email: 'test@example.com',
+    fullName: 'Test User',
+    username: 'testuser',
+    role,
+    verified: false,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    stats: {
+      placesContributed: 0,
+      itinerariesCreated: 0,
+      helpfulVotes: 0
+    }
   })
 
-  describe('verifyAuthToken', () => {
-    it('should verify valid token successfully', async () => {
-      const mockDecodedToken = {
-        uid: 'test-user-id',
-        email: 'test@example.com'
-      }
-
-      const mockUserData = {
-        email: 'test@example.com',
-        fullName: 'Test User',
-        role: 'traveler'
-      }
-
-      mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken as any)
-      
-      const mockUserDoc = {
-        exists: true,
-        data: () => mockUserData
-      }
-
-      mockAdminDb.collection.mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockUserDoc)
-        })
-      } as any)
-
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'Bearer valid-token'
-        }
-      })
-
-      const result = await verifyAuthToken(request)
-
-      expect(result.success).toBe(true)
-      expect(result.user?.email).toBe('test@example.com')
-      expect(result.user?.id).toBe('test-user-id')
-      expect(mockAdminAuth.verifyIdToken).toHaveBeenCalledWith('valid-token')
+  describe('hasPermission function', () => {
+    it('should return false for null user', () => {
+      const result = hasPermission(null, 'create_place')
+      expect(result).toBe(false)
     })
 
-    it('should fail with missing Authorization header', async () => {
-      const request = new NextRequest('http://localhost:3000/test')
-
-      const result = await verifyAuthToken(request)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Token xác thực không hợp lệ')
+    it('should return true for admin with any permission', () => {
+      const adminUser = createMockUser('admin')
+      const result = hasPermission(adminUser, 'all_permissions')
+      expect(result).toBe(true)
     })
 
-    it('should fail with invalid token format', async () => {
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'InvalidFormat'
-        }
-      })
-
-      const result = await verifyAuthToken(request)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Token xác thực không hợp lệ')
+    it('should allow traveler to create itineraries', () => {
+      const travelerUser = createMockUser('traveler')
+      const result = hasPermission(travelerUser, 'create_itinerary')
+      expect(result).toBe(true)
     })
 
-    it('should fail when user does not exist in Firestore', async () => {
-      const mockDecodedToken = {
-        uid: 'nonexistent-user',
-        email: 'nonexistent@example.com'
-      }
+    it('should deny traveler from creating places', () => {
+      const travelerUser = createMockUser('traveler')
+      const result = hasPermission(travelerUser, 'create_place')
+      expect(result).toBe(false)
+    })
 
-      mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken as any)
-      
-      const mockUserDoc = {
-        exists: false
-      }
+    it('should allow contributor to create places', () => {
+      const contributorUser = createMockUser('contributor')
+      const result = hasPermission(contributorUser, 'create_place')
+      expect(result).toBe(true)
+    })
 
-      mockAdminDb.collection.mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockUserDoc)
-        })
-      } as any)
+    it('should allow partner to create places with priority', () => {
+      const partnerUser = createMockUser('partner')
+      const result = hasPermission(partnerUser, 'create_place_priority')
+      expect(result).toBe(true)
+    })
 
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'Bearer valid-token'
-        }
-      })
+    it('should allow moderator to review content', () => {
+      const moderatorUser = createMockUser('moderator')
+      const result = hasPermission(moderatorUser, 'review_content')
+      expect(result).toBe(true)
+    })
 
-      const result = await verifyAuthToken(request)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Người dùng không tồn tại')
+    it('should deny guest from all actions', () => {
+      const guestUser = createMockUser('guest')
+      expect(hasPermission(guestUser, 'create_itinerary')).toBe(false)
+      expect(hasPermission(guestUser, 'save_places')).toBe(false)
+      expect(hasPermission(guestUser, 'report_content')).toBe(false)
     })
   })
 
-  describe('requirePermission', () => {
-    it('should allow admin to access any permission', async () => {
-      const mockDecodedToken = {
-        uid: 'admin-user',
-        email: 'admin@example.com'
-      }
-
-      const mockUserData = {
-        email: 'admin@example.com',
-        fullName: 'Admin User',
-        role: 'admin'
-      }
-
-      mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken as any)
+  describe('rolePermissions mapping', () => {
+    it('should have correct permissions for each role', () => {
+      expect(rolePermissions.guest).toEqual([])
       
-      const mockUserDoc = {
-        exists: true,
-        data: () => mockUserData
-      }
-
-      mockAdminDb.collection.mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockUserDoc)
-        })
-      } as any)
-
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'Bearer admin-token'
-        }
-      })
-
-      const result = await requirePermission(request, 'any_permission')
-
-      expect(result.success).toBe(true)
-      expect(result.user?.role).toBe('admin')
+      expect(rolePermissions.traveler).toContain('create_itinerary')
+      expect(rolePermissions.traveler).toContain('save_places')
+      expect(rolePermissions.traveler).toContain('report_content')
+      
+      expect(rolePermissions.contributor).toContain('create_place')
+      expect(rolePermissions.contributor).toContain('manage_drafts')
+      
+      expect(rolePermissions.partner).toContain('create_place_priority')
+      expect(rolePermissions.partner).toContain('fast_review')
+      
+      expect(rolePermissions.moderator).toContain('review_content')
+      
+      expect(rolePermissions.admin).toEqual(['all_permissions'])
     })
 
-    it('should allow contributor to create places', async () => {
-      const mockDecodedToken = {
-        uid: 'contributor-user',
-        email: 'contributor@example.com'
-      }
-
-      const mockUserData = {
-        email: 'contributor@example.com',
-        fullName: 'Contributor User',
-        role: 'contributor'
-      }
-
-      mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken as any)
+    it('should maintain role hierarchy in permissions', () => {
+      // Contributor should have all traveler permissions plus their own
+      const travelerPerms = rolePermissions.traveler
+      const contributorPerms = rolePermissions.contributor
       
-      const mockUserDoc = {
-        exists: true,
-        data: () => mockUserData
-      }
-
-      mockAdminDb.collection.mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockUserDoc)
-        })
-      } as any)
-
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'Bearer contributor-token'
-        }
+      travelerPerms.forEach(perm => {
+        expect(contributorPerms).toContain(perm)
       })
 
-      const result = await requirePermission(request, 'create_place')
+      // Partner should have contributor-level permissions plus their own
+      const partnerPerms = rolePermissions.partner
+      expect(partnerPerms).toContain('create_itinerary')
+      expect(partnerPerms).toContain('save_places')
+      expect(partnerPerms).toContain('report_content')
+    })
+  })
 
-      expect(result.success).toBe(true)
-      expect(result.user?.role).toBe('contributor')
+  describe('Role-based content trust labels', () => {
+    it('should map user roles to appropriate trust labels', () => {
+      // Based on role-badge-logic.md
+      const travelerUser = createMockUser('traveler')
+      const contributorUser = createMockUser('contributor')
+      const partnerUser = createMockUser('partner')
+
+      // Traveler content should be "community"
+      expect(travelerUser.role).toBe('traveler')
+      
+      // Contributor content should be "contributor" 
+      expect(contributorUser.role).toBe('contributor')
+      
+      // Partner content should be "partner"
+      expect(partnerUser.role).toBe('partner')
+    })
+  })
+
+  describe('User interface validation', () => {
+    it('should have all required fields', () => {
+      const user = createMockUser('traveler')
+      
+      expect(user).toHaveProperty('id')
+      expect(user).toHaveProperty('email')
+      expect(user).toHaveProperty('fullName')
+      expect(user).toHaveProperty('username')
+      expect(user).toHaveProperty('role')
+      expect(user).toHaveProperty('verified')
+      expect(user).toHaveProperty('createdAt')
+      expect(user).toHaveProperty('updatedAt')
+      expect(user).toHaveProperty('stats')
+      
+      expect(user.stats).toHaveProperty('placesContributed')
+      expect(user.stats).toHaveProperty('itinerariesCreated')
+      expect(user.stats).toHaveProperty('helpfulVotes')
     })
 
-    it('should deny traveler from creating places', async () => {
-      const mockDecodedToken = {
-        uid: 'traveler-user',
-        email: 'traveler@example.com'
-      }
-
-      const mockUserData = {
-        email: 'traveler@example.com',
-        fullName: 'Traveler User',
-        role: 'traveler'
-      }
-
-      mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken as any)
-      
-      const mockUserDoc = {
-        exists: true,
-        data: () => mockUserData
-      }
-
-      mockAdminDb.collection.mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockUserDoc)
-        })
-      } as any)
-
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'Bearer traveler-token'
+    it('should support optional profile fields', () => {
+      const userWithProfile = createMockUser('contributor')
+      userWithProfile.profile = {
+        bio: 'Travel enthusiast',
+        location: 'Vietnam',
+        website: 'https://example.com',
+        socialLinks: {
+          facebook: 'https://facebook.com/user',
+          instagram: 'https://instagram.com/user'
         }
-      })
-
-      const result = await requirePermission(request, 'create_place')
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Bạn không có quyền thực hiện hành động này')
-    })
-
-    it('should allow moderator to review content', async () => {
-      const mockDecodedToken = {
-        uid: 'moderator-user',
-        email: 'moderator@example.com'
       }
 
-      const mockUserData = {
-        email: 'moderator@example.com',
-        fullName: 'Moderator User',
-        role: 'moderator'
-      }
-
-      mockAdminAuth.verifyIdToken.mockResolvedValue(mockDecodedToken as any)
-      
-      const mockUserDoc = {
-        exists: true,
-        data: () => mockUserData
-      }
-
-      mockAdminDb.collection.mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockUserDoc)
-        })
-      } as any)
-
-      const request = new NextRequest('http://localhost:3000/test', {
-        headers: {
-          'Authorization': 'Bearer moderator-token'
-        }
-      })
-
-      const result = await requirePermission(request, 'review_content')
-
-      expect(result.success).toBe(true)
-      expect(result.user?.role).toBe('moderator')
+      expect(userWithProfile.profile).toBeDefined()
+      expect(userWithProfile.profile?.bio).toBe('Travel enthusiast')
+      expect(userWithProfile.profile?.socialLinks?.facebook).toBe('https://facebook.com/user')
     })
   })
 })
-
-

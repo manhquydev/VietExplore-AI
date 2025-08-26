@@ -1,7 +1,7 @@
 // This file is server-side only. Do not import it on the client.
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/server/firebaseAdmin';
-import { User, Permission, rolePermissions } from '@/lib/types/auth';
+import { User, Permission, rolePermissions } from '@/lib/auth-middleware';
 
 export interface AuthResult {
   success: boolean;
@@ -75,7 +75,7 @@ export async function requirePermission(
 
   const userPermissions = rolePermissions[user.role] || [];
   
-  if (!userPermissions.includes(requiredPermission)) {
+  if (!userPermissions.includes(requiredPermission as any)) {
     return {
       success: false,
       error: 'Bạn không có quyền thực hiện hành động này'

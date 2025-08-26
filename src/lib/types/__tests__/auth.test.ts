@@ -1,8 +1,9 @@
+
 /**
  * @jest-environment node
  */
 
-import { hasPermission, ROLE_PERMISSIONS } from '../auth'
+import { hasPermission, rolePermissions } from '../auth'
 import type { User } from '../auth'
 
 describe('Auth Types and Permissions', () => {
@@ -72,37 +73,37 @@ describe('Auth Types and Permissions', () => {
     })
   })
 
-  describe('ROLE_PERMISSIONS mapping', () => {
+  describe('rolePermissions mapping', () => {
     it('should have correct permissions for each role', () => {
-      expect(ROLE_PERMISSIONS.guest).toEqual([])
+      expect(rolePermissions.guest).toEqual([])
       
-      expect(ROLE_PERMISSIONS.traveler).toContain('create_itinerary')
-      expect(ROLE_PERMISSIONS.traveler).toContain('save_places')
-      expect(ROLE_PERMISSIONS.traveler).toContain('report_content')
+      expect(rolePermissions.traveler).toContain('create_itinerary')
+      expect(rolePermissions.traveler).toContain('save_places')
+      expect(rolePermissions.traveler).toContain('report_content')
       
-      expect(ROLE_PERMISSIONS.contributor).toContain('create_place')
-      expect(ROLE_PERMISSIONS.contributor).toContain('manage_drafts')
+      expect(rolePermissions.contributor).toContain('create_place')
+      expect(rolePermissions.contributor).toContain('manage_drafts')
       
-      expect(ROLE_PERMISSIONS.partner).toContain('create_place_priority')
-      expect(ROLE_PERMISSIONS.partner).toContain('fast_review')
+      expect(rolePermissions.partner).toContain('create_place_priority')
+      expect(rolePermissions.partner).toContain('fast_review')
       
-      expect(ROLE_PERMISSIONS.moderator).toContain('review_content')
-      expect(ROLE_PERMISSIONS.moderator).toContain('approve_content')
+      expect(rolePermissions.moderator).toContain('review_content')
+      expect(rolePermissions.moderator).toContain('approve_content')
       
-      expect(ROLE_PERMISSIONS.admin).toEqual(['all_permissions'])
+      expect(rolePermissions.admin).toEqual(['all_permissions'])
     })
 
     it('should maintain role hierarchy in permissions', () => {
       // Contributor should have all traveler permissions plus their own
-      const travelerPerms = ROLE_PERMISSIONS.traveler
-      const contributorPerms = ROLE_PERMISSIONS.contributor
+      const travelerPerms = rolePermissions.traveler
+      const contributorPerms = rolePermissions.contributor
       
       travelerPerms.forEach(perm => {
         expect(contributorPerms).toContain(perm)
       })
 
       // Partner should have contributor-level permissions plus their own
-      const partnerPerms = ROLE_PERMISSIONS.partner
+      const partnerPerms = rolePermissions.partner
       expect(partnerPerms).toContain('create_itinerary')
       expect(partnerPerms).toContain('save_places')
       expect(partnerPerms).toContain('report_content')
@@ -164,5 +165,3 @@ describe('Auth Types and Permissions', () => {
     })
   })
 })
-
-
