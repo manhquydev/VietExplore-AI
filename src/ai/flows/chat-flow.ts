@@ -1,65 +1,64 @@
-/**
- * @fileOverview A travel assistant AI flow that handles conversational chat.
- *
- * - chat - A function that handles the chat conversation.
- * - ChatInput - The input type for the chat function.
- * - ChatOutput - The return type for the chat function.
- */
 
-import { ai } from "@/ai/genkit";
-import { z } from "zod";
-import { Part } from "genkit";
+// src/ai/flows/chat-flow.ts
+import { ai } from '../genkit';
+import { z } from 'zod';
+import { Part } from 'genkit';
 
-// Define the structure for a single message in the chat history
-// Using z.enum ensures type safety for roles.
 const ChatMessageSchema = z.object({
-  role: z.enum(["user", "assistant"]),
+  role: z.enum(['user', 'assistant']),
   content: z.string(),
 });
 
-// Define the input schema for the chat flow
-export const ChatInputSchema = z.object({
-  history: z.array(ChatMessageSchema).optional(),
-  message: z.string(),
+const ChatInputSchema = z.object({
+  message: z.string().min(1),
+  history: z.array(ChatMessageSchema).optional().default([])
 });
-export type ChatInput = z.infer<typeof ChatInputSchema>;
 
-// Define the output schema for the chat flow
-export const ChatOutputSchema = z.object({
-  message: z.string(),
-});
-export type ChatOutput = z.infer<typeof ChatOutputSchema>;
-
-// The main function that will be called from the API route
-export async function chat(input: ChatInput): Promise<ChatOutput> {
-  return chatFlow(input);
-}
-
-// Define the Genkit flow for the chat
-const chatFlow = ai.defineFlow(
+export const chatFlow = ai.defineFlow(
   {
-    name: "chatFlow",
+    name: 'chatFlow',
     inputSchema: ChatInputSchema,
-    outputSchema: ChatOutputSchema,
+    outputSchema: z.string(),
   },
   async (input) => {
-    // Convert the message history from the input schema to the format expected by the model
-    // The role 'assistant' from the frontend corresponds to the 'model' role in the Gemini API.
-    const history: Part[] =
+    try {
+      console.log('Chat flow input:', input);
+      
+      const history: Part[] =
       (input.history ?? []).map((msg) => ({
         role: msg.role === "assistant" ? "model" : "user",
         text: msg.content,
       }));
 
-    history.push({ role: "user", text: input.message });
-
-    const result = await ai.generate({
-      model: 'gemini-pro',
-      history: history,
-      config: {
-        temperature: 0.7,
-      },
-      system: `Bạn là "AI Hướng Dẫn Viên" của Du Lịch Việt, một nền tảng du lịch phi lợi nhuận, đáng tin cậy.
+      history.push({ role: "user", text: input.message });
+      
+      // Thử các model theo thứ tự ưu tiên
+      const modelOptions = [
+        'gemini-2.5-pro',
+        'models/gemini-2.5-pro',
+        'gemini-pro',
+        'models/gemini-pro',
+        'gemini-1.5-pro',
+        'models/gemini-1.5-pro'
+      ];
+      
+      let result;
+      let lastError;
+      
+      for (const modelName of modelOptions) {
+        try {
+          console.log(`🔄 Trying model: ${modelName}`);
+          
+          result = await ai.generate({
+            model: modelName,
+            history: history,
+            config: {
+              temperature: 0.7,
+              maxOutputTokens: 2048,  // Tăng token limit cho Pro model
+              topK: 40,
+              topP: 0.9,
+            },
+             system: `Bạn là "AI Hướng Dẫn Viên" của Du Lịch Việt, một nền tảng du lịch phi lợi nhuận, đáng tin cậy.
       
       **Vai trò của bạn:**
       1.  **Thân thiện và Chuyên nghiệp:** Luôn lịch sự, khuyến khích và sử dụng ngôn ngữ tiếng Việt chuẩn mực, giàu cảm xúc.
@@ -72,10 +71,27 @@ const chatFlow = ai.defineFlow(
       - Khi được hỏi về một địa điểm: "Hội An là một lựa chọn tuyệt vời! Đây là một thành phố cổ kính được UNESCO công nhận, nổi tiếng với những con phố đèn lồng và ẩm thực đặc sắc. Bạn có muốn tôi gợi ý một vài hoạt động không thể bỏ lỡ ở Hội An không?"
       - Khi được hỏi về lịch trình: "Chắc chắn rồi! Để tạo lịch trình tốt nhất cho bạn, bạn có thể cho tôi biết thêm về thời gian chuyến đi, ngân sách dự kiến và sở thích của bạn là gì không? Ví dụ: bạn thích khám phá thiên nhiên, văn hóa hay ẩm thực?"
       `,
-    });
-
-    return {
-      message: result.text,
-    };
+          });
+          
+          console.log(`✅ Success with model: ${modelName}`);
+          break;
+          
+        } catch (error) {
+          console.log(`❌ Failed with model ${modelName}:`, error.message);
+          lastError = error;
+          continue;
+        }
+      }
+      
+      if (!result) {
+        throw new Error(`All models failed. Last error: ${lastError?.message}`);
+      }
+      
+      return result.text();
+      
+    } catch (error) {
+      console.error('Chat flow error:', error);
+      throw error;
+    }
   }
 );
