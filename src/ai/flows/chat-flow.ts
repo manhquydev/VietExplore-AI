@@ -1,23 +1,17 @@
 // src/ai/flows/chat-flow.ts
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { ai } from '../genkit'; // Sử dụng instance đã được khởi tạo bằng Service Account
 import { z } from 'zod';
-
-const ai = genkit({
-  plugins: [
-    googleAI({
-      apiKey: process.env.GOOGLE_AI_API_KEY!,
-    }),
-  ],
-});
 
 const ChatInputSchema = z.object({
   message: z.string().min(1),
   history: z.array(z.object({
     role: z.enum(['user', 'assistant']),
-    content: z.string() // Chú ý: content thay vì text
+    content: z.string()
   })).optional().default([])
 });
+
+// Định nghĩa model Gemini 2.5 Pro cho Vertex AI
+const gemini25Pro = ai.model('gemini-2.5-pro');
 
 export const chatFlow = ai.defineFlow(
   {
@@ -27,60 +21,38 @@ export const chatFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      console.log('🔄 Processing chat with Gemini 2.5 Pro...');
+      console.log('🔄 Processing chat with Vertex AI Gemini 2.5 Pro...');
       
-      const history = input.history || [];
+      const history = (input.history || []).map(item => ({
+        role: item.role,
+        content: [{ text: item.content }]
+      }));
       
-      // Thử các models theo thứ tự ưu tiên (2.5 Pro đầu tiên)
-      const modelOptions = [
-        'gemini-2.5-pro',              // Gemini 2.5 Pro (priority)
-        'gemini-2.5-flash',            // Gemini 2.5 Flash
-        'gemini-2.5-flash-lite',       // Gemini 2.5 Flash Lite
-        'models/gemini-1.5-flash',     // Fallback 1.5 Flash
-        'models/gemini-1.5-flash-8b',  // Fallback 1.5 Flash 8B
-      ];
-      
-      let result;
-      let lastError;
-      
-      for (const modelName of modelOptions) {
-        try {
-          console.log(`🔄 Trying model: ${modelName}`);
-          
-          result = await ai.generate({
-            model: modelName,
-            prompt: [
-              {
-                text: `Lịch sử trò chuyện: ${JSON.stringify(history)}\n\nTin nhắn mới: ${input.message}\n\nHãy trả lời như một hướng dẫn viên du lịch Việt Nam chuyên nghiệp.`
-              }
-            ],
-            config: {
-              temperature: 0.7,
-              maxOutputTokens: 2048,
-              topK: 40,
-              topP: 0.9,
-            }
-          });
-          
-          console.log(`✅ Success with model: ${modelName}`);
-          break;
-          
-        } catch (error) {
-          console.log(`❌ Failed with model ${modelName}:`, error.message);
-          lastError = error;
-          continue;
+      const result = await gemini25Pro.generate({
+        prompt: input.message,
+        history: history,
+        config: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+          topK: 40,
+          topP: 0.9,
         }
-      }
+      });
       
-      if (!result) {
-        throw new Error(`All models failed. Last error: ${lastError?.message}`);
-      }
-      
-      return result.text();
+      const responseText = result.text();
+      console.log('✅ Success with Vertex AI model: gemini-2.5-pro');
+      return responseText;
       
     } catch (error) {
-      console.error('Chat flow error:', error);
-      throw error;
+      console.error('❌ Chat flow error with Vertex AI:', error);
+      // Cung cấp thông báo lỗi chi tiết hơn
+      if (error.message.includes('PERMISSION_DENIED')) {
+        throw new Error('Permission denied. Please check if the Service Account has the "Vertex AI User" role in GCP IAM.');
+      }
+      if (error.message.includes('NOT_FOUND')) {
+        throw new Error(`Model 'gemini-2.5-pro' not found in Vertex AI. Ensure it's enabled in the correct region (asia-southeast1).`);
+      }
+      throw new Error(`An unexpected error occurred with Vertex AI: ${error.message}`);
     }
   }
 );

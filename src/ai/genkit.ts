@@ -1,26 +1,19 @@
 // src/ai/genkit.ts
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { vertexAI } from '@genkit-ai/vertexai';
 
-// Kiểm tra API key với error message rõ ràng
-const apiKey = process.env.GOOGLE_AI_API_KEY;
-
-if (!apiKey) {
-  console.error('❌ Missing GOOGLE_AI_API_KEY environment variable');
-  console.error('📝 Please add GOOGLE_AI_API_KEY to your .env.local file');
-  console.error('🔗 Get your API key at: https://aistudio.google.com/');
-  throw new Error('GOOGLE_AI_API_KEY is required. Please add it to your .env.local file.');
-}
-
-console.log('✅ GOOGLE_AI_API_KEY found, initializing Genkit...');
+// Genkit sẽ tự động sử dụng GOOGLE_APPLICATION_CREDENTIALS
+// khi không có apiKey nào được cung cấp.
+console.log('🚀 Initializing Genkit with Vertex AI (Service Account)...');
 
 export const ai = genkit({
   plugins: [
-    googleAI({
-      apiKey: apiKey,
+    vertexAI({
+      projectId: process.env.FIREBASE_PROJECT_ID || 'vietexplore-ai',
+      location: 'asia-southeast1', // Quan trọng: Phải khớp với region bạn đã enable Vertex AI
     }),
   ],
   enableTracingAndMetrics: process.env.NODE_ENV === 'development',
 });
 
-console.log('🚀 Genkit initialized successfully with Google AI provider');
+console.log('✅ Genkit initialized successfully with Vertex AI.');
