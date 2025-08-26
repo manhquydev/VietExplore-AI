@@ -45,15 +45,17 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     // Convert the message history from the input schema to the format expected by the model
-    const history: Part[] =
+    let history: Part[] =
       input.history?.map((msg) => ({
         role: msg.role as Role,
         text: msg.content,
       })) || [];
 
+    // Add the current user message to the history
+    history.push({ role: "user", text: input.message });
+
     const result = await ai.generate({
       history: history,
-      prompt: input.message,
       config: {
         temperature: 0.7,
       },
