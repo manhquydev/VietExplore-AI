@@ -52,7 +52,6 @@ const chatFlow = ai.defineFlow(
       })) || [];
 
     const result = await ai.generate({
-      model: "gemini-1.5-flash",
       history: history,
       prompt: input.message,
       config: {

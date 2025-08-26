@@ -86,7 +86,7 @@ export default function AIChatPage() {
   }, [messages])
 
   const sendMessage = async (content: string) => {
-    if (!content.trim()) return
+    if (!content.trim() || isLoading) return
 
     const userMessage: Message = {
       id: `msg_${Date.now()}`,
@@ -100,18 +100,28 @@ export default function AIChatPage() {
     setIsLoading(true)
 
     try {
-      const history = messages.map(msg => ({
+      const historyForApi = messages.map(msg => ({
         role: msg.role,
         content: msg.content
       }));
 
-      const chatInput: ChatInput = {
-        history: history,
-        message: content.trim()
-      }
-      
-      const aiResponse = await chat(chatInput);
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          history: historyForApi,
+          message: content.trim()
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const aiResponse = await response.json();
+      
       const aiMessage: Message = {
         id: `msg_${Date.now()}_ai`,
         role: "assistant", 
