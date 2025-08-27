@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/client/api';
 import { User, UserRole } from '@/lib/types/auth';
+import { Place, PlaceFilters } from '@/lib/types/places';
 import { useAuth } from '@/components/auth/auth-provider';
 
 // Hook to fetch admin dashboard statistics
@@ -97,13 +98,17 @@ export function useAdminUsers(filters: {
 
   const changeUserRole = async (userId: string, newRole: UserRole, reason?: string) => {
     try {
+      console.log('Calling API to change role:', { userId, newRole, reason }); // Debug log
       const result = await apiClient.admin.users.changeRole(userId, newRole, reason);
-      if (result.success) {
+      console.log('API response for role change:', result); // Debug log
+      
+      if (result && result.success) {
         await fetchUsers(); // Refresh user list
         return { success: true, message: result.message };
       }
-      return { success: false, error: result.error };
+      return { success: false, error: result?.error || 'Không có phản hồi thành công từ server' };
     } catch (err: any) {
+      console.error('Exception in changeUserRole:', err); // Debug log
       return { success: false, error: err.message || 'Có lỗi xảy ra' };
     }
   };
@@ -210,5 +215,104 @@ export function useModerationQueue(filters: {
     loading,
     error,
     reviewItem
+  };
+}
+
+export function useAdminPlaces(filters: {
+  status?: string;
+  region?: string;
+  type?: string;
+  search?: string;
+  limit?: number;
+} = {}) {
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const fetchPlaces = useCallback(async () => {
+    if (!user || !['moderator', 'admin'].includes(user.role)) {
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await apiClient.admin.places.list(filters);
+      
+      if (result.success && result.data) {
+        setPlaces(result.data);
+      } else {
+        setError(result.error || 'Không thể tải danh sách địa điểm');
+      }
+    } catch (err) {
+      setError('Có lỗi xảy ra khi tải dữ liệu');
+      console.error('Error fetching admin places:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [JSON.stringify(filters), user]);
+
+  useEffect(() => {
+    fetchPlaces();
+  }, [fetchPlaces]);
+
+  const updatePlaceStatus = async (placeId: string, newStatus: string) => {
+    try {
+      const result = await apiClient.admin.places.updateStatus(placeId, newStatus);
+      
+      if (result && result.success) {
+        await fetchPlaces(); // Refresh places list
+        return { success: true, message: result.message || 'Đã cập nhật trạng thái thành công' };
+      } else {
+        return { success: false, error: result?.error || 'Không thể cập nhật trạng thái' };
+      }
+    } catch (err: any) {
+      console.error('Update place status error:', err);
+      return { success: false, error: err.message || 'Có lỗi xảy ra khi cập nhật trạng thái' };
+    }
+  };
+
+  const deletePlace = async (placeId: string) => {
+    try {
+      const result = await apiClient.admin.places.delete(placeId);
+      
+      if (result && result.success) {
+        await fetchPlaces(); // Refresh places list
+        return { success: true, message: result.message || 'Đã xóa địa điểm thành công' };
+      } else {
+        return { success: false, error: result?.error || 'Không thể xóa địa điểm' };
+      }
+    } catch (err: any) {
+      console.error('Delete place error:', err);
+      return { success: false, error: err.message || 'Có lỗi xảy ra khi xóa địa điểm' };
+    }
+  };
+
+  const deleteAllPlaces = async () => {
+    try {
+      const result = await apiClient.admin.places.deleteAll();
+      
+      if (result && result.success) {
+        await fetchPlaces(); // Refresh places list
+        return { success: true, message: result.message || 'Đã xóa tất cả địa điểm thành công' };
+      } else {
+        return { success: false, error: result?.error || 'Không thể xóa tất cả địa điểm' };
+      }
+    } catch (err: any) {
+      console.error('Delete all places error:', err);
+      return { success: false, error: err.message || 'Có lỗi xảy ra khi xóa tất cả địa điểm' };
+    }
+  };
+
+  return {
+    places,
+    loading,
+    error,
+    updatePlaceStatus,
+    deletePlace,
+    deleteAllPlaces
   };
 }

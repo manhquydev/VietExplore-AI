@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching places:', error);
     return NextResponse.json(
-      { error: 'Không thể tải danh sách địa điểm' },
+      { success: false, error: 'Không thể tải danh sách địa điểm' },
       { status: 500 }
     );
   }
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user) {
       return NextResponse.json(
-        { error: 'Bạn cần đăng nhập để tạo địa điểm' },
+        { success: false, error: 'Bạn cần đăng nhập để tạo địa điểm' },
         { status: 401 }
       );
     }
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     // Check permissions - only allow contributor, partner, or admin roles to create places
     if (!['contributor', 'partner', 'admin'].includes(user.role)) {
       return NextResponse.json(
-        { error: 'Bạn không có quyền tạo địa điểm' },
+        { success: false, error: 'Bạn không có quyền tạo địa điểm' },
         { status: 403 }
       );
     }
@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
     let trustLabel: Place['trustLabel'] = 'community';
     if (user.role === 'contributor') trustLabel = 'contributor';
     if (user.role === 'partner') trustLabel = 'partner';
+    if (user.role === 'admin') trustLabel = 'verified'; // Admin gets special verified label
 
     // Create place document
     const placeData: Omit<Place, 'id'> = {
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         partnerName: user.role === 'partner' ? user.fullName : undefined
       },
-      status: user.role === 'partner' ? 'published' : 'submitted', // Partners get fast-track
+      status: user.role === 'admin' ? 'published' : 'submitted', // Only admin gets auto-published
       rating: {
         average: 0,
         count: 0,
@@ -178,7 +179,7 @@ export async function POST(request: NextRequest) {
       tags: formData.tags,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      publishedAt: user.role === 'partner' ? new Date().toISOString() : undefined,
+      publishedAt: user.role === 'admin' ? new Date().toISOString() : undefined,
       createdBy: user.id,
       viewCount: 0,
       likeCount: 0,
@@ -188,9 +189,10 @@ export async function POST(request: NextRequest) {
 
     const docRef = await adminDb.collection('places').add(placeData);
 
-    // Add to moderation queue if not a partner (partners get fast-track approval)
-    if (user.role !== 'partner') {
+    // Add to moderation queue if not admin (admin gets auto-published)
+    if (user.role !== 'admin') {
       const priorityMap = {
+        'partner': 4,
         'contributor': 3,
         'traveler': 2,
         'guest': 1
@@ -203,13 +205,29 @@ export async function POST(request: NextRequest) {
         submittedAt: new Date().toISOString(),
         status: 'pending',
         priority: priorityMap[user.role] || 1,
+        queueType: user.role === 'partner' ? 'partner_queue' : 'contributor_queue', // Separate queues
         metadata: {
           title: formData.name,
           type: formData.type,
           region: formData.region,
           province: formData.province,
           hasImages: (formData.images?.length || 0) > 0,
-          hasCoordinates: !!(formData.coordinates?.lat && formData.coordinates?.lng)
+          hasCoordinates: !!(formData.coordinates?.lat && formData.coordinates?.lng),
+          submitterRole: user.role
+        },
+        submitter: {
+          id: user.id,
+          fullName: user.fullName || user.email,
+          role: user.role,
+          email: user.email
+        },
+        contentDetails: {
+          name: formData.name,
+          shortDescription: formData.shortDescription,
+          description: formData.description,
+          type: formData.type,
+          region: formData.region,
+          province: formData.province
         }
       });
     }
@@ -226,15 +244,17 @@ export async function POST(request: NextRequest) {
         id: docRef.id,
         ...placeData
       },
-      message: user.role === 'partner' 
-        ? 'Địa điểm đã được tạo và xuất bản thành công'
-        : 'Địa điểm đã được gửi để kiểm duyệt. Chúng tôi sẽ xem xét trong vòng 24-48 giờ.'
+      message: user.role === 'admin' 
+        ? 'Địa điểm đã được tạo và xuất bản thành công với nhãn "Xác thực đặc biệt"'
+        : user.role === 'partner'
+        ? 'Địa điểm đã được gửi vào hàng đợi kiểm duyệt ưu tiên dành cho Partner. Thời gian xử lý: 12-24 giờ.'
+        : 'Địa điểm đã được gửi để kiểm duyệt. Thời gian xử lý: 24-48 giờ.'
     });
 
   } catch (error) {
     console.error('Error creating place:', error);
     return NextResponse.json(
-      { error: 'Không thể tạo địa điểm' },
+      { success: false, error: 'Không thể tạo địa điểm' },
       { status: 500 }
     );
   }

@@ -7,7 +7,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 // PUT /api/admin/users/[userId]/role - Change user role (Admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -23,6 +23,7 @@ export async function PUT(
 
     const admin = authResult.user;
     const { newRole, reason } = await request.json();
+    const { userId } = await params;
 
     // Validate new role
     const validRoles: UserRole[] = ['traveler', 'contributor', 'partner', 'moderator', 'admin'];
@@ -34,7 +35,7 @@ export async function PUT(
     }
 
     // Get target user
-    const userDoc = await adminDb.collection('users').doc(params.userId).get();
+    const userDoc = await adminDb.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json(
         { error: 'Người dùng không tồn tại' },
@@ -52,7 +53,7 @@ export async function PUT(
       );
     }
 
-    if (params.userId === admin.id) {
+    if (userId === admin.id) {
       return NextResponse.json(
         { error: 'Bạn không thể thay đổi vai trò của chính mình' },
         { status: 400 }
@@ -60,7 +61,7 @@ export async function PUT(
     }
     
     // Set custom claims for role-based access control
-    await adminAuth.setCustomUserClaims(params.userId, { role: newRole });
+    await adminAuth.setCustomUserClaims(userId, { role: newRole });
 
     const now = new Date().toISOString();
     const roleHistoryEntry = {
@@ -71,7 +72,7 @@ export async function PUT(
       reason: reason || 'Được admin thay đổi'
     };
 
-    await adminDb.collection('users').doc(params.userId).update({
+    await adminDb.collection('users').doc(userId).update({
       role: newRole,
       updatedAt: now,
       roleHistory: FieldValue.arrayUnion(roleHistoryEntry)
@@ -81,7 +82,7 @@ export async function PUT(
       type: 'role_change',
       adminId: admin.id,
       adminName: admin.fullName || admin.email,
-      targetUserId: params.userId,
+      targetUserId: userId,
       targetUserName: userData?.fullName || userData?.email,
       action: `Changed role from ${currentRole} to ${newRole}`,
       reason,
@@ -92,7 +93,7 @@ export async function PUT(
       success: true,
       message: `Đã thay đổi vai trò từ ${currentRole} thành ${newRole}`,
       data: {
-        userId: params.userId,
+        userId: userId,
         previousRole: currentRole,
         newRole,
         changedBy: admin.fullName,

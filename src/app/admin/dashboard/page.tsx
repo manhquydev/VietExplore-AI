@@ -11,9 +11,9 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/components/auth/auth-provider"
-import { useAdminUsers, useModerationQueue, useAdminStats } from "@/hooks/use-admin"
+import { useAdminUsers, useModerationQueue, useAdminStats, useAdminPlaces } from "@/hooks/use-admin"
 import { UserRole } from "@/lib/types/auth"
-import { Users, MapPin, FileText, AlertTriangle, Shield, Settings, MoreHorizontal, UserCheck, UserX, KeyRound, Clock } from "lucide-react"
+import { Users, MapPin, FileText, AlertTriangle, Shield, Settings, MoreHorizontal, UserCheck, UserX, KeyRound, Clock, TrendingUp, Eye, Heart, Star } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/providers/toast-provider"
@@ -78,36 +78,36 @@ export default function AdminDashboardPage() {
           <StatsCard
             title="Tổng người dùng"
             value={statsLoading ? '...' : stats.totalUsers.toLocaleString()}
-            icon={<Users className="h-6 w-6" />}
+            icon={<Users className="h-5 w-5 stroke-1" />}
             color="blue"
           />
           <StatsCard
             title="Địa điểm"
             value={statsLoading ? '...' : stats.totalPlaces.toLocaleString()}
-            icon={<MapPin className="h-6 w-6" />}
+            icon={<MapPin className="h-5 w-5 stroke-1" />}
             color="green"
           />
           <StatsCard
             title="Chờ duyệt"
             value={statsLoading ? '...' : stats.pendingModeration.toLocaleString()}
-            icon={<Clock className="h-6 w-6" />}
+            icon={<Clock className="h-5 w-5 stroke-1" />}
             color="yellow"
           />
           <StatsCard
-            title="Báo cáo"
+            title="Cần xử lý"
             value={statsLoading ? '...' : stats.openReports.toLocaleString()}
-            icon={<AlertTriangle className="h-6 w-6" />}
+            icon={<TrendingUp className="h-5 w-5 stroke-1" />}
             color="red"
           />
         </div>
 
         {/* Main Content */}
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">Người dùng</TabsTrigger>
-            <TabsTrigger value="moderation">Kiểm duyệt</TabsTrigger>
-            <TabsTrigger value="content">Nội dung</TabsTrigger>
-            <TabsTrigger value="settings">Cài đặt</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-gray-50 p-1 rounded-lg border-0">
+            <TabsTrigger value="users" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Người dùng</TabsTrigger>
+            <TabsTrigger value="moderation" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Kiểm duyệt</TabsTrigger>
+            <TabsTrigger value="content" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Nội dung</TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Cài đặt</TabsTrigger>
           </TabsList>
           
           <TabsContent value="users" className="space-y-6">
@@ -145,30 +145,30 @@ function StatsCard({
   color: 'blue' | 'green' | 'yellow' | 'red'
 }) {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-100',
-    green: 'text-green-600 bg-green-100',
-    yellow: 'text-yellow-600 bg-yellow-100',
-    red: 'text-red-600 bg-red-100'
+    blue: 'text-blue-600 bg-blue-50 border-blue-200',
+    green: 'text-green-600 bg-green-50 border-green-200',
+    yellow: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+    red: 'text-red-600 bg-red-50 border-red-200'
   }
 
   return (
-    <Card>
+    <Card className="border-0 shadow-sm">
       <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-600 mb-1">
               {title}
             </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900">
               {value}
-          </p>
-        </div>
-          <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+            </p>
+          </div>
+          <div className={`p-3 rounded-lg border ${colorClasses[color]}`}>
             {icon}
           </div>
-      </div>
-          </CardContent>
-        </Card>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -183,20 +183,34 @@ function UserManagement() {
   })
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    const result = await changeUserRole(userId, newRole, 'Thay đổi bởi admin')
-    if (result.success) {
-      toast({ title: "Thành công", description: result.message })
-    } else {
-      toast({ title: "Lỗi", description: result.error, variant: "destructive" })
+    try {
+      const result = await changeUserRole(userId, newRole, 'Thay đổi bởi admin')
+      console.log('Role change result:', result); // Debug log
+      
+      // Check if result is valid and has expected structure
+      if (result && typeof result === 'object') {
+        if (result.success) {
+          toast.success(result.message || 'Thay đổi quyền thành công', { title: "Thành công" })
+        } else {
+          toast.error(result.error || 'Có lỗi xảy ra khi thay đổi quyền', { title: "Lỗi" })
+        }
+      } else {
+        // Handle case where result is undefined/null or has unexpected format
+        console.error('Unexpected result format:', result);
+        toast.error('Phản hồi từ server không đúng định dạng', { title: "Lỗi" })
+      }
+    } catch (error) {
+      console.error('Role change error:', error);
+      toast.error('Có lỗi xảy ra khi thay đổi quyền', { title: "Lỗi" })
     }
   }
 
   const handlePasswordReset = async (email: string) => {
     const result = await sendPasswordReset(email)
-    if (result.success) {
-      toast({ title: "Thành công", description: `Email đặt lại mật khẩu đã được gửi đến ${email}` })
+    if (result && result.success) {
+      toast.success(`Email đặt lại mật khẩu đã được gửi đến ${email}`, { title: "Thành công" })
     } else {
-      toast({ title: "Lỗi", description: result.error, variant: "destructive" })
+      toast.error(result?.error || 'Có lỗi xảy ra', { title: "Lỗi" })
     }
   }
   
@@ -205,112 +219,137 @@ function UserManagement() {
     if (!confirm(`Bạn có chắc muốn ${action} tài khoản này?`)) return
     
     const result = await toggleUserStatus(userId, disabled)
-    if (result.success) {
-      toast({ title: "Thành công", description: result.message })
+    if (result && result.success) {
+      toast.success(result.message || `Đã ${action} tài khoản thành công`, { title: "Thành công" })
     } else {
-      toast({ title: "Lỗi", description: result.error, variant: "destructive" })
+      toast.error(result?.error || 'Có lỗi xảy ra', { title: "Lỗi" })
     }
   }
 
   return (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-              Quản lý người dùng
-            </CardTitle>
-          </CardHeader>
+    <div className="space-y-6">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <Shield className="h-5 w-5 stroke-1" />
+            Quản lý người dùng
+            <span className="ml-2 text-sm font-normal text-gray-500">({users.length} người dùng)</span>
+          </CardTitle>
+        </CardHeader>
           <CardContent>
-        <div className="flex gap-4 mb-6">
-          <Input
-            placeholder="Tìm kiếm người dùng..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Lọc theo vai trò" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="traveler">Traveler</SelectItem>
-              <SelectItem value="contributor">Contributor</SelectItem>
-              <SelectItem value="partner">Partner</SelectItem>
-              <SelectItem value="moderator">Moderator</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
+            <Input
+              placeholder="Tìm theo tên, email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Vai trò</label>
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả vai trò</SelectItem>
+                <SelectItem value="traveler">Traveler</SelectItem>
+                <SelectItem value="contributor">Contributor</SelectItem>
+                <SelectItem value="partner">Partner</SelectItem>
+                <SelectItem value="moderator">Moderator</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {loading ? (
-          <div className="text-center py-8">Đang tải...</div>
+          <div className="flex items-center justify-center py-16">
+            <LoadingSpinner size="lg" />
+            <span className="ml-3 text-gray-600">Đang tải danh sách người dùng...</span>
+          </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-600">{error}</div>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-medium mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Thử lại
+            </Button>
+          </div>
         ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
             {users.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium">{getInitials(user.fullName, user.email)}</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">{user.fullName || 'N/A'}</p>
-                    <p className="text-sm text-gray-600">{user.email}</p>
-                    {user.disabled && <Badge variant="destructive" className="mt-1">Vô hiệu hóa</Badge>}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Select 
-                    value={user.role} 
-                    onValueChange={(newRole: UserRole) => handleRoleChange(user.id, newRole)}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="traveler">Traveler</SelectItem>
-                      <SelectItem value="contributor">Contributor</SelectItem>
-                      <SelectItem value="partner">Partner</SelectItem>
-                      <SelectItem value="moderator">Moderator</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4"/>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => handlePasswordReset(user.email)}>
-                        <KeyRound className="w-4 h-4 mr-2" />
-                        Reset Mật khẩu
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, !user.disabled)}>
-                        {user.disabled ? (
-                          <>
-                            <UserCheck className="w-4 h-4 mr-2" />
-                            Kích hoạt
-                          </>
-                        ) : (
-                          <>
-                            <UserX className="w-4 h-4 mr-2" />
+              <div key={user.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      <span className="text-sm">{getInitials(user.fullName, user.email)}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <p className="font-semibold text-gray-900">{user.fullName || 'Chưa cập nhật'}</p>
+                        {user.disabled && (
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-50 text-red-700 border border-red-200">
                             Vô hiệu hóa
-                          </>
+                          </span>
                         )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      </div>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <span>Tham gia: {new Date(user.createdAt).toLocaleDateString('vi-VN')}</span>
+                        {user.stats && (
+                          <span>{user.stats.placesContributed || 0} đóng góp</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <Select 
+                        value={user.role} 
+                        onValueChange={(newRole: UserRole) => handleRoleChange(user.id, newRole)}
+                      >
+                        <SelectTrigger className="w-36">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="traveler">Traveler</SelectItem>
+                          <SelectItem value="contributor">Contributor</SelectItem>
+                          <SelectItem value="partner">Partner</SelectItem>
+                          <SelectItem value="moderator">Moderator</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          Hành động
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handlePasswordReset(user.email)}>
+                          Reset mật khẩu
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggleStatus(user.id, !user.disabled)}>
+                          {user.disabled ? 'Kích hoạt tài khoản' : 'Vô hiệu hóa tài khoản'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
             </div>
         )}
           </CardContent>
         </Card>
+      </div>
   )
 }
 
@@ -325,10 +364,10 @@ function ModerationManagement() {
     notes?: string
   ) => {
     const result = await reviewItem(itemId, action, notes)
-    if (result.success) {
+    if (result && result.success) {
       toast.success('Đã xử lý thành công!')
     } else {
-      toast.error(`Lỗi: ${result.error}`)
+      toast.error(`Lỗi: ${result?.error || 'Có lỗi xảy ra'}`)
     }
   }
 
@@ -353,13 +392,15 @@ function ModerationManagement() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Hàng đợi kiểm duyệt
-          </CardTitle>
+    <div className="space-y-6">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <FileText className="h-5 w-5 stroke-1" />
+              Hàng đợi kiểm duyệt
+              <span className="ml-2 text-sm font-normal text-gray-500">({items.length} mục)</span>
+            </CardTitle>
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Lọc theo trạng thái" />
@@ -371,8 +412,8 @@ function ModerationManagement() {
               <SelectItem value="escalated">Chuyển lên</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </CardHeader>
+          </div>
+        </CardHeader>
       <CardContent>
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -493,42 +534,375 @@ function ModerationManagement() {
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   )
 }
 
 function ContentManagement() {
+  const { toast } = useToast()
+  const [selectedStatus, setSelectedStatus] = React.useState<string>('published')
+  const [selectedRegion, setSelectedRegion] = React.useState<string>('all')
+  const [selectedType, setSelectedType] = React.useState<string>('all')
+  const [searchTerm, setSearchTerm] = React.useState('')
+  const [showBulkActions, setShowBulkActions] = React.useState(false)
+  
+  const { places, loading, error, updatePlaceStatus, deletePlace, deleteAllPlaces } = useAdminPlaces({
+    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+    region: selectedRegion !== 'all' ? selectedRegion : undefined,
+    type: selectedType !== 'all' ? selectedType : undefined,
+    search: searchTerm || undefined
+  })
+
+  const handleStatusChange = async (placeId: string, newStatus: string) => {
+    if (!confirm(`Bạn có chắc muốn thay đổi trạng thái địa điểm này thành "${newStatus}"?`)) return
+    
+    try {
+      const result = await updatePlaceStatus(placeId, newStatus)
+      if (result && result.success) {
+        toast.success(result.message || 'Đã cập nhật trạng thái thành công', { title: "Thành công" })
+      } else {
+        toast.error(result?.error || 'Có lỗi xảy ra khi cập nhật trạng thái', { title: "Lỗi" })
+      }
+    } catch (error: any) {
+      console.error('Error updating place status:', error)
+      toast.error('Có lỗi không xác định xảy ra', { title: "Lỗi" })
+    }
+  }
+
+  const handleDeletePlace = async (placeId: string, placeName: string) => {
+    if (!confirm(`Bạn có chắc muốn XÓA VĨNH VIỄN địa điểm "${placeName}"?\n\nHành động này KHÔNG THỂ HOÀN TÁC!`)) return
+    
+    try {
+      const result = await deletePlace(placeId)
+      if (result && result.success) {
+        toast.success(result.message || 'Đã xóa địa điểm thành công', { title: "Thành công" })
+      } else {
+        toast.error(result?.error || 'Có lỗi xảy ra khi xóa địa điểm', { title: "Lỗi" })
+      }
+    } catch (error: any) {
+      console.error('Error deleting place:', error)
+      toast.error('Có lỗi không xác định xảy ra', { title: "Lỗi" })
+    }
+  }
+
+  const handleDeleteAllPlaces = async () => {
+    if (!confirm(`Bạn có chắc muốn XÓA TẤT CẢ ${places.length} địa điểm?\n\nHành động này KHÔNG THỂ HOÀN TÁC!`)) return
+    if (!confirm(`XÁC NHẬN LẦN CUỐI: Bạn thực sự muốn xóa tất cả địa điểm?`)) return
+    
+    try {
+      const result = await deleteAllPlaces()
+      if (result && result.success) {
+        toast.success(result.message || 'Đã xóa tất cả địa điểm thành công', { title: "Thành công" })
+      } else {
+        toast.error(result?.error || 'Có lỗi xảy ra khi xóa tất cả địa điểm', { title: "Lỗi" })
+      }
+    } catch (error: any) {
+      console.error('Error deleting all places:', error)
+      toast.error('Có lỗi không xác định xảy ra', { title: "Lỗi" })
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch {
+      return 'N/A'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published': return 'bg-green-50 text-green-700 border-green-200'
+      case 'draft': return 'bg-gray-50 text-gray-700 border-gray-200'
+      case 'submitted': return 'bg-blue-50 text-blue-700 border-blue-200'
+      case 'in_review': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+      case 'hidden': return 'bg-red-50 text-red-700 border-red-200'
+      default: return 'bg-gray-50 text-gray-700 border-gray-200'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'published': return 'Đã xuất bản'
+      case 'draft': return 'Bản nháp'
+      case 'submitted': return 'Đã gửi'
+      case 'in_review': return 'Đang duyệt'
+      case 'hidden': return 'Ẩn'
+      default: return status
+    }
+  }
+
+  const getRegionText = (region: string) => {
+    switch (region) {
+      case 'bac-bo': return 'Miền Bắc'
+      case 'trung-bo': return 'Miền Trung'
+      case 'nam-bo': return 'Miền Nam'
+      default: return region
+    }
+  }
+
+  const getTypeText = (type: string) => {
+    switch (type) {
+      case 'bien': return 'Biển'
+      case 'nui': return 'Núi'
+      case 'van-hoa': return 'Văn hóa'
+      case 'am-thuc': return 'Ẩm thực'
+      case 'check-in': return 'Check-in'
+      default: return type
+    }
+  }
+
   return (
+    <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          Quản lý nội dung
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-        <div className="text-center py-8 text-gray-600">
-          Chức năng quản lý nội dung sẽ được triển khai trong giai đoạn tiếp theo
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-semibold text-gray-900">
+              Quản lý địa điểm
+              <span className="ml-2 text-sm font-normal text-gray-500">({places.length} địa điểm)</span>
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowBulkActions(!showBulkActions)}
+              >
+                Hành động hàng loạt
+              </Button>
+            </div>
           </div>
+          
+          {showBulkActions && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h4 className="font-medium text-red-900 mb-2">Hành động nguy hiểm</h4>
+              <p className="text-sm text-red-700 mb-3">Các hành động này không thể hoàn tác. Hãy cẩn thận!</p>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleDeleteAllPlaces}
+                disabled={places.length === 0}
+              >
+                Xóa tất cả địa điểm ({places.length})
+              </Button>
+            </div>
+          )}
+        </CardHeader>
+        
+        <CardContent>
+          {/* Filter Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
+              <Input
+                placeholder="Tìm theo tên, mô tả..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Trạng thái</label>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="published">Đã xuất bản</SelectItem>
+                  <SelectItem value="draft">Bản nháp</SelectItem>
+                  <SelectItem value="submitted">Đã gửi</SelectItem>
+                  <SelectItem value="in_review">Đang duyệt</SelectItem>
+                  <SelectItem value="hidden">Ẩn</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Miền</label>
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="bac-bo">Miền Bắc</SelectItem>
+                  <SelectItem value="trung-bo">Miền Trung</SelectItem>
+                  <SelectItem value="nam-bo">Miền Nam</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Loại</label>
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="bien">Biển</SelectItem>
+                  <SelectItem value="nui">Núi</SelectItem>
+                  <SelectItem value="van-hoa">Văn hóa</SelectItem>
+                  <SelectItem value="am-thuc">Ẩm thực</SelectItem>
+                  <SelectItem value="check-in">Check-in</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Content */}
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <LoadingSpinner size="lg" />
+              <span className="ml-3 text-gray-600">Đang tải danh sách địa điểm...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+              </div>
+              <p className="text-red-600 font-medium mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Thử lại
+              </Button>
+            </div>
+          ) : places.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+                <MapPin className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-gray-600">Không có địa điểm nào phù hợp với bộ lọc</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {places.map((place) => (
+                <div key={place.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg text-gray-900 truncate">{place.name}</h3>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(place.status)}`}>
+                              {getStatusText(place.status)}
+                            </span>
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200 capitalize">
+                              {place.trustLabel}
+                            </span>
+                          </div>
+                          
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                            {place.shortDescription}
+                          </p>
+                          
+                          <div className="flex items-center gap-6 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <span className="font-medium">Miền:</span> {getRegionText(place.region)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="font-medium">Tỉnh:</span> {place.province}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="font-medium">Loại:</span> {getTypeText(place.type)}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-6 text-xs text-gray-500 mt-2">
+                            <span>{place.viewCount || 0} lượt xem</span>
+                            <span>{place.likeCount || 0} thích</span>
+                            <span>{place.rating?.average || 0}/5 ({place.rating?.count || 0} đánh giá)</span>
+                            <span>Tạo: {formatDate(place.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 ml-4">
+                      <Link href={`/places/${place.slug}`} target="_blank">
+                        <Button size="sm" variant="outline">
+                          Xem chi tiết
+                        </Button>
+                      </Link>
+                      
+                      {place.status !== 'published' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleStatusChange(place.id, 'published')}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Xuất bản
+                        </Button>
+                      )}
+                      
+                      {place.status === 'published' && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleStatusChange(place.id, 'hidden')}
+                        >
+                          Ẩn
+                        </Button>
+                      )}
+                      
+                      {place.status === 'hidden' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleStatusChange(place.id, 'published')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Hiển thị
+                        </Button>
+                      )}
+                      
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => handleDeletePlace(place.id, place.name)}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
+    </div>
   )
 }
 
 function SystemSettings() {
   return (
-    <Card>
-        <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          Cài đặt hệ thống
+    <div className="space-y-6">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <Settings className="h-5 w-5 stroke-1" />
+            Cài đặt hệ thống
           </CardTitle>
         </CardHeader>
         <CardContent>
-        <div className="text-center py-8 text-gray-600">
-          Cài đặt hệ thống sẽ được triển khai trong giai đoạn tiếp theo
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-50 flex items-center justify-center">
+              <Settings className="h-8 w-8 text-blue-500" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Cài đặt hệ thống</h3>
+            <p className="text-gray-600 max-w-md mx-auto">
+              Các tùy chọn cài đặt nâng cao và quản lý hệ thống sẽ được bổ sung trong các phiên bản tiếp theo.
+            </p>
           </div>
         </CardContent>
       </Card>
+    </div>
   )
 }

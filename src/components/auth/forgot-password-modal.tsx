@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
+import { useAuth } from "@/hooks/useAuth"
 
 interface ForgotPasswordModalProps {
   isOpen: boolean
@@ -19,6 +20,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   onClose,
   onBackToLogin,
 }) => {
+  const { resetPassword } = useAuth()
   const [email, setEmail] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const [isSuccess, setIsSuccess] = React.useState(false)
@@ -41,14 +43,15 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     setError("")
 
     try {
-      // TODO: Implement actual forgot password logic
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      console.log("Forgot password email sent to:", email)
-      setIsSuccess(true)
-    } catch (error) {
+      const success = await resetPassword(email)
+      if (success) {
+        setIsSuccess(true)
+      } else {
+        setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+      }
+    } catch (error: any) {
       console.error('Forgot password error:', error)
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+      setError(error.message || "Đã có lỗi xảy ra. Vui lòng thử lại.")
     } finally {
       setIsLoading(false)
     }

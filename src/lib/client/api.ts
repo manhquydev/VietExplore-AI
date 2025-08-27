@@ -49,22 +49,32 @@ async function callApi<T>(
     
     // Handle different types of errors
     if (error?.name === 'TypeError' && error?.message === 'Failed to fetch') {
-      throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối internet.');
+      return {
+        success: false,
+        error: 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối internet.'
+      };
     }
     
     if (error?.code === 'auth/token-expired') {
-      throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      return {
+        success: false,
+        error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+      };
     }
     
-    let errorData;
-    try {
-      errorData = error;
-    } catch (e) {
-      errorData = { error: 'Có lỗi không xác định xảy ra.' };
+    // If error already has the right format, return it
+    if (error && typeof error === 'object' && ('error' in error || 'success' in error)) {
+      return {
+        success: false,
+        error: error.error || error.message || 'Yêu cầu API thất bại'
+      };
     }
     
-    const errorMessage = errorData.error || errorData.message || `Yêu cầu API thất bại`;
-    throw new Error(errorMessage);
+    // Fallback error handling
+    return {
+      success: false,
+      error: error?.message || 'Có lỗi không xác định xảy ra.'
+    };
   }
 }
 
@@ -100,6 +110,49 @@ export const apiClient = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+    // Draft system
+    drafts: {
+      list: () => callApi('/places/drafts'),
+      create: (data: PlaceFormData) => callApi('/places/drafts', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+      update: (draftId: string, data: PlaceFormData) => callApi(`/places/drafts/${draftId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+      delete: (draftId: string) => callApi(`/places/drafts/${draftId}`, {
+        method: 'DELETE',
+      }),
+      submit: (draftId: string) => callApi(`/places/drafts/${draftId}/submit`, {
+        method: 'POST',
+      }),
+    },
+    // Reports and suggestions
+    report: (placeId: string, reportData: any) => callApi(`/places/${placeId}/reports`, {
+      method: 'POST',
+      body: JSON.stringify(reportData),
+    }),
+    suggest: (placeId: string, suggestionData: any) => callApi(`/places/${placeId}/suggestions`, {
+      method: 'POST',
+      body: JSON.stringify(suggestionData),
+    }),
+    // Reviews
+    reviews: {
+      list: (placeId: string, params: any = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            searchParams.append(key, value.toString());
+          }
+        });
+        return callApi(`/places/${placeId}/reviews?${searchParams.toString()}`);
+      },
+      create: (placeId: string, reviewData: any) => callApi(`/places/${placeId}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify(reviewData),
+      }),
+    },
   },
   admin: {
     users: {
@@ -123,6 +176,27 @@ export const apiClient = {
       toggleUserStatus: (userId: string, disabled: boolean) => callApi(`/admin/users/${userId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ disabled }),
+      }),
+    },
+    places: {
+      list: (filters: { status?: string; region?: string; type?: string; search?: string; limit?: number; } = {}) => {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, value.toString());
+          }
+        });
+        return callApi(`/admin/places?${params.toString()}`);
+      },
+      updateStatus: (placeId: string, newStatus: string) => callApi(`/admin/places/${placeId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: newStatus }),
+      }),
+      delete: (placeId: string) => callApi(`/admin/places/${placeId}`, {
+        method: 'DELETE',
+      }),
+      deleteAll: () => callApi('/admin/places/bulk/delete-all', {
+        method: 'DELETE',
       }),
     },
   },

@@ -19,12 +19,13 @@ import {
   User, 
   ArrowRight
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { register, isAuthenticated } = useAuth()
+  const { user, loading, registerWithEmail, loginWithGoogle } = useAuth()
+  const isAuthenticated = !!user
   
   const [formData, setFormData] = React.useState({
     fullName: "",
@@ -85,18 +86,21 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      await register({
-        fullName: formData.fullName,
+      const success = await registerWithEmail({
         email: formData.email,
         password: formData.password,
-        agreeToTerms: formData.agreeToTerms,
-        subscribeNewsletter: formData.subscribeNewsletter,
+        confirmPassword: formData.confirmPassword,
+        displayName: formData.fullName,
       })
       
-      router.push('/')
-    } catch (error) {
+      if (success) {
+        router.push('/')
+      } else {
+        setErrors({ general: "Đăng ký thất bại" })
+      }
+    } catch (error: any) {
       console.error('Registration error:', error)
-      setErrors({ general: "Đã có lỗi xảy ra. Vui lòng thử lại." })
+      setErrors({ general: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại." })
     } finally {
       setIsLoading(false)
     }
@@ -109,9 +113,18 @@ export default function RegisterPage() {
     }
   }
 
-  const handleGoogleRegister = () => {
-    // Placeholder for Google OAuth implementation
-    console.log("Google register initiated")
+  const handleGoogleRegister = async () => {
+    setIsLoading(true)
+    try {
+      const success = await loginWithGoogle()
+      if (success) {
+        router.push('/')
+      }
+    } catch (error: any) {
+      setErrors({ general: error.message || "Đăng ký Google thất bại" })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

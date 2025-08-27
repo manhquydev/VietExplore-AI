@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getAdminAuth, getAdminDb } from '@/lib/server/firebaseAdmin';
+import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { User } from '@/lib/types/auth';
+
+export async function POST(request: NextRequest) {
+  try {
+    const adminAuth = getAdminAuth();
+    const adminDb = getAdminDb();
+
+    // Verify the user is authenticated
+    const authResult = await verifyAuthToken(request);
+    
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const uid = authResult.user!.uid;
+    
+    // Get user from Firebase Auth
+    const userRecord = await adminAuth.getUser(uid);
+    
+    // Check if user document already exists
+    const userDoc = await adminDb.collection('users').doc(uid).get();
+    if (userDoc.exists) {
+      return NextResponse.json({
+        success: true,
+        message: 'User document already exists'
+      });
+    }
+
+    // Create user document
+    const username = userRecord.email?.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+
+    const userData: Omit<User, 'id'> = {
+      email: userRecord.email!,
+      fullName: userRecord.displayName || userRecord.email?.split('@')[0] || 'User',
+      username,
+      role: 'traveler',
+      verified: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      stats: {
+        placesContributed: 0,
+        itinerariesCreated: 0,
+        helpfulVotes: 0
+      }
+    };
+
+    await adminDb.collection('users').doc(uid).set(userData);
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: uid,
+        ...userData
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Create missing user error:', error);
+    
+    return NextResponse.json(
+      { error: 'Failed to create user document' },
+      { status: 500 }
+    );
+  }
+}

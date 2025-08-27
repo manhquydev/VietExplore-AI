@@ -17,13 +17,14 @@ import {
   Lock, 
   ArrowRight
 } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 import { TEST_CREDENTIALS } from "@/lib/mock-data"
 
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, isAuthenticated } = useAuth()
+  const { user, loading, loginWithEmail, loginWithGoogle } = useAuth()
+  const isAuthenticated = !!user
   
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -46,8 +47,12 @@ export default function LoginPage() {
     setError("")
 
     try {
-      await login(email, password)
-      router.push(redirectUrl)
+      const success = await loginWithEmail({ email, password })
+      if (success) {
+        router.push(redirectUrl)
+      } else {
+        setError("Email hoặc mật khẩu không đúng")
+      }
     } catch (err: any) {
       setError(err.message || "Email hoặc mật khẩu không đúng")
     } finally {
@@ -55,9 +60,19 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google login initiated")
+  const handleGoogleLogin = async () => {
+    try {
+      setError("")
+      setIsLoading(true)
+      const success = await loginWithGoogle()
+      if (success) {
+        router.push(redirectUrl)
+      }
+    } catch (error: any) {
+      setError(error.message || "Đăng nhập Google thất bại")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const quickLogin = (role: string) => {

@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
 
-    const { email, password, fullName, acceptTerms } = await request.json();
+    const { email, password, fullName, acceptTerms, isGoogleAuth } = await request.json();
 
     if (!email || !password || !fullName) {
       return NextResponse.json(
@@ -30,11 +30,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userRecord = await adminAuth.createUser({
-      email,
-      password,
-      displayName: fullName,
-    });
+    let userRecord;
+    
+    if (isGoogleAuth) {
+      // For Google auth, user already exists - get the user record
+      try {
+        userRecord = await adminAuth.getUserByEmail(email);
+      } catch (error) {
+        return NextResponse.json(
+          { error: 'Không tìm thấy tài khoản Google' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // For email/password, create new user
+      userRecord = await adminAuth.createUser({
+        email,
+        password,
+        displayName: fullName,
+      });
+    }
 
     const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
 

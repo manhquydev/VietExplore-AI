@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { ForgotPasswordModal } from "./forgot-password-modal"
-import { useAuth } from "./auth-provider"
+import { useAuth } from "@/hooks/useAuth"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -22,7 +22,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onSwitchToRegister,
 }) => {
-  const { login } = useAuth()
+  const { loginWithEmail, loginWithGoogle } = useAuth()
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [showPassword, setShowPassword] = React.useState(false)
@@ -36,8 +36,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setError("")
 
     try {
-      await login(email, password)
-      onClose()
+      const success = await loginWithEmail({ email, password })
+      if (success) {
+        onClose()
+      }
     } catch (error: any) {
       console.error('Login error:', error)
       setError(error.message || "Email hoặc mật khẩu không đúng")
@@ -46,9 +48,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   }
 
-  const handleGoogleLogin = () => {
-    console.log("Google login initiated")
-    // TODO: Implement Google OAuth
+  const handleGoogleLogin = async () => {
+    try {
+      const success = await loginWithGoogle()
+      if (success) {
+        onClose()
+      }
+    } catch (error: any) {
+      console.error('Google login error:', error)
+      setError(error.message || "Đăng nhập Google thất bại")
+    }
   }
 
   return (

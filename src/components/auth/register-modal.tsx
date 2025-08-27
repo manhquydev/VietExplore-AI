@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
+import { useAuth } from "@/hooks/useAuth"
 
 interface RegisterModalProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   onClose,
   onSwitchToLogin,
 }) => {
+  const { registerWithEmail, loginWithGoogle, error, setError } = useAuth()
   const [formData, setFormData] = React.useState({
     fullName: "",
     email: "",
@@ -75,22 +77,51 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     setErrors({})
 
     try {
-      // TODO: Implement actual registration logic
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      setError(''); // Clear previous errors
+      const success = await registerWithEmail({
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        displayName: formData.fullName,
+      })
       
-      console.log("Registration successful", formData)
-      onClose()
-    } catch (error) {
+      if (success) {
+        // Show success message briefly before closing
+        setErrors({ general: '' });
+        
+        // Small delay to show loading complete, then close
+        setTimeout(() => {
+          onClose();
+        }, 500);
+      } else {
+        // If registerWithEmail returns false, the error will be in useAuth error state
+        if (error) {
+          setErrors({ general: error })
+        }
+      }
+    } catch (error: any) {
       console.error('Registration error:', error)
-      setErrors({ general: "Đã có lỗi xảy ra. Vui lòng thử lại." })
+      setErrors({ general: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại." })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleRegister = () => {
-    console.log("Google registration initiated")
-    // TODO: Implement Google OAuth
+  const handleGoogleRegister = async () => {
+    try {
+      setError(''); // Clear previous errors
+      const success = await loginWithGoogle()
+      if (success) {
+        onClose()
+      } else {
+        if (error) {
+          setErrors({ general: error })
+        }
+      }
+    } catch (error: any) {
+      console.error('Google registration error:', error)
+      setErrors({ general: error.message || "Đăng ký Google thất bại" })
+    }
   }
 
   const updateFormData = (field: string, value: string | boolean) => {

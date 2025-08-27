@@ -35,6 +35,34 @@ export interface User {
   disabled?: boolean;
 }
 
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+export interface AuthError {
+  code: string;
+  message: string;
+}
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+export interface RegisterFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  displayName?: string;
+}
+
+export interface ResetPasswordData {
+  email: string;
+}
+
 export type Permission = 
   | 'create_place' 
   | 'review_content' 

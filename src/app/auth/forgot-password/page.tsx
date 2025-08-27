@@ -15,9 +15,11 @@ import {
   RotateCcw,
   CheckCircle2
 } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
+  const { resetPassword } = useAuth()
   const [email, setEmail] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const [isSuccess, setIsSuccess] = React.useState(false)
@@ -29,13 +31,15 @@ export default function ForgotPasswordPage() {
     setError("")
 
     try {
-      // TODO: Implement password reset logic
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
-      
-      setIsSuccess(true)
-    } catch (error) {
+      const success = await resetPassword(email)
+      if (success) {
+        setIsSuccess(true)
+      } else {
+        setError("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.")
+      }
+    } catch (error: any) {
       console.error('Password reset error:', error)
-      setError("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.")
+      setError(error.message || "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.")
     } finally {
       setIsLoading(false)
     }
