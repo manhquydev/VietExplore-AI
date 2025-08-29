@@ -48,7 +48,7 @@ interface PlaceData {
 // Fetch real place data from API
 async function getPlaceData(id: string): Promise<PlaceData | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
     const response = await fetch(`${baseUrl}/api/places/${id}`, {
       next: { revalidate: 300 } // Cache for 5 minutes
     });

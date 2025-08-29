@@ -28,6 +28,22 @@ export async function POST(request: NextRequest) {
 
     const formData: PlaceFormData = await request.json();
     
+    // Validation: Images are required (at least 1 image)
+    if (!formData.images || formData.images.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Cần có ít nhất 1 ảnh cho địa điểm' },
+        { status: 400 }
+      );
+    }
+
+    // Validation: Maximum 1 video
+    if (formData.video && Array.isArray(formData.video)) {
+      return NextResponse.json(
+        { success: false, error: 'Chỉ được upload tối đa 1 video' },
+        { status: 400 }
+      );
+    }
+    
     // Generate slug from name if available
     const slug = formData.name
       ? formData.name
@@ -50,9 +66,15 @@ export async function POST(request: NextRequest) {
       province: formData.province || '',
       provinceSlug: formData.province?.toLowerCase().replace(/\s+/g, '-') || '',
       type: formData.type as any,
-      coordinates: formData.coordinates || { lat: null, lng: null },
+      coordinates: formData.coordinates,
       address: formData.address,
+      vietnamAddress: formData.vietnamAddress || {
+        provinceId: 0,
+        provinceName: formData.province,
+        fullAddress: formData.address || ''
+      },
       images: formData.images || [],
+      video: formData.video,
       trustLabel: 'community',
       source: {
         type: user.role === 'partner' ? 'partner' : 'user',

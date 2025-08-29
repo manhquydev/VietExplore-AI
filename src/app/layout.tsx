@@ -9,6 +9,7 @@ import { ToastNotifications } from "@/components/ui/toast-notifications";
 import { NetworkStatus } from "@/components/ui/network-status";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'),
   title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
   description: 'Khám phá địa điểm du lịch Việt Nam đáng tin cậy và tạo lịch trình với AI trợ lý thông minh',
   keywords: 'du lịch việt nam, lịch trình du lịch, AI trợ lý, địa điểm du lịch',

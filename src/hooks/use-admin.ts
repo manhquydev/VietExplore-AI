@@ -11,6 +11,10 @@ export function useAdminStats() {
     totalPlaces: 0,
     pendingModeration: 0,
     openReports: 0,
+    systemHealth: 99.9,
+    userGrowth: 0,
+    placeGrowth: 0,
+    lastUpdated: new Date(),
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -30,11 +34,38 @@ export function useAdminStats() {
           apiClient.places.list({ limit: 1000 }) // Get places count
         ]);
 
+        // Calculate growth rates (simplified calculation)
+        const currentUserCount = usersResult.pagination?.total || usersResult.data?.length || 0;
+        const currentPlaceCount = placesResult.total || placesResult.data?.length || 0;
+        
+        // Calculate growth based on recent registrations (last 30 days vs previous 30 days)
+        const last30DaysUsers = usersResult.data?.filter((user: any) => {
+          const userDate = new Date(user.createdAt);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return userDate >= thirtyDaysAgo;
+        }).length || 0;
+
+        const last30DaysPlaces = placesResult.data?.filter((place: any) => {
+          const placeDate = new Date(place.createdAt);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return placeDate >= thirtyDaysAgo;
+        }).length || 0;
+
+        // Simple growth calculation (can be improved with historical data)
+        const userGrowth = currentUserCount > 0 ? ((last30DaysUsers / Math.max(currentUserCount - last30DaysUsers, 1)) * 100) : 0;
+        const placeGrowth = currentPlaceCount > 0 ? ((last30DaysPlaces / Math.max(currentPlaceCount - last30DaysPlaces, 1)) * 100) : 0;
+
         setStats({
-          totalUsers: usersResult.pagination?.total || usersResult.data?.length || 0,
-          totalPlaces: placesResult.total || placesResult.data?.length || 0,
+          totalUsers: currentUserCount,
+          totalPlaces: currentPlaceCount,
           pendingModeration: moderationResult.data?.length || 0,
           openReports: 0, // TODO: Implement reports system later
+          systemHealth: Math.min(99.9, Math.max(95, 100 - (moderationResult.data?.length || 0) * 0.1)), // Health based on pending items
+          userGrowth: Math.round(userGrowth * 10) / 10,
+          placeGrowth: Math.round(placeGrowth * 10) / 10,
+          lastUpdated: new Date(),
         });
       } catch (error) {
         console.error("Failed to fetch admin stats", error);
@@ -45,6 +76,10 @@ export function useAdminStats() {
           totalPlaces: 0,
           pendingModeration: 0,
           openReports: 0,
+          systemHealth: 95.0, // Lower health on error
+          userGrowth: 0,
+          placeGrowth: 0,
+          lastUpdated: new Date(),
         }));
       } finally {
         setLoading(false);
@@ -55,6 +90,101 @@ export function useAdminStats() {
   }, [user]);
 
   return { stats, loading };
+}
+
+// Hook for system settings management
+export function useSystemSettings() {
+  const [settings, setSettings] = useState({
+    general: {
+      siteName: 'VietExplore AI',
+      siteDescription: 'Discover beautiful địa điểm across Vietnam with AI-powered recommendations',
+      maintenanceMode: false,
+      registrationEnabled: true
+    },
+    moderation: {
+      autoApprovalEnabled: false,
+      partnerAutoApproval: true,
+      moderationQueueSize: 50,
+      avgProcessingTime: 24,
+      escalationThreshold: 72
+    },
+    notifications: {
+      emailNotifications: true,
+      pushNotifications: true,
+      dailyDigest: true,
+      moderationAlerts: true
+    },
+    security: {
+      twoFactorEnabled: false,
+      sessionTimeout: 60,
+      maxLoginAttempts: 5,
+      passwordMinLength: 8
+    }
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+
+  // Load settings from API/localStorage
+  useEffect(() => {
+    if (!user || !['admin', 'moderator'].includes(user.role)) {
+      setLoading(false);
+      return;
+    }
+
+    async function loadSettings() {
+      setLoading(true);
+      try {
+        // Try to load from API first, fallback to localStorage
+        // TODO: Implement settings API endpoint
+        const savedSettings = localStorage.getItem('admin-settings');
+        if (savedSettings) {
+          const parsed = JSON.parse(savedSettings);
+          setSettings(prev => ({ ...prev, ...parsed }));
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, [user]);
+
+  const updateSettings = useCallback(async (newSettings: typeof settings) => {
+    setSaving(true);
+    try {
+      // TODO: Save to API endpoint
+      // For now, save to localStorage
+      localStorage.setItem('admin-settings', JSON.stringify(newSettings));
+      setSettings(newSettings);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      return { success: false, error: 'Không thể lưu cài đặt' };
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  const updateSetting = useCallback((section: string, key: string, value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section as keyof typeof prev],
+        [key]: value
+      }
+    }));
+  }, []);
+
+  return {
+    settings,
+    loading,
+    saving,
+    updateSettings,
+    updateSetting
+  };
 }
 
 export function useAdminUsers(filters: {
@@ -152,6 +282,7 @@ export function useModerationQueue(filters: {
   status?: string;
   contentType?: string;
   priority?: string;
+  queueType?: string;
   limit?: number;
 } = {}) {
   const [items, setItems] = useState<any[]>([]);
@@ -172,7 +303,21 @@ export function useModerationQueue(filters: {
       const result = await apiClient.moderation.queue.list(filters);
       
       if (result.success && result.data) {
-        setItems(result.data);
+        // Map the API response to the expected UI format
+        const mappedItems = result.data.map((item: any) => ({
+          ...item,
+          content: {
+            title: item.contentDetails?.name || item.metadata?.title || 'Untitled',
+            description: item.contentDetails?.description || item.contentDetails?.shortDescription || 'No description',
+            changes: '',
+            region: item.contentDetails?.region || item.metadata?.region,
+            province: item.contentDetails?.province || item.metadata?.province,
+            type: item.contentDetails?.type || item.metadata?.type,
+            trustLabel: item.contentDetails?.trustLabel
+          },
+          submitterInfo: item.submitter
+        }));
+        setItems(mappedItems);
       } else {
         setError(result.error || 'Không thể tải hàng đợi kiểm duyệt');
       }
@@ -186,6 +331,18 @@ export function useModerationQueue(filters: {
 
   useEffect(() => {
     fetchQueue();
+  }, [fetchQueue]);
+
+  // Listen for moderation updates to trigger refresh
+  useEffect(() => {
+    const handleModerationUpdate = () => {
+      fetchQueue();
+    };
+    
+    window.addEventListener('moderationUpdated', handleModerationUpdate);
+    return () => {
+      window.removeEventListener('moderationUpdated', handleModerationUpdate);
+    };
   }, [fetchQueue]);
 
 

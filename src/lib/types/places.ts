@@ -3,14 +3,24 @@ import { TrustLabel, User } from './auth';
 // Place types based on existing structure
 export type PlaceType = "bien" | "nui" | "van-hoa" | "am-thuc" | "check-in";
 export type PlaceRegion = "bac-bo" | "trung-bo" | "nam-bo";
-export type PlaceStatus = "draft" | "submitted" | "in_review" | "published" | "hidden";
+export type PlaceStatus = "draft" | "submitted" | "in_review" | "published" | "rejected" | "hidden";
 
 export interface PlaceImage {
   id: string;
   url: string;
   alt: string;
   caption?: string;
-  isPrimary: boolean;
+  isPrimary: boolean; // true = ảnh đại diện, false = ảnh phụ
+  uploadedBy: string;
+  createdAt: string;
+  order?: number; // thứ tự hiển thị
+}
+
+export interface PlaceVideo {
+  id: string;
+  url: string;
+  thumbnail?: string;
+  duration?: number;
   uploadedBy: string;
   createdAt: string;
 }
@@ -39,6 +49,19 @@ export interface PlaceRating {
   };
 }
 
+// Địa chỉ hành chính Việt Nam
+export interface VietnamAddress {
+  provinceId: number;
+  provinceName: string;
+  districtId?: number;
+  districtName?: string;
+  wardId?: number;
+  wardName?: string;
+  fullAddress: string; // Địa chỉ đầy đủ
+  oldProvinceId?: number; // ID tỉnh cũ trước sáp nhập
+  newProvinceId?: number; // ID tỉnh mới sau sáp nhập
+}
+
 export interface Place {
   id: string;
   slug: string;
@@ -49,9 +72,11 @@ export interface Place {
   province: string;
   provinceSlug: string;
   type: PlaceType;
-  coordinates: PlaceCoordinates;
+  coordinates?: PlaceCoordinates; // Optional vì sẽ dùng address text
   address?: string;
+  vietnamAddress: VietnamAddress; // Địa chỉ hành chính chuẩn
   images: PlaceImage[];
+  video?: PlaceVideo; // Chỉ 1 video
   trustLabel: TrustLabel;
   source: PlaceSource;
   status: PlaceStatus;
@@ -60,6 +85,8 @@ export interface Place {
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
   createdBy: string; // User ID
   moderatedBy?: string; // User ID
   
@@ -78,9 +105,11 @@ export interface PlaceFormData {
   region: PlaceRegion;
   province: string;
   type: PlaceType;
-  coordinates: PlaceCoordinates;
+  coordinates?: PlaceCoordinates;
   address?: string;
-  images: File[] | PlaceImage[];
+  vietnamAddress: VietnamAddress;
+  images: File[] | PlaceImage[]; // Bắt buộc có ít nhất 1 ảnh
+  video?: File | PlaceVideo; // Tối đa 1 video
   tags: string[];
 }
 

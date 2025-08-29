@@ -2,13 +2,14 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card-custom"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Icon } from "@/components/ui/icon"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -27,36 +28,42 @@ const statusConfig = {
     label: "Bản nháp",
     variant: "secondary" as const,
     icon: "edit",
-    description: "Chưa gửi duyệt"
+    description: "Chưa gửi duyệt",
+    help: "Bạn có thể chỉnh sửa và lưu bản nháp bao nhiêu lần cũng được"
   },
   submitted: {
     label: "Đã gửi",
     variant: "default" as const,
     icon: "clock",
-    description: "Đang chờ duyệt"
+    description: "Đang chờ duyệt",
+    help: "Bạn vẫn có thể chỉnh sửa và gửi lại cho đến khi được duyệt"
   },
   in_review: {
     label: "Đang duyệt",
     variant: "warning" as const,
     icon: "alert-circle",
-    description: "Đang được kiểm duyệt"
+    description: "Đang được kiểm duyệt",
+    help: "Kiểm duyệt viên đang xem xét. Bạn không thể chỉnh sửa trong thời gian này"
   },
   published: {
     label: "Đã xuất bản",
     variant: "success" as const,
     icon: "check-circle",
-    description: "Đã được duyệt và xuất bản"
+    description: "Đã được duyệt và xuất bản",
+    help: "Địa điểm đã được xuất bản và hiển thị công khai"
   },
   rejected: {
     label: "Bị từ chối",
     variant: "danger" as const,
     icon: "x-circle",
-    description: "Cần chỉnh sửa theo góp ý"
+    description: "Cần chỉnh sửa theo góp ý",
+    help: "Xem lý do từ chối bên dưới và chỉnh sửa để gửi lại"
   }
 }
 
 export default function MyDraftsPage() {
   const { user, isAuthenticated } = useAuth()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<keyof typeof statusConfig | "all">("all")
   const [actionLoading, setActionLoading] = React.useState<string | null>(null)
@@ -283,12 +290,48 @@ export default function MyDraftsPage() {
           <div className="space-y-4">
             {drafts.map((draft) => {
               const statusInfo = statusConfig[draft.status]
+              
+              // Determine primary action based on status
+              const getPrimaryAction = () => {
+                switch (draft.status) {
+                  case 'draft':
+                  case 'rejected':
+                  case 'submitted':  // Allow editing submitted drafts
+                    return () => router.push(`/contribute/edit/${draft.id}`)
+                  case 'in_review':
+                    return () => window.open(`/drafts/${draft.id}/preview`, '_blank')
+                  case 'published':
+                    return () => window.open(`/places/${draft.id}`, '_blank')
+                  default:
+                    return () => window.open(`/drafts/${draft.id}/preview`, '_blank')
+                }
+              }
+              
+              const getPrimaryActionLabel = () => {
+                switch (draft.status) {
+                  case 'draft':
+                  case 'rejected':
+                  case 'submitted':  // Allow editing submitted drafts
+                    return 'Chỉnh sửa'
+                  case 'in_review':
+                    return 'Xem chi tiết'
+                  case 'published':
+                    return 'Xem công khai'
+                  default:
+                    return 'Xem trước'
+                }
+              }
+              
               return (
-                <Card key={draft.id} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex gap-4">
+                <Card key={draft.id} className="overflow-hidden transition-all hover:shadow-md border border-gray-200 hover:border-gray-300">
+                  <CardContent className="p-0">
+                    {/* Clickable main area */}
+                    <div 
+                      className="flex gap-4 p-6 cursor-pointer transition-colors hover:bg-gray-50/50"
+                      onClick={getPrimaryAction()}
+                    >
                       {/* Cover Image */}
-                      <div className="w-24 h-18 rounded-lg overflow-hidden bg-surface flex-shrink-0">
+                      <div className="w-20 h-16 rounded-lg overflow-hidden bg-surface flex-shrink-0 shadow-sm">
                         {draft.coverImage ? (
                           <img
                             src={draft.coverImage}
@@ -296,135 +339,216 @@ export default function MyDraftsPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted">
-                            <Icon name="camera" />
+                          <div className="w-full h-full flex items-center justify-center text-muted bg-gradient-to-br from-gray-100 to-gray-200">
+                            <Icon name="camera" className="h-4 w-4" />
                           </div>
                         )}
                       </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-1 line-clamp-1">
-                              {draft.name}
-                            </h3>
-                            <p className="text-muted text-sm mb-2 line-clamp-2">
-                              {draft.shortDescription}
-                            </p>
-                          </div>
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <Icon name="more-horizontal" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {draft.status === "published" ? (
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/places/${draft.id}`}>
-                                    <Icon name="eye" className="mr-2" />
-                                    Xem trang công khai
-                                  </Link>
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem>
-                                  <Icon name="eye" className="mr-2" />
-                                  Xem trước
-                                </DropdownMenuItem>
-                              )}
-                              
-                              {(draft.status === "draft" || draft.status === "rejected") && (
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/contribute/edit/${draft.id}`}>
-                                    <Icon name="edit" className="mr-2" />
-                                    Chỉnh sửa
-                                  </Link>
-                                </DropdownMenuItem>
-                              )}
-                              
-                              <DropdownMenuItem 
-                                onClick={() => handleDuplicate(draft)}
-                                disabled={actionLoading === `duplicate-${draft.id}`}
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
+                                {draft.name || 'Chưa có tên'}
+                              </h3>
+                              <Badge 
+                                variant={statusInfo.variant} 
+                                className="text-xs gap-1 flex-shrink-0"
                               >
-                                {actionLoading === `duplicate-${draft.id}` ? (
-                                  <LoadingSpinner size="sm" className="mr-2" />
-                                ) : (
-                                  <Icon name="plus" className="mr-2" />
-                                )}
-                                Sao chép
-                              </DropdownMenuItem>
-                              
-                              {draft.status === "draft" && (
-                                <DropdownMenuItem 
-                                  onClick={() => handleSubmit(draft.id)}
-                                  disabled={actionLoading === `submit-${draft.id}`}
-                                >
-                                  {actionLoading === `submit-${draft.id}` ? (
-                                    <LoadingSpinner size="sm" className="mr-2" />
-                                  ) : (
-                                    <Icon name="check-circle" className="mr-2" />
-                                  )}
-                                  Gửi duyệt
-                                </DropdownMenuItem>
-                              )}
-                              
-                              {draft.status !== "published" && (
-                                <DropdownMenuItem 
-                                  onClick={() => handleDelete(draft.id)}
-                                  disabled={actionLoading === `delete-${draft.id}`}
-                                  className="text-danger"
-                                >
-                                  {actionLoading === `delete-${draft.id}` ? (
-                                    <LoadingSpinner size="sm" className="mr-2" />
-                                  ) : (
-                                    <Icon name="trash-2" className="mr-2" />
-                                  )}
-                                  Xóa
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-
-                        {/* Metadata */}
-                        <div className="flex flex-wrap items-center gap-4 mb-3">
-                          <Badge variant={statusInfo.variant} className="gap-1">
-                            <Icon name={statusInfo.icon} className="w-3 h-3" />
-                            {statusInfo.label}
-                          </Badge>
-                          
-                          <Badge variant="outline" className="text-xs">
-                            {draft.type}
-                          </Badge>
-                          
-                          <Badge variant="outline" className="text-xs">
-                            {draft.province}
-                          </Badge>
-                        </div>
-
-                        {/* Timeline */}
-                        <div className="text-xs text-muted space-y-1">
-                          <div>Tạo: {new Date(draft.createdAt).toLocaleDateString('vi-VN')}</div>
-                          {draft.submittedAt && (
-                            <div>Gửi duyệt: {new Date(draft.submittedAt).toLocaleDateString('vi-VN')}</div>
-                          )}
-                          {draft.publishedAt && (
-                            <div>Xuất bản: {new Date(draft.publishedAt).toLocaleDateString('vi-VN')}</div>
-                          )}
-                        </div>
-
-                        {/* Moderator Notes */}
-                        {draft.moderatorNotes && (
-                          <div className="mt-3 p-3 bg-warn/10 border border-warn/20 rounded-md">
-                            <p className="text-sm text-warn">
-                              <strong>Góp ý từ kiểm duyệt viên:</strong> {draft.moderatorNotes}
+                                <Icon name={statusInfo.icon} className="w-3 h-3" />
+                                {statusInfo.label}
+                              </Badge>
+                            </div>
+                            
+                            <p className="text-muted text-sm mb-3 line-clamp-2">
+                              {draft.shortDescription || 'Chưa có mô tả'}
                             </p>
+                            
+                            {/* Quick metadata */}
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Icon name="map-pin" className="h-3 w-3" />
+                                {draft.province || 'Chưa chọn tỉnh'}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Icon name="tag" className="h-3 w-3" />
+                                {draft.type || 'Chưa phân loại'}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Icon name="calendar" className="h-3 w-3" />
+                                {new Date(draft.createdAt).toLocaleDateString('vi-VN')}
+                              </span>
+                            </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
+                    
+                    {/* Action bar */}
+                    <div className="px-6 py-4 bg-gray-50/30 border-t border-gray-100 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {/* Primary action button */}
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            getPrimaryAction()()
+                          }}
+                          size="sm"
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          {getPrimaryActionLabel()}
+                        </Button>
+                        
+                        {/* Quick actions based on status */}
+                        {draft.status === 'submitted' && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/contribute/my-drafts/${draft.id}/moderation`)
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                          >
+                            Xem tiến trình
+                          </Button>
+                        )}
+                        
+                        {draft.status === 'draft' && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSubmit(draft.id)
+                            }}
+                            variant="outline"
+                            size="sm"
+                            disabled={actionLoading === `submit-${draft.id}`}
+                            className="border-green-200 text-green-700 hover:bg-green-50"
+                          >
+                            {actionLoading === `submit-${draft.id}` ? (
+                              <LoadingSpinner size="sm" className="mr-1" />
+                            ) : (
+                              <Icon name="send" className="w-3 h-3 mr-1" />
+                            )}
+                            Gửi duyệt
+                          </Button>
+                        )}
+                        
+                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected') && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              window.open(`/contribute/my-drafts/${draft.id}/moderation`, '_blank')
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                          >
+                            <Icon name="file-text" className="w-3 h-3 mr-1" />
+                            Chi tiết kiểm duyệt
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {/* Secondary actions menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Icon name="more-horizontal" className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {/* Preview/View actions */}
+                          {draft.status !== 'published' && (
+                            <DropdownMenuItem 
+                              onClick={() => window.open(`/drafts/${draft.id}/preview`, '_blank')}
+                            >
+                              <Icon name="eye" className="mr-2 h-4 w-4" />
+                              Xem trước
+                            </DropdownMenuItem>
+                          )}
+                          
+                          {draft.status === 'published' && (
+                            <DropdownMenuItem asChild>
+                              <Link href={`/places/${draft.id}`} target="_blank">
+                                <Icon name="external-link" className="mr-2 h-4 w-4" />
+                                Xem trang công khai
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          
+                          <DropdownMenuSeparator />
+                          
+                          {/* Duplicate action */}
+                          <DropdownMenuItem 
+                            onClick={() => handleDuplicate(draft)}
+                            disabled={actionLoading === `duplicate-${draft.id}`}
+                          >
+                            {actionLoading === `duplicate-${draft.id}` ? (
+                              <LoadingSpinner size="sm" className="mr-2" />
+                            ) : (
+                              <Icon name="copy" className="mr-2 h-4 w-4" />
+                            )}
+                            Sao chép
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuSeparator />
+                          
+                          {/* Destructive actions */}
+                          {draft.status !== "published" && (
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(draft.id)}
+                              disabled={actionLoading === `delete-${draft.id}`}
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            >
+                              {actionLoading === `delete-${draft.id}` ? (
+                                <LoadingSpinner size="sm" className="mr-2" />
+                              ) : (
+                                <Icon name="trash-2" className="mr-2 h-4 w-4" />
+                              )}
+                              Xóa bản nháp
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    
+                    {/* Status-specific notifications */}
+                    {draft.status === 'rejected' && draft.rejectionReason && (
+                      <div className="px-6 py-3 bg-red-50 border-t border-red-100">
+                        <div className="flex items-start gap-2">
+                          <Icon name="alert-triangle" className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-red-800 mb-1">Lý do từ chối:</p>
+                            <p className="text-sm text-red-700">{draft.rejectionReason}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {draft.status === 'in_review' && (
+                      <div className="px-6 py-3 bg-yellow-50 border-t border-yellow-100">
+                        <div className="flex items-center gap-2">
+                          <Icon name="clock" className="h-4 w-4 text-yellow-600" />
+                          <p className="text-sm text-yellow-800">
+                            Bản nháp đang được kiểm duyệt. Vui lòng chờ thông báo.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {draft.status === 'published' && (
+                      <div className="px-6 py-3 bg-green-50 border-t border-green-100">
+                        <div className="flex items-center gap-2">
+                          <Icon name="check-circle" className="h-4 w-4 text-green-600" />
+                          <p className="text-sm text-green-800">
+                            Địa điểm đã được xuất bản và hiển thị công khai.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )

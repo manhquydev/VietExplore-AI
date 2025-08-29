@@ -5,7 +5,7 @@ import { verifyAuthToken } from '@/lib/server/auth-middleware';
 // POST /api/places/drafts/[draftId]/submit - Submit draft for review
 export async function POST(
   request: NextRequest,
-  { params }: { params: { draftId: string } }
+  { params }: { params: Promise<{ draftId: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -19,7 +19,7 @@ export async function POST(
     }
 
     const user = authResult.user;
-    const { draftId } = params;
+    const { draftId } = await params;
 
     // Check if draft exists and belongs to user
     const draftDoc = await adminDb.collection('places').doc(draftId).get();
@@ -38,20 +38,51 @@ export async function POST(
       );
     }
 
-    if (draft?.status !== 'draft') {
+    // Allow submission of draft, rejected, and resubmission of submitted places
+    const submittableStatuses = ['draft', 'submitted', 'rejected'];
+    if (!submittableStatuses.includes(draft?.status)) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ có thể gửi bản nháp ở trạng thái draft' },
+        { success: false, error: 'Không thể gửi địa điểm đang được duyệt hoặc đã xuất bản' },
         { status: 400 }
       );
     }
 
     // Validate required fields
+    const hasProvince = draft.province || (draft.vietnamAddress && draft.vietnamAddress.provinceName);
+    
     if (!draft.name || !draft.description || !draft.shortDescription || 
-        !draft.region || !draft.province || !draft.type) {
+        !draft.region || !hasProvince || !draft.type || !draft.address) {
+      
+      console.log('Validation failed for draft:', {
+        name: !!draft.name,
+        description: !!draft.description,
+        shortDescription: !!draft.shortDescription,
+        region: !!draft.region,
+        province: !!draft.province,
+        vietnamProvince: !!(draft.vietnamAddress && draft.vietnamAddress.provinceName),
+        type: !!draft.type,
+        address: !!draft.address
+      });
+      
       return NextResponse.json(
         { success: false, error: 'Vui lòng điền đầy đủ thông tin bắt buộc trước khi gửi' },
         { status: 400 }
       );
+    }
+
+    // Validate images are required
+    if (!draft.images || draft.images.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Cần có ít nhất 1 ảnh trước khi gửi địa điểm' },
+        { status: 400 }
+      );
+    }
+
+    // Ensure there's at least one primary image
+    const hasPrimaryImage = draft.images.some((img: any) => img.isPrimary === true);
+    if (!hasPrimaryImage && draft.images.length > 0) {
+      // Auto-set first image as primary if none is set
+      draft.images[0].isPrimary = true;
     }
 
     // Determine trust label and status based on user role  
@@ -61,21 +92,31 @@ export async function POST(
     if (user.role === 'contributor') trustLabel = 'contributor';
     if (user.role === 'partner') trustLabel = 'partner';
     if (user.role === 'admin') {
-      trustLabel = 'verified';
+      trustLabel = 'special_verified'; // Admin gets special verification label
       finalStatus = 'published'; // Admin auto-published
     }
 
-    // Update place status
-    const updateData = {
+    // Update place status and ensure province field is set
+    const province = draft.vietnamAddress?.provinceName || draft.province;
+    const updateData: any = {
       status: finalStatus,
       trustLabel,
-      updatedAt: new Date().toISOString(),
-      publishedAt: user.role === 'admin' ? new Date().toISOString() : undefined
+      updatedAt: new Date().toISOString()
     };
+
+    // Only set province if it's defined (avoid undefined values)
+    if (province) {
+      updateData.province = province;
+    }
+
+    // Only set publishedAt if admin (avoid undefined values)
+    if (user.role === 'admin') {
+      updateData.publishedAt = new Date().toISOString();
+    }
 
     await adminDb.collection('places').doc(draftId).update(updateData);
 
-    // Add to moderation queue if not admin
+    // Handle moderation queue entry (add or update existing)
     if (user.role !== 'admin') {
       const priorityMap = {
         'partner': 4,
@@ -84,7 +125,12 @@ export async function POST(
         'guest': 1
       };
 
-      await adminDb.collection('moderation_queue').add({
+      // Check if there's already a moderation queue entry for this content
+      const existingQueueQuery = await adminDb.collection('moderation_queue')
+        .where('contentId', '==', draftId)
+        .get();
+
+      const queueData = {
         contentType: 'place',
         contentId: draftId,
         submittedBy: user.id,
@@ -96,7 +142,7 @@ export async function POST(
           title: draft.name,
           type: draft.type,
           region: draft.region,
-          province: draft.province,
+          province: province,
           hasImages: (draft.images?.length || 0) > 0,
           submitterRole: user.role
         },
@@ -112,19 +158,36 @@ export async function POST(
           description: draft.description,
           type: draft.type,
           region: draft.region,
-          province: draft.province
+          province: province
         }
+      };
+
+      if (!existingQueueQuery.empty) {
+        // Update existing queue entry for resubmission
+        const existingDoc = existingQueueQuery.docs[0];
+        await adminDb.collection('moderation_queue').doc(existingDoc.id).update({
+          ...queueData,
+          resubmittedAt: new Date().toISOString(),
+          resubmissionCount: (existingDoc.data().resubmissionCount || 0) + 1
+        });
+        console.log(`Updated existing moderation queue entry for place ${draftId}`);
+      } else {
+        // Create new queue entry for first-time submission
+        await adminDb.collection('moderation_queue').add(queueData);
+        console.log(`Created new moderation queue entry for place ${draftId}`);
+      }
+    }
+
+    // Update user stats only for first-time submissions
+    if (draft.status === 'draft') {
+      await adminDb.collection('users').doc(user.id).update({
+        'stats.placesContributed': (user.stats?.placesContributed || 0) + 1,
+        updatedAt: new Date().toISOString()
       });
     }
 
-    // Update user stats
-    await adminDb.collection('users').doc(user.id).update({
-      'stats.placesContributed': (user.stats?.placesContributed || 0) + 1,
-      updatedAt: new Date().toISOString()
-    });
-
     const message = user.role === 'admin' 
-      ? 'Địa điểm đã được tạo và xuất bản thành công với nhãn "Xác thực đặc biệt"'
+      ? 'Địa điểm đã được tạo và xuất bản thành công với nhãn "Địa điểm xác thực đặc biệt" - bỏ qua kiểm duyệt'
       : user.role === 'partner'
       ? 'Địa điểm đã được gửi vào hàng đợi kiểm duyệt ưu tiên dành cho Partner. Thời gian xử lý: 12-24 giờ.'
       : 'Địa điểm đã được gửi để kiểm duyệt. Thời gian xử lý: 24-48 giờ.';

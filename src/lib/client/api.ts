@@ -113,6 +113,7 @@ export const apiClient = {
     // Draft system
     drafts: {
       list: () => callApi('/places/drafts'),
+      getById: (draftId: string) => callApi(`/places/drafts/${draftId}`),
       create: (data: PlaceFormData) => callApi('/places/drafts', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -202,7 +203,7 @@ export const apiClient = {
   },
   moderation: {
     queue: {
-      list: (filters: { status?: string; contentType?: string; priority?: string; limit?: number; } = {}) => {
+      list: (filters: { status?: string; contentType?: string; priority?: string; queueType?: string; limit?: number; } = {}) => {
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {

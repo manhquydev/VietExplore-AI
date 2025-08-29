@@ -23,7 +23,8 @@ import {
   LogOut,
   HelpCircle,
   Camera,
-  Award
+  Award,
+  Flag
 } from "lucide-react"
 
 const navigation = [
@@ -223,6 +224,16 @@ export const Header: React.FC = () => {
                           </div>
                         </Link>
                       </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <Link href="/contribute/my-reports" className="flex items-center gap-3 px-3">
+                          <Flag className="w-5 h-5 text-red-600 dark:text-red-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-900 dark:text-white">Báo cáo & Đề xuất</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Theo dõi trạng thái</div>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
                     </div>
 
                     <DropdownMenuSeparator className="my-2" />
@@ -256,7 +267,7 @@ export const Header: React.FC = () => {
                         <DropdownMenuSeparator className="my-2" />
                         <div className="mb-1">
                           <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
-                            <Link href="/moderation/dashboard" className="flex items-center gap-3 px-3">
+                            <Link href="/admin/moderation" className="flex items-center gap-3 px-3">
                               <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                               <div className="flex-1">
                                 <div className="font-medium text-slate-900 dark:text-white">Kiểm duyệt</div>
@@ -271,7 +282,7 @@ export const Header: React.FC = () => {
                     {user.role === 'admin' && (
                       <div className="mb-1">
                         <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
-                          <Link href="/admin/dashboard" className="flex items-center gap-3 px-3">
+                          <Link href="/admin" className="flex items-center gap-3 px-3">
                             <Award className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                             <div className="flex-1">
                               <div className="font-medium text-slate-900 dark:text-white">Quản trị hệ thống</div>

@@ -167,10 +167,40 @@ export async function PATCH(
       );
     }
 
+    // Check if place status allows editing
+    if (placeData.createdBy === user.id && !['moderator', 'admin'].includes(user.role)) {
+      if (placeData.status === 'in_review') {
+        return NextResponse.json(
+          { error: 'Không thể chỉnh sửa địa điểm đang được kiểm duyệt' },
+          { status: 400 }
+        );
+      }
+      if (placeData.status === 'published') {
+        return NextResponse.json(
+          { error: 'Không thể chỉnh sửa địa điểm đã xuất bản. Vui lòng liên hệ quản trị viên.' },
+          { status: 400 }
+        );
+      }
+    }
+
     const updateData = await request.json();
     
     // Add update timestamp
     updateData.updatedAt = new Date().toISOString();
+    
+    // Handle status transitions for regular users
+    if (placeData.createdBy === user.id && !['moderator', 'admin'].includes(user.role)) {
+      if (placeData.status === 'submitted' || placeData.status === 'rejected') {
+        // When editing submitted/rejected content, reset to submitted for re-review
+        updateData.status = 'submitted';
+        
+        // Clear rejection data if it was previously rejected
+        if (placeData.status === 'rejected') {
+          updateData.rejectedAt = null;
+          updateData.rejectionReason = null;
+        }
+      }
+    }
 
     await adminDb.collection('places').doc(id).update(updateData);
 
@@ -232,6 +262,14 @@ export async function DELETE(
       hiddenBy: user.id,
       hiddenAt: new Date().toISOString()
     });
+
+    // Also remove from moderation queue if it exists
+    const moderationQuery = await adminDb.collection('moderation_queue')
+      .where('contentId', '==', id)
+      .get();
+    
+    const deletePromises = moderationQuery.docs.map(doc => doc.ref.delete());
+    await Promise.all(deletePromises);
 
     return NextResponse.json({
       success: true,

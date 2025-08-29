@@ -136,7 +136,8 @@ export function useUserDrafts(options: UseUserDraftsOptions = {}) {
         coordinates: { lat: null, lng: null },
         images: [],
         tags: draft.tags || [],
-        sources: [{ type: 'personal', url: '', description: 'Sao chép từ bản nháp trước đó' }]
+        sources: [{ type: 'personal', url: '', description: 'Sao chép từ bản nháp trước đó' }],
+        status: 'draft' // Ensure duplicated draft always starts as draft
       };
 
       const token = await auth.currentUser.getIdToken();

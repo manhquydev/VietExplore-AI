@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Star,
   MessageCircle,
-  Plus
+  Plus,
+  AlertTriangle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -90,6 +91,9 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
   const [isLiked, setIsLiked] = React.useState(false)
   const [isSaved, setIsSaved] = React.useState(false)
+  const [showReportModal, setShowReportModal] = React.useState(false)
+  const [showSuggestionModal, setShowSuggestionModal] = React.useState(false)
+  const [showReviewModal, setShowReviewModal] = React.useState(false)
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % place.images.length)
@@ -131,6 +135,30 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
       // Fallback to clipboard
       navigator.clipboard.writeText(window.location.href)
     }
+  }
+
+  const handleReport = () => {
+    if (!isAuthenticated) {
+      alert("Bạn cần đăng nhập để báo cáo địa điểm")
+      return
+    }
+    setShowReportModal(true)
+  }
+
+  const handleSuggestion = () => {
+    if (!isAuthenticated) {
+      alert("Bạn cần đăng nhập để đề xuất chỉnh sửa")
+      return
+    }
+    setShowSuggestionModal(true)
+  }
+
+  const handleReview = () => {
+    if (!isAuthenticated) {
+      alert("Bạn cần đăng nhập để đánh giá địa điểm")
+      return
+    }
+    setShowReviewModal(true)
   }
 
   return (
@@ -260,14 +288,39 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1"
+                onClick={handleReport}
+              >
                 <Flag className="h-4 w-4" />
                 Báo cáo
               </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1"
+                onClick={handleSuggestion}
+              >
+                <Edit className="h-4 w-4" />
+                Đề xuất sửa
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1"
+                onClick={handleReview}
+              >
+                <Star className="h-4 w-4" />
+                Đánh giá
+              </Button>
               {(user && (user.role === 'admin' || user.role === 'moderator')) && (
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Edit className="h-4 w-4" />
-                  Chỉnh sửa
+                <Button variant="outline" size="sm" className="gap-1" asChild>
+                  <Link href={`/admin/places/${place.id}/edit`}>
+                    <AlertTriangle className="h-4 w-4" />
+                    Quản lý
+                  </Link>
                 </Button>
               )}
             </div>

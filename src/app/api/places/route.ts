@@ -163,23 +163,34 @@ export async function POST(request: NextRequest) {
       type: formData.type,
       coordinates: formData.coordinates,
       address: formData.address,
-      images: [], // Will be handled separately
+      images: formData.images || [], // Include images from form data
+      video: formData.video || null,
+      vietnamAddress: formData.vietnamAddress || null,
+      sources: formData.sources || [],
+      openingHours: formData.openingHours || null,
+      entryFee: formData.entryFee || null,
+      bestTimeToVisit: formData.bestTimeToVisit || null,
+      facilities: formData.facilities || [],
       trustLabel,
       source: {
         type: user.role === 'partner' ? 'partner' : 'user',
         userId: user.id,
-        partnerName: user.role === 'partner' ? user.fullName : undefined
+        ...(user.role === 'partner' && user.fullName ? { partnerName: user.fullName } : {})
       },
-      status: user.role === 'admin' ? 'published' : 'submitted', // Only admin gets auto-published
+      status: formData.status === 'draft' 
+        ? 'draft' 
+        : user.role === 'admin' 
+        ? 'published' 
+        : 'submitted', // Handle draft, admin auto-publish, or normal submission
       rating: {
         average: 0,
         count: 0,
         breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
       },
-      tags: formData.tags,
+      tags: formData.tags || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      publishedAt: user.role === 'admin' ? new Date().toISOString() : undefined,
+      ...(user.role === 'admin' ? { publishedAt: new Date().toISOString() } : {}),
       createdBy: user.id,
       viewCount: 0,
       likeCount: 0,
@@ -189,8 +200,8 @@ export async function POST(request: NextRequest) {
 
     const docRef = await adminDb.collection('places').add(placeData);
 
-    // Add to moderation queue if not admin (admin gets auto-published)
-    if (user.role !== 'admin') {
+    // Add to moderation queue if not admin and status is submitted (not draft)
+    if (user.role !== 'admin' && placeData.status === 'submitted') {
       const priorityMap = {
         'partner': 4,
         'contributor': 3,

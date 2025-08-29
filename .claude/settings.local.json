@@ -15,7 +15,10 @@
       "Bash(curl:*)",
       "Bash(del check-stats.js)",
       "Bash(rd:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(sed:*)",
+      "Bash(cmd /c:*)",
+      "Bash(npx next dev:*)"
     ],
     "deny": [],
     "ask": []

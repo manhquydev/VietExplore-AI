@@ -35,7 +35,7 @@ interface ModerationItem {
   contentId: string
   submittedBy: string
   submittedAt: string
-  status: "pending" | "approved" | "rejected" | "escalated"
+  status: "pending" | "in_review" | "approved" | "rejected" | "escalated"
   priority: "low" | "medium" | "high" | "urgent"
   content: {
     title: string
@@ -60,16 +60,24 @@ interface ModerationItem {
 
 const statusConfig = {
   pending: { label: "Chờ duyệt", variant: "warning" as const, icon: Clock },
+  in_review: { label: "Đang duyệt", variant: "default" as const, icon: Eye },
   approved: { label: "Đã duyệt", variant: "success" as const, icon: CheckCircle },
   rejected: { label: "Từ chối", variant: "danger" as const, icon: XCircle },
+  escalated: { label: "Chuyển lên", variant: "warning" as const, icon: AlertTriangle },
   hidden: { label: "Đã ẩn", variant: "secondary" as const, icon: Eye }
 }
 
 const priorityConfig = {
+  // String priorities
   low: { label: "Thấp", variant: "secondary" as const },
   medium: { label: "Trung bình", variant: "default" as const },
   high: { label: "Cao", variant: "warning" as const },
-  urgent: { label: "Khẩn cấp", variant: "danger" as const }
+  urgent: { label: "Khẩn cấp", variant: "danger" as const },
+  // Numeric priorities (legacy)
+  1: { label: "Thấp", variant: "secondary" as const },
+  2: { label: "Trung bình", variant: "default" as const },
+  3: { label: "Cao", variant: "warning" as const },
+  4: { label: "Khẩn cấp", variant: "danger" as const }
 }
 
 const typeConfig = {
@@ -140,6 +148,7 @@ export default function ModerationDashboard() {
     return {
       total: items.length,
       pending: items.filter(i => i.status === 'pending').length,
+      in_review: items.filter(i => i.status === 'in_review').length,
       approved: items.filter(i => i.status === 'approved').length,
       rejected: items.filter(i => i.status === 'rejected').length,
       urgent: items.filter(i => i.priority === 'urgent').length,
@@ -147,7 +156,7 @@ export default function ModerationDashboard() {
     }
   }, [items])
 
-  const handleAction = async (itemId: string, action: 'approve' | 'reject' | 'hide', notes?: string) => {
+  const handleAction = async (itemId: string, action: 'approve' | 'reject' | 'hide' | 'start_review', notes?: string) => {
     try {
       const apiAction = action === 'hide' ? 'reject' : action
       const result = await reviewItem(itemId, apiAction, notes)
@@ -203,7 +212,7 @@ export default function ModerationDashboard() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-primary">{stats.total}</div>
@@ -214,6 +223,12 @@ export default function ModerationDashboard() {
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-warn">{stats.pending}</div>
               <div className="text-sm text-muted">Chờ duyệt</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-primary">{stats.in_review}</div>
+              <div className="text-sm text-muted">Đang duyệt</div>
             </CardContent>
           </Card>
           <Card>
@@ -310,8 +325,8 @@ export default function ModerationDashboard() {
             {/* Moderation Queue */}
             <div className="space-y-4">
               {filteredItems.filter(item => item.contentType !== 'user_report').map((item) => {
-                const statusInfo = statusConfig[item.status]
-                const priorityInfo = priorityConfig[item.priority]
+                const statusInfo = statusConfig[item.status] || statusConfig.pending
+                const priorityInfo = priorityConfig[item.priority] || priorityConfig.medium
                 const typeInfo = typeConfig[item.contentType]
                 
                 return (
@@ -392,11 +407,35 @@ export default function ModerationDashboard() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => assignToSelf(item.id)}
+                                  onClick={() => handleAction(item.id, 'start_review', 'Bắt đầu kiểm duyệt chi tiết')}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                  Nhận xử lý
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Bắt đầu duyệt
                                 </Button>
                                 
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => handleAction(item.id, 'approve')}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Duyệt
+                                </Button>
+                                
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleAction(item.id, 'reject')}
+                                >
+                                  <XCircle className="w-4 h-4 mr-2" />
+                                  Từ chối
+                                </Button>
+                              </>
+                            )}
+
+                            {item.status === 'in_review' && (
+                              <>
                                 <Button
                                   variant="secondary"
                                   size="sm"
@@ -430,8 +469,8 @@ export default function ModerationDashboard() {
             {/* Reports List */}
             <div className="space-y-4">
               {filteredItems.filter(item => item.contentType === 'user_report').map((item) => {
-                const statusInfo = statusConfig[item.status]
-                const priorityInfo = priorityConfig[item.priority]
+                const statusInfo = statusConfig[item.status] || statusConfig.pending
+                const priorityInfo = priorityConfig[item.priority] || priorityConfig.medium
                 
                 return (
                   <Card key={item.id} className={cn(

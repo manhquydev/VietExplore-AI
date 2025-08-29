@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { 
   ArrowLeft,
   CheckCircle,
@@ -31,113 +32,43 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
+import { auth } from "@/lib/firebase"
+import ModerationHistory from "@/components/moderation-history"
 
 interface ReviewPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
-}
-
-// Mock review item data
-const mockReviewItem = {
-  id: "mod_001",
-  type: "place" as const,
-  targetId: "place_new_001",
-  title: "Bãi biển Quy Nhon",
-  description: "Bãi biển hoang sơ với cát vàng và nước biển trong xanh",
-  status: "pending" as const,
-  priority: "medium" as const,
-  submittedBy: {
-    id: "user_001",
-    name: "Nguyễn Văn A",
-    username: "nguyen_van_a",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    role: "contributor",
-    verified: false,
-    stats: {
-      placesContributed: 3,
-      approvalRate: 85
-    }
-  },
-  submittedAt: "2024-03-15T10:30:00Z",
-  content: {
-    name: "Bãi biển Quy Nhon",
-    shortDescription: "Bãi biển hoang sơ với cát vàng và nước biển trong xanh",
-    description: `Bãi biển Quy Nhon là một trong những bãi biển đẹp nhất miền Trung, nằm ở thành phố Quy Nhon, tỉnh Bình Định. Với bãi cát vàng mịn trải dài và làn nước biển trong xanh, nơi đây thu hút nhiều du khách yêu thích sự yên tĩnh và hoang sơ.
-
-Điểm đặc biệt của bãi biển Quy Nhon là sự kết hợp hoàn hảo giữa cảnh quan thiên nhiên và văn hóa địa phương. Du khách có thể thưởng thức hải sản tươi ngon tại các quán ăn ven biển, tham gia các hoạt động thể thao nước, hoặc đơn giản là thư giãn dưới ánh nắng mặt trời.
-
-Ngoài ra, từ bãi biển, du khách có thể dễ dàng di chuyển đến các điểm tham quan khác như tháp Chăm Đôi, chùa Long Khánh, hay làng chài Nhơn Hải.`,
-    type: "biển",
-    region: "trung-bo",
-    province: "Bình Định",
-    address: "Phường Ghềnh Ráng, TP. Quy Nhon, Bình Định",
-    coordinates: {
-      lat: 13.7563,
-      lng: 109.2297
-    },
-    images: [
-      {
-        id: "img_001",
-        url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-        alt: "Bãi biển Quy Nhon",
-        caption: "Cảnh hoàng hôn tuyệt đẹp tại bãi biển Quy Nhon",
-        isPrimary: true
-      },
-      {
-        id: "img_002",
-        url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop",
-        alt: "Hoạt động tại bãi biển",
-        caption: "Du khách tham gia các hoạt động thể thao nước",
-        isPrimary: false
-      }
-    ],
-    sources: [
-      {
-        type: "website",
-        url: "https://binhdinh.gov.vn/tourism",
-        description: "Website chính thức du lịch Bình Định"
-      },
-      {
-        type: "personal",
-        url: "",
-        description: "Trải nghiệm cá nhân tháng 2/2024"
-      }
-    ],
-    facilities: ["Bãi đỗ xe", "Nhà vệ sinh", "Nhà hàng", "Cửa hàng lưu niệm"],
-    tags: ["biển", "hoang sơ", "hải sản", "thể thao nước"],
-    openingHours: "24/7",
-    entryFee: "Miễn phí",
-    bestTimeToVisit: "Tháng 3 - Tháng 9"
-  },
-  history: [
-    {
-      action: "submitted",
-      timestamp: "2024-03-15T10:30:00Z",
-      actor: "Nguyễn Văn A",
-      notes: "Gửi địa điểm mới để duyệt"
-    }
-  ]
+  }>
 }
 
 const statusConfig = {
   pending: { label: "Chờ duyệt", variant: "warning" as const, icon: Clock },
+  in_review: { label: "Đang duyệt", variant: "default" as const, icon: Eye },
   approved: { label: "Đã duyệt", variant: "success" as const, icon: CheckCircle },
   rejected: { label: "Từ chối", variant: "danger" as const, icon: XCircle },
+  escalated: { label: "Chuyển lên", variant: "warning" as const, icon: AlertTriangle },
   hidden: { label: "Đã ẩn", variant: "secondary" as const, icon: EyeOff }
 }
 
 const priorityConfig = {
+  // String priorities
   low: { label: "Thấp", variant: "secondary" as const },
   medium: { label: "Trung bình", variant: "default" as const },
   high: { label: "Cao", variant: "warning" as const },
-  urgent: { label: "Khẩn cấp", variant: "danger" as const }
+  urgent: { label: "Khẩn cấp", variant: "danger" as const },
+  // Numeric priorities (legacy)
+  1: { label: "Thấp", variant: "secondary" as const },
+  2: { label: "Trung bình", variant: "default" as const },
+  3: { label: "Cao", variant: "warning" as const },
+  4: { label: "Khẩn cấp", variant: "danger" as const }
 }
 
 export default function ReviewDetailPage({ params }: ReviewPageProps) {
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
-  const [reviewItem] = React.useState(mockReviewItem)
+  const [reviewItem, setReviewItem] = React.useState<any>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
   const [moderatorNotes, setModeratorNotes] = React.useState("")
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState("content")
@@ -145,28 +76,126 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
   // Check permissions
   const isModerator = user?.role === 'moderator' || user?.role === 'admin'
 
-  const handleAction = async (action: 'approve' | 'reject' | 'hide' | 'request_edit') => {
-    if (!moderatorNotes.trim() && (action === 'reject' || action === 'request_edit')) {
-      alert("Vui lòng nhập lý do từ chối hoặc yêu cầu chỉnh sửa")
+  // Fetch moderation item data
+  React.useEffect(() => {
+    const fetchReviewItem = async () => {
+      try {
+        const resolvedParams = await params
+        const { id } = resolvedParams
+        
+        if (!user || !isAuthenticated) return
+
+        const firebaseUser = auth.currentUser
+        if (!firebaseUser) {
+          throw new Error('Chưa đăng nhập')
+        }
+
+        const token = await firebaseUser.getIdToken()
+        
+        // Try to get all moderation queue items (including completed ones)
+        let queueResponse = await fetch(`/api/moderation/queue`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        let item = null;
+        
+        if (queueResponse.ok) {
+          const queueData = await queueResponse.json()
+          item = queueData.data?.find((item: any) => item.id === id)
+        }
+        
+        // If not found in general queue, try specifically looking for the item with different status filters
+        if (!item) {
+          const statuses = ['pending', 'in_review', 'escalated', 'approved', 'rejected'];
+          for (const status of statuses) {
+            const statusResponse = await fetch(`/api/moderation/queue?status=${status}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
+              item = statusData.data?.find((item: any) => item.id === id);
+              if (item) break;
+            }
+          }
+        }
+        
+        if (!item) {
+          throw new Error('Không tìm thấy mục kiểm duyệt. Có thể mục này đã được xử lý hoặc đã bị xóa.')
+        }
+
+        setReviewItem(item)
+      } catch (error: any) {
+        console.error('Error fetching review item:', error)
+        setError(error.message || 'Có lỗi xảy ra khi tải thông tin kiểm duyệt')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (isAuthenticated && user) {
+      fetchReviewItem()
+    }
+  }, [params, user, isAuthenticated])
+
+  const handleAction = async (action: 'approve' | 'reject' | 'escalate' | 'start_review') => {
+    if (!moderatorNotes.trim() && (action === 'reject' || action === 'escalate')) {
+      alert("Vui lòng nhập lý do từ chối hoặc chuyển lên cấp cao hơn")
       return
     }
 
     setIsProcessing(true)
     try {
-      // TODO: Send action to API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      console.log('Moderation action:', {
-        itemId: reviewItem.id,
-        action,
-        notes: moderatorNotes,
-        moderatorId: user?.id
+      if (!user || !reviewItem) return
+
+      const firebaseUser = auth.currentUser
+      if (!firebaseUser) {
+        throw new Error('Chưa đăng nhập')
+      }
+
+      const token = await firebaseUser.getIdToken()
+
+      const response = await fetch(`/api/moderation/queue/${reviewItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action,
+          reviewNotes: moderatorNotes
+        })
       })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Không thể thực hiện hành động')
+      }
       
-      // Redirect back to dashboard
-      router.push('/moderation/dashboard')
-    } catch (error) {
+      console.log('Moderation action completed:', result)
+      
+      // Only redirect to dashboard for final actions (approve, reject, escalate)
+      // For start_review, stay on the page to continue reviewing
+      if (action !== 'start_review') {
+        router.push('/moderation/dashboard')
+      } else {
+        // Refresh the current item data to show updated status
+        setReviewItem(prevItem => prevItem ? {
+          ...prevItem,
+          status: 'in_review',
+          assignedTo: user?.id,
+          assignedAt: new Date().toISOString()
+        } : null)
+        setModeratorNotes('') // Clear notes after starting review
+      }
+    } catch (error: any) {
       console.error('Action failed:', error)
+      alert(error.message || 'Có lỗi xảy ra khi thực hiện hành động')
     } finally {
       setIsProcessing(false)
     }
@@ -189,8 +218,43 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
     )
   }
 
-  const statusInfo = statusConfig[reviewItem.status]
-  const priorityInfo = priorityConfig[reviewItem.priority]
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <main className="container py-16">
+          <div className="text-center">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-muted">Đang tải thông tin kiểm duyệt...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error || !reviewItem) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <main className="container py-16">
+          <div className="text-center">
+            <AlertTriangle className="w-12 h-12 text-danger mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Lỗi</h1>
+            <p className="text-muted mb-6">{error || 'Không tìm thấy mục kiểm duyệt'}</p>
+            <Button variant="secondary" onClick={() => router.back()}>
+              Quay lại
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  const statusInfo = statusConfig[reviewItem.status] || statusConfig.pending
+  const priorityInfo = priorityConfig[reviewItem.priority] || priorityConfig.medium
+  const contentDetails = reviewItem.contentDetails || {}
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -211,7 +275,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
           
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold">{reviewItem.title}</h1>
+              <h1 className="text-2xl font-bold">{contentDetails.name || reviewItem.metadata?.title || 'Địa điểm'}</h1>
               <Badge variant={statusInfo.variant} className="flex items-center gap-1.5">
                 <statusInfo.icon className="w-3.5 h-3.5" />
                 {statusInfo.label}
@@ -224,7 +288,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
             <div className="flex items-center gap-4 text-sm text-muted">
               <span className="flex items-center gap-1.5">
                 <User className="w-4 h-4" />
-                Gửi bởi: <strong>{reviewItem.submittedBy.name}</strong>
+                Gửi bởi: <strong>{reviewItem.submitter?.fullName || reviewItem.submittedBy || 'Người dùng'}</strong>
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -247,18 +311,22 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="content" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Nội dung
                 </TabsTrigger>
                 <TabsTrigger value="images" className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4" />
-                  Hình ảnh ({reviewItem.content.images.length})
+                  Hình ảnh ({contentDetails.images?.length || 0})
                 </TabsTrigger>
                 <TabsTrigger value="sources" className="flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
                   Nguồn tham khảo
+                </TabsTrigger>
+                <TabsTrigger value="history" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Lịch sử
                 </TabsTrigger>
               </TabsList>
 
@@ -275,13 +343,13 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label className="text-sm font-medium text-muted">Tên địa điểm</Label>
-                        <p className="text-base font-semibold mt-1">{reviewItem.content.name}</p>
+                        <p className="text-base font-semibold mt-1">{contentDetails.name || 'Chưa cập nhật'}</p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium text-muted">Loại hình</Label>
                         <div className="mt-1">
                           <Badge variant="secondary" className="capitalize">
-                            {reviewItem.content.type}
+                            {contentDetails.type || reviewItem.metadata?.type || 'Chưa phân loại'}
                           </Badge>
                         </div>
                       </div>
@@ -289,17 +357,21 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     
                     <div>
                       <Label className="text-sm font-medium text-muted">Mô tả ngắn</Label>
-                      <p className="text-base mt-1 leading-relaxed">{reviewItem.content.shortDescription}</p>
+                      <p className="text-base mt-1 leading-relaxed">{contentDetails.shortDescription || 'Chưa cập nhật'}</p>
                     </div>
                     
                     <div>
                       <Label className="text-sm font-medium text-muted">Mô tả chi tiết</Label>
                       <div className="mt-1 prose prose-sm max-w-none">
-                        {reviewItem.content.description.split('\\n\\n').map((paragraph, index) => (
-                          <p key={index} className="text-base leading-relaxed mb-4 last:mb-0">
-                            {paragraph}
-                          </p>
-                        ))}
+                        {contentDetails.description ? (
+                          contentDetails.description.split('\n\n').map((paragraph: string, index: number) => (
+                            <p key={index} className="text-base leading-relaxed mb-4 last:mb-0">
+                              {paragraph}
+                            </p>
+                          ))
+                        ) : (
+                          <p className="text-base text-muted">Chưa cập nhật</p>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -318,30 +390,32 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                       <div>
                         <Label className="text-sm font-medium text-muted">Vùng miền</Label>
                         <p className="text-base mt-1 capitalize font-medium">
-                          {reviewItem.content.region === 'bac-bo' ? 'Miền Bắc' : 
-                           reviewItem.content.region === 'trung-bo' ? 'Miền Trung' : 'Miền Nam'}
+                          {contentDetails.region === 'bac-bo' ? 'Miền Bắc' : 
+                           contentDetails.region === 'trung-bo' ? 'Miền Trung' : 
+                           contentDetails.region === 'nam-bo' ? 'Miền Nam' : 
+                           reviewItem.metadata?.region || 'Chưa cập nhật'}
                         </p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium text-muted">Tỉnh/Thành phố</Label>
-                        <p className="text-base mt-1 font-medium">{reviewItem.content.province}</p>
+                        <p className="text-base mt-1 font-medium">{contentDetails.province || reviewItem.metadata?.province || 'Chưa cập nhật'}</p>
                       </div>
                     </div>
                     
                     <div>
                       <Label className="text-sm font-medium text-muted">Địa chỉ</Label>
-                      <p className="text-base mt-1">{reviewItem.content.address}</p>
+                      <p className="text-base mt-1">{contentDetails.address || 'Chưa cập nhật'}</p>
                     </div>
                     
-                    {reviewItem.content.coordinates.lat && reviewItem.content.coordinates.lng && (
+                    {contentDetails.coordinates?.lat && contentDetails.coordinates?.lng && (
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <Label className="text-sm font-medium text-muted">Vĩ độ</Label>
-                          <p className="text-base mt-1 font-mono">{reviewItem.content.coordinates.lat}</p>
+                          <p className="text-base mt-1 font-mono">{contentDetails.coordinates.lat}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-muted">Kinh độ</Label>
-                          <p className="text-base mt-1 font-mono">{reviewItem.content.coordinates.lng}</p>
+                          <p className="text-base mt-1 font-mono">{contentDetails.coordinates.lng}</p>
                         </div>
                       </div>
                     )}
@@ -357,23 +431,23 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label className="text-sm font-medium text-muted">Giờ mở cửa</Label>
-                        <p className="text-base mt-1">{reviewItem.content.openingHours || "Chưa cập nhật"}</p>
+                        <p className="text-base mt-1">{contentDetails.openingHours || "Chưa cập nhật"}</p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium text-muted">Phí vào cửa</Label>
-                        <p className="text-base mt-1">{reviewItem.content.entryFee || "Chưa cập nhật"}</p>
+                        <p className="text-base mt-1">{contentDetails.entryFee || "Chưa cập nhật"}</p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium text-muted">Thời gian tốt nhất</Label>
-                        <p className="text-base mt-1">{reviewItem.content.bestTimeToVisit || "Chưa cập nhật"}</p>
+                        <p className="text-base mt-1">{contentDetails.bestTimeToVisit || "Chưa cập nhật"}</p>
                       </div>
                     </div>
                     
-                    {reviewItem.content.facilities.length > 0 && (
+                    {contentDetails.facilities && contentDetails.facilities.length > 0 && (
                       <div>
                         <Label className="text-sm font-medium text-muted">Tiện ích</Label>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {reviewItem.content.facilities.map((facility, index) => (
+                          {contentDetails.facilities.map((facility: string, index: number) => (
                             <Badge key={index} variant="outline" className="text-xs">
                               {facility}
                             </Badge>
@@ -382,11 +456,11 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                       </div>
                     )}
                     
-                    {reviewItem.content.tags.length > 0 && (
+                    {contentDetails.tags && contentDetails.tags.length > 0 && (
                       <div>
                         <Label className="text-sm font-medium text-muted">Tags</Label>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {reviewItem.content.tags.map((tag, index) => (
+                          {contentDetails.tags.map((tag: string, index: number) => (
                             <Badge key={index} variant="secondary" className="text-xs">
                               #{tag}
                             </Badge>
@@ -407,36 +481,43 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {reviewItem.content.images.map((image, index) => (
-                        <div key={image.id} className="space-y-3">
-                          <div className="relative aspect-[4/3] overflow-hidden rounded-lg border">
-                            <img
-                              src={image.url}
-                              alt={image.alt}
-                              className="w-full h-full object-cover"
-                            />
-                            {image.isPrimary && (
-                              <div className="absolute top-2 left-2">
-                                <Badge variant="default" className="text-xs">
-                                  Ảnh chính
-                                </Badge>
+                    {contentDetails.images && contentDetails.images.length > 0 ? (
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {contentDetails.images.map((image: any, index: number) => (
+                          <div key={image.id || index} className="space-y-3">
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg border">
+                              <img
+                                src={image.url}
+                                alt={image.alt || 'Hình ảnh địa điểm'}
+                                className="w-full h-full object-cover"
+                              />
+                              {image.isPrimary && (
+                                <div className="absolute top-2 left-2">
+                                  <Badge variant="default" className="text-xs">
+                                    Ảnh chính
+                                  </Badge>
+                                </div>
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-sm font-medium">Alt text</Label>
+                              <p className="text-sm text-muted">{image.alt || 'Không có mô tả'}</p>
+                            </div>
+                            {image.caption && (
+                              <div className="space-y-1">
+                                <Label className="text-sm font-medium">Chú thích</Label>
+                                <p className="text-sm text-muted italic">{image.caption}</p>
                               </div>
                             )}
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-sm font-medium">Alt text</Label>
-                            <p className="text-sm text-muted">{image.alt}</p>
-                          </div>
-                          {image.caption && (
-                            <div className="space-y-1">
-                              <Label className="text-sm font-medium">Chú thích</Label>
-                              <p className="text-sm text-muted italic">{image.caption}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-muted">
+                        <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Chưa có hình ảnh nào được đính kèm</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -450,31 +531,45 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {reviewItem.content.sources.map((source, index) => (
-                        <div key={index} className="border rounded-lg p-4 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Badge variant="outline" className="capitalize text-xs">
-                              {source.type === 'website' ? 'Website' :
-                               source.type === 'social' ? 'Mạng xã hội' :
-                               source.type === 'document' ? 'Tài liệu' : 'Cá nhân'}
-                            </Badge>
-                          </div>
-                          {source.url && (
-                            <div>
-                              <Label className="text-sm font-medium">URL</Label>
-                              <p className="text-sm text-blue-600 break-all mt-1">{source.url}</p>
+                    {contentDetails.sources && contentDetails.sources.length > 0 ? (
+                      <div className="space-y-4">
+                        {contentDetails.sources.map((source: any, index: number) => (
+                          <div key={index} className="border rounded-lg p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Badge variant="outline" className="capitalize text-xs">
+                                {source.type === 'website' ? 'Website' :
+                                 source.type === 'social' ? 'Mạng xã hội' :
+                                 source.type === 'document' ? 'Tài liệu' : 'Cá nhân'}
+                              </Badge>
                             </div>
-                          )}
-                          <div>
-                            <Label className="text-sm font-medium">Mô tả</Label>
-                            <p className="text-sm text-muted mt-1">{source.description}</p>
+                            {source.url && (
+                              <div>
+                                <Label className="text-sm font-medium">URL</Label>
+                                <p className="text-sm text-blue-600 break-all mt-1">{source.url}</p>
+                              </div>
+                            )}
+                            <div>
+                              <Label className="text-sm font-medium">Mô tả</Label>
+                              <p className="text-sm text-muted mt-1">{source.description || 'Không có mô tả'}</p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-muted">
+                        <ExternalLink className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Chưa có nguồn tham khảo nào</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-6 mt-6">
+                <ModerationHistory 
+                  contentId={contentDetails.id || reviewItem.contentId}
+                  history={contentDetails.moderationHistory || []}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -492,19 +587,19 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               <CardContent>
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={reviewItem.submittedBy.avatar} />
+                    <AvatarImage src={reviewItem.submitter?.avatar} />
                     <AvatarFallback>
-                      {reviewItem.submittedBy.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      {(reviewItem.submitter?.fullName || reviewItem.submittedBy || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{reviewItem.submittedBy.name}</span>
+                      <span className="font-medium">{reviewItem.submitter?.fullName || 'Người dùng'}</span>
                     </div>
-                    <p className="text-sm text-muted">@{reviewItem.submittedBy.username}</p>
+                    <p className="text-sm text-muted">{reviewItem.submitter?.email || 'Không có email'}</p>
                     <div className="mt-2">
                       <UserRoleDisplay 
-                        role={reviewItem.submittedBy.role}
+                        role={reviewItem.submitter?.role || 'traveler'}
                         variant="compact"
                       />
                     </div>
@@ -515,17 +610,19 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">Đã đóng góp:</span>
-                    <span className="font-medium">{reviewItem.submittedBy.stats.placesContributed} địa điểm</span>
+                    <span className="text-muted">Loại nội dung:</span>
+                    <span className="font-medium capitalize">{reviewItem.contentType || 'Địa điểm'}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">Tỷ lệ duyệt:</span>
-                    <span className="font-medium text-green-600">{reviewItem.submittedBy.stats.approvalRate}%</span>
+                    <span className="text-muted">Hàng đợi:</span>
+                    <span className="font-medium">
+                      {reviewItem.queueType === 'partner_queue' ? 'Partner' : 'Contributor'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted">Trạng thái:</span>
-                    <Badge variant={reviewItem.submittedBy.verified ? "default" : "secondary"} className="text-xs">
-                      {reviewItem.submittedBy.verified ? "Đã xác minh" : "Chưa xác minh"}
+                    <span className="text-muted">Có hình ảnh:</span>
+                    <Badge variant={reviewItem.metadata?.hasImages ? "success" : "secondary"} className="text-xs">
+                      {reviewItem.metadata?.hasImages ? "Có" : "Không"}
                     </Badge>
                   </div>
                 </div>
@@ -561,6 +658,17 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 <Separator />
 
                 <div className="space-y-3">
+                  {reviewItem.status === 'pending' && (
+                    <Button
+                      className="w-full justify-start"
+                      onClick={() => handleAction('start_review')}
+                      disabled={isProcessing}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Bắt đầu duyệt
+                    </Button>
+                  )}
+                  
                   <Button
                     className="w-full justify-start"
                     onClick={() => handleAction('approve')}
@@ -568,16 +676,6 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Duyệt và xuất bản
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => handleAction('request_edit')}
-                    disabled={isProcessing}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Yêu cầu chỉnh sửa
                   </Button>
                   
                   <Button
@@ -593,11 +691,11 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
-                    onClick={() => handleAction('hide')}
+                    onClick={() => handleAction('escalate')}
                     disabled={isProcessing}
                   >
-                    <EyeOff className="w-4 h-4 mr-2" />
-                    Ẩn nội dung
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Chuyển lên cấp cao hơn
                   </Button>
                 </div>
 
@@ -609,46 +707,35 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               </CardContent>
             </Card>
 
-            {/* Review History */}
+            {/* Review Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Lịch sử xem xét
+                  Thông tin duyệt
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {reviewItem.history.map((entry, index) => (
-                    <div key={index} className="flex gap-3">
-                      <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
-                      <div className="flex-1 pb-4">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium capitalize">
-                            {entry.action === 'submitted' ? 'Đã gửi' :
-                             entry.action === 'approved' ? 'Đã duyệt' :
-                             entry.action === 'rejected' ? 'Đã từ chối' : 'Khác'}
-                          </p>
-                          <span className="text-xs text-muted">
-                            {new Date(entry.timestamp).toLocaleDateString('vi-VN', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted mt-1">
-                          Bởi: {entry.actor}
-                        </p>
-                        {entry.notes && (
-                          <p className="text-sm mt-2 p-2 bg-gray-50 rounded">
-                            {entry.notes}
-                          </p>
-                        )}
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">Đã gửi</p>
+                        <span className="text-xs text-muted">
+                          {new Date(reviewItem.submittedAt).toLocaleDateString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
+                      <p className="text-sm text-muted mt-1">
+                        Bởi: {reviewItem.submitter?.fullName || 'Người dùng'}
+                      </p>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>

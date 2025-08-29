@@ -4,7 +4,7 @@
 // It only contains type definitions and non-sensitive logic.
 
 export type UserRole = "guest" | "traveler" | "contributor" | "partner" | "moderator" | "admin";
-export type TrustLabel = "community" | "contributor" | "partner" | "verified";
+export type TrustLabel = "community" | "contributor" | "partner" | "verified" | "special_verified";
 
 export interface User {
   id: string;

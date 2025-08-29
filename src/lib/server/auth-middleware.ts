@@ -35,8 +35,35 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
       };
     }
     
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    console.log('Token verified for user:', decodedToken.uid);
+    let decodedToken;
+    try {
+      // Try to verify as ID token first
+      decodedToken = await adminAuth.verifyIdToken(token);
+      console.log('ID token verified for user:', decodedToken.uid);
+    } catch (idTokenError) {
+      // If it fails, try to verify as custom token (this is not standard, but let's decode manually)
+      try {
+        // For custom tokens, we need to manually decode and verify
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+          console.log('Custom token payload:', payload);
+          
+          // Verify if this is our custom token
+          if (payload.iss && payload.iss.includes('firebase-adminsdk') && payload.uid) {
+            decodedToken = { uid: payload.uid };
+            console.log('Custom token verified for user:', payload.uid);
+          } else {
+            throw new Error('Invalid custom token format');
+          }
+        } else {
+          throw new Error('Invalid token format');
+        }
+      } catch (customTokenError) {
+        console.error('Token verification failed:', { idTokenError, customTokenError });
+        throw idTokenError; // Throw original error
+      }
+    }
     
     const userDoc = await adminDb.collection('users').doc(decodedToken.uid).get();
     

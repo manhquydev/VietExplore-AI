@@ -3,10 +3,106 @@ import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { PlaceFormData, Place } from '@/lib/types/places';
 
+// GET /api/places/drafts/[draftId] - Get draft details
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ draftId: string }> }
+) {
+  try {
+    const adminDb = getAdminDb();
+    const authResult = await verifyAuthToken(request);
+    
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { success: false, error: 'Bạn cần đăng nhập để xem bản nháp' },
+        { status: 401 }
+      );
+    }
+
+    const { draftId } = await params;
+    const user = authResult.user;
+
+    // Get draft from places collection
+    const draftDoc = await adminDb.collection('places').doc(draftId).get();
+    
+    if (!draftDoc.exists) {
+      return NextResponse.json(
+        { success: false, error: 'Không tìm thấy bản nháp' },
+        { status: 404 }
+      );
+    }
+
+    const draftData = draftDoc.data();
+
+    // Check ownership or admin/moderator access
+    const canAccess = draftData?.createdBy === user.id || 
+                      ['admin', 'moderator'].includes(user.role);
+
+    if (!canAccess) {
+      return NextResponse.json(
+        { success: false, error: 'Bạn không có quyền xem bản nháp này' },
+        { status: 403 }
+      );
+    }
+
+    // Get moderation status if exists
+    let moderationInfo = null;
+    if (draftData?.status !== 'draft') {
+      const moderationQuery = await adminDb.collection('moderation_queue')
+        .where('contentId', '==', draftId)
+        .where('contentType', '==', 'place')
+        .orderBy('submittedAt', 'desc')
+        .limit(1)
+        .get();
+
+      if (!moderationQuery.empty) {
+        const moderationData = moderationQuery.docs[0].data();
+        
+        // Get reviewer info if exists
+        let reviewerInfo = null;
+        if (moderationData.reviewedBy) {
+          const reviewerDoc = await adminDb.collection('users').doc(moderationData.reviewedBy).get();
+          if (reviewerDoc.exists) {
+            const reviewer = reviewerDoc.data();
+            reviewerInfo = {
+              fullName: reviewer?.fullName,
+              role: reviewer?.role
+            };
+          }
+        }
+
+        moderationInfo = {
+          status: moderationData.status,
+          submittedAt: moderationData.submittedAt,
+          reviewedAt: moderationData.reviewedAt,
+          reviewNotes: moderationData.reviewNotes,
+          reviewer: reviewerInfo
+        };
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: draftDoc.id,
+        ...draftData,
+        moderationInfo
+      }
+    });
+
+  } catch (error) {
+    console.error('Error getting draft:', error);
+    return NextResponse.json(
+      { success: false, error: 'Không thể tải thông tin bản nháp' },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT /api/places/drafts/[draftId] - Update draft
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { draftId: string } }
+  { params }: { params: Promise<{ draftId: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -20,7 +116,7 @@ export async function PUT(
     }
 
     const user = authResult.user;
-    const { draftId } = params;
+    const { draftId } = await params;
 
     // Check if draft exists and belongs to user
     const draftDoc = await adminDb.collection('places').doc(draftId).get();
@@ -39,9 +135,11 @@ export async function PUT(
       );
     }
 
-    if (draft?.status !== 'draft') {
+    // Allow editing of draft, submitted, and rejected places (but not in_review or published)
+    const editableStatuses = ['draft', 'submitted', 'rejected'];
+    if (!editableStatuses.includes(draft?.status)) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ có thể chỉnh sửa bản nháp ở trạng thái draft' },
+        { success: false, error: 'Không thể chỉnh sửa địa điểm đang được duyệt hoặc đã xuất bản' },
         { status: 400 }
       );
     }
@@ -73,6 +171,13 @@ export async function PUT(
       coordinates: formData.coordinates || { lat: null, lng: null },
       address: formData.address,
       images: formData.images || [],
+      video: formData.video || null,
+      vietnamAddress: formData.vietnamAddress || null,
+      sources: formData.sources || [],
+      openingHours: formData.openingHours || '',
+      entryFee: formData.entryFee || '',
+      bestTimeToVisit: formData.bestTimeToVisit || '',
+      facilities: formData.facilities || [],
       tags: formData.tags || [],
       updatedAt: new Date().toISOString()
     };
@@ -101,7 +206,7 @@ export async function PUT(
 // DELETE /api/places/drafts/[draftId] - Delete draft
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { draftId: string } }
+  { params }: { params: Promise<{ draftId: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -115,7 +220,7 @@ export async function DELETE(
     }
 
     const user = authResult.user;
-    const { draftId } = params;
+    const { draftId } = await params;
 
     // Check if draft exists and belongs to user
     const draftDoc = await adminDb.collection('places').doc(draftId).get();
@@ -134,18 +239,45 @@ export async function DELETE(
       );
     }
 
-    if (draft?.status !== 'draft') {
+    // Allow deletion if place is draft, submitted (pending review), or in_review
+    const deletableStatuses = ['draft', 'submitted', 'in_review'];
+    if (!deletableStatuses.includes(draft?.status)) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ có thể xóa bản nháp ở trạng thái draft' },
+        { success: false, error: 'Không thể xóa địa điểm đã được phê duyệt hoặc từ chối' },
         { status: 400 }
       );
     }
 
+    // First remove from moderation queue to ensure synchronization
+    const moderationQuery = await adminDb.collection('moderation_queue')
+      .where('contentId', '==', draftId)
+      .get();
+    
+    const deletePromises = moderationQuery.docs.map(doc => doc.ref.delete());
+    await Promise.all(deletePromises);
+
+    console.log(`Removed ${moderationQuery.size} moderation queue entries for place ${draftId}`);
+
+    // Then delete the place document
     await adminDb.collection('places').doc(draftId).delete();
+
+    // Also clean up any moderation logs
+    const moderationLogsQuery = await adminDb.collection('moderation_logs')
+      .where('contentId', '==', draftId)
+      .get();
+    
+    const logDeletePromises = moderationLogsQuery.docs.map(doc => doc.ref.delete());
+    await Promise.all(logDeletePromises);
+
+    console.log(`Cleaned up place ${draftId} and ${moderationQuery.size} queue entries`);
+
+    const statusMessage = draft?.status === 'draft' 
+      ? 'Đã xóa bản nháp thành công'
+      : 'Đã xóa địa điểm khỏi hàng đợi kiểm duyệt thành công';
 
     return NextResponse.json({
       success: true,
-      message: 'Đã xóa bản nháp thành công'
+      message: statusMessage
     });
 
   } catch (error) {
