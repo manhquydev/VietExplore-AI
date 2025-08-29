@@ -49,6 +49,12 @@ interface PlaceData {
     caption?: string
     isPrimary: boolean
   }>
+  video?: {
+    id: string
+    url: string
+    thumbnail?: string
+    duration?: number
+  }
   openingHours?: string
   entryFee?: string
   bestTimeToVisit?: string
@@ -342,6 +348,25 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 </p>
               </div>
             </section>
+
+            {/* Video */}
+            {place.video && (
+              <section>
+                <h3 className="text-lg font-semibold mb-3">Video giới thiệu</h3>
+                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                  <video
+                    controls
+                    className="w-full h-full object-cover"
+                    poster={place.video.thumbnail}
+                  >
+                    <source src={place.video.url} type="video/mp4" />
+                    <p className="p-4 text-center text-gray-500">
+                      Trình duyệt của bạn không hỗ trợ phát video.
+                    </p>
+                  </video>
+                </div>
+              </section>
+            )}
 
             {/* Tags */}
             {place.tags && place.tags.length > 0 && (

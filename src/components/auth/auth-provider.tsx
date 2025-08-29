@@ -62,7 +62,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           if (response.ok) {
             const { user } = await response.json()
-            setUser(user)
+            // Ensure Firebase UID is included
+            setUser({
+              ...user,
+              uid: firebaseUser.uid
+            })
           } else {
             console.error('Failed to fetch user data')
             setUser(null)

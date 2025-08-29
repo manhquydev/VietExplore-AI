@@ -65,8 +65,10 @@ export async function POST(request: NextRequest) {
 
     const userData = userDoc.data();
     
-    // Create custom token for the frontend
-    const customToken = await adminAuth.createCustomToken(firebaseUser.uid);
+    // Create custom token with role claims for the frontend
+    const customToken = await adminAuth.createCustomToken(firebaseUser.uid, {
+      role: userData.role || 'traveler'
+    });
 
     return NextResponse.json({
       success: true,

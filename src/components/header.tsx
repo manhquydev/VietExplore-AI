@@ -113,7 +113,7 @@ export const Header: React.FC = () => {
           {/* Enhanced Logo */}
           <Link href="/" className="flex items-center hover:scale-105 transition-all duration-200 group">
             <div className="relative p-1 sm:p-2">
-              <Logo variant="horizontal" size="md" className="h-10 sm:h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" />
+              <Logo variant="horizontal" size="md" className="h-10 sm:h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" priority />
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10"></div>
             </div>
           </Link>

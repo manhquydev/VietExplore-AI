@@ -51,7 +51,7 @@ export default function Loading() {
                 {/* Logo showcase */}
                 <Card className="bg-white/80 backdrop-blur-sm shadow-card border-border/50">
                   <CardContent className="p-8 text-center">
-                    <Logo variant="stacked" size="lg" className="mx-auto mb-4" />
+                    <Logo variant="stacked" size="lg" className="mx-auto mb-4" priority />
                     <p className="text-muted text-sm">
                       Nền tảng du lịch Việt Nam đáng tin cậy
                     </p>

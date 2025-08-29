@@ -314,7 +314,7 @@ export default function MyDraftsPage() {
                   case 'submitted':  // Allow editing submitted drafts
                     return 'Chỉnh sửa'
                   case 'in_review':
-                    return 'Xem chi tiết'
+                    return 'Xem trước'
                   case 'published':
                     return 'Xem công khai'
                   default:
@@ -402,7 +402,7 @@ export default function MyDraftsPage() {
                         </Button>
                         
                         {/* Quick actions based on status */}
-                        {draft.status === 'submitted' && (
+                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected') && (
                           <Button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -436,20 +436,6 @@ export default function MyDraftsPage() {
                           </Button>
                         )}
                         
-                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected') && (
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              window.open(`/contribute/my-drafts/${draft.id}/moderation`, '_blank')
-                            }}
-                            variant="outline"
-                            size="sm"
-                            className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                          >
-                            <Icon name="file-text" className="w-3 h-3 mr-1" />
-                            Chi tiết kiểm duyệt
-                          </Button>
-                        )}
                       </div>
                       
                       {/* Secondary actions menu */}

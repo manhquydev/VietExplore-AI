@@ -1,5 +1,5 @@
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { app } from '@/lib/firebase';
+import { app, auth } from '@/lib/firebase';
 
 const storage = getStorage(app);
 
@@ -46,6 +46,38 @@ export async function deleteImage(path: string): Promise<void> {
   }
 }
 
+// Upload video to Firebase Storage
+export async function uploadVideo(
+  file: File, 
+  path: string = 'places/videos', 
+  userId?: string
+): Promise<{ url: string; path: string }> {
+  try {
+    // Create unique filename
+    const timestamp = Date.now();
+    const fileExtension = file.name.split('.').pop();
+    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+    
+    // Create storage path
+    const storagePath = userId ? `${path}/${userId}/${filename}` : `${path}/${filename}`;
+    const storageRef = ref(storage, storagePath);
+
+    // Upload file
+    const snapshot = await uploadBytes(storageRef, file);
+    
+    // Get download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    return {
+      url: downloadURL,
+      path: storagePath
+    };
+  } catch (error) {
+    console.error('Error uploading video:', error);
+    throw new Error('Không thể tải lên video');
+  }
+}
+
 // Validate image file
 export function validateImageFile(file: File): { valid: boolean; error?: string } {
   // Check file type
@@ -63,6 +95,29 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
     return { 
       valid: false, 
       error: 'Kích thước file không được vượt quá 5MB' 
+    };
+  }
+
+  return { valid: true };
+}
+
+// Validate video file
+export function validateVideoFile(file: File): { valid: boolean; error?: string } {
+  // Check file type
+  const allowedTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/quicktime'];
+  if (!allowedTypes.includes(file.type)) {
+    return { 
+      valid: false, 
+      error: 'Chỉ hỗ trợ file MP4, MOV và AVI' 
+    };
+  }
+
+  // Check file size (50MB max)
+  const maxSize = 50 * 1024 * 1024; // 50MB
+  if (file.size > maxSize) {
+    return { 
+      valid: false, 
+      error: 'Kích thước file không được vượt quá 50MB' 
     };
   }
 

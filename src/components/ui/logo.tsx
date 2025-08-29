@@ -9,6 +9,7 @@ interface LogoProps {
   variant?: LogoVariant
   size?: LogoSize
   className?: string
+  priority?: boolean
 }
 
 const sizeConfig = {
@@ -28,7 +29,8 @@ const iconSizeConfig = {
 export const Logo: React.FC<LogoProps> = ({ 
   variant = "horizontal", 
   size = "md", 
-  className 
+  className,
+  priority = false
 }) => {
   const isIcon = variant === "icon"
   const dimensions = isIcon ? iconSizeConfig[size] : sizeConfig[size]
@@ -42,6 +44,7 @@ export const Logo: React.FC<LogoProps> = ({
           width={dimensions.width}
           height={dimensions.height}
           className="w-full h-full"
+          priority={priority}
         />
       </div>
     )
@@ -56,6 +59,7 @@ export const Logo: React.FC<LogoProps> = ({
           width={dimensions.width}
           height={dimensions.height}
           className="w-full h-full"
+          priority={priority}
         />
       </div>
     )
@@ -70,6 +74,7 @@ export const Logo: React.FC<LogoProps> = ({
           width={dimensions.width}
           height={dimensions.height}
           className="w-full h-full"
+          priority={priority}
         />
       </div>
     )
@@ -84,6 +89,7 @@ export const Logo: React.FC<LogoProps> = ({
         width={dimensions.width}
         height={dimensions.height}
         className="w-full h-full"
+        priority={priority}
       />
     </div>
   )

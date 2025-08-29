@@ -48,6 +48,12 @@ interface PlaceData {
     caption?: string
     isPrimary: boolean
   }>
+  video?: {
+    id: string
+    url: string
+    thumbnail?: string
+    duration?: number
+  }
   openingHours?: string
   entryFee?: string
   bestTimeToVisit?: string
@@ -184,6 +190,12 @@ export default function DraftPreviewPage() {
           address: draftData.address || '',
           coordinates: draftData.coordinates || { lat: 0, lng: 0 },
           images: draftData.images || [],
+          video: draftData.video ? {
+            id: draftData.video.id || 'video-1',
+            url: draftData.video.url || draftData.video,
+            thumbnail: draftData.video.thumbnail,
+            duration: draftData.video.duration
+          } : undefined,
           openingHours: draftData.openingHours || '',
           entryFee: draftData.entryFee || '',
           bestTimeToVisit: draftData.bestTimeToVisit || '',

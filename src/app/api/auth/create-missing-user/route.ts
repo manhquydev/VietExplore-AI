@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/server/firebaseAdmin';
-import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { User } from '@/lib/types/auth';
 
 export async function POST(request: NextRequest) {
@@ -8,17 +7,30 @@ export async function POST(request: NextRequest) {
     const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
 
-    // Verify the user is authenticated
-    const authResult = await verifyAuthToken(request);
+    // Verify Firebase ID token directly (don't check if user document exists)
+    const authHeader = request.headers.get('Authorization');
     
-    if (!authResult.success) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'No authorization token provided' },
         { status: 401 }
       );
     }
 
-    const uid = authResult.user!.uid;
+    const token = authHeader.split('Bearer ')[1];
+    
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(token);
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    const uid = decodedToken.uid;
     
     // Get user from Firebase Auth
     const userRecord = await adminAuth.getUser(uid);

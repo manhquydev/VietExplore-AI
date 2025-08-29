@@ -52,16 +52,33 @@ export async function GET(request: NextRequest) {
     let queryProvinceId = provinceId;
     
     // If this is a new province, we need to use the old province ID for districts lookup
-    if (targetProvince.isNew === true && targetProvince.newId) {
-      // Find the corresponding old province
-      const oldProvince = provinces.find((p: any) => 
-        !p.isNew && p.newId && p.newId.toString() === provinceId
+    if (targetProvince.isNew === true) {
+      // Find all old provinces that map to this new province
+      const oldProvinces = provinces.filter((p: any) => 
+        (p.isNew === false || p.isNew === null) && 
+        p.newId && 
+        p.newId.toString() === provinceId
       );
-      if (oldProvince) {
-        queryProvinceId = oldProvince.id.toString();
+      
+      if (oldProvinces.length > 0) {
+        // If multiple old provinces map to this new province, 
+        // prioritize the one with the same name
+        const exactNameMatch = oldProvinces.find((p: any) => 
+          p.name === targetProvince.name
+        );
+        
+        const selectedOldProvince = exactNameMatch || oldProvinces[0];
+        queryProvinceId = selectedOldProvince.id.toString();
+        
+        console.log(`Mapping new province ${provinceId} (${targetProvince.name}) to old province ${queryProvinceId} (${selectedOldProvince.name})`);
+        if (oldProvinces.length > 1) {
+          console.log(`Multiple mappings found, selected: ${selectedOldProvince.name} (exact name match: ${!!exactNameMatch})`);
+        }
+      } else {
+        console.warn(`No old province mapping found for new province ${provinceId} (${targetProvince.name})`);
       }
     }
-    // If this is an old province that has been split, still use its ID
+    // If this is an old province, use its ID directly
     else if (targetProvince.isNew === false || targetProvince.isNew === null) {
       queryProvinceId = provinceId;
     }

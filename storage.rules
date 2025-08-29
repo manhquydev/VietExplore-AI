@@ -24,7 +24,9 @@ service firebase.storage {
     }
     
     function isContributorOrAbove() {
-      return getUserRole() in ['contributor', 'partner', 'moderator', 'admin'];
+      // Get role from custom claims instead of Firestore
+      return request.auth.token.role != null && 
+             request.auth.token.role in ['contributor', 'partner', 'moderator', 'admin'];
     }
 
     // User profile images
@@ -33,15 +35,39 @@ service firebase.storage {
       allow write: if isSignedIn() && (isOwner(userId) || isAdmin());
     }
 
+    // Place images without userId - only contributors and above can upload
+    match /places/images/{imageId} {
+      allow read: if true; // Public read for place images
+      allow write: if isSignedIn() && isContributorOrAbove();
+    }
+    
     // Place images - only contributors and above can upload
     match /places/images/{userId}/{imageId} {
       allow read: if true; // Public read for place images
       allow write: if isSignedIn() && (isOwner(userId) || isContributorOrAbove());
     }
     
+    // Place videos without userId - only contributors and above can upload
+    match /places/videos/{videoId} {
+      allow read: if true; // Public read for place videos
+      allow write: if isSignedIn() && isContributorOrAbove();
+    }
+    
+    // Place videos - only contributors and above can upload
+    match /places/videos/{userId}/{videoId} {
+      allow read: if true; // Public read for place videos
+      allow write: if isSignedIn() && (isOwner(userId) || isContributorOrAbove());
+    }
+    
     // Legacy place images path for backwards compatibility
     match /places/{placeId}/images/{imageId} {
       allow read: if true; // Public read for place images
+      allow write: if isSignedIn() && isContributorOrAbove();
+    }
+    
+    // Legacy place videos path for backwards compatibility
+    match /places/{placeId}/videos/{videoId} {
+      allow read: if true; // Public read for place videos
       allow write: if isSignedIn() && isContributorOrAbove();
     }
 

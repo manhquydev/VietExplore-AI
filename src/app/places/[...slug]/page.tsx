@@ -22,6 +22,12 @@ interface PlaceData {
     caption?: string
     isPrimary: boolean
   }>
+  video?: {
+    id: string
+    url: string
+    thumbnail?: string
+    duration?: number
+  }
   openingHours?: string
   entryFee?: string
   bestTimeToVisit?: string
@@ -75,6 +81,12 @@ async function getPlaceData(id: string): Promise<PlaceData | null> {
       address: place.address || '',
       coordinates: place.coordinates || { lat: 0, lng: 0 },
       images: place.images || [],
+      video: place.video ? {
+        id: place.video.id || 'video-1',
+        url: place.video.url,
+        thumbnail: place.video.thumbnail,
+        duration: place.video.duration
+      } : undefined,
       openingHours: place.openingHours,
       entryFee: place.entryFee,
       bestTimeToVisit: place.bestTimeToVisit,

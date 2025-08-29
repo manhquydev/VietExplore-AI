@@ -22,7 +22,10 @@ import {
   User,
   MapPin,
   Flag,
-  BarChart3
+  BarChart3,
+  Image as ImageIcon,
+  Video,
+  FileText
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -212,47 +215,47 @@ export default function ModerationDashboard() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">{stats.total}</div>
-              <div className="text-sm text-muted">Tổng số</div>
+        <div className="grid grid-cols-2 sm:grid-cols-7 gap-6 mb-8">
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-primary mb-1">{stats.total}</div>
+              <div className="text-sm text-muted font-medium">Tổng số</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-warn">{stats.pending}</div>
-              <div className="text-sm text-muted">Chờ duyệt</div>
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-warn mb-1">{stats.pending}</div>
+              <div className="text-sm text-muted font-medium">Chờ duyệt</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">{stats.in_review}</div>
-              <div className="text-sm text-muted">Đang duyệt</div>
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">{stats.in_review}</div>
+              <div className="text-sm text-muted font-medium">Đang duyệt</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-success">{stats.approved}</div>
-              <div className="text-sm text-muted">Đã duyệt</div>
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-success mb-1">{stats.approved}</div>
+              <div className="text-sm text-muted font-medium">Đã duyệt</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-danger">{stats.rejected}</div>
-              <div className="text-sm text-muted">Từ chối</div>
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-danger mb-1">{stats.rejected}</div>
+              <div className="text-sm text-muted font-medium">Từ chối</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-danger">{stats.urgent}</div>
-              <div className="text-sm text-muted">Khẩn cấp</div>
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-1">{stats.urgent}</div>
+              <div className="text-sm text-muted font-medium">Khẩn cấp</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">{stats.reports}</div>
-              <div className="text-sm text-muted">Báo cáo</div>
+          <Card className="hover:shadow-card transition-all">
+            <CardContent className="p-5 text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-1">{stats.reports}</div>
+              <div className="text-sm text-muted font-medium">Báo cáo</div>
             </CardContent>
           </Card>
         </div>
@@ -323,7 +326,7 @@ export default function ModerationDashboard() {
             </div>
 
             {/* Moderation Queue */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               {filteredItems.filter(item => item.contentType !== 'user_report').map((item) => {
                 const statusInfo = statusConfig[item.status] || statusConfig.pending
                 const priorityInfo = priorityConfig[item.priority] || priorityConfig.medium
@@ -336,34 +339,50 @@ export default function ModerationDashboard() {
                     item.priority === 'high' && "border-warn"
                   )}>
                     <CardContent className="p-6">
-                      <div className="flex gap-4">
+                      <div className="flex gap-6">
                         <div className="flex-1">
-                          <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start justify-between mb-4">
                             <div className="flex-1">
-                              <h3 className="font-semibold text-lg mb-1">{item.content.title}</h3>
-                              <p className="text-muted text-sm line-clamp-2">{item.content.description}</p>
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="font-semibold text-lg">{item.content.title}</h3>
+                                <div className="flex items-center gap-2">
+                                  {item.metadata?.hasImages && (
+                                    <div className="flex items-center gap-1 text-xs text-success">
+                                      <ImageIcon className="w-3.5 h-3.5" />
+                                      <span>Ảnh</span>
+                                    </div>
+                                  )}
+                                  {item.metadata?.hasVideo && (
+                                    <div className="flex items-center gap-1 text-xs text-blue-600">
+                                      <Video className="w-3.5 h-3.5" />
+                                      <span>Video</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="text-muted text-sm line-clamp-2 leading-relaxed">{item.content.description}</p>
                             </div>
                             
                             <div className="flex gap-2 ml-4">
-                              <Badge variant={priorityInfo.variant} className="text-xs">
+                              <Badge variant={priorityInfo.variant} className="text-xs font-medium">
                                 {priorityInfo.label}
                               </Badge>
-                              <Badge variant={statusInfo.variant} className="gap-1 text-xs">
+                              <Badge variant={statusInfo.variant} className="gap-1.5 text-xs font-medium">
                                 <statusInfo.icon className="w-3 h-3" />
                                 {statusInfo.label}
                               </Badge>
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
+                          <div className="flex flex-wrap items-center gap-6 mb-4 text-sm">
                             <div className="flex items-center gap-2">
                               <typeInfo.icon className="w-4 h-4 text-muted" />
-                              <span className="text-muted">{typeInfo.label}</span>
+                              <span className="text-muted font-medium">{typeInfo.label}</span>
                             </div>
                             
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                               <User className="w-4 h-4 text-muted" />
-                              <span className="text-muted mr-2">
+                              <span className="text-muted">
                                 {item.submitterInfo?.fullName || 'Unknown User'}
                               </span>
                               <UserRoleDisplay 
@@ -375,13 +394,17 @@ export default function ModerationDashboard() {
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-muted" />
                               <span className="text-muted">
-                                {new Date(item.submittedAt).toLocaleDateString('vi-VN')}
+                                {new Date(item.submittedAt).toLocaleDateString('vi-VN', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })}
                               </span>
                             </div>
 
                             {item.reviewedBy && (
                               <div className="flex items-center gap-2">
-                                <span className="text-muted">Đã xử lý bởi: {item.reviewedBy}</span>
+                                <span className="text-muted text-xs">Đã xử lý bởi: <strong>{item.reviewedBy}</strong></span>
                               </div>
                             )}
                           </div>

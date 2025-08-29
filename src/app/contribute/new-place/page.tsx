@@ -457,8 +457,8 @@ export default function NewPlacePage() {
         }
       }
       
-      // Video validation (optional but limited)
-      if (formData.video && formData.video.size > 50 * 1024 * 1024) {
+      // Video validation (optional) - video is now validated during upload
+      if (formData.video && formData.video.size && formData.video.size > 50 * 1024 * 1024) {
         newErrors.video = "Video không được vượt quá 50MB"
       }
       
@@ -487,25 +487,43 @@ export default function NewPlacePage() {
   }
 
   // Video upload handler
-  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      // Validate file size (50MB max)
-      if (file.size > 50 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, video: 'Video không được vượt quá 50MB' }))
+      // Import validation and upload functions
+      const { validateVideoFile, uploadVideo } = await import('@/lib/client/firebase-storage')
+      
+      // Validate file
+      const validation = validateVideoFile(file)
+      if (!validation.valid) {
+        setErrors(prev => ({ ...prev, video: validation.error || 'File video không hợp lệ' }))
         return
       }
       
-      // Validate file type
-      if (!file.type.startsWith('video/')) {
-        setErrors(prev => ({ ...prev, video: 'Chỉ hỗ trợ file video' }))
-        return
-      }
-      
-      updateFormData('video', file)
-      // Clear any existing video error
-      if (errors.video) {
-        setErrors(prev => ({ ...prev, video: '' }))
+      try {
+        setIsSubmitting(true)
+        
+        // Upload video to Firebase Storage
+        const result = await uploadVideo(file, 'places/videos')
+        
+        // Update form data with video URL and metadata
+        updateFormData('video', {
+          url: result.url,
+          path: result.path,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        })
+        
+        // Clear any existing video error
+        if (errors.video) {
+          setErrors(prev => ({ ...prev, video: '' }))
+        }
+      } catch (error: any) {
+        console.error('Video upload error:', error)
+        setErrors(prev => ({ ...prev, video: error.message || 'Không thể upload video' }))
+      } finally {
+        setIsSubmitting(false)
       }
     }
   }
@@ -1625,6 +1643,9 @@ export default function NewPlacePage() {
                               <p className="text-xs text-muted">
                                 {(formData.video.size / (1024 * 1024)).toFixed(2)} MB
                               </p>
+                              {formData.video.url && (
+                                <p className="text-xs text-green-600">✓ Đã upload thành công</p>
+                              )}
                             </div>
                           </div>
                           <Button

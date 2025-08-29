@@ -18,8 +18,11 @@ import {
 } from "lucide-react"
 import { auth } from '@/lib/firebase'
 
-interface ModerationHistoryEntry {
-  action: 'submitted' | 'started_review' | 'approved' | 'rejected' | 'escalated' | 'resubmitted'
+interface ActivityLogEntry {
+  action: 'created' | 'draft_saved' | 'submitted' | 'started_review' | 'approved' | 'rejected' | 'escalated' | 'resubmitted' | 'edited' | 'published' | 'hidden'
+  userId?: string
+  userName?: string
+  userRole?: string
   moderatorId?: string
   moderatorName?: string
   moderatorRole?: string
@@ -30,17 +33,25 @@ interface ModerationHistoryEntry {
     newStatus?: string
     trustLabelChanged?: boolean
     resubmissionCount?: number
+    editCount?: number
+    changedFields?: string[]
   }
 }
 
-interface ModerationHistoryProps {
-  history?: ModerationHistoryEntry[]
+interface ActivityLogProps {
+  history?: ActivityLogEntry[]
   contentId?: string
   className?: string
 }
 
 const getActionIcon = (action: string) => {
   switch (action) {
+    case 'created':
+      return <FileText className="h-4 w-4 text-blue-600" />
+    case 'draft_saved':
+      return <RefreshCw className="h-4 w-4 text-gray-600" />
+    case 'edited':
+      return <RefreshCw className="h-4 w-4 text-orange-600" />
     case 'submitted':
     case 'resubmitted':
       return <FileText className="h-4 w-4 text-blue-600" />
@@ -52,6 +63,10 @@ const getActionIcon = (action: string) => {
       return <XCircle className="h-4 w-4 text-red-600" />
     case 'escalated':
       return <ArrowUp className="h-4 w-4 text-purple-600" />
+    case 'published':
+      return <CheckCircle className="h-4 w-4 text-green-700" />
+    case 'hidden':
+      return <XCircle className="h-4 w-4 text-gray-600" />
     default:
       return <Clock className="h-4 w-4 text-gray-600" />
   }
@@ -59,18 +74,28 @@ const getActionIcon = (action: string) => {
 
 const getActionText = (action: string) => {
   switch (action) {
+    case 'created':
+      return 'Tạo địa điểm mới'
+    case 'draft_saved':
+      return 'Lưu bản nháp'
+    case 'edited':
+      return 'Chỉnh sửa nội dung'
     case 'submitted':
-      return 'Đã gửi để kiểm duyệt'
+      return 'Gửi để kiểm duyệt'
     case 'resubmitted':
-      return 'Đã gửi lại để kiểm duyệt'
+      return 'Gửi lại để kiểm duyệt'
     case 'started_review':
       return 'Bắt đầu kiểm duyệt'
     case 'approved':
-      return 'Đã phê duyệt'
+      return 'Phê duyệt nội dung'
     case 'rejected':
-      return 'Đã từ chối'
+      return 'Từ chối nội dung'
     case 'escalated':
-      return 'Đã chuyển lên cấp cao hơn'
+      return 'Chuyển lên cấp cao hơn'
+    case 'published':
+      return 'Xuất bản công khai'
+    case 'hidden':
+      return 'Ẩn khỏi công khai'
     default:
       return action
   }
@@ -78,6 +103,12 @@ const getActionText = (action: string) => {
 
 const getActionColor = (action: string) => {
   switch (action) {
+    case 'created':
+      return 'bg-blue-50 text-blue-700 border-blue-200'
+    case 'draft_saved':
+      return 'bg-gray-50 text-gray-700 border-gray-200'
+    case 'edited':
+      return 'bg-orange-50 text-orange-700 border-orange-200'
     case 'submitted':
     case 'resubmitted':
       return 'bg-blue-50 text-blue-700 border-blue-200'
@@ -89,6 +120,10 @@ const getActionColor = (action: string) => {
       return 'bg-red-50 text-red-700 border-red-200'
     case 'escalated':
       return 'bg-purple-50 text-purple-700 border-purple-200'
+    case 'published':
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    case 'hidden':
+      return 'bg-gray-50 text-gray-700 border-gray-200'
     default:
       return 'bg-gray-50 text-gray-700 border-gray-200'
   }
@@ -108,12 +143,12 @@ const formatDate = (dateString: string) => {
   }
 }
 
-export const ModerationHistory: React.FC<ModerationHistoryProps> = ({ 
+export const ActivityLog: React.FC<ActivityLogProps> = ({ 
   history: propHistory, 
   contentId,
   className 
 }) => {
-  const [history, setHistory] = React.useState<ModerationHistoryEntry[]>(propHistory || [])
+  const [history, setHistory] = React.useState<ActivityLogEntry[]>(propHistory || [])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -180,8 +215,8 @@ export const ModerationHistory: React.FC<ModerationHistoryProps> = ({
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5" />
-            Lịch sử kiểm duyệt
+            <FileText className="h-5 w-5" />
+            Nhật ký hoạt động
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -199,8 +234,8 @@ export const ModerationHistory: React.FC<ModerationHistoryProps> = ({
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5" />
-            Lịch sử kiểm duyệt
+            <FileText className="h-5 w-5" />
+            Nhật ký hoạt động
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -225,8 +260,8 @@ export const ModerationHistory: React.FC<ModerationHistoryProps> = ({
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5" />
-            Lịch sử kiểm duyệt
+            <FileText className="h-5 w-5" />
+            Nhật ký hoạt động
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -249,79 +284,123 @@ export const ModerationHistory: React.FC<ModerationHistoryProps> = ({
         <CardTitle className="flex items-center gap-2 text-lg">
           <Clock className="h-5 w-5" />
           Lịch sử kiểm duyệt
-          <Badge variant="outline" className="ml-auto">
+          <Badge variant="outline" className="ml-auto text-xs">
             {history.length} hoạt động
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {sortedHistory.map((entry, index) => (
             <div key={index} className="relative">
               {index < sortedHistory.length - 1 && (
-                <div className="absolute left-6 top-10 bottom-0 w-px bg-gray-200" />
+                <div className="absolute left-6 top-12 bottom-0 w-px bg-border" />
               )}
               
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 bg-white rounded-full border-2 border-border flex items-center justify-center shadow-sm">
                   {getActionIcon(entry.action)}
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge 
-                      variant="outline" 
-                      className={`${getActionColor(entry.action)} text-xs`}
-                    >
-                      {getActionText(entry.action)}
-                    </Badge>
-                    <span className="text-xs text-gray-500">
+                <div className="flex-1 min-w-0 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h4 className="font-medium text-sm">{getActionText(entry.action)}</h4>
+                      <Badge 
+                        variant="outline" 
+                        className={`${getActionColor(entry.action)} text-xs font-medium`}
+                      >
+                        {entry.action === 'created' ? 'Tạo' :
+                         entry.action === 'draft_saved' ? 'Nháp' :
+                         entry.action === 'edited' ? 'Sửa' :
+                         entry.action === 'submitted' ? 'Gửi' : 
+                         entry.action === 'approved' ? 'Duyệt' : 
+                         entry.action === 'rejected' ? 'Từ chối' : 
+                         entry.action === 'escalated' ? 'Chuyển lên' : 
+                         entry.action === 'started_review' ? 'Bắt đầu' : 
+                         entry.action === 'published' ? 'Công khai' :
+                         entry.action === 'hidden' ? 'Ẩn' : entry.action}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted font-medium">
                       {formatDate(entry.createdAt)}
                     </span>
                   </div>
                   
-                  {(entry.moderatorName || entry.moderatorId) && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <User className="h-3 w-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        {entry.moderatorName || entry.moderatorId}
+                  {(entry.userName || entry.userId || entry.moderatorName || entry.moderatorId) && (
+                    <div className="flex items-center gap-2 text-sm text-muted">
+                      <span>Bởi:</span>
+                      <span className="font-medium text-foreground">
+                        {entry.userName || entry.moderatorName || 
+                         (entry.userId ? `User #${entry.userId.slice(-6)}` : 
+                          entry.moderatorId ? `Moderator #${entry.moderatorId.slice(-6)}` : 'Hệ thống')}
                       </span>
-                      {entry.moderatorRole && (
-                        <Badge variant="outline" className="text-xs">
-                          {entry.moderatorRole}
+                      {(entry.userRole || entry.moderatorRole) && (
+                        <Badge variant="secondary" className="text-xs ml-1">
+                          {entry.userRole === 'contributor' ? 'Cộng tác viên' :
+                           entry.userRole === 'partner' ? 'Đối tác' :
+                           entry.userRole === 'traveler' ? 'Du khách' :
+                           entry.moderatorRole === 'moderator' ? 'Kiểm duyệt viên' : 
+                           entry.moderatorRole === 'admin' ? 'Quản trị viên' : 
+                           (entry.userRole || entry.moderatorRole)}
                         </Badge>
                       )}
                     </div>
                   )}
                   
                   {entry.reason && (
-                    <div className="bg-gray-50 p-3 rounded-md border-l-4 border-blue-400">
-                      <p className="text-sm text-gray-700">
-                        💬 {entry.reason}
+                    <div className="bg-muted/50 p-3 rounded-lg border border-border">
+                      <p className="text-sm text-foreground leading-relaxed">
+                        <span className="font-medium text-muted">Ghi chú:</span> {entry.reason}
                       </p>
                     </div>
                   )}
                   
                   {entry.metadata && (
-                    <div className="mt-2 space-y-1">
+                    <div className="space-y-1">
                       {entry.metadata.resubmissionCount && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
                           Lần gửi lại thứ {entry.metadata.resubmissionCount}
                         </p>
                       )}
+                      {entry.metadata.editCount && (
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-orange-400 rounded-full mr-2"></span>
+                          Lần chỉnh sửa thứ {entry.metadata.editCount}
+                        </p>
+                      )}
+                      {entry.metadata.changedFields && entry.metadata.changedFields.length > 0 && (
+                        <div className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span>
+                          <span>Đã thay đổi: </span>
+                          <span className="font-medium">
+                            {entry.metadata.changedFields.map(field => {
+                              switch(field) {
+                                case 'name': return 'Tên địa điểm';
+                                case 'description': return 'Mô tả';
+                                case 'images': return 'Hình ảnh';
+                                case 'video': return 'Video';
+                                case 'address': return 'Địa chỉ';
+                                case 'coordinates': return 'Tọa độ';
+                                case 'tags': return 'Tags';
+                                case 'facilities': return 'Tiện ích';
+                                default: return field;
+                              }
+                            }).join(', ')}
+                          </span>
+                        </div>
+                      )}
                       {entry.metadata.oldStatus && entry.metadata.newStatus && (
-                        <p className="text-xs text-gray-500">
-                          Trạng thái: {entry.metadata.oldStatus} → {entry.metadata.newStatus}
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></span>
+                          Trạng thái: <span className="font-medium">{entry.metadata.oldStatus}</span> → <span className="font-medium">{entry.metadata.newStatus}</span>
                         </p>
                       )}
                     </div>
                   )}
                 </div>
               </div>
-              
-              {index < sortedHistory.length - 1 && (
-                <Separator className="mt-4" />
-              )}
             </div>
           ))}
         </div>
@@ -330,4 +409,5 @@ export const ModerationHistory: React.FC<ModerationHistoryProps> = ({
   )
 }
 
-export default ModerationHistory
+export default ActivityLog
+export { ActivityLog as ModerationHistory } // Backward compatibility

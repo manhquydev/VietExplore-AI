@@ -27,13 +27,14 @@ import {
   AlertTriangle,
   FileText,
   Image as ImageIcon,
+  Video,
   ExternalLink
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { auth } from "@/lib/firebase"
-import ModerationHistory from "@/components/moderation-history"
+import { ActivityLog } from "@/components/moderation-history"
 
 interface ReviewPageProps {
   params: Promise<{
@@ -316,9 +317,9 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   <FileText className="w-4 h-4" />
                   Nội dung
                 </TabsTrigger>
-                <TabsTrigger value="images" className="flex items-center gap-2">
+                <TabsTrigger value="media" className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4" />
-                  Hình ảnh ({contentDetails.images?.length || 0})
+                  Ảnh & Video ({(contentDetails.images?.length || 0) + (contentDetails.video ? 1 : 0)})
                 </TabsTrigger>
                 <TabsTrigger value="sources" className="flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
@@ -472,7 +473,48 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="images" className="space-y-6 mt-6">
+              <TabsContent value="media" className="space-y-6 mt-6">
+                {/* Video Section */}
+                {contentDetails.video && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Video className="w-5 h-5" />
+                        Video giới thiệu
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="relative aspect-video overflow-hidden rounded-lg border bg-black">
+                          <video
+                            controls
+                            className="w-full h-full"
+                            preload="metadata"
+                          >
+                            <source src={contentDetails.video.url} type="video/mp4" />
+                            <source src={contentDetails.video.url} type="video/mov" />
+                            <source src={contentDetails.video.url} type="video/avi" />
+                            Trình duyệt của bạn không hỗ trợ video.
+                          </video>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <Label className="text-sm font-medium">Tên file</Label>
+                            <p className="text-sm text-muted mt-1">{contentDetails.video.name || 'Không có tên'}</p>
+                          </div>
+                          {contentDetails.video.duration && (
+                            <div>
+                              <Label className="text-sm font-medium">Thời lượng</Label>
+                              <p className="text-sm text-muted mt-1">{Math.floor(contentDetails.video.duration / 60)}:{(contentDetails.video.duration % 60).toString().padStart(2, '0')}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Images Section */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -566,7 +608,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               </TabsContent>
 
               <TabsContent value="history" className="space-y-6 mt-6">
-                <ModerationHistory 
+                <ActivityLog 
                   contentId={contentDetails.id || reviewItem.contentId}
                   history={contentDetails.moderationHistory || []}
                 />
@@ -623,6 +665,12 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     <span className="text-muted">Có hình ảnh:</span>
                     <Badge variant={reviewItem.metadata?.hasImages ? "success" : "secondary"} className="text-xs">
                       {reviewItem.metadata?.hasImages ? "Có" : "Không"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted">Có video:</span>
+                    <Badge variant={contentDetails.video ? "success" : "secondary"} className="text-xs">
+                      {contentDetails.video ? "Có" : "Không"}
                     </Badge>
                   </div>
                 </div>
@@ -707,38 +755,6 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               </CardContent>
             </Card>
 
-            {/* Review Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Thông tin duyệt
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">Đã gửi</p>
-                        <span className="text-xs text-muted">
-                          {new Date(reviewItem.submittedAt).toLocaleDateString('vi-VN', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted mt-1">
-                        Bởi: {reviewItem.submitter?.fullName || 'Người dùng'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </main>
