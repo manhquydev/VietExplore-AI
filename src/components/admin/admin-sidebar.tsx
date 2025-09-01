@@ -10,16 +10,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { 
-  LayoutDashboard, 
-  Users, 
-  FileCheck, 
-  BarChart3, 
-  Settings, 
-  Shield,
-  LogOut,
-  ChevronLeft
-} from "lucide-react"
+import { adminIcons } from "@/lib/admin/icon-system"
+import { adminLayout } from "@/lib/admin/theme-utils"
+import { AdminSkeleton, AdminLoading } from "@/components/admin/loading-states"
+import { useFocusTrap, useKeyboardNavigation, AdminSROnly } from "@/lib/admin/accessibility"
 
 interface AdminSidebarProps {
   collapsed?: boolean
@@ -39,33 +33,32 @@ const navigation: NavItem[] = [
   {
     title: "Tổng quan",
     href: "/admin",
-    icon: LayoutDashboard,
+    icon: adminIcons.navigation.dashboard,
     description: "Tổng quan hệ thống và chỉ số chính"
   },
   {
-    title: "Hàng đợi kiểm duyệt",
+    title: "Kiểm duyệt",
     href: "/admin/moderation",
-    icon: FileCheck,
-    badge: "Mới",
+    icon: adminIcons.navigation.moderation,
     description: "Xem xét nội dung đã gửi"
   },
   {
-    title: "Quản lý người dùng", 
+    title: "Người dùng", 
     href: "/admin/users",
-    icon: Users,
+    icon: adminIcons.navigation.users,
     description: "Quản lý người dùng và vai trò",
     roles: ["admin"]
   },
   {
     title: "Phân tích",
     href: "/admin/analytics", 
-    icon: BarChart3,
+    icon: adminIcons.navigation.analytics,
     description: "Báo cáo và thông tin chi tiết"
   },
   {
     title: "Cài đặt",
     href: "/admin/settings",
-    icon: Settings,
+    icon: adminIcons.navigation.settings,
     description: "Cấu hình hệ thống",
     roles: ["admin"]
   }
@@ -78,26 +71,34 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const { stats, loading } = useAdminStats()
+  const focusTrapRef = useFocusTrap(!collapsed)
+  const { focusedIndex, handleKeyDown } = useKeyboardNavigation(navigation.length)
 
   const filteredNavigation = navigation.filter(item => 
     !item.roles || item.roles.includes(user?.role || '')
   )
 
   return (
-    <div className={cn(
-      "flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300",
-      collapsed ? "w-16" : "w-64"
-    )}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+    <aside 
+      ref={focusTrapRef}
+      role="navigation"
+      aria-label="Admin navigation"
+      className={cn(
+        "admin-layout-sidebar flex flex-col h-screen transition-all duration-300",
+        collapsed ? "admin-layout-sidebar-collapsed" : "admin-layout-sidebar"
+      )}
+      onKeyDown={handleKeyDown}
+    >
+      {/* Header - Clean & Professional */}
+      <div className="flex items-center justify-between p-4 border-b border-admin-neutral-200">
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-xl flex items-center justify-center shadow-sm">
+              <adminIcons.navigation.dashboard className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">Bảng điều khiển</h2>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <h2 className="admin-card-title text-base">VietExplore</h2>
+              <p className="admin-caption-text capitalize font-medium text-admin-primary-600">{user?.role}</p>
             </div>
           </div>
         )}
@@ -108,79 +109,108 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             size="sm"
             onClick={onToggle}
             className={cn(
-              "p-2 h-8 w-8",
+              "admin-btn-ghost admin-btn-sm p-2 h-8 w-8 hover:bg-admin-neutral-100",
               collapsed && "mx-auto"
             )}
           >
-            <ChevronLeft className={cn(
-              "h-4 w-4 transition-transform",
+            <adminIcons.system.previous className={cn(
+              "h-4 w-4 transition-transform duration-200",
               collapsed && "rotate-180"
             )} title={collapsed ? "Mở rộng" : "Thu gọn"} />
           </Button>
         )}
       </div>
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-2">
-          {filteredNavigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-            
-            return (
+      {/* Navigation - Professional & Clean */}
+      <ScrollArea className="flex-1 px-3 py-6">
+        <nav className="space-y-1" role="menubar">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-3">
+                  <AdminSkeleton className="h-5 w-5 rounded" />
+                  {!collapsed && <AdminSkeleton className="h-4 flex-1" />}
+                </div>
+              ))}
+            </div>
+          ) : (
+            filteredNavigation.map((item, index) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+              
+              return (
               <Link
                 key={item.href}
                 href={item.href}
+                role="menuitem"
+                tabIndex={focusedIndex === index ? 0 : -1}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group",
+                  "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                   isActive 
-                    ? "bg-blue-50 text-blue-700 border border-blue-200" 
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-admin-primary-50 text-admin-primary-700 border-l-3 border-l-admin-primary-600 shadow-sm" 
+                    : "text-admin-neutral-700 hover:bg-admin-neutral-100 hover:text-admin-neutral-900",
+                  focusedIndex === index && "ring-2 ring-admin-primary-500 ring-offset-2"
                 )}
+                title={collapsed ? item.title : item.description}
+                aria-label={`${item.title}${item.description ? `: ${item.description}` : ''}`}
               >
                 <item.icon className={cn(
-                  "h-4 w-4 shrink-0",
-                  isActive ? "text-blue-700" : "text-gray-500 group-hover:text-gray-700"
+                  "h-5 w-5 shrink-0 transition-colors duration-200",
+                  isActive ? "text-admin-primary-700" : "text-admin-neutral-500 group-hover:text-admin-neutral-700"
                 )} />
                 
                 {!collapsed && (
                   <>
-                    <span className="truncate">{item.title}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="ml-auto text-xs px-2 py-0">
-                        {item.badge}
+                    <AdminSROnly>Điều hướng đến </AdminSROnly>
+                    <span className="truncate font-medium">{item.title}</span>
+                    {stats.pendingModeration > 0 && item.href === '/admin/moderation' && (
+                      <Badge className="ml-auto bg-admin-warning-100 text-admin-warning-700 border-admin-warning-200 text-xs px-2 py-0.5 font-semibold">
+                        {stats.pendingModeration}
                       </Badge>
                     )}
                   </>
                 )}
               </Link>
-            )
-          })}
+              )
+            })
+          )}
         </nav>
 
         {!collapsed && (
           <>
-            <Separator className="my-4" />
+            <Separator className="my-6 bg-admin-neutral-200" />
             <div className="px-3 py-2">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              <p className="admin-caption-text uppercase tracking-wider mb-3 font-semibold">
                 Thống kê nhanh
               </p>
-              <div className="space-y-2 text-xs text-gray-600">
-                <div className="flex justify-between">
-                  <span>Đang chờ duyệt</span>
-                  <span className="font-medium">
-                    {loading ? "..." : stats.pendingModeration}
+              <div className="space-y-3 text-xs">
+                <div className="flex justify-between items-center p-2 rounded-md bg-admin-neutral-50">
+                  <span className="text-admin-neutral-600">Chờ duyệt</span>
+                  <span className={cn(
+                    "font-semibold px-2 py-1 rounded-full text-xs",
+                    stats.pendingModeration > 10 
+                      ? "bg-admin-warning-100 text-admin-warning-700" 
+                      : "bg-admin-neutral-200 text-admin-neutral-700"
+                  )}>
+                    {loading ? <AdminLoading size="sm" inline /> : stats.pendingModeration}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Tổng người dùng</span>
-                  <span className="font-medium">
-                    {loading ? "..." : stats.totalUsers.toLocaleString()}
+                <div className="flex justify-between items-center p-2 rounded-md bg-admin-neutral-50">
+                  <span className="text-admin-neutral-600">Người dùng</span>
+                  <span className="font-semibold text-admin-primary-700">
+                    {loading ? <AdminLoading size="sm" inline /> : stats.totalUsers.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Trạng thái hệ thống</span>
-                  <span className={`font-medium ${stats.systemHealth >= 99 ? 'text-green-600' : stats.systemHealth >= 95 ? 'text-yellow-600' : 'text-red-600'}`}>
-                    {loading ? "..." : stats.systemHealth >= 99 ? 'Tốt' : stats.systemHealth >= 95 ? 'Bình thường' : 'Cần chú ý'}
+                <div className="flex justify-between items-center p-2 rounded-md bg-admin-neutral-50">
+                  <span className="text-admin-neutral-600">Hệ thống</span>
+                  <span className={cn(
+                    "font-semibold px-2 py-1 rounded-full text-xs",
+                    stats.systemHealth >= 99 
+                      ? 'bg-admin-success-100 text-admin-success-700' 
+                      : stats.systemHealth >= 95 
+                        ? 'bg-admin-warning-100 text-admin-warning-700' 
+                        : 'bg-admin-error-100 text-admin-error-700'
+                  )}>
+                    {loading ? <AdminLoading size="sm" inline /> : stats.systemHealth >= 99 ? 'Tốt' : stats.systemHealth >= 95 ? 'Ổn' : 'Lỗi'}
                   </span>
                 </div>
               </div>
@@ -189,20 +219,20 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-gray-200">
+      {/* Footer - User Profile & Logout */}
+      <div className="p-4 border-t border-admin-neutral-200 bg-admin-neutral-50">
         {!collapsed && (
-          <div className="flex items-center gap-3 px-3 py-2 mb-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-gray-700">
+          <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-lg bg-white border border-admin-neutral-200">
+            <div className="w-10 h-10 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-full flex items-center justify-center shadow-sm">
+              <span className="text-sm font-semibold text-white">
                 {user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="admin-body-text font-semibold text-admin-neutral-900 truncate">
                 {user?.fullName}
               </p>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="admin-caption-text truncate">
                 {user?.email}
               </p>
             </div>
@@ -214,14 +244,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           size="sm"
           onClick={() => signOut()}
           className={cn(
-            "w-full justify-start text-gray-700 hover:text-red-700 hover:bg-red-50",
-            collapsed && "justify-center px-2"
+            "admin-btn-ghost w-full text-admin-neutral-700 hover:text-admin-error-600 hover:bg-admin-error-50 transition-all duration-200",
+            collapsed ? "justify-center px-2" : "justify-start gap-3"
           )}
         >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Đăng xuất</span>}
+          <adminIcons.system.close className="h-4 w-4" />
+          {!collapsed && <span className="font-medium">Đăng xuất</span>}
         </Button>
       </div>
-    </div>
+    </aside>
   )
 }

@@ -7,14 +7,8 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Bell, 
-  Search, 
-  Menu,
-  Sun,
-  Moon,
-  HelpCircle
-} from "lucide-react"
+import { adminIcons } from "@/lib/admin/icon-system"
+import { adminLayout } from "@/lib/admin/theme-utils"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -32,72 +26,109 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { user } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  // Handle mobile detection and responsive behavior
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024 // lg breakpoint
+      setIsMobile(mobile)
+      if (mobile) {
+        setSidebarCollapsed(true)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed)
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <AdminSidebar 
-        collapsed={sidebarCollapsed}
-        onToggle={toggleSidebar}
-      />
+    <>
+      {/* Mobile Overlay */}
+      {isMobile && !sidebarCollapsed && (
+        <div 
+          className="fixed inset-0 bg-admin-neutral-900 bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarCollapsed(true)}
+        />
+      )}
       
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <div className="flex h-screen bg-admin-neutral-50">
+        {/* Professional Sidebar */}
+        <div className={cn(
+          "relative z-50 transition-all duration-300",
+          isMobile && sidebarCollapsed && "-translate-x-full"
+        )}>
+          <AdminSidebar 
+            collapsed={sidebarCollapsed}
+            onToggle={toggleSidebar}
+          />
+        </div>
+        
+        {/* Main Content Area */}
+        <div className="admin-layout-main w-full">{/* Ensure full width on mobile */}
+        {/* Professional Admin Header */}
+        <header className="admin-layout-header">
+          <div className="flex items-center justify-between w-full">
+            {/* Left Section - Mobile Menu + Search */}
+            <div className="flex items-center gap-4 flex-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleSidebar}
-                className="lg:hidden"
+                className="admin-btn-ghost admin-btn-sm lg:hidden"
               >
-                <Menu className="h-4 w-4" />
+                <adminIcons.system.menu className="h-4 w-4" />
               </Button>
               
-              <div className="flex-1 max-w-md">
+              {/* Global Search - Responsive */}
+              <div className="flex-1 max-w-lg">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <adminIcons.utility.search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-admin-neutral-400" />
                   <Input
-                    placeholder="Search anything..."
+                    placeholder={isMobile ? "Tìm kiếm..." : "Tìm kiếm người dùng, địa điểm..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-gray-50 border-0 focus:bg-white focus:ring-1 focus:ring-blue-500"
+                    className="admin-input pl-10 bg-admin-neutral-50 border-0 focus:bg-white focus:ring-2 focus:ring-admin-primary-500 transition-all duration-200 text-sm"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-4 w-4" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500 hover:bg-red-500">
+            {/* Right Section - Actions + Profile */}
+            <div className="flex items-center gap-2">
+              {/* Notifications */}
+              <Button variant="ghost" size="sm" className="admin-btn-ghost relative">
+                <adminIcons.feedback.notification className="h-4 w-4" />
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs bg-admin-error-500 hover:bg-admin-error-500 text-white border-2 border-white rounded-full flex items-center justify-center">
                   3
                 </Badge>
               </Button>
               
-              <Button variant="ghost" size="sm">
-                <HelpCircle className="h-4 w-4" />
+              {/* Help */}
+              <Button variant="ghost" size="sm" className="admin-btn-ghost">
+                <adminIcons.feedback.info className="h-4 w-4" />
               </Button>
               
-              <div className="h-6 w-px bg-gray-200" />
+              {/* Separator */}
+              <div className="h-6 w-px bg-admin-neutral-200 mx-2" />
               
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">
+              {/* User Profile - Responsive */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-sm font-semibold text-white">
                     {user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
                   </span>
                 </div>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-900">
+                <div className="hidden sm:block">
+                  <p className="admin-body-text font-semibold text-admin-neutral-900 text-sm">
                     {user?.fullName}
                   </p>
-                  <p className="text-xs text-gray-500 capitalize">
+                  <p className="admin-caption-text capitalize font-medium text-admin-primary-600">
                     {user?.role}
                   </p>
                 </div>
@@ -106,18 +137,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
         </header>
 
-        {/* Page Header */}
+        {/* Page Header - Clean & Professional */}
         {(title || actions) && (
-          <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="bg-white border-b border-admin-neutral-200 px-6 py-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="space-y-1">
                 {title && (
-                  <h1 className="text-2xl font-semibold text-gray-900">
+                  <h1 className="admin-page-title">
                     {title}
                   </h1>
                 )}
                 {description && (
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="admin-body-text max-w-2xl">
                     {description}
                   </p>
                 )}
@@ -131,13 +162,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
         )}
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-6">
+        {/* Content Area - Professional Spacing & Mobile Optimized */}
+        <main className="admin-layout-content">
+          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-6">
             {children}
           </div>
         </main>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

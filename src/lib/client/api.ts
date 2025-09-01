@@ -40,6 +40,15 @@ async function callApi<T>(
 
     if (!response.ok) {
       console.error(`API Error for ${endpoint}:`, { status: response.status, data });
+      
+      // If data is empty or doesn't have error property, create a meaningful error
+      if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+        data = {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText || 'Unknown error'}`
+        };
+      }
+      
       throw data;
     }
 
@@ -59,6 +68,14 @@ async function callApi<T>(
       return {
         success: false,
         error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+      };
+    }
+    
+    // Handle empty object errors
+    if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+      return {
+        success: false,
+        error: 'Server trả về phản hồi rỗng. Vui lòng thử lại.'
       };
     }
     
@@ -154,6 +171,15 @@ export const apiClient = {
         body: JSON.stringify(reviewData),
       }),
     },
+    // Create edit draft from published place
+    createEditDraft: (placeId: string) => callApi(`/places/${placeId}/create-edit-draft`, {
+      method: 'POST',
+    }),
+    // Place deletion requests
+    requestDeletion: (placeId: string, reason: string) => callApi(`/places/${placeId}/request-deletion`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    }),
   },
   admin: {
     users: {

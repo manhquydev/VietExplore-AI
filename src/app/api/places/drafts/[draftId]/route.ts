@@ -22,8 +22,15 @@ export async function GET(
     const { draftId } = await params;
     const user = authResult.user;
 
-    // Get draft from places collection
-    const draftDoc = await adminDb.collection('places').doc(draftId).get();
+    // Get draft from places or place_drafts collection
+    let draftDoc = await adminDb.collection('places').doc(draftId).get();
+    let collection = 'places';
+    
+    if (!draftDoc.exists) {
+      // Try place_drafts collection for edit drafts
+      draftDoc = await adminDb.collection('place_drafts').doc(draftId).get();
+      collection = 'place_drafts';
+    }
     
     if (!draftDoc.exists) {
       return NextResponse.json(
@@ -119,7 +126,15 @@ export async function PUT(
     const { draftId } = await params;
 
     // Check if draft exists and belongs to user
-    const draftDoc = await adminDb.collection('places').doc(draftId).get();
+    let draftDoc = await adminDb.collection('places').doc(draftId).get();
+    let collection = 'places';
+    
+    if (!draftDoc.exists) {
+      // Try place_drafts collection for edit drafts
+      draftDoc = await adminDb.collection('place_drafts').doc(draftId).get();
+      collection = 'place_drafts';
+    }
+    
     if (!draftDoc.exists) {
       return NextResponse.json(
         { success: false, error: 'Không tìm thấy bản nháp' },
@@ -136,8 +151,11 @@ export async function PUT(
     }
 
     // Allow editing of draft, submitted, and rejected places (but not in_review or published)
+    // Special handling for edit drafts from published places
+    const isEditingPublished = draft?.isEditingPublished || draft?.originalPlaceId;
     const editableStatuses = ['draft', 'submitted', 'rejected'];
-    if (!editableStatuses.includes(draft?.status)) {
+    
+    if (!isEditingPublished && !editableStatuses.includes(draft?.status)) {
       return NextResponse.json(
         { success: false, error: 'Không thể chỉnh sửa địa điểm đang được duyệt hoặc đã xuất bản' },
         { status: 400 }
@@ -182,7 +200,7 @@ export async function PUT(
       updatedAt: new Date().toISOString()
     };
 
-    await adminDb.collection('places').doc(draftId).update(updateData);
+    await adminDb.collection(collection).doc(draftId).update(updateData);
 
     return NextResponse.json({
       success: true,
@@ -223,7 +241,15 @@ export async function DELETE(
     const { draftId } = await params;
 
     // Check if draft exists and belongs to user
-    const draftDoc = await adminDb.collection('places').doc(draftId).get();
+    let draftDoc = await adminDb.collection('places').doc(draftId).get();
+    let collection = 'places';
+    
+    if (!draftDoc.exists) {
+      // Try place_drafts collection for edit drafts
+      draftDoc = await adminDb.collection('place_drafts').doc(draftId).get();
+      collection = 'place_drafts';
+    }
+    
     if (!draftDoc.exists) {
       return NextResponse.json(
         { success: false, error: 'Không tìm thấy bản nháp' },
@@ -240,8 +266,11 @@ export async function DELETE(
     }
 
     // Allow deletion if place is draft, submitted (pending review), or in_review
+    // Special handling for edit drafts from published places
+    const isEditingPublished = draft?.isEditingPublished || draft?.originalPlaceId;
     const deletableStatuses = ['draft', 'submitted', 'in_review'];
-    if (!deletableStatuses.includes(draft?.status)) {
+    
+    if (!isEditingPublished && !deletableStatuses.includes(draft?.status)) {
       return NextResponse.json(
         { success: false, error: 'Không thể xóa địa điểm đã được phê duyệt hoặc từ chối' },
         { status: 400 }
@@ -259,7 +288,7 @@ export async function DELETE(
     console.log(`Removed ${moderationQuery.size} moderation queue entries for place ${draftId}`);
 
     // Then delete the place document
-    await adminDb.collection('places').doc(draftId).delete();
+    await adminDb.collection(collection).doc(draftId).delete();
 
     // Also clean up any moderation logs
     const moderationLogsQuery = await adminDb.collection('moderation_logs')

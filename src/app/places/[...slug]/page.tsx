@@ -49,6 +49,34 @@ interface PlaceData {
     saves: number
     reviews: number
   }
+  // Vietnam Address structure
+  vietnamAddress?: {
+    provinceId: string
+    provinceName: string
+    districtId?: string
+    districtName?: string
+    wardId?: string
+    wardName?: string
+    fullAddress: string
+  }
+  // Address conversion data (old vs new after administrative changes)
+  addressConversion?: {
+    oldAddress: {
+      province: { id: number, name: string }
+      district: { id: number, name: string } | null
+      ward: { id: number, name: string } | null
+      fullAddress: string
+    }
+    newAddress: {
+      province: { id: number, name: string }
+      district: { id: number, name: string } | null
+      ward: { id: number, name: string } | null
+      fullAddress: string
+    } | null
+    hasChanges: boolean
+    conversionMessage: string
+    status: 'converted' | 'unchanged'
+  }
 }
 
 // Fetch real place data from API
@@ -107,7 +135,9 @@ async function getPlaceData(id: string): Promise<PlaceData | null> {
         likes: place.likeCount || 0,
         saves: 0, // Not implemented yet
         reviews: place.rating?.count || 0
-      }
+      },
+      vietnamAddress: place.vietnamAddress || undefined,
+      addressConversion: place.addressConversion || undefined
     };
   } catch (error) {
     console.error('Error fetching place data:', error);

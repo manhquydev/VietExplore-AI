@@ -8,58 +8,48 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Search,
-  Filter,
-  Clock,
-  Eye,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  MapPin,
-  Users,
-  Calendar,
-  ExternalLink,
-  Play,
-  RefreshCw
-} from "lucide-react"
+import { MapPin, Calendar, Users, Eye } from "lucide-react"
+import { adminIcons } from "@/lib/admin/icon-system"
+import { adminClasses } from "@/lib/admin/theme-utils"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useModerationQueue } from "@/hooks/use-admin"
 import { useToast } from "@/components/providers/toast-provider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { apiClient } from "@/lib/client/api"
+import { AdminTableSkeleton, AdminLoading, AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
+import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog } from "@/components/admin/confirmation-dialogs"
 
 const statusConfig = {
   pending: { 
     label: "Chờ xử lý", 
     variant: "warning" as const, 
-    icon: Clock,
-    color: "text-yellow-600 bg-yellow-50 border-yellow-200"
+    icon: adminIcons.status.pending,
+    color: "admin-status-warning"
   },
   in_review: { 
     label: "Đang xem xét", 
     variant: "default" as const, 
-    icon: Eye,
-    color: "text-blue-600 bg-blue-50 border-blue-200"
+    icon: adminIcons.actions.view,
+    color: "admin-status-info"
   },
   approved: { 
     label: "Đã phê duyệt", 
     variant: "success" as const, 
-    icon: CheckCircle,
-    color: "text-green-600 bg-green-50 border-green-200"
+    icon: adminIcons.status.success,
+    color: "admin-status-success"
   },
   rejected: { 
     label: "Bị từ chối", 
     variant: "destructive" as const, 
-    icon: XCircle,
-    color: "text-red-600 bg-red-50 border-red-200"
+    icon: adminIcons.status.error,
+    color: "admin-status-error"
   },
   escalated: { 
     label: "Đã leo thang", 
     variant: "secondary" as const, 
-    icon: AlertTriangle,
-    color: "text-purple-600 bg-purple-50 border-purple-200"
+    icon: adminIcons.status.warning,
+    color: "bg-admin-info-50 text-admin-info-700 border-admin-info-200"
   }
 }
 
@@ -173,34 +163,34 @@ export default function AdminModerationPage() {
   const actions = (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       <div className="relative flex-1 sm:flex-none">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <adminIcons.utility.search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-admin-neutral-400" />
         <Input
           placeholder="Tìm kiếm mục..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="admin-input pl-10 w-full sm:w-64"
         />
       </div>
       <Select value={selectedQueue} onValueChange={setSelectedQueue}>
-        <SelectTrigger className="w-full sm:w-48 focus:ring-2 focus:ring-blue-500">
+        <SelectTrigger className="w-full sm:w-48 admin-input">
           <SelectValue placeholder="Loại hàng đợi" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">
             <div className="flex items-center gap-2">
-              <Filter className="h-3 w-3" />
+              <adminIcons.utility.filter className="h-3 w-3" />
               Tất cả hàng đợi
             </div>
           </SelectItem>
           <SelectItem value="contributor_queue">
             <div className="flex items-center gap-2">
-              <Users className="h-3 w-3" />
+              <adminIcons.navigation.users className="h-3 w-3" />
               Cộng tác viên
             </div>
           </SelectItem>
           <SelectItem value="partner_queue">
             <div className="flex items-center gap-2">
-              <ExternalLink className="h-3 w-3" />
+              <adminIcons.content.external className="h-3 w-3" />
               Đối tác
             </div>
           </SelectItem>
@@ -211,10 +201,10 @@ export default function AdminModerationPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 md:mb-8">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Hàng đợi kiểm duyệt</h1>
-          <p className="text-sm md:text-base text-gray-600">Xem xét và quản lý nội dung được gửi từ cộng đồng</p>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+        <div className="space-y-2">
+          <h1 className="admin-page-title">Hàng đợi kiểm duyệt</h1>
+          <p className="admin-body-text max-w-2xl">Xem xét và quản lý nội dung được gửi từ cộng đồng</p>
         </div>
         <div className="flex-shrink-0">
           {actions}
@@ -223,18 +213,18 @@ export default function AdminModerationPage() {
       <div className="space-y-6">
         {/* Trạng thái Tabs */}
         <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
-          <div className="bg-white border rounded-lg p-1 shadow-sm">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 bg-gray-50">
+          <div className="admin-card p-2">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 bg-admin-neutral-50 p-1 rounded-lg">
               {Object.entries(statusConfig).map(([status, config]) => (
                 <TabsTrigger 
                   key={status} 
                   value={status}
-                  className="flex items-center gap-1 md:gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs md:text-sm"
+                  className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-admin-primary-200 text-xs md:text-sm font-medium px-3 py-2 rounded-md transition-all duration-200"
                 >
                   <config.icon className="h-3 w-3 md:h-4 md:w-4" />
                   <span className="hidden sm:inline">{config.label}</span>
                   {statusCounts[status] > 0 && (
-                    <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0.5 h-5">
+                    <Badge className={cn("ml-1 text-xs px-2 py-0.5 h-5 rounded-full font-semibold", config.color)}>
                       {statusCounts[status]}
                     </Badge>
                   )}
@@ -246,54 +236,43 @@ export default function AdminModerationPage() {
           {Object.entries(statusConfig).map(([status, config]) => (
             <TabsContent key={status} value={status} className="space-y-4">
               {loading ? (
-                <div className="text-center py-16">
-                  <div className="flex items-center justify-center space-x-2 mb-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <RefreshCw className="animate-spin h-6 w-6 text-blue-600" />
-                  </div>
-                  <p className="text-gray-600 font-medium">Đang tải dữ liệu kiểm duyệt...</p>
-                  <p className="text-sm text-gray-500 mt-1">Vui lòng chờ trong giây lát</p>
-                </div>
+                <AdminTableSkeleton rows={3} />
               ) : error ? (
-                <div className="text-center py-16">
-                  <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mx-auto max-w-md">
-                    <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-red-900 mb-2">Lỗi tải dữ liệu</h3>
-                    <p className="text-red-700 text-sm">{error}</p>
+                <AdminErrorState
+                  title="Lỗi tải dữ liệu kiểm duyệt"
+                  description={error}
+                  action={
                     <Button 
                       variant="outline" 
-                      className="mt-4 border-red-300 text-red-700 hover:bg-red-50"
+                      className="admin-btn-secondary"
                       onClick={() => window.location.reload()}
                     >
-                      <RefreshCw className="h-4 w-4 mr-2" />
+                      <adminIcons.system.refresh className="h-4 w-4 mr-2" />
                       Thử lại
                     </Button>
-                  </div>
-                </div>
+                  }
+                />
               ) : filteredItems.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg p-8 mx-auto max-w-md">
-                    <config.icon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Không có mục {config.label.toLowerCase()}
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      {searchQuery 
-                        ? "Thử điều chỉnh từ khóa tìm kiếm"
-                        : `Chưa có mục nào ở trạng thái này`
-                      }
-                    </p>
-                    {searchQuery && (
+                <AdminEmptyState
+                  icon={config.icon}
+                  title={`Không có mục ${config.label.toLowerCase()}`}
+                  description={
+                    searchQuery 
+                      ? "Thử điều chỉnh từ khóa tìm kiếm hoặc xóa bộ lọc"
+                      : `Chưa có mục nào ở trạng thái này trong hàng đợi`
+                  }
+                  action={
+                    searchQuery ? (
                       <Button 
                         variant="outline" 
                         onClick={() => setSearchQuery('')}
-                        className="text-sm"
+                        className="admin-btn-secondary"
                       >
                         Xóa tìm kiếm
                       </Button>
-                    )}
-                  </div>
-                </div>
+                    ) : null
+                  }
+                />
               ) : (
                 <div className="space-y-4">
                   {filteredItems.map((item) => {
@@ -321,10 +300,14 @@ export default function AdminModerationPage() {
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-lg text-gray-900 mb-1">
+                                    {item.itemType === 'place_edit' && '✏️ '}
+                                    {item.itemType === 'place_deletion' && '🗑️ '}
                                     {item.contentDetails?.name || 'Untitled'}
                                   </h3>
                                   <p className="text-gray-600 text-sm line-clamp-2">
-                                    {item.contentDetails?.shortDescription || 'No description'}
+                                    {item.itemType === 'place_edit' && 'Yêu cầu chỉnh sửa địa điểm đã xuất bản'}
+                                    {item.itemType === 'place_deletion' && `Yêu cầu xóa địa điểm: ${item.metadata?.reason || 'Không có lý do cụ thể'}`}
+                                    {!item.itemType && (item.contentDetails?.shortDescription || 'No description')}
                                   </p>
                                 </div>
                                 
@@ -333,6 +316,16 @@ export default function AdminModerationPage() {
                                     <statusInfo.icon className="w-3 h-3 mr-1" />
                                     {statusInfo?.label}
                                   </Badge>
+                                  {item.itemType === 'place_edit' && (
+                                    <Badge className="text-xs font-medium shadow-sm bg-yellow-100 text-yellow-800">
+                                      Chỉnh sửa
+                                    </Badge>
+                                  )}
+                                  {item.itemType === 'place_deletion' && (
+                                    <Badge className="text-xs font-medium shadow-sm bg-red-100 text-red-800">
+                                      Yêu cầu xóa
+                                    </Badge>
+                                  )}
                                   {item.priority && (
                                     <Badge className={cn("text-xs font-medium shadow-sm", priorityConfig[item.priority as keyof typeof priorityConfig]?.color)}>
                                       {priorityConfig[item.priority as keyof typeof priorityConfig]?.label}
@@ -362,6 +355,16 @@ export default function AdminModerationPage() {
                                 )}
                               </div>
 
+                              {/* Special info for deletion requests */}
+                              {item.itemType === 'place_deletion' && item.metadata?.reason && (
+                                <div className="bg-red-50 rounded-lg p-3 mb-4 border border-red-100">
+                                  <p className="text-sm">
+                                    <span className="font-medium text-red-800">Lý do xóa:</span>
+                                    <span className="text-red-700 ml-1">{item.metadata.reason}</span>
+                                  </p>
+                                </div>
+                              )}
+
                               {/* Reviewer Info */}
                               {item.reviewer && (
                                 <div className="bg-gray-50 rounded-lg p-3 mb-4">
@@ -387,77 +390,95 @@ export default function AdminModerationPage() {
 
                                 {status === 'pending' && (
                                   <>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-green-600 border-green-600 hover:bg-green-50"
-                                      onClick={() => handleAction(item.id, 'approve')}
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Phê duyệt
-                                    </Button>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline" 
-                                      className="text-red-600 border-red-600 hover:bg-red-50"
-                                      onClick={() => {
-                                        const reason = prompt("Lý do từ chối:")
-                                        if (reason) handleAction(item.id, 'reject', reason)
-                                      }}
-                                    >
-                                      <XCircle className="w-4 h-4 mr-2" />
-                                      Từ chối
-                                    </Button>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                      onClick={() => {
-                                        const reason = prompt("Lý do leo thang:")
-                                        if (reason) handleAction(item.id, 'escalate', reason)
-                                      }}
-                                    >
-                                      <AlertTriangle className="w-4 h-4 mr-2" />
-                                      Leo thang
-                                    </Button>
+                                    <AdminApproveDialog
+                                      itemName={item.contentDetails?.name || 'nội dung này'}
+                                      onConfirm={() => handleAction(item.id, 'approve')}
+                                      trigger={
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-green-600 border-green-600 hover:bg-green-50"
+                                        >
+                                          <adminIcons.status.success className="w-4 h-4 mr-2" />
+                                          {item.itemType === 'place_edit' ? 'Duyệt chỉnh sửa' : 
+                                           item.itemType === 'place_deletion' ? 'Duyệt xóa' : 'Phê duyệt'}
+                                        </Button>
+                                      }
+                                    />
+                                    <AdminRejectDialog
+                                      onConfirm={(reason) => handleAction(item.id, 'reject', reason)}
+                                      trigger={
+                                        <Button 
+                                          size="sm"
+                                          variant="outline" 
+                                          className="text-red-600 border-red-600 hover:bg-red-50"
+                                        >
+                                          <adminIcons.status.error className="w-4 h-4 mr-2" />
+                                          {item.itemType === 'place_edit' ? 'Từ chối chỉnh sửa' : 
+                                           item.itemType === 'place_deletion' ? 'Từ chối xóa' : 'Từ chối'}
+                                        </Button>
+                                      }
+                                    />
+                                    <AdminEscalateDialog
+                                      onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
+                                      trigger={
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                                        >
+                                          <adminIcons.status.warning className="w-4 h-4 mr-2" />
+                                          Leo thang
+                                        </Button>
+                                      }
+                                    />
                                   </>
                                 )}
 
                                 {status === 'in_review' && (
                                   <>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-green-600 border-green-600 hover:bg-green-50"
-                                      onClick={() => handleAction(item.id, 'approve')}
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Phê duyệt
-                                    </Button>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-red-600 border-red-600 hover:bg-red-50" 
-                                      onClick={() => {
-                                        const reason = prompt("Lý do từ chối:")
-                                        if (reason) handleAction(item.id, 'reject', reason)
-                                      }}
-                                    >
-                                      <XCircle className="w-4 h-4 mr-2" />
-                                      Từ chối
-                                    </Button>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                      onClick={() => {
-                                        const reason = prompt("Lý do leo thang:")
-                                        if (reason) handleAction(item.id, 'escalate', reason)
-                                      }}
-                                    >
-                                      <AlertTriangle className="w-4 h-4 mr-2" />
-                                      Leo thang
-                                    </Button>
+                                    <AdminApproveDialog
+                                      itemName={item.contentDetails?.name || 'nội dung này'}
+                                      onConfirm={() => handleAction(item.id, 'approve')}
+                                      trigger={
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-green-600 border-green-600 hover:bg-green-50"
+                                        >
+                                          <adminIcons.status.success className="w-4 h-4 mr-2" />
+                                          {item.itemType === 'place_edit' ? 'Duyệt chỉnh sửa' : 
+                                           item.itemType === 'place_deletion' ? 'Duyệt xóa' : 'Phê duyệt'}
+                                        </Button>
+                                      }
+                                    />
+                                    <AdminRejectDialog
+                                      onConfirm={(reason) => handleAction(item.id, 'reject', reason)}
+                                      trigger={
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-red-600 border-red-600 hover:bg-red-50" 
+                                        >
+                                          <adminIcons.status.error className="w-4 h-4 mr-2" />
+                                          {item.itemType === 'place_edit' ? 'Từ chối chỉnh sửa' : 
+                                           item.itemType === 'place_deletion' ? 'Từ chối xóa' : 'Từ chối'}
+                                        </Button>
+                                      }
+                                    />
+                                    <AdminEscalateDialog
+                                      onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
+                                      trigger={
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                                        >
+                                          <adminIcons.status.warning className="w-4 h-4 mr-2" />
+                                          Leo thang
+                                        </Button>
+                                      }
+                                    />
                                   </>
                                 )}
                               </div>

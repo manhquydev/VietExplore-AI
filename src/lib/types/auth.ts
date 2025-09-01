@@ -79,4 +79,6 @@ export type Permission =
   | 'fast_review'
   | 'approve_content'
   | 'reject_content'
-  | 'hide_content';
+  | 'hide_content'
+  | 'claim_moderation_item'
+  | 'manage_partial_admin';

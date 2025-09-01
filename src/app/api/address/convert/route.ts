@@ -134,9 +134,9 @@ export async function POST(request: NextRequest) {
 
     const result = {
       oldAddress,
-      newAddress,
+      newAddress: newAddress || oldAddress, // Always provide current address if no conversion
       hasChanges: newAddress !== null,
-      conversionMessage: conversionMessage.length > 0 ? conversionMessage.join('; ') : 'Không có thay đổi',
+      conversionMessage: conversionMessage.length > 0 ? conversionMessage.join('; ') : 'Địa chỉ không có thay đổi sau cải cách hành chính',
       status: newAddress ? 'converted' : 'unchanged'
     };
 

@@ -3,7 +3,7 @@ import { TrustLabel, User } from './auth';
 // Place types based on existing structure
 export type PlaceType = "bien" | "nui" | "van-hoa" | "am-thuc" | "check-in";
 export type PlaceRegion = "bac-bo" | "trung-bo" | "nam-bo";
-export type PlaceStatus = "draft" | "submitted" | "in_review" | "published" | "rejected" | "hidden";
+export type PlaceStatus = "draft" | "submitted" | "in_review" | "published" | "rejected" | "hidden" | "pending_edit" | "pending_deletion" | "needs_revision";
 
 export interface PlaceImage {
   id: string;
@@ -75,6 +75,23 @@ export interface Place {
   coordinates?: PlaceCoordinates; // Optional vì sẽ dùng address text
   address?: string;
   vietnamAddress: VietnamAddress; // Địa chỉ hành chính chuẩn
+  addressConversion?: {
+    oldAddress: {
+      province: { id: number, name: string }
+      district: { id: number, name: string } | null
+      ward: { id: number, name: string } | null
+      fullAddress: string
+    }
+    newAddress: {
+      province: { id: number, name: string }
+      district: { id: number, name: string } | null
+      ward: { id: number, name: string } | null
+      fullAddress: string
+    } | null
+    hasChanges: boolean
+    conversionMessage: string
+    status: 'converted' | 'unchanged'
+  }
   images: PlaceImage[];
   video?: PlaceVideo; // Chỉ 1 video
   trustLabel: TrustLabel;
@@ -131,11 +148,53 @@ export interface PlaceFilters {
 export interface PlaceModerationAction {
   id: string;
   placeId: string;
-  action: "approve" | "reject" | "hide" | "feature" | "verify";
+  action: "approve" | "reject" | "hide" | "feature" | "verify" | "direct_delete" | "request_edit";
   reason?: string;
   moderatorId: string;
   createdAt: string;
   previousStatus: PlaceStatus;
   newStatus: PlaceStatus;
+}
+
+// Moderation queue item
+export interface ModerationQueueItem {
+  id: string;
+  itemType: "place_submission" | "place_edit" | "place_deletion" | "place_reports_review";
+  contentType: "place";
+  contentId: string;
+  itemId: string;
+  status: "pending" | "claimed" | "in_review" | "approved" | "rejected" | "escalated";
+  priority: "urgent" | "high" | "medium" | "low";
+  queueType: "partner_queue" | "contributor_queue";
+  
+  // Claim mechanism
+  claimedBy?: string;
+  claimedAt?: string;
+  claimExpiresAt?: string; // Auto-release after 2 hours if no action
+  
+  // Submission data
+  submittedBy: string;
+  submittedAt: string;
+  
+  // Review data
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  
+  // Escalation data  
+  escalatedTo?: "admin";
+  escalatedAt?: string;
+  escalationReason?: string;
+  
+  // Content data for edit requests
+  originalData?: any;
+  editedData?: any;
+  
+  // Metadata
+  metadata?: {
+    editDraftId?: string;
+    reason?: string;
+    [key: string]: any;
+  };
 }
 

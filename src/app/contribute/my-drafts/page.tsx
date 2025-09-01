@@ -18,6 +18,7 @@ import { UserDraft } from "@/app/api/places/my-drafts/route"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LoadingCard, LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useToast } from "@/components/providers/toast-provider"
+import { apiClient } from "@/lib/client/api"
 
 // UserDraft interface is now imported from API types
 
@@ -58,6 +59,20 @@ const statusConfig = {
     icon: "x-circle",
     description: "Cần chỉnh sửa theo góp ý",
     help: "Xem lý do từ chối bên dưới và chỉnh sửa để gửi lại"
+  },
+  pending_edit: {
+    label: "Chờ duyệt chỉnh sửa",
+    variant: "warning" as const,
+    icon: "edit-3",
+    description: "Chỉnh sửa đang chờ duyệt",
+    help: "Bản chỉnh sửa đang chờ kiểm duyệt viên xem xét"
+  },
+  pending_deletion: {
+    label: "Chờ duyệt xóa",
+    variant: "danger" as const,
+    icon: "trash",
+    description: "Yêu cầu xóa đang chờ duyệt",
+    help: "Yêu cầu xóa địa điểm đang chờ kiểm duyệt viên xem xét"
   }
 }
 
@@ -87,15 +102,26 @@ export default function MyDraftsPage() {
   // Drafts are already filtered by the API based on search and status
 
   const handleDelete = async (draftId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa bản nháp này?")) return
+    const confirmed = window.confirm(
+      `🗑️ Xóa bản nháp\n\n` +
+      `Hành động này không thể hoàn tác.\n` +
+      `Bản nháp sẽ được xóa vĩnh viễn khỏi hệ thống.\n\n` +
+      `Bạn có chắc chắn muốn tiếp tục không?`
+    )
+    
+    if (!confirmed) return
     
     setActionLoading(`delete-${draftId}`)
     try {
       const result = await deleteDraft(draftId)
       if (!result.success) {
-        toast.error(result.error || 'Không thể xóa bản nháp')
+        toast.error(result.error || 'Không thể xóa bản nháp', {
+          title: '❌ Lỗi'
+        })
       } else {
-        toast.success('Đã xóa bản nháp thành công')
+        toast.success('Bản nháp đã được xóa thành công', {
+          title: '✅ Thành công'
+        })
       }
     } finally {
       setActionLoading(null)
@@ -107,9 +133,13 @@ export default function MyDraftsPage() {
     try {
       const result = await duplicateDraft(draft)
       if (!result.success) {
-        toast.error(result.error || 'Không thể sao chép bản nháp')
+        toast.error(result.error || 'Không thể sao chép bản nháp', {
+          title: '❌ Lỗi'
+        })
       } else {
-        toast.success('Đã sao chép bản nháp thành công')
+        toast.success('Bản nháp đã được sao chép thành công', {
+          title: '✅ Thành công'
+        })
       }
     } finally {
       setActionLoading(null)
@@ -121,10 +151,88 @@ export default function MyDraftsPage() {
     try {
       const result = await submitForReview(draftId)
       if (!result.success) {
-        toast.error(result.error || 'Không thể gửi duyệt')
+        toast.error(result.error || 'Không thể gửi duyệt', {
+          title: '❌ Lỗi'
+        })
       } else {
-        toast.success('Đã gửi bản nháp để duyệt thành công')
+        toast.success('Bản nháp đã được gửi để duyệt thành công', {
+          title: '✅ Thành công'
+        })
       }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleRequestEdit = async (draftId: string, draft: UserDraft) => {
+    const confirmed = window.confirm(
+      `✏️ Chỉnh sửa địa điểm: ${draft.name}\n\n` +
+      `• Bạn sẽ được chuyển đến trang chỉnh sửa với nội dung hiện tại\n` +
+      `• Sau khi chỉnh sửa xong, bản chỉnh sửa sẽ cần được kiểm duyệt\n` +
+      `• Nội dung gốc vẫn hiển thị công khai cho đến khi được duyệt\n\n` +
+      `Bạn có muốn tiếp tục không?`
+    )
+    
+    if (!confirmed) return
+    
+    setActionLoading(`edit-${draftId}`)
+    try {
+      // Create edit draft copy instead of direct request
+      const result = await apiClient.places.createEditDraft(draftId)
+      
+      if (result.success && result.data?.editDraftId) {
+        toast.success('Đã tạo bản chỉnh sửa, chuyển đến trang chỉnh sửa', {
+          title: '✅ Thành công'
+        })
+        router.push(`/contribute/edit/${result.data.editDraftId}?editing=${draftId}`)
+      } else {
+        toast.error(result.error || 'Không thể tạo bản chỉnh sửa', {
+          title: '❌ Lỗi'
+        })
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi tạo bản chỉnh sửa', {
+        title: '❌ Lỗi hệ thống'
+      })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleRequestDeletion = async (draftId: string, draft: UserDraft) => {
+    // Use a more professional approach instead of prompt
+    const reason = window.prompt(
+      `🗑️ Yêu cầu xóa địa điểm: ${draft.name}\n\n` +
+      `Lý do xóa sẽ được gửi đến bộ phận kiểm duyệt để xem xét.\n\n` +
+      `Vui lòng nhập lý do xóa:`
+    )
+    
+    if (!reason?.trim()) {
+      toast.warning('Vui lòng nhập lý do xóa để tiếp tục', {
+        title: '⚠️ Thiếu thông tin'
+      })
+      return
+    }
+    
+    setActionLoading(`delete-request-${draftId}`)
+    try {
+      const result = await apiClient.places.requestDeletion(draftId, reason.trim())
+      
+      if (result.success) {
+        toast.success('Yêu cầu xóa địa điểm đã được gửi thành công', {
+          title: '✅ Thành công'
+        })
+        // Refresh the data
+        window.location.reload()
+      } else {
+        toast.error(result.error || 'Không thể gửi yêu cầu xóa', {
+          title: '❌ Lỗi'
+        })
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi gửi yêu cầu xóa', {
+        title: '❌ Lỗi hệ thống'
+      })
     } finally {
       setActionLoading(null)
     }
@@ -203,8 +311,8 @@ export default function MyDraftsPage() {
 
         {/* Stats */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
-            {Array.from({ length: 5 }).map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 mb-8">
+            {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="text-center">
                 <Skeleton className="h-8 w-12 mx-auto mb-1" />
                 <Skeleton className="h-4 w-16 mx-auto" />
@@ -212,7 +320,7 @@ export default function MyDraftsPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 mb-8">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{stats.total}</div>
               <div className="text-sm text-muted">Tổng số</div>
@@ -222,7 +330,7 @@ export default function MyDraftsPage() {
               <div className="text-sm text-muted">{statusConfig.draft.label}</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{stats.in_review}</div>
+              <div className="text-2xl font-bold text-primary">{stats.in_review || 0}</div>
               <div className="text-sm text-muted">{statusConfig.in_review.label}</div>
             </div>
             <div className="text-center">
@@ -232,6 +340,14 @@ export default function MyDraftsPage() {
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{stats.rejected}</div>
               <div className="text-sm text-muted">{statusConfig.rejected.label}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.pending_edit || 0}</div>
+              <div className="text-sm text-muted">{statusConfig.pending_edit.label}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.pending_deletion || 0}</div>
+              <div className="text-sm text-muted">{statusConfig.pending_deletion.label}</div>
             </div>
           </div>
         )}
@@ -302,6 +418,10 @@ export default function MyDraftsPage() {
                     return () => window.open(`/drafts/${draft.id}/preview`, '_blank')
                   case 'published':
                     return () => window.open(`/places/${draft.id}`, '_blank')
+                  case 'pending_edit':
+                    return () => router.push(`/contribute/edit/${draft.id}`)
+                  case 'pending_deletion':
+                    return () => window.open(`/places/${draft.id}`, '_blank')
                   default:
                     return () => window.open(`/drafts/${draft.id}/preview`, '_blank')
                 }
@@ -317,6 +437,10 @@ export default function MyDraftsPage() {
                     return 'Xem trước'
                   case 'published':
                     return 'Xem công khai'
+                  case 'pending_edit':
+                    return 'Tiếp tục chỉnh sửa'
+                  case 'pending_deletion':
+                    return 'Xem địa điểm'
                   default:
                     return 'Xem trước'
                 }
@@ -402,7 +526,7 @@ export default function MyDraftsPage() {
                         </Button>
                         
                         {/* Quick actions based on status */}
-                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected') && (
+                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected' || draft.status === 'pending_edit' || draft.status === 'pending_deletion') && (
                           <Button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -434,6 +558,45 @@ export default function MyDraftsPage() {
                             )}
                             Gửi duyệt
                           </Button>
+                        )}
+
+                        {draft.status === 'published' && (
+                          <>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleRequestEdit(draft.id, draft)
+                              }}
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoading === `edit-${draft.id}`}
+                              className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+                            >
+                              {actionLoading === `edit-${draft.id}` ? (
+                                <LoadingSpinner size="sm" className="mr-1" />
+                              ) : (
+                                <Icon name="edit-3" className="w-3 h-3 mr-1" />
+                              )}
+                              Chỉnh sửa
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleRequestDeletion(draft.id, draft)
+                              }}
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoading === `delete-request-${draft.id}`}
+                              className="border-red-200 text-red-700 hover:bg-red-50"
+                            >
+                              {actionLoading === `delete-request-${draft.id}` ? (
+                                <LoadingSpinner size="sm" className="mr-1" />
+                              ) : (
+                                <Icon name="trash" className="w-3 h-3 mr-1" />
+                              )}
+                              Yêu cầu xóa
+                            </Button>
+                          </>
                         )}
                         
                       </div>
@@ -483,7 +646,7 @@ export default function MyDraftsPage() {
                           <DropdownMenuSeparator />
                           
                           {/* Destructive actions */}
-                          {draft.status !== "published" && (
+                          {(draft.status !== "published" && draft.status !== "pending_deletion") && (
                             <DropdownMenuItem 
                               onClick={() => handleDelete(draft.id)}
                               disabled={actionLoading === `delete-${draft.id}`}
@@ -531,6 +694,28 @@ export default function MyDraftsPage() {
                           <Icon name="check-circle" className="h-4 w-4 text-green-600" />
                           <p className="text-sm text-green-800">
                             Địa điểm đã được xuất bản và hiển thị công khai.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {draft.status === 'pending_edit' && (
+                      <div className="px-6 py-3 bg-yellow-50 border-t border-yellow-100">
+                        <div className="flex items-center gap-2">
+                          <Icon name="edit-3" className="h-4 w-4 text-yellow-600" />
+                          <p className="text-sm text-yellow-800">
+                            Bản chỉnh sửa đang chờ kiểm duyệt. Địa điểm vẫn hiển thị công khai cho đến khi được duyệt.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {draft.status === 'pending_deletion' && (
+                      <div className="px-6 py-3 bg-red-50 border-t border-red-100">
+                        <div className="flex items-center gap-2">
+                          <Icon name="trash" className="h-4 w-4 text-red-600" />
+                          <p className="text-sm text-red-800">
+                            Yêu cầu xóa địa điểm đang chờ kiểm duyệt. Địa điểm vẫn hiển thị công khai cho đến khi được duyệt.
                           </p>
                         </div>
                       </div>

@@ -20,17 +20,22 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') || 'pending';
+    const status = searchParams.get('status') || 'pending,claimed'; // Default to available items
     const contentType = searchParams.get('contentType');
     const priority = searchParams.get('priority');
     const queueType = searchParams.get('queueType'); // partner_queue hoặc contributor_queue
+    const claimedBy = searchParams.get('claimedBy'); // Filter by specific moderator
+    const showExpired = searchParams.get('showExpired') === 'true'; // Show expired claims
     const limit = parseInt(searchParams.get('limit') || '20');
 
     let query: FirebaseFirestore.Query = adminDb.collection('moderation_queue');
 
-    // Filter by status
-    if (status) {
-      query = query.where('status', '==', status);
+    // Filter by status (can be multiple statuses separated by comma)
+    const statusList = status.split(',').map(s => s.trim());
+    if (statusList.length === 1) {
+      query = query.where('status', '==', statusList[0]);
+    } else if (statusList.length > 1) {
+      query = query.where('status', 'in', statusList);
     }
 
     // Filter by content type
@@ -48,6 +53,19 @@ export async function GET(request: NextRequest) {
       query = query.where('queueType', '==', queueType);
     }
 
+    // Filter by specific moderator's claimed items
+    if (claimedBy) {
+      query = query.where('claimedBy', '==', claimedBy);
+    }
+
+    // Order by priority mapping then submission date
+    const priorityOrder: Record<string, number> = {
+      'urgent': 4,
+      'high': 3, 
+      'medium': 2,
+      'low': 1
+    };
+    
     // Order by priority and submission date
     query = query.orderBy('priority', 'desc').orderBy('submittedAt', 'asc');
 
@@ -58,9 +76,24 @@ export async function GET(request: NextRequest) {
     const snapshot = await query.get();
     const items: any[] = [];
     const orphanedEntries: string[] = [];
+    const expiredClaims: string[] = [];
+    const now = new Date();
 
     for (const doc of snapshot.docs) {
       const itemData = doc.data();
+      
+      // Check for expired claims and auto-release them
+      if (itemData.claimedBy && itemData.claimExpiresAt) {
+        const claimExpiry = new Date(itemData.claimExpiresAt);
+        if (claimExpiry < now) {
+          expiredClaims.push(doc.id);
+          // Update item data to reflect expired claim
+          itemData.status = 'pending';
+          itemData.claimedBy = null;
+          itemData.claimedAt = null;
+          itemData.claimExpiresAt = null;
+        }
+      }
       
       // Get submitter info
       const submitterDoc = await adminDb.collection('users').doc(itemData.submittedBy).get();
@@ -78,9 +111,60 @@ export async function GET(request: NextRequest) {
       let contentExists = false;
       
       if (itemData.contentType === 'place') {
-        const placeDoc = await adminDb.collection('places').doc(itemData.contentId).get();
+        // Check both places and place_drafts collections for places
+        let placeDoc = await adminDb.collection('places').doc(itemData.contentId).get();
+        if (!placeDoc.exists) {
+          placeDoc = await adminDb.collection('place_drafts').doc(itemData.contentId).get();
+        }
         contentExists = placeDoc.exists;
         contentDetails = placeDoc.data();
+      } else if (itemData.contentType === 'place_edit' || itemData.itemType === 'place_edit') {
+        // Handle edit requests - get both original and edited data
+        console.log('Processing place_edit request:', itemData.itemId);
+        console.log('Has originalData:', !!itemData.originalData);
+        console.log('Has editedData:', !!itemData.editedData);
+        
+        if (itemData.originalData && itemData.editedData) {
+          contentExists = true;
+          contentDetails = {
+            // Use edited data as primary content
+            ...itemData.editedData,
+            // Add comparison metadata
+            originalData: itemData.originalData,
+            isEditRequest: true,
+            originalPlaceId: itemData.itemId,
+            // Add edit metadata
+            editDraftId: itemData.metadata?.editDraftId,
+            editReason: itemData.metadata?.reason
+          };
+          console.log('Built content details with comparison data');
+        } else {
+          // Fallback - try to get the original place and construct comparison
+          console.log('Fallback: getting original place data from places collection');
+          const originalDoc = await adminDb.collection('places').doc(itemData.itemId).get();
+          contentExists = originalDoc.exists;
+          if (contentExists) {
+            const originalData = originalDoc.data();
+            
+            // Try to get edit draft if editDraftId is available
+            let editedData = originalData; // Fallback to original if no edit draft found
+            if (itemData.metadata?.editDraftId) {
+              const editDraftDoc = await adminDb.collection('place_drafts').doc(itemData.metadata.editDraftId).get();
+              if (editDraftDoc.exists) {
+                editedData = editDraftDoc.data();
+              }
+            }
+            
+            contentDetails = {
+              ...editedData,
+              originalData: originalData,
+              isEditRequest: true,
+              originalPlaceId: itemData.itemId,
+              editDraftId: itemData.metadata?.editDraftId,
+              editReason: itemData.metadata?.reason
+            };
+          }
+        }
       } else if (itemData.contentType === 'itinerary') {
         const itineraryDoc = await adminDb.collection('itineraries').doc(itemData.contentId).get();
         contentExists = itineraryDoc.exists;
@@ -129,6 +213,31 @@ export async function GET(request: NextRequest) {
       // Execute cleanup in background without blocking the response
       Promise.all(cleanupPromises).catch(error => {
         console.error('Error during background cleanup:', error);
+      });
+    }
+
+    // Clean up expired claims in the background
+    if (expiredClaims.length > 0) {
+      console.log(`Releasing ${expiredClaims.length} expired claim(s)`);
+      
+      const expiredCleanupPromises = expiredClaims.map(async (entryId) => {
+        try {
+          await adminDb.collection('moderation_queue').doc(entryId).update({
+            status: 'pending',
+            claimedBy: FieldValue.delete(),
+            claimedAt: FieldValue.delete(),
+            claimExpiresAt: FieldValue.delete(),
+            updatedAt: new Date().toISOString()
+          });
+          console.log(`Released expired claim: ${entryId}`);
+        } catch (error) {
+          console.error(`Failed to release expired claim ${entryId}:`, error);
+        }
+      });
+      
+      // Execute cleanup in background without blocking the response
+      Promise.all(expiredCleanupPromises).catch(error => {
+        console.error('Error during expired claim cleanup:', error);
       });
     }
 

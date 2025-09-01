@@ -1,23 +1,28 @@
 "use client"
 import { User, UserRole, Permission } from '@/lib/types/auth';
 
-// Role-to-permission mapping
+// Role-to-permission mapping based on document matrix
 export const rolePermissions: Record<UserRole, Permission[]> = {
-  guest: [],
-  traveler: ["create_itinerary", "save_places", "report_content"],
+  guest: [], // Can only view content
+  traveler: [
+    "report_content",
+    "create_itinerary", 
+    "save_places"
+  ],
   contributor: [
-    "create_place", 
+    "create_place", // Requires moderation
+    "report_content",
     "create_itinerary", 
     "save_places", 
-    "report_content", 
     "manage_drafts"
   ],
   partner: [
+    "create_place", // Requires moderation but priority queue
     "create_place_priority",
-    "create_place",
+    "report_content",
     "create_itinerary", 
     "save_places", 
-    "report_content", 
+    "manage_drafts",
     "partner_badge", 
     "fast_review"
   ],
@@ -26,9 +31,15 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     "approve_content",
     "reject_content",
     "hide_content",
-    "view_moderation_queue"
+    "view_moderation_queue",
+    "claim_moderation_item",
+    "manage_partial_admin",
+    // Inherits traveler permissions
+    "report_content",
+    "create_itinerary", 
+    "save_places"
   ],
-  admin: ["all_permissions"],
+  admin: ["all_permissions"], // Auto-approve places, full moderation access
 };
 
 export function hasPermission(user: User | null, permission: Permission): boolean {

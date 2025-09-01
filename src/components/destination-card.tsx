@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import {
@@ -130,8 +131,9 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
 
   return (
     <Card className="glass-card overflow-hidden flex flex-col h-full motion-gentle hover:scale-105 hover:shadow-2xl touch-target-44">
-      <CardHeader className="p-0 relative">
-        <div className="relative h-48 sm:h-56 w-full bg-surface">
+      <Link href={`/places/${destination.id}`} className="block">
+        <CardHeader className="p-0 relative cursor-pointer">
+          <div className="relative h-48 sm:h-56 w-full bg-surface">
           {/* Loading skeleton */}
           {isImageLoading && !imageError && (
             <div className="absolute inset-0 bg-gradient-to-r from-surface via-border to-surface animate-pulse" />
@@ -185,12 +187,14 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
         </div>
         {renderBadge()}
       </CardHeader>
-      <CardContent className="pt-4 sm:pt-6 flex-grow space-y-3 sm:space-y-4 px-4 sm:px-6">
-        <div className="space-y-2">
-          <CardTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground leading-tight line-clamp-2">
-            {destination.name}
-          </CardTitle>
-          <CardDescription className="text-muted text-sm sm:text-base lg:text-lg flex items-center gap-2">
+      </Link>
+      <Link href={`/places/${destination.id}`} className="block flex-grow">
+        <CardContent className="pt-4 sm:pt-6 flex-grow space-y-3 sm:space-y-4 px-4 sm:px-6 cursor-pointer">
+          <div className="space-y-2">
+            <CardTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground leading-tight line-clamp-2 hover:text-primary transition-colors">
+              {destination.name}
+            </CardTitle>
+            <CardDescription className="text-muted text-sm sm:text-base lg:text-lg flex items-center gap-2">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               width="14" 
@@ -213,6 +217,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
           {destination.description}
         </p>
       </CardContent>
+      </Link>
       
       <CardFooter className="glass-subtle border-t border-border/50 flex justify-between items-center p-4 sm:p-6">
         <div className="flex items-center gap-2">

@@ -5,26 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { 
-  TrendingUp, 
-  TrendingDown,
-  Users,
-  MapPin,
-  FileCheck,
-  AlertCircle,
-  Activity,
-  Clock,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  ExternalLink,
-  Play
-} from "lucide-react"
+import { adminIcons } from "@/lib/admin/icon-system"
+import { adminClasses } from "@/lib/admin/theme-utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminStats, useModerationQueue, useAdminUsers, useAdminPlaces } from "@/hooks/use-admin"
 import { useToast } from "@/components/providers/toast-provider"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { AdminMetricSkeleton, AdminLoading, AdminErrorState } from "@/components/admin/loading-states"
+import { AdminConfirmDialog } from "@/components/admin/confirmation-dialogs"
 
 export default function AdminOverviewPage() {
   const { user } = useAuth()
@@ -136,101 +125,104 @@ export default function AdminOverviewPage() {
       </div>
       
       <div className="space-y-6">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
+        {/* Professional Key Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Users Metric - Professional */}
+          <Card className="admin-card group">
+            <CardContent className="admin-card-content">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Tổng người dùng</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <p className="admin-caption-text uppercase tracking-wider font-semibold mb-2">Tổng người dùng</p>
+                  <p className="text-3xl font-bold text-admin-neutral-900 mb-1">
                     {isLoading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <AdminLoading size="lg" inline />
                     ) : (
-                      <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                        {formatNumber(metrics.totalUsers)}
-                      </span>
+                      formatNumber(metrics.totalUsers)
                     )}
                   </p>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Users className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                  <adminIcons.navigation.users className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="mt-3 md:mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-500 mr-1" />
-                  <span className="text-xs md:text-sm font-semibold text-emerald-600">
+              <div className="mt-4 pt-3 border-t border-admin-neutral-100 flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <div className={`h-2 w-2 rounded-full ${metrics.userGrowth > 0 ? 'bg-admin-success-600' : 'bg-admin-error-600'}`} />
+                  <span className={`text-sm font-semibold ${metrics.userGrowth > 0 ? 'text-admin-success-700' : 'text-admin-error-700'}`}>
                     {isLoading ? '...' : `${metrics.userGrowth > 0 ? '+' : ''}${metrics.userGrowth.toFixed(1)}%`}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500">so với tháng trước</span>
+                <span className="admin-caption-text">so với tháng trước</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
+          {/* Places Metric - Professional */}
+          <Card className="admin-card group">
+            <CardContent className="admin-card-content">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Tổng địa điểm</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <p className="admin-caption-text uppercase tracking-wider font-semibold mb-2">Tổng địa điểm</p>
+                  <p className="text-3xl font-bold text-admin-neutral-900 mb-1">
                     {isLoading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <AdminLoading size="lg" inline />
                     ) : (
-                      <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
-                        {formatNumber(metrics.totalPlaces)}
-                      </span>
+                      formatNumber(metrics.totalPlaces)
                     )}
                   </p>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <MapPin className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-success-600 to-admin-success-700 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                  <adminIcons.content.location className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="mt-3 md:mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-500 mr-1" />
-                  <span className="text-xs md:text-sm font-semibold text-emerald-600">
+              <div className="mt-4 pt-3 border-t border-admin-neutral-100 flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <div className={`h-2 w-2 rounded-full ${metrics.placeGrowth > 0 ? 'bg-admin-success-600' : 'bg-admin-error-600'}`} />
+                  <span className={`text-sm font-semibold ${metrics.placeGrowth > 0 ? 'text-admin-success-700' : 'text-admin-error-700'}`}>
                     {isLoading ? '...' : `${metrics.placeGrowth > 0 ? '+' : ''}${metrics.placeGrowth.toFixed(1)}%`}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500">so với tháng trước</span>
+                <span className="admin-caption-text">so với tháng trước</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all duration-200 border-l-4 border-l-amber-400">
-            <CardContent className="p-4 md:p-6">
+          {/* Pending Reviews Metric - Alert Style */}
+          <Card className={`admin-card group ${metrics.pendingReviews > 10 ? 'border-l-4 border-l-admin-warning-500 bg-admin-warning-50' : ''}`}>
+            <CardContent className="admin-card-content">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Đang chờ duyệt</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <p className="admin-caption-text uppercase tracking-wider font-semibold mb-2">Đang chờ duyệt</p>
+                  <p className="text-3xl font-bold text-admin-neutral-900 mb-1">
                     {isLoading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <AdminLoading size="lg" inline />
                     ) : (
-                      <span className={`${metrics.pendingReviews > 10 ? 'text-amber-600' : 'text-gray-900'} font-bold`}>
+                      <span className={metrics.pendingReviews > 10 ? 'text-admin-warning-700' : 'text-admin-neutral-900'}>
                         {metrics.pendingReviews}
                       </span>
                     )}
                   </p>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Clock className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200 ${
+                  metrics.pendingReviews > 10 
+                    ? 'bg-gradient-to-br from-admin-warning-600 to-admin-warning-700' 
+                    : 'bg-gradient-to-br from-admin-info-600 to-admin-info-700'
+                }`}>
+                  <adminIcons.status.pending className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="mt-3 md:mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <span className="text-xs md:text-sm font-semibold text-amber-700">
+              <div className="mt-4 pt-3 border-t border-admin-neutral-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-admin-info-700">
                     {pendingReviews?.filter(item => {
                       const today = new Date().toDateString()
                       return new Date(item.submittedAt).toDateString() === today
                     }).length || 0}
                   </span>
-                  <span className="text-xs text-gray-500 ml-1">hôm nay</span>
+                  <span className="admin-caption-text">hôm nay</span>
                 </div>
                 {metrics.pendingReviews > 10 && (
-                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                  <Badge className="admin-status-warning text-xs px-2 py-1">
                     Cần chú ý
                   </Badge>
                 )}
@@ -238,30 +230,41 @@ export default function AdminOverviewPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
+          {/* System Health Metric - With Progress */}
+          <Card className="admin-card group">
+            <CardContent className="admin-card-content">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Tình trạng hệ thống</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
-                    <span className="bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-transparent">
-                      {metrics.systemHealth}%
-                    </span>
+                  <p className="admin-caption-text uppercase tracking-wider font-semibold mb-2">Tình trạng hệ thống</p>
+                  <p className="text-3xl font-bold text-admin-neutral-900 mb-1">
+                    {metrics.systemHealth}%
                   </p>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                  <adminIcons.navigation.analytics className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="mt-3 md:mt-4 space-y-2">
-                <Progress value={metrics.systemHealth} className="h-2 bg-gray-100">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"></div>
+              <div className="mt-4 pt-3 border-t border-admin-neutral-100 space-y-2">
+                <Progress value={metrics.systemHealth} className="h-2 bg-admin-neutral-200">
+                  <div className={`h-full rounded-full transition-all duration-500 ${
+                    metrics.systemHealth >= 99 
+                      ? 'bg-admin-success-600' 
+                      : metrics.systemHealth >= 95 
+                        ? 'bg-admin-warning-600' 
+                        : 'bg-admin-error-600'
+                  }`}></div>
                 </Progress>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-emerald-600">
-                    Hoạt động tốt
+                  <span className={`text-sm font-semibold ${
+                    metrics.systemHealth >= 99 
+                      ? 'text-admin-success-700' 
+                      : metrics.systemHealth >= 95 
+                        ? 'text-admin-warning-700' 
+                        : 'text-admin-error-700'
+                  }`}>
+                    {metrics.systemHealth >= 99 ? 'Hoạt động tốt' : metrics.systemHealth >= 95 ? 'Ổn định' : 'Cần kiểm tra'}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="admin-caption-text">
                     Uptime {metrics.systemHealth.toFixed(1)}%
                   </span>
                 </div>
@@ -270,16 +273,18 @@ export default function AdminOverviewPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {/* Hoạt động gần đây */}
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardHeader className="pb-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Professional Recent Activity */}
+          <Card className="admin-card group">
+            <CardHeader className="pb-4">
               <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-blue-600" />
-                  <span className="text-lg font-semibold">Hoạt động gần đây</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 bg-admin-primary-100 rounded-lg flex items-center justify-center">
+                    <adminIcons.navigation.analytics className="h-4 w-4 text-admin-primary-700" />
+                  </div>
+                  <span className="admin-section-title">Hoạt động gần đây</span>
                 </div>
-                <Badge variant="outline" className="text-xs">
+                <Badge className="admin-status-success text-xs px-2 py-1">
                   Live
                 </Badge>
               </CardTitle>
@@ -287,49 +292,59 @@ export default function AdminOverviewPage() {
             <CardContent className="pt-0">
               <div className="space-y-3">
                 {isLoading ? (
-                  <div className="text-center py-8">
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <RefreshCw className="animate-spin h-4 w-4 text-blue-600" />
-                    </div>
-                    <p className="text-sm text-gray-500 mt-3">Đang tải hoạt động mới nhất...</p>
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-admin-neutral-50">
+                        <AdminLoading size="base" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-admin-neutral-200 rounded w-3/4 animate-pulse"></div>
+                          <div className="h-3 bg-admin-neutral-200 rounded w-1/2 animate-pulse"></div>
+                        </div>
+                        <div className="h-3 bg-admin-neutral-200 rounded w-16 animate-pulse"></div>
+                      </div>
+                    ))}
                   </div>
+                ) : hasError ? (
+                  <AdminErrorState
+                    title="Không thể tải hoạt động"
+                    description="Vui lòng thử lại sau hoặc liên hệ quản trị viên."
+                  />
                 ) : (
                   <>
-                    {/* Recent Users */}
+                    {/* Recent Users - Clean Design */}
                     {users?.slice(0, 3).map((user, index) => (
-                      <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-blue-50 to-transparent border border-blue-100 hover:shadow-sm transition-all duration-200">
-                        <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Users className="h-4 w-4 text-white" />
+                      <div key={user.id} className="flex items-center gap-4 p-4 rounded-xl bg-admin-primary-50 border border-admin-primary-100 hover:bg-admin-primary-100 hover:border-admin-primary-200 transition-all duration-200">
+                        <div className="h-10 w-10 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <adminIcons.navigation.users className="h-5 w-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900 font-medium">
+                          <p className="admin-body-text font-semibold text-admin-neutral-900 truncate">
                             {user.fullName}
                           </p>
-                          <p className="text-xs text-gray-600">
-                            Tham gia với vai trò <span className="font-medium text-blue-600">{user.role}</span>
+                          <p className="admin-caption-text">
+                            Tham gia với vai trò <span className="font-semibold text-admin-primary-700">{user.role}</span>
                           </p>
                         </div>
-                        <div className="text-xs text-gray-500 flex-shrink-0">
+                        <div className="admin-caption-text flex-shrink-0 font-medium">
                           {new Date(user.createdAt).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' })}
                         </div>
                       </div>
                     ))}
-                    {/* Recent Places */}
+                    {/* Recent Places - Clean Design */}
                     {places?.slice(0, 2).map((place, index) => (
-                      <div key={place.id} className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-emerald-50 to-transparent border border-emerald-100 hover:shadow-sm transition-all duration-200">
-                        <div className="h-8 w-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-                          <MapPin className="h-4 w-4 text-white" />
+                      <div key={place.id} className="flex items-center gap-4 p-4 rounded-xl bg-admin-success-50 border border-admin-success-100 hover:bg-admin-success-100 hover:border-admin-success-200 transition-all duration-200">
+                        <div className="h-10 w-10 bg-gradient-to-br from-admin-success-600 to-admin-success-700 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <adminIcons.content.location className="h-5 w-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900 font-medium">
+                          <p className="admin-body-text font-semibold text-admin-neutral-900 truncate">
                             {place.name}
                           </p>
-                          <p className="text-xs text-gray-600">
+                          <p className="admin-caption-text">
                             Địa điểm mới được thêm
                           </p>
                         </div>
-                        <div className="text-xs text-gray-500 flex-shrink-0">
+                        <div className="admin-caption-text flex-shrink-0 font-medium">
                           {new Date(place.createdAt).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' })}
                         </div>
                       </div>
@@ -337,50 +352,52 @@ export default function AdminOverviewPage() {
                   </>
                 )}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Button variant="ghost" size="sm" className="w-full hover:bg-blue-50 hover:text-blue-600 transition-colors" asChild>
-                  <Link href="/admin/analytics">
+              <div className="mt-6 pt-4 border-t border-admin-neutral-100">
+                <Button variant="ghost" size="sm" className="admin-btn-ghost w-full hover:bg-admin-primary-50 hover:text-admin-primary-700 transition-colors" asChild>
+                  <Link href="/admin/analytics" className="flex items-center justify-center gap-2">
                     Xem tất cả hoạt động
-                    <ExternalLink className="h-3 w-3 ml-2" />
+                    <adminIcons.content.external className="h-3 w-3" />
                   </Link>
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Hành động chờ xử lý */}
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardHeader className="pb-3">
+          {/* Professional Pending Actions */}
+          <Card className="admin-card group">
+            <CardHeader className="pb-4">
               <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-amber-600" />
-                  <span className="text-lg font-semibold">Hành động chờ xử lý</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 bg-admin-warning-100 rounded-lg flex items-center justify-center">
+                    <adminIcons.status.warning className="h-4 w-4 text-admin-warning-700" />
+                  </div>
+                  <span className="admin-section-title">Hành động chờ xử lý</span>
                 </div>
-                <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                <Badge className="admin-status-warning text-xs px-2 py-1">
                   Cần xử lý
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {pendingActions.map((action) => (
                   <Link 
                     key={action.id}
                     href={action.href}
                     className="block group"
                   >
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group-hover:shadow-sm">
+                    <div className="flex items-center justify-between p-4 rounded-xl border border-admin-neutral-200 hover:border-admin-primary-300 hover:bg-admin-primary-50 transition-all duration-200 group-hover:shadow-sm">
                       <div className="flex items-center gap-3">
-                        <Badge className={cn("font-semibold transition-colors", getPriorityColor(action.priority))}>
+                        <Badge className={cn("font-semibold px-3 py-1 rounded-full transition-colors", getPriorityColor(action.priority))}>
                           {action.count}
                         </Badge>
-                        <span className="text-sm font-medium text-gray-900 group-hover:text-blue-900">
+                        <span className="admin-body-text font-medium text-admin-neutral-900 group-hover:text-admin-primary-900">
                           {action.title}
                         </span>
                       </div>
-                      <div className="flex items-center text-xs text-gray-500 group-hover:text-blue-600">
-                        <span className="mr-1">Xem</span>
-                        <ExternalLink className="h-3 w-3" />
+                      <div className="flex items-center admin-caption-text group-hover:text-admin-primary-600 transition-colors">
+                        <span className="mr-2">Xem</span>
+                        <adminIcons.content.external className="h-3 w-3" />
                       </div>
                     </div>
                   </Link>
@@ -390,60 +407,77 @@ export default function AdminOverviewPage() {
           </Card>
         </div>
 
-        {/* Hành động nhanh */}
-        <Card className="hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Play className="h-5 w-5 text-blue-600" />
-              <span className="text-lg font-semibold">Hành động nhanh</span>
+        {/* Professional Quick Actions */}
+        <Card className="admin-card group">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-admin-primary-100 rounded-lg flex items-center justify-center">
+                <adminIcons.actions.view className="h-4 w-4 text-admin-primary-700" />
+              </div>
+              <span className="admin-section-title">Hành động nhanh</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Button asChild className={cn(
-                "h-auto p-6 flex-col gap-4 group transition-all duration-200 hover:shadow-lg",
-                metrics.pendingReviews > 10 ? "bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" :
-                "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-              )}>
-                <Link href="/admin/moderation">
-                  <div className="relative">
-                    <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Moderation Queue Action */}
+              <Link href="/admin/moderation" className="block group">
+                <div className={cn(
+                  "admin-card border-2 p-6 text-center space-y-4 transition-all duration-200 group-hover:shadow-lg",
+                  metrics.pendingReviews > 10 
+                    ? "border-admin-warning-300 bg-gradient-to-br from-admin-warning-50 to-admin-warning-100 hover:border-admin-warning-400" 
+                    : "border-admin-primary-300 bg-gradient-to-br from-admin-primary-50 to-admin-primary-100 hover:border-admin-primary-400"
+                )}>
+                  <div className="relative mx-auto w-fit">
+                    <div className={cn(
+                      "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-110",
+                      metrics.pendingReviews > 10 
+                        ? "bg-admin-warning-600 shadow-lg shadow-admin-warning-200" 
+                        : "bg-admin-primary-600 shadow-lg shadow-admin-primary-200"
+                    )}>
+                      <adminIcons.navigation.moderation className="h-6 w-6 text-white" />
+                    </div>
                     {metrics.pendingReviews > 10 && (
-                      <div className="absolute -top-2 -right-2 h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
+                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-admin-error-500 rounded-full animate-pulse border-2 border-white"></div>
                     )}
                   </div>
-                  <div className="text-center space-y-1">
-                    <div className="font-semibold text-base">Hàng đợi duyệt</div>
-                    <div className="text-sm opacity-90">
-                      <span className="font-bold">{metrics.pendingReviews}</span> mục chờ xử lý
+                  <div className="space-y-2">
+                    <div className="admin-card-title text-admin-neutral-900">Hàng đợi duyệt</div>
+                    <div className="admin-body-text">
+                      <span className="font-bold text-lg">{metrics.pendingReviews}</span> mục chờ xử lý
                     </div>
                   </div>
-                </Link>
-              </Button>
+                </div>
+              </Link>
 
-              <Button variant="outline" asChild className="h-auto p-6 flex-col gap-4 group border-2 hover:border-blue-300 hover:shadow-lg transition-all duration-200">
-                <Link href="/admin/users">
-                  <Users className="h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
-                  <div className="text-center space-y-1">
-                    <div className="font-semibold text-base text-gray-900">Quản lý người dùng</div>
-                    <div className="text-sm text-gray-600">
-                      <span className="font-bold text-blue-600">{formatNumber(metrics.totalUsers)}</span> tổng người dùng
+              {/* User Management Action */}
+              <Link href="/admin/users" className="block group">
+                <div className="admin-card border-2 border-admin-success-300 bg-gradient-to-br from-admin-success-50 to-admin-success-100 hover:border-admin-success-400 p-6 text-center space-y-4 transition-all duration-200 group-hover:shadow-lg">
+                  <div className="h-12 w-12 bg-admin-success-600 rounded-xl flex items-center justify-center mx-auto transition-all duration-200 group-hover:scale-110 shadow-lg shadow-admin-success-200">
+                    <adminIcons.navigation.users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="admin-card-title text-admin-neutral-900">Quản lý người dùng</div>
+                    <div className="admin-body-text">
+                      <span className="font-bold text-lg text-admin-success-700">{formatNumber(metrics.totalUsers)}</span> tổng người dùng
                     </div>
                   </div>
-                </Link>
-              </Button>
+                </div>
+              </Link>
 
-              <Button variant="outline" asChild className="h-auto p-6 flex-col gap-4 group border-2 hover:border-purple-300 hover:shadow-lg transition-all duration-200 sm:col-span-2 lg:col-span-1">
-                <Link href="/admin/analytics">
-                  <Activity className="h-8 w-8 text-purple-600 group-hover:scale-110 transition-transform" />
-                  <div className="text-center space-y-1">
-                    <div className="font-semibold text-base text-gray-900">Xem thống kê</div>
-                    <div className="text-sm text-gray-600">
+              {/* Analytics Action */}
+              <Link href="/admin/analytics" className="block group sm:col-span-2 lg:col-span-1">
+                <div className="admin-card border-2 border-admin-info-300 bg-gradient-to-br from-admin-info-50 to-admin-info-100 hover:border-admin-info-400 p-6 text-center space-y-4 transition-all duration-200 group-hover:shadow-lg">
+                  <div className="h-12 w-12 bg-admin-info-600 rounded-xl flex items-center justify-center mx-auto transition-all duration-200 group-hover:scale-110 shadow-lg shadow-admin-info-200">
+                    <adminIcons.navigation.analytics className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="admin-card-title text-admin-neutral-900">Xem thống kê</div>
+                    <div className="admin-body-text">
                       Thông tin chi tiết nền tảng
                     </div>
                   </div>
-                </Link>
-              </Button>
+                </div>
+              </Link>
             </div>
           </CardContent>
         </Card>

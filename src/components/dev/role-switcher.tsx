@@ -120,7 +120,7 @@ export const RoleSwitcher: React.FC = () => {
                 <div>
                   <p className="font-medium">Admin:</p>
                   <div className="space-y-1">
-                    <a href="/moderation/dashboard" className="block text-primary hover:underline">Moderation</a>
+                    <a href="/admin/moderation" className="block text-primary hover:underline">Moderation</a>
                     <a href="/profile/me" className="block text-primary hover:underline">Profile</a>
                     <a href="/ai-assistant/chat" className="block text-primary hover:underline">AI Chat</a>
                   </div>

@@ -3,7 +3,7 @@ import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { Place } from '@/lib/types/places';
 
-// GET /api/places/[id] - Get single place
+// GET /api/places/[id] - Get single place by ID or slug
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,7 +11,25 @@ export async function GET(
   try {
     const { id } = await params;
     const adminDb = getAdminDb();
-    const placeDoc = await adminDb.collection('places').doc(id).get();
+    let placeDoc: FirebaseFirestore.DocumentSnapshot | null = null;
+    let placeId = id;
+
+    // First, try to get by document ID
+    placeDoc = await adminDb.collection('places').doc(id).get();
+    
+    // If not found and the ID doesn't look like a Firebase doc ID, try to find by slug
+    if (!placeDoc.exists && !id.match(/^[a-zA-Z0-9]{20}$/)) {
+      const querySnapshot = await adminDb.collection('places')
+        .where('slug', '==', id)
+        .where('status', '==', 'published')
+        .limit(1)
+        .get();
+      
+      if (!querySnapshot.empty) {
+        placeDoc = querySnapshot.docs[0];
+        placeId = placeDoc.id;
+      }
+    }
     
     if (!placeDoc.exists) {
       return NextResponse.json(
@@ -35,15 +53,15 @@ export async function GET(
       }
     }
 
-    // Increment view count
-    await adminDb.collection('places').doc(id).update({
+    // Increment view count using the correct document ID
+    await adminDb.collection('places').doc(placeId).update({
       viewCount: (placeData.viewCount || 0) + 1
     });
 
     return NextResponse.json({
       success: true,
       data: {
-        id: placeDoc.id,
+        id: placeId,
         ...placeData,
         viewCount: (placeData.viewCount || 0) + 1
       }

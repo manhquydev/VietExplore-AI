@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/auth/auth-provider'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -13,10 +13,14 @@ import { PlaceFormData } from '@/lib/types/places'
 export default function EditDraftPage() {
   const { draftId } = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
   const [draft, setDraft] = useState<any>(null)
+  
+  // Check if this is editing a published place
+  const editingPublishedId = searchParams.get('editing')
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -38,7 +42,11 @@ export default function EditDraftPage() {
       if (result.success && result.data) {
         // Check if it can be edited and belongs to current user
         const editableStatuses = ['draft', 'submitted', 'rejected'];
-        if (!editableStatuses.includes(result.data.status)) {
+        
+        // Special handling for edit drafts from published places
+        const isEditingPublished = result.data.isEditingPublished || editingPublishedId
+        
+        if (!isEditingPublished && !editableStatuses.includes(result.data.status)) {
           setError('Không thể chỉnh sửa địa điểm đang được duyệt hoặc đã xuất bản')
           return
         }
@@ -85,10 +93,31 @@ export default function EditDraftPage() {
       <main className="container py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Chỉnh sửa bản nháp</h1>
-            <p className="text-muted-foreground">
-              Tiếp tục chỉnh sửa bản nháp địa điểm của bạn
-            </p>
+            {editingPublishedId || draft?.isEditingPublished ? (
+              <>
+                <h1 className="text-3xl font-bold mb-2">Chỉnh sửa địa điểm đã xuất bản</h1>
+                <p className="text-muted-foreground">
+                  Chỉnh sửa địa điểm đã xuất bản. Sau khi hoàn thành, bản chỉnh sửa sẽ được gửi để kiểm duyệt.
+                </p>
+                {editingPublishedId && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-800">
+                      <span className="text-lg">ℹ️</span>
+                      <p className="font-medium">
+                        Bạn đang chỉnh sửa địa điểm đã xuất bản. Nội dung gốc vẫn hiển thị công khai cho đến khi bản chỉnh sửa được duyệt.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold mb-2">Chỉnh sửa bản nháp</h1>
+                <p className="text-muted-foreground">
+                  Tiếp tục chỉnh sửa bản nháp địa điểm của bạn
+                </p>
+              </>
+            )}
           </div>
 
           {loading && (

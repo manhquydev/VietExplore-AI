@@ -19,7 +19,7 @@ import {
 import { auth } from '@/lib/firebase'
 
 interface ActivityLogEntry {
-  action: 'created' | 'draft_saved' | 'submitted' | 'started_review' | 'approved' | 'rejected' | 'escalated' | 'resubmitted' | 'edited' | 'published' | 'hidden'
+  action: 'created' | 'draft_saved' | 'submitted' | 'started_review' | 'approved' | 'rejected' | 'escalated' | 'resubmitted' | 'edited' | 'published' | 'hidden' | 'edit_draft_created' | 'edit_submitted' | 'submitted_to_queue'
   userId?: string
   userName?: string
   userRole?: string
@@ -27,7 +27,10 @@ interface ActivityLogEntry {
   moderatorName?: string
   moderatorRole?: string
   reason?: string
-  createdAt: string
+  reviewNotes?: string
+  timestamp: string
+  createdAt?: string // For backward compatibility
+  source?: 'moderation_logs' | 'place_data' | 'moderation_queue'
   metadata?: {
     oldStatus?: string
     newStatus?: string
@@ -35,6 +38,12 @@ interface ActivityLogEntry {
     resubmissionCount?: number
     editCount?: number
     changedFields?: string[]
+    isEditRequest?: boolean
+    originalPlaceId?: string
+    queueType?: string
+    priority?: string | number
+    status?: string
+    trustLabel?: string
   }
 }
 
@@ -52,8 +61,13 @@ const getActionIcon = (action: string) => {
       return <RefreshCw className="h-4 w-4 text-gray-600" />
     case 'edited':
       return <RefreshCw className="h-4 w-4 text-orange-600" />
+    case 'edit_draft_created':
+      return <RefreshCw className="h-4 w-4 text-blue-600" />
+    case 'edit_submitted':
+      return <ArrowUp className="h-4 w-4 text-orange-600" />
     case 'submitted':
     case 'resubmitted':
+    case 'submitted_to_queue':
       return <FileText className="h-4 w-4 text-blue-600" />
     case 'started_review':
       return <Play className="h-4 w-4 text-yellow-600" />
@@ -80,8 +94,14 @@ const getActionText = (action: string) => {
       return 'Lưu bản nháp'
     case 'edited':
       return 'Chỉnh sửa nội dung'
+    case 'edit_draft_created':
+      return 'Tạo bản chỉnh sửa từ địa điểm đã xuất bản'
+    case 'edit_submitted':
+      return 'Gửi yêu cầu chỉnh sửa để kiểm duyệt'
     case 'submitted':
       return 'Gửi để kiểm duyệt'
+    case 'submitted_to_queue':
+      return 'Đưa vào hàng đợi kiểm duyệt'
     case 'resubmitted':
       return 'Gửi lại để kiểm duyệt'
     case 'started_review':
@@ -109,8 +129,13 @@ const getActionColor = (action: string) => {
       return 'bg-gray-50 text-gray-700 border-gray-200'
     case 'edited':
       return 'bg-orange-50 text-orange-700 border-orange-200'
+    case 'edit_draft_created':
+      return 'bg-blue-50 text-blue-700 border-blue-200'
+    case 'edit_submitted':
+      return 'bg-orange-50 text-orange-700 border-orange-200'
     case 'submitted':
     case 'resubmitted':
+    case 'submitted_to_queue':
       return 'bg-blue-50 text-blue-700 border-blue-200'
     case 'started_review':
       return 'bg-yellow-50 text-yellow-700 border-yellow-200'
@@ -181,15 +206,26 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
         // Map API data to component format
         const mappedHistory = data.data.map((log: any) => ({
           action: log.action,
+          userId: log.userId,
+          userName: log.userName,
+          userRole: log.userRole,
           moderatorId: log.moderatorId,
           moderatorName: log.moderator?.fullName,
           moderatorRole: log.moderator?.role,
-          reason: log.reviewNotes,
-          createdAt: log.timestamp,
+          reason: log.reviewNotes || log.reason,
+          timestamp: log.timestamp, // Use new timestamp field
+          createdAt: log.timestamp, // Keep for backward compatibility
+          source: log.source,
           metadata: {
             oldStatus: log.oldStatus,
             newStatus: log.newStatus,
-            resubmissionCount: log.resubmissionCount
+            resubmissionCount: log.resubmissionCount,
+            isEditRequest: log.metadata?.isEditRequest,
+            originalPlaceId: log.metadata?.originalPlaceId,
+            queueType: log.metadata?.queueType,
+            priority: log.metadata?.priority,
+            status: log.metadata?.status,
+            trustLabel: log.metadata?.trustLabel
           }
         }))
         setHistory(mappedHistory)
@@ -275,7 +311,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
 
   // Sort history by date (newest first)
   const sortedHistory = [...history].sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    new Date(b.timestamp || b.createdAt).getTime() - new Date(a.timestamp || a.createdAt).getTime()
   )
 
   return (
@@ -323,7 +359,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                       </Badge>
                     </div>
                     <span className="text-xs text-muted font-medium">
-                      {formatDate(entry.createdAt)}
+                      {formatDate(entry.timestamp || entry.createdAt)}
                     </span>
                   </div>
                   
@@ -370,6 +406,32 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                           Lần chỉnh sửa thứ {entry.metadata.editCount}
                         </p>
                       )}
+                      {entry.metadata.isEditRequest && (
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-orange-400 rounded-full mr-2"></span>
+                          Yêu cầu chỉnh sửa địa điểm đã xuất bản
+                        </p>
+                      )}
+                      {entry.metadata.originalPlaceId && (
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span>
+                          Địa điểm gốc: <span className="font-mono text-xs">{entry.metadata.originalPlaceId.slice(-8)}</span>
+                        </p>
+                      )}
+                      {entry.metadata.queueType && (
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
+                          Hàng đợi: <span className="font-medium">
+                            {entry.metadata.queueType === 'partner_queue' ? 'Partner' : 'Contributor'}
+                          </span>
+                        </p>
+                      )}
+                      {entry.metadata.trustLabel && (
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></span>
+                          Nhãn tin cậy: <span className="font-medium capitalize">{entry.metadata.trustLabel}</span>
+                        </p>
+                      )}
                       {entry.metadata.changedFields && entry.metadata.changedFields.length > 0 && (
                         <div className="text-xs text-muted">
                           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span>
@@ -395,6 +457,16 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                         <p className="text-xs text-muted">
                           <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></span>
                           Trạng thái: <span className="font-medium">{entry.metadata.oldStatus}</span> → <span className="font-medium">{entry.metadata.newStatus}</span>
+                        </p>
+                      )}
+                      {entry.source && (
+                        <p className="text-xs text-muted">
+                          <span className="inline-block w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>
+                          Nguồn: <span className="font-mono text-xs">
+                            {entry.source === 'moderation_logs' ? 'Nhật ký kiểm duyệt' : 
+                             entry.source === 'place_data' ? 'Dữ liệu địa điểm' : 
+                             entry.source === 'moderation_queue' ? 'Hàng đợi kiểm duyệt' : entry.source}
+                          </span>
                         </p>
                       )}
                     </div>

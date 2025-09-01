@@ -10,24 +10,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { 
-  Search,
-  Filter,
-  Plus,
-  MoreHorizontal,
-  Shield,
-  ShieldCheck,
-  ShieldX,
-  Mail,
-  Calendar,
-  Activity,
-  Ban,
-  CheckCircle,
-  AlertCircle,
-  Users,
-  RefreshCw,
-  AlertTriangle,
-  MapPin
+  CheckCircle, 
+  AlertCircle, 
+  Ban, 
+  ShieldX, 
+  Search, 
+  Users, 
+  Activity, 
+  AlertTriangle, 
+  RefreshCw, 
+  Calendar, 
+  MapPin, 
+  MoreHorizontal, 
+  Mail 
 } from "lucide-react"
+import { adminIcons } from "@/lib/admin/icon-system"
+import { adminClasses } from "@/lib/admin/theme-utils"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
@@ -36,12 +34,12 @@ import { useToast } from "@/components/providers/toast-provider"
 import { UserRole } from "@/lib/types/auth"
 
 const roleConfig = {
-  admin: { label: "Quản trị viên", color: 'bg-purple-100 text-purple-800', icon: ShieldCheck },
-  moderator: { label: "Kiểm duyệt viên", color: 'bg-blue-100 text-blue-800', icon: Shield },
-  partner: { label: "Đối tác", color: 'bg-green-100 text-green-800', icon: ShieldCheck },
-  contributor: { label: "Cộng tác viên", color: 'bg-yellow-100 text-yellow-800', icon: Users },
-  traveler: { label: "Du khách", color: 'bg-gray-100 text-gray-800', icon: Users },
-  guest: { label: "Khách", color: 'bg-gray-100 text-gray-600', icon: Users }
+  admin: { label: "Quản trị viên", color: 'bg-purple-100 text-purple-800', icon: adminIcons.status.success },
+  moderator: { label: "Kiểm duyệt viên", color: 'bg-blue-100 text-blue-800', icon: adminIcons.navigation.moderation },
+  partner: { label: "Đối tác", color: 'bg-green-100 text-green-800', icon: adminIcons.status.success },
+  contributor: { label: "Cộng tác viên", color: 'bg-yellow-100 text-yellow-800', icon: adminIcons.navigation.users },
+  traveler: { label: "Du khách", color: 'bg-gray-100 text-gray-800', icon: adminIcons.navigation.users },
+  guest: { label: "Khách", color: 'bg-gray-100 text-gray-600', icon: adminIcons.navigation.users }
 }
 
 const statusConfig = {
@@ -311,7 +309,7 @@ export default function AdminUsersPage() {
                   </p>
                 </div>
                 <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                  <adminIcons.navigation.users className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
               </div>
             </CardContent>

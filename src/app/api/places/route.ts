@@ -166,6 +166,7 @@ export async function POST(request: NextRequest) {
       images: formData.images || [], // Include images from form data
       video: formData.video || null,
       vietnamAddress: formData.vietnamAddress || null,
+      addressConversion: formData.addressConversion || null,
       sources: formData.sources || [],
       openingHours: formData.openingHours || null,
       entryFee: formData.entryFee || null,
@@ -233,12 +234,25 @@ export async function POST(request: NextRequest) {
           email: user.email
         },
         contentDetails: {
+          id: docRef.id,
           name: formData.name,
           shortDescription: formData.shortDescription,
           description: formData.description,
           type: formData.type,
           region: formData.region,
-          province: formData.province
+          province: formData.province,
+          address: formData.address,
+          coordinates: formData.coordinates || null,
+          images: formData.images || [],
+          video: formData.video || null,
+          vietnamAddress: formData.vietnamAddress || null,
+          addressConversion: formData.addressConversion || null,
+          sources: formData.sources || [],
+          openingHours: formData.openingHours || null,
+          entryFee: formData.entryFee || null,
+          bestTimeToVisit: formData.bestTimeToVisit || null,
+          facilities: formData.facilities || [],
+          tags: formData.tags || []
         }
       });
     }

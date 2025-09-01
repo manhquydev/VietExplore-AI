@@ -1,30 +1,14 @@
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Card, CardContent, CardFooter } from "@/components/ui/card-custom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { Place } from "@/lib/types/places"
 
 interface PlaceCardProps {
-  place: {
-    id: string
-    slug: string
-    name: string
-    shortDescription: string
-    province: string
-    type: string
-    images: Array<{
-      url: string
-      alt: string
-      isPrimary: boolean
-    }>
-    trustLabel: "contributor" | "partner" | "verified"
-    rating?: {
-      average: number
-      count: number
-    }
-    tags?: string[]
-  }
+  place: Place
   showCTA?: boolean
   className?: string
   onAddToItinerary?: (placeId: string) => void
@@ -39,9 +23,12 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   onAddToItinerary,
 }) => {
   const primaryImage = place.images?.find(img => img.isPrimary) || place.images?.[0]
+  // Use slug if available, otherwise fall back to id
+  const placeUrl = place.slug ? `/places/${place.slug}` : `/places/${place.id}`
 
   return (
-    <Card className={cn("overflow-hidden group", className)}>
+    <Link href={placeUrl} className="block">
+      <Card className={cn("overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow", className)}>
       {/* Image */}
       <div className="relative aspect-[3/2] overflow-hidden bg-surface">
         {primaryImage ? (
@@ -126,7 +113,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
         </div>
 
         {/* Rating - Professional star icon */}
-        {place.rating && (
+        {place.rating && place.rating.average > 0 && (
           <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 bg-white/90 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 flex items-center gap-1">
             <svg className="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 24 24">
               <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
@@ -188,12 +175,17 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
             size="sm"
             variant="secondary"
             className="w-full min-h-[44px] text-sm"
-            onClick={() => onAddToItinerary?.(place.id)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onAddToItinerary?.(place.id);
+            }}
           >
             Thêm vào lịch trình
           </Button>
         </CardFooter>
       )}
-    </Card>
+      </Card>
+    </Link>
   )
 }

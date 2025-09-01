@@ -1,6 +1,6 @@
 {
-  "name": "nextn",
-  "version": "0.1.0",
+  "name": "Du-Lich-Viet",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
     "dev": "next dev --port 9002",

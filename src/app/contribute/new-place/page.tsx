@@ -72,6 +72,25 @@ interface PlaceFormData {
     fullAddress: string
   }
   
+  // Address conversion data (old vs new after administrative changes)
+  addressConversion?: {
+    oldAddress: {
+      province: { id: number, name: string }
+      district: { id: number, name: string } | null
+      ward: { id: number, name: string } | null
+      fullAddress: string
+    }
+    newAddress: {
+      province: { id: number, name: string }
+      district: { id: number, name: string } | null
+      ward: { id: number, name: string } | null
+      fullAddress: string
+    } | null
+    hasChanges: boolean
+    conversionMessage: string
+    status: 'converted' | 'unchanged'
+  }
+  
   // Additional info
   openingHours?: string
   entryFee?: string
@@ -241,8 +260,10 @@ export default function NewPlacePage() {
     }
   }, [formData.vietnamAddress.districtId])
 
-  // Check user role
+  // Check user role - theo tài liệu quy trình
   const canContribute = user?.role === 'contributor' || user?.role === 'partner' || user?.role === 'admin'
+  const isAdmin = user?.role === 'admin'
+  const isContributorOrPartner = user?.role === 'contributor' || user?.role === 'partner'
   const isModerator = user?.role === 'moderator'
   const isTraveler = user?.role === 'traveler' || !user?.role
 
@@ -503,8 +524,8 @@ export default function NewPlacePage() {
       try {
         setIsSubmitting(true)
         
-        // Upload video to Firebase Storage
-        const result = await uploadVideo(file, 'places/videos')
+        // Upload video to Firebase Storage with user ID
+        const result = await uploadVideo(file, 'places/videos', user.id)
         
         // Update form data with video URL and metadata
         updateFormData('video', {
@@ -566,6 +587,65 @@ export default function NewPlacePage() {
 
   const removeTag = (tagToRemove: string) => {
     updateFormData("tags", formData.tags.filter(tag => tag !== tagToRemove))
+  }
+
+  // Quick validation for submit button - không throw error
+  const canSubmit = () => {
+    return (
+      formData.name.trim() && 
+      formData.shortDescription.trim() && 
+      formData.description.trim() &&
+      formData.type &&
+      formData.region &&
+      formData.vietnamAddress.provinceId &&
+      formData.address.trim() &&
+      formData.images.length > 0 &&
+      formData.sources.some(s => s.url.trim())
+    )
+  }
+
+  const cancelDraft = async () => {
+    const confirmCancel = confirm(
+      'Bạn có chắc chắn muốn hủy bỏ địa điểm này không? Tất cả dữ liệu đã nhập sẽ bị mất và không thể khôi phục.'
+    )
+    
+    if (!confirmCancel) return
+    
+    setIsSubmitting(true)
+    try {
+      if (editDraftId) {
+        // Delete existing draft
+        const firebaseUser = auth.currentUser
+        if (!firebaseUser) {
+          throw new Error('Không thể xác thực người dùng')
+        }
+        
+        const token = await firebaseUser.getIdToken()
+        const response = await fetch(`/api/places/drafts/${editDraftId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+        
+        if (!response.ok) {
+          const result = await response.json()
+          throw new Error(result.error || 'Không thể xóa bản nháp')
+        }
+        
+        router.push('/contribute/my-drafts?success=deleted')
+      } else {
+        // Just navigate away for new draft
+        router.push('/contribute/my-drafts')
+      }
+    } catch (error: any) {
+      console.error('Cancel draft failed:', error)
+      setErrors({ 
+        general: error.message || "Có lỗi xảy ra khi hủy bỏ. Vui lòng thử lại." 
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const saveDraft = async () => {
@@ -660,6 +740,11 @@ export default function NewPlacePage() {
       }
       
       const token = await firebaseUser.getIdToken();
+      
+      // Admin có chế độ khác - tự động duyệt theo tài liệu
+      if (isAdmin) {
+        return await submitAsAdmin(token);
+      }
 
       if (editDraftId) {
         // If editing existing draft, first save current changes then submit
@@ -721,6 +806,7 @@ export default function NewPlacePage() {
           images: formData.images.filter(img => img.url && img.alt), // Only include complete images
           video: formData.video, // Include video if uploaded
           vietnamAddress: formData.vietnamAddress.fullAddress ? formData.vietnamAddress : null,
+          addressConversion: addressConversion, // Include conversion data for old/new address display
           sources: formData.sources.filter(source => source.url.trim()), // Only include sources with URLs
           openingHours: formData.openingHours?.trim() || null,
           entryFee: formData.entryFee?.trim() || null,
@@ -761,6 +847,58 @@ export default function NewPlacePage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+  
+  // Admin submission function - tự động duyệt theo tài liệu
+  const submitAsAdmin = async (token: string) => {
+    const submissionData = {
+      name: formData.name.trim(),
+      description: formData.description.trim(),
+      shortDescription: formData.shortDescription.trim(),
+      type: formData.type,
+      region: formData.region,
+      province: formData.vietnamAddress.provinceName || formData.province,
+      address: formData.address.trim(),
+      coordinates: formData.coordinates.lat && formData.coordinates.lng 
+        ? { lat: formData.coordinates.lat, lng: formData.coordinates.lng }
+        : { lat: null, lng: null },
+      images: formData.images.filter(img => img.url && img.alt),
+      video: formData.video,
+      vietnamAddress: formData.vietnamAddress.fullAddress ? formData.vietnamAddress : null,
+      addressConversion: addressConversion,
+      sources: formData.sources.filter(source => source.url.trim()),
+      openingHours: formData.openingHours?.trim() || null,
+      entryFee: formData.entryFee?.trim() || null,
+      bestTimeToVisit: formData.bestTimeToVisit?.trim() || null,
+      facilities: formData.facilities,
+      tags: formData.tags,
+      status: 'published', // Admin tự động duyệt - skip validation
+      isAdminSubmission: true // Flag để API xử lý khác
+    }
+
+    console.log('Admin submitting place (auto-approved):', submissionData)
+
+    const response = await fetch('/api/places', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(submissionData),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || 'Admin submission failed')
+    }
+    
+    // Admin redirect to places list hoặc admin dashboard
+    router.push('/places?success=admin-created')
   }
 
   if (!isAuthenticated) {
@@ -1065,12 +1203,68 @@ export default function NewPlacePage() {
       <main className="container py-8">
         <LoadingOverlay isLoading={isSubmitting} loadingText="Đang gửi địa điểm để kiểm duyệt...">
           <div className="max-w-4xl mx-auto">
-          {/* Header */}
+          {/* Header with workflow info */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Đóng góp địa điểm mới</h1>
-            <p className="text-muted">
+            <h1 className="text-3xl font-bold mb-2">
+              {isAdmin ? '⚡ Đăng địa điểm mới (Admin)' : 'Đóng góp địa điểm mới'}
+            </h1>
+            <p className="text-muted mb-4">
               Chia sẻ những địa điểm tuyệt vời mà bạn đã khám phá với cộng đồng
             </p>
+            
+            {/* Ba hành động khả dụng theo tài liệu 2.1.1 */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-blue-800">Ba hành động khả dụng</span>
+                  </div>
+                  <div className="text-xs text-blue-600 italic">
+                    Theo tài liệu 2.1.1 - Luôn accessible trong quá trình tạo địa điểm
+                  </div>
+                </div>
+                
+                {/* Ba nút hành động chính - Luôn hiển thị */}
+                <div className="flex gap-2">
+                  {/* 1. Lưu nháp - Luôn khả dụng */}
+                  <Button 
+                    variant="outline"
+                    onClick={saveDraft}
+                    disabled={isSubmitting}
+                    size="sm"
+                    className="text-blue-700 border-blue-300 bg-blue-50 hover:bg-blue-100"
+                  >
+                    <Save className="w-4 h-4 mr-1" />
+                    Lưu nháp
+                  </Button>
+                  
+                  {/* 2. Hủy bỏ - Luôn khả dụng */}
+                  <Button 
+                    variant="outline"
+                    onClick={cancelDraft}
+                    disabled={isSubmitting}
+                    size="sm"
+                    className="text-red-700 border-red-300 bg-red-50 hover:bg-red-100"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Hủy bỏ
+                  </Button>
+                  
+                  {/* 3. Gửi kiểm duyệt - Luôn khả dụng nhưng có thể disabled */}
+                  <Button 
+                    onClick={submitForm}
+                    disabled={isSubmitting || !canSubmit()}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+                    title={!canSubmit() ? "Vui lòng điền đầy đủ thông tin bắt buộc" : ""}
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Gửi kiểm duyệt
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Progress Steps */}
@@ -1144,7 +1338,12 @@ export default function NewPlacePage() {
                       onChange={(e) => updateFormData("name", e.target.value)}
                       className={errors.name ? "border-danger" : ""}
                     />
-                    {errors.name && <p className="text-sm text-danger mt-1">{errors.name}</p>}
+                    <div className="flex justify-between items-center mt-1">
+                      {errors.name && <p className="text-sm text-danger">{errors.name}</p>}
+                      <p className="text-xs text-muted ml-auto">
+                        {formData.name.length}/50 ký tự (tối thiểu 5)
+                      </p>
+                    </div>
                   </div>
 
                   <div>
@@ -1171,25 +1370,44 @@ export default function NewPlacePage() {
                     <Label htmlFor="shortDescription">Mô tả ngắn *</Label>
                     <Input
                       id="shortDescription"
-                      placeholder="Mô tả ngắn gọn về địa điểm (1-2 câu)"
+                      placeholder="VD: Bãi biển đẹp nhất miền Trung với cát trắng mịn và nước biển trong xanh"
                       value={formData.shortDescription}
                       onChange={(e) => updateFormData("shortDescription", e.target.value)}
                       className={errors.shortDescription ? "border-danger" : ""}
                     />
-                    {errors.shortDescription && <p className="text-sm text-danger mt-1">{errors.shortDescription}</p>}
+                    <div className="flex justify-between items-center mt-1">
+                      {errors.shortDescription && <p className="text-sm text-danger">{errors.shortDescription}</p>}
+                      <p className="text-xs text-muted ml-auto">
+                        {formData.shortDescription.length}/150 ký tự (tối thiểu 30)
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted mt-1">
+                      💡 Ghi 1-2 câu nổi bật nhất về điểm đến để thu hút người đọc
+                    </p>
                   </div>
 
                   <div>
                     <Label htmlFor="description">Mô tả chi tiết *</Label>
                     <Textarea
                       id="description"
-                      placeholder="Mô tả chi tiết về địa điểm, điểm đặc biệt, trải nghiệm..."
+                      placeholder="VD: Bãi biển Mỹ Khê nằm ở thành phố Đà Nẵng với bờ cát trắng mịn dài 30km. Lịch sử: Từng được tạp chí Forbes bình chọn là một trong những bãi biển quyến rũ nhất hành tinh. Cảnh đẹp: Nước biển trong xanh, sóng vỗ êm dịu. Trải nghiệm: Tắm biển, lướt sóng, thưởng thức hải sản tươi ngon..."
                       value={formData.description}
                       onChange={(e) => updateFormData("description", e.target.value)}
-                      rows={6}
+                      rows={8}
                       className={errors.description ? "border-danger" : ""}
                     />
-                    {errors.description && <p className="text-sm text-danger mt-1">{errors.description}</p>}
+                    <div className="flex justify-between items-center mt-1">
+                      {errors.description && <p className="text-sm text-danger">{errors.description}</p>}
+                      <p className="text-xs text-muted ml-auto">
+                        {formData.description.length} ký tự (tối thiểu 150)
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                      <p className="text-sm text-blue-800 font-medium mb-1">💡 Gợi ý cấu trúc mô tả:</p>
+                      <p className="text-xs text-blue-700 leading-relaxed">
+                        <strong>Lịch sử:</strong> Nguồn gốc, tên gọi → <strong>Cảnh đẹp:</strong> Điểm nổi bật → <strong>Đặc sản:</strong> Ẩm thực, sản vật → <strong>Trải nghiệm:</strong> Hoạt động có thể làm
+                      </p>
+                    </div>
                   </div>
 
                   <div className="grid sm:grid-cols-3 gap-4">
@@ -1223,23 +1441,33 @@ export default function NewPlacePage() {
                   </div>
 
                   <div>
-                    <Label>Tiện ích có sẵn</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
+                    <Label className="flex items-center gap-2">
+                      Tiện ích có sẵn
+                      <span className="text-xs text-muted">(tùy chọn)</span>
+                    </Label>
+                    <p className="text-xs text-muted mb-3">Chọn các tiện ích có sẵn tại địa điểm</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                       {facilityOptions.map((facility) => (
                         <div
                           key={facility}
                           className={cn(
-                            "p-3 rounded-lg border border-border cursor-pointer transition-colors text-sm",
+                            "p-2 rounded-md border border-border cursor-pointer transition-all text-sm hover:shadow-sm",
                             formData.facilities.includes(facility)
-                              ? "bg-primary-50 border-primary"
-                              : "hover:bg-surface"
+                              ? "bg-primary-50 border-primary text-primary-700 shadow-sm"
+                              : "hover:bg-surface hover:border-primary/30"
                           )}
                           onClick={() => toggleFacility(facility)}
                         >
-                          {facility}
+                          <span className="flex items-center gap-2">
+                            {formData.facilities.includes(facility) && <Check className="h-3 w-3" />}
+                            {facility}
+                          </span>
                         </div>
                       ))}
                     </div>
+                    <p className="text-xs text-muted mt-2">
+                      💡 Chọn tối đa 5-6 tiện ích quan trọng nhất để tránh làm rối thông tin
+                    </p>
                   </div>
 
                   <div>
@@ -1270,10 +1498,20 @@ export default function NewPlacePage() {
               {/* Step 2: Location */}
               {currentStep === 2 && (
                 <>
-                  <div className="space-y-6">
+                  <div className="space-y-8">
+                    {/* Header */}
+                    <div className="text-center pb-4">
+                      <MapPin className="h-12 w-12 text-primary mx-auto mb-3" />
+                      <h3 className="text-xl font-semibold mb-2">Xác định vị trí địa điểm</h3>
+                      <p className="text-muted text-sm">
+                        Vị trí chính xác giúp du khách dễ dàng tìm đường và khám phá địa điểm của bạn
+                      </p>
+                    </div>
+
                     {/* Region Selection */}
-                    <div>
-                      <Label htmlFor="region">Vùng miền *</Label>
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                      <Label htmlFor="region" className="text-base font-medium text-blue-900">Vùng miền *</Label>
+                      <p className="text-sm text-blue-700 mb-3">Chọn vùng địa lý chính của địa điểm</p>
                       <Select
                         value={formData.region}
                         onValueChange={(value) => {
@@ -1290,25 +1528,38 @@ export default function NewPlacePage() {
                           })
                         }}
                       >
-                        <SelectTrigger className={errors.region ? "border-danger" : ""}>
-                          <SelectValue placeholder="Chọn vùng miền" />
+                        <SelectTrigger className={errors.region ? "border-danger bg-white" : "bg-white shadow-sm"}>
+                          <SelectValue placeholder="🗺️ Chọn vùng miền (Bắc/Trung/Nam)" />
                         </SelectTrigger>
                         <SelectContent>
                           {regions.map((region) => (
                             <SelectItem key={region.value} value={region.value}>
-                              {region.label}
+                              <span className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4" />
+                                {region.label}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.region && <p className="text-sm text-danger mt-1">{errors.region}</p>}
+                      {errors.region && <p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-200">{errors.region}</p>}
                     </div>
 
                     {/* Vietnam Address API Integration */}
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-base font-medium">Địa chỉ chi tiết *</Label>
-                        <p className="text-sm text-muted mb-4">Chọn địa chỉ theo cấp hành chính để có địa chỉ chính xác nhất</p>
+                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
+                      <div className="border-b border-gray-100 pb-3">
+                        <Label className="text-base font-medium flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-primary" />
+                          Địa chỉ hành chính *
+                        </Label>
+                        <p className="text-sm text-muted mt-1">
+                          Chọn theo thứ tự: Tỉnh/TP → Quận/Huyện → Phường/Xã để có địa chỉ chính xác
+                        </p>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                          <p className="text-sm text-amber-800 flex items-center gap-2">
+                            💡 <strong>Gợi ý:</strong> Hệ thống sẽ tự động liên kết các cấp địa chỉ để đảm bảo tính chính xác
+                          </p>
+                        </div>
                       </div>
                       
                       <div className="grid sm:grid-cols-3 gap-4">
@@ -1508,58 +1759,103 @@ export default function NewPlacePage() {
                     
                   </div>
 
-                  <div>
-                    <Label htmlFor="address">Địa chỉ cụ thể *</Label>
-                    <Input
-                      id="address"
-                      placeholder={
-                        formData.vietnamAddress.fullAddress 
-                          ? `Số nhà, đường/phố trong ${formData.vietnamAddress.wardName || formData.vietnamAddress.districtName || "khu vực đã chọn"}`
-                          : "VD: 123 Trần Hưng Đạo, Phường Cẩu Kho, Quận 1, TP.HCM"
-                      }
-                      value={formData.address}
-                      onChange={(e) => updateFormData("address", e.target.value)}
-                      className={errors.address ? "border-danger" : ""}
-                    />
-                    {errors.address && <p className="text-sm text-danger mt-1">{errors.address}</p>}
-                    <p className="text-xs text-muted mt-1">
-                      {formData.vietnamAddress.fullAddress 
-                        ? "Nhập số nhà, tên đường/phố cụ thể. Địa chỉ hành chính đã được chọn ở trên."
-                        : "Nhập địa chỉ chi tiết gồm số nhà, đường/phố, phường/xã, quận/huyện, tỉnh/thành phố"
-                      }
-                    </p>
-                  </div>
+                    {/* Địa chỉ cụ thể */}
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+                      <Label htmlFor="address" className="text-base font-medium flex items-center gap-2 text-green-900">
+                        <MapPin className="h-5 w-5" />
+                        Địa chỉ cụ thể *
+                      </Label>
+                      <p className="text-sm text-green-700 mb-3">
+                        {formData.vietnamAddress.fullAddress 
+                          ? "Nhập số nhà, tên đường/phố cụ thể trong khu vực đã chọn"
+                          : "Nhập địa chỉ đầy đủ của địa điểm"
+                        }
+                      </p>
+                      <Input
+                        id="address"
+                        placeholder={
+                          formData.vietnamAddress.fullAddress 
+                            ? `VD: 123 Đường Trần Hưng Đạo (trong ${formData.vietnamAddress.wardName || formData.vietnamAddress.districtName || "khu vực đã chọn"})`
+                            : "VD: 123 Trần Hưng Đạo, Phường Cẩu Kho, Quận 1, TP.HCM"
+                        }
+                        value={formData.address}
+                        onChange={(e) => updateFormData("address", e.target.value)}
+                        className={errors.address ? "border-red-400 bg-white" : "bg-white shadow-sm"}
+                      />
+                      {errors.address && <p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-200">{errors.address}</p>}
+                      
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                        <p className="text-sm text-blue-800 flex items-center gap-2">
+                          🗺️ <strong>Mẹo:</strong> Bạn có thể tra cứu địa chỉ chính xác trên Google Maps hoặc các ứng dụng bản đồ khác
+                        </p>
+                      </div>
+                    </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="lat">Vĩ độ (Latitude)</Label>
-                      <Input
-                        id="lat"
-                        type="number"
-                        step="any"
-                        placeholder="VD: 16.0544"
-                        value={formData.coordinates.lat || ""}
-                        onChange={(e) => updateFormData("coordinates", {
-                          ...formData.coordinates,
-                          lat: e.target.value ? parseFloat(e.target.value) : null
-                        })}
-                      />
+                    {/* Tọa độ GPS và Tích hợp bản đồ */}
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <Label className="text-base font-medium flex items-center gap-2 text-purple-900">
+                            <MapPin className="h-5 w-5" />
+                            Tọa độ GPS (tùy chọn)
+                          </Label>
+                          <p className="text-sm text-purple-700 mt-1">
+                            Giúp xác định vị trí chính xác trên bản đồ và chỉ đường
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <Label htmlFor="lat" className="text-sm font-medium text-purple-800">Vĩ độ (Latitude)</Label>
+                          <Input
+                            id="lat"
+                            type="number"
+                            step="any"
+                            placeholder="VD: 16.0544 (Đà Nẵng)"
+                            value={formData.coordinates.lat || ""}
+                            onChange={(e) => updateFormData("coordinates", {
+                              ...formData.coordinates,
+                              lat: e.target.value ? parseFloat(e.target.value) : null
+                            })}
+                            className="bg-white shadow-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="lng" className="text-sm font-medium text-purple-800">Kinh độ (Longitude)</Label>
+                          <Input
+                            id="lng"
+                            type="number"
+                            step="any"
+                            placeholder="VD: 108.2277 (Đà Nẵng)"
+                            value={formData.coordinates.lng || ""}
+                            onChange={(e) => updateFormData("coordinates", {
+                              ...formData.coordinates,
+                              lng: e.target.value ? parseFloat(e.target.value) : null
+                            })}
+                            className="bg-white shadow-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="bg-white border border-purple-200 rounded-lg p-4">
+                        <h4 className="text-sm font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                          🗺️ Cách lấy tọa độ GPS:
+                        </h4>
+                        <div className="text-xs text-purple-800 space-y-2">
+                          <p><strong>• Google Maps:</strong> Nhấp phải vào địa điểm → Sao chép tọa độ đầu tiên</p>
+                          <p><strong>• Điện thoại:</strong> Mở ứng dụng bản đồ → Chạm giữ vị trí → Xem tọa độ</p>
+                          <p><strong>• Tương lai:</strong> Hệ thống sẽ tích hợp bản đồ tương tác để kéo thả chọn vị trí</p>
+                        </div>
+                        {formData.coordinates.lat && formData.coordinates.lng && (
+                          <div className="mt-3 p-2 bg-green-100 border border-green-300 rounded text-xs">
+                            <p className="text-green-800">
+                              ✓ Tọa độ hợp lệ: {formData.coordinates.lat}, {formData.coordinates.lng}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="lng">Kinh độ (Longitude)</Label>
-                      <Input
-                        id="lng"
-                        type="number"
-                        step="any"
-                        placeholder="VD: 108.2277"
-                        value={formData.coordinates.lng || ""}
-                        onChange={(e) => updateFormData("coordinates", {
-                          ...formData.coordinates,
-                          lng: e.target.value ? parseFloat(e.target.value) : null
-                        })}
-                      />
-                    </div>
-                  </div>
 
                   <div className="p-4 bg-primary-50 rounded-lg">
                     <div className="flex items-start gap-2 text-sm text-primary">
@@ -1745,6 +2041,44 @@ export default function NewPlacePage() {
                       <li>• Nội dung sẽ được kiểm duyệt trước khi xuất bản</li>
                     </ul>
                   </div>
+                  
+                  {/* Three Actions Info Panel */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mt-6">
+                    <h4 className="text-base font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                      🎯 Ba hành động có thể thực hiện:
+                    </h4>
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      <div className="bg-white border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Save className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-blue-900">Lưu nháp</span>
+                        </div>
+                        <p className="text-xs text-blue-700 leading-relaxed">
+                          Giữ lại để tiếp tục chỉnh sửa sau. Bản nháp sẽ được lưu với trạng thái "draft".
+                        </p>
+                      </div>
+                      
+                      <div className="bg-white border border-red-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <X className="w-4 h-4 text-red-600" />
+                          <span className="font-medium text-red-900">Hủy bỏ</span>
+                        </div>
+                        <p className="text-xs text-red-700 leading-relaxed">
+                          Xóa vĩnh viễn bản nháp này. Tất cả dữ liệu sẽ bị mất và không thể khôi phục.
+                        </p>
+                      </div>
+                      
+                      <div className="bg-white border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Check className="w-4 h-4 text-green-600" />
+                          <span className="font-medium text-green-900">Gửi kiểm duyệt</span>
+                        </div>
+                        <p className="text-xs text-green-700 leading-relaxed">
+                          Chuyển sang trạng thái "Chờ kiểm duyệt" để Moderator xem xét và phê duyệt.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
               </>
@@ -1772,38 +2106,19 @@ export default function NewPlacePage() {
                 {isPreviewMode ? "Thoát xem trước" : "Xem trước"}
               </Button>
               
-              {/* Save Draft - Always available if has name */}
-              {!isPreviewMode && formData.name.trim() && (
-                <Button 
-                  variant="outline"
-                  onClick={saveDraft}
-                  disabled={isSubmitting}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isSubmitting ? "Đang lưu..." : "Lưu nháp"}
-                </Button>
-              )}
-              
+              {/* Navigation flow - Ba hành động chính đã có ở header */}
               {currentStep < 3 ? (
                 <Button onClick={nextStep}>
                   Tiếp tục
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={submitForm} disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <LoadingSpinner size="sm" className="mr-2" />
-                      Đang gửi...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Gửi để duyệt
-                    </>
-                  )}
-                </Button>
+                /* Final step - Reminder về 3 hành động */
+                !isPreviewMode && (
+                  <div className="text-sm text-muted italic">
+                    💡 Sử dụng 3 nút hành động ở phía trên để: Lưu nháp, Hủy bỏ, hoặc Gửi kiểm duyệt
+                  </div>
+                )
               )}
             </div>
           </div>

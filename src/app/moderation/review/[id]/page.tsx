@@ -28,7 +28,8 @@ import {
   FileText,
   Image as ImageIcon,
   Video,
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -48,6 +49,7 @@ const statusConfig = {
   approved: { label: "Đã duyệt", variant: "success" as const, icon: CheckCircle },
   rejected: { label: "Từ chối", variant: "danger" as const, icon: XCircle },
   escalated: { label: "Chuyển lên", variant: "warning" as const, icon: AlertTriangle },
+  needs_revision: { label: "Cần chỉnh sửa", variant: "warning" as const, icon: RefreshCw },
   hidden: { label: "Đã ẩn", variant: "secondary" as const, icon: EyeOff }
 }
 
@@ -143,9 +145,9 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
     }
   }, [params, user, isAuthenticated])
 
-  const handleAction = async (action: 'approve' | 'reject' | 'escalate' | 'start_review') => {
-    if (!moderatorNotes.trim() && (action === 'reject' || action === 'escalate')) {
-      alert("Vui lòng nhập lý do từ chối hoặc chuyển lên cấp cao hơn")
+  const handleAction = async (action: 'approve' | 'reject' | 'escalate' | 'start_review' | 'request_edit') => {
+    if (!moderatorNotes.trim() && (action === 'reject' || action === 'escalate' || action === 'request_edit')) {
+      alert("Vui lòng nhập lý do cho hành động này")
       return
     }
 
@@ -180,19 +182,34 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
       
       console.log('Moderation action completed:', result)
       
-      // Only redirect to dashboard for final actions (approve, reject, escalate)
-      // For start_review, stay on the page to continue reviewing
-      if (action !== 'start_review') {
-        router.push('/moderation/dashboard')
-      } else {
-        // Refresh the current item data to show updated status
+      // Handle different actions properly
+      if (action === 'start_review') {
+        // Stay on page and refresh item data
         setReviewItem(prevItem => prevItem ? {
           ...prevItem,
           status: 'in_review',
           assignedTo: user?.id,
           assignedAt: new Date().toISOString()
         } : null)
-        setModeratorNotes('') // Clear notes after starting review
+        setModeratorNotes('')
+        
+      } else if (action === 'request_edit') {
+        // For request_edit, show success message and redirect
+        alert('Đã gửi yêu cầu chỉnh sửa đến tác giả thành công!')
+        router.push('/admin/moderation')
+        
+      } else {
+        // For final actions (approve, reject, escalate), redirect to dashboard
+        const messages = {
+          approve: 'Đã duyệt và xuất bản thành công!',
+          reject: 'Đã từ chối nội dung!',
+          escalate: 'Đã chuyển lên cấp cao hơn!'
+        }
+        if (messages[action as keyof typeof messages]) {
+          // Don't use alert - it might be causing the error
+          console.log(messages[action as keyof typeof messages])
+        }
+        router.push('/admin/moderation')
       }
     } catch (error: any) {
       console.error('Action failed:', error)
@@ -332,6 +349,153 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               </TabsList>
 
               <TabsContent value="content" className="space-y-6 mt-6">
+                {/* Debug Info */}
+                {process.env.NODE_ENV === 'development' && (
+                  <Card className="border-yellow-200 bg-yellow-50">
+                    <CardHeader>
+                      <CardTitle className="text-sm text-yellow-800">🐛 Debug Info</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-xs text-yellow-700 space-y-1">
+                      <p>Item Type: {reviewItem?.itemType || reviewItem?.contentType}</p>
+                      <p>Is Edit Request: {(contentDetails.isEditRequest || reviewItem?.itemType === 'place_edit' || reviewItem?.action === 'edit_review') ? '✅' : '❌'}</p>
+                      <p>Has Original Data: {(contentDetails.originalData || reviewItem?.originalData) ? '✅' : '❌'}</p>
+                      <p>Original Place ID: {contentDetails.originalPlaceId || reviewItem?.metadata?.originalPlaceId || 'N/A'}</p>
+                      <p>Content Details Keys: {Object.keys(contentDetails).join(', ')}</p>
+                      {reviewItem?.action && <p>Review Action: {reviewItem.action}</p>}
+                      {reviewItem?.metadata && <p>Metadata Keys: {Object.keys(reviewItem.metadata).join(', ')}</p>}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Edit Comparison for Published Places */}
+                {(contentDetails.isEditRequest || reviewItem?.itemType === 'place_edit' || reviewItem?.action === 'edit_review') && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <RefreshCw className="w-5 h-5 text-orange-600" />
+                        So sánh chỉnh sửa địa điểm
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Bên trái là nội dung gốc đã xuất bản, bên phải là nội dung chỉnh sửa đề xuất
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* Original Content */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs">📄 Nội dung gốc (đã xuất bản)</Badge>
+                          </div>
+                          <div className="bg-gray-50 border-2 border-gray-200 p-4 rounded-lg space-y-3">
+                            {(contentDetails.originalData || reviewItem?.originalData) ? (
+                              <>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted">Tên địa điểm</Label>
+                                  <p className="text-base font-semibold mt-1">{(contentDetails.originalData || reviewItem?.originalData)?.name || 'Chưa cập nhật'}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted">Mô tả ngắn</Label>
+                                  <p className="text-sm mt-1">{(contentDetails.originalData || reviewItem?.originalData)?.shortDescription || 'Chưa cập nhật'}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted">Loại hình</Label>
+                                  <Badge variant="outline" className="text-xs mt-1">
+                                    {(contentDetails.originalData || reviewItem?.originalData)?.type || 'Chưa phân loại'}
+                                  </Badge>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted">Vùng miền</Label>
+                                  <p className="text-sm mt-1">{(contentDetails.originalData || reviewItem?.originalData)?.region || 'Chưa cập nhật'}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted">Tỉnh/thành</Label>
+                                  <p className="text-sm mt-1">{(contentDetails.originalData || reviewItem?.originalData)?.province || 'Chưa cập nhật'}</p>
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-gray-500 text-sm italic">Không có dữ liệu gốc</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Edited Content */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="default" className="text-xs">✏️ Nội dung chỉnh sửa (đề xuất)</Badge>
+                          </div>
+                          <div className="bg-blue-50 border-2 border-blue-200 p-4 rounded-lg space-y-3">
+                            <div>
+                              <Label className="text-sm font-medium text-muted">Tên địa điểm</Label>
+                              <p className="text-base font-semibold mt-1">{contentDetails.name || 'Chưa cập nhật'}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-muted">Mô tả ngắn</Label>
+                              <p className="text-sm mt-1">{contentDetails.shortDescription || 'Chưa cập nhật'}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-muted">Loại hình</Label>
+                              <Badge variant="outline" className="text-xs mt-1">
+                                {contentDetails.type || 'Chưa phân loại'}
+                              </Badge>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-muted">Vùng miền</Label>
+                              <p className="text-sm mt-1">{contentDetails.region || 'Chưa cập nhật'}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-muted">Tỉnh/thành</Label>
+                              <p className="text-sm mt-1">{contentDetails.province || 'Chưa cập nhật'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Change Summary */}
+                      {(() => {
+                        const originalData = contentDetails.originalData || reviewItem?.originalData;
+                        return originalData ? (
+                          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                            <h4 className="font-medium text-amber-900 mb-2">📋 Tóm tắt thay đổi:</h4>
+                            <ul className="space-y-1 text-sm text-amber-800">
+                              {contentDetails.name !== originalData.name && (
+                                <li>• <strong>Tên:</strong> "{originalData.name}" → "{contentDetails.name}"</li>
+                              )}
+                              {contentDetails.shortDescription !== originalData.shortDescription && (
+                                <li>• <strong>Mô tả ngắn:</strong> Đã thay đổi</li>
+                              )}
+                              {contentDetails.type !== originalData.type && (
+                                <li>• <strong>Loại hình:</strong> {originalData.type} → {contentDetails.type}</li>
+                              )}
+                              {contentDetails.region !== originalData.region && (
+                                <li>• <strong>Vùng miền:</strong> {originalData.region} → {contentDetails.region}</li>
+                              )}
+                              {contentDetails.province !== originalData.province && (
+                                <li>• <strong>Tỉnh/thành:</strong> {originalData.province} → {contentDetails.province}</li>
+                              )}
+                              {contentDetails.description !== originalData.description && (
+                                <li>• <strong>Mô tả chi tiết:</strong> Đã thay đổi</li>
+                              )}
+                              {(!contentDetails.name || contentDetails.name === originalData.name) &&
+                               (!contentDetails.shortDescription || contentDetails.shortDescription === originalData.shortDescription) &&
+                               (!contentDetails.type || contentDetails.type === originalData.type) &&
+                               (!contentDetails.region || contentDetails.region === originalData.region) &&
+                               (!contentDetails.province || contentDetails.province === originalData.province) &&
+                               (!contentDetails.description || contentDetails.description === originalData.description) && (
+                                <li className="text-amber-700 italic">🔍 Không phát hiện thay đổi rõ ràng trong các trường cơ bản</li>
+                              )}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                            <h4 className="font-medium text-red-900 mb-2">⚠️ Cảnh báo:</h4>
+                            <p className="text-sm text-red-800">Không tìm thấy dữ liệu gốc để so sánh. Đây có thể là lỗi dữ liệu.</p>
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Basic Information */}
                 <Card>
                   <CardHeader>
@@ -403,9 +567,126 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                       </div>
                     </div>
                     
+                    {/* Administrative Address - Vietnam Address System */}
+                    {contentDetails.vietnamAddress && (
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <Label className="text-sm font-medium text-blue-900 mb-3 block">Địa chỉ hành chính chi tiết:</Label>
+                        
+                        <div className="space-y-3">
+                          {/* Current Administrative Address */}
+                          <div className="bg-white p-3 rounded border border-blue-300">
+                            <p className="text-xs font-medium text-gray-800 mb-2">📍 Địa chỉ hành chính hiện tại:</p>
+                            <p className="text-sm font-mono text-blue-900">
+                              {[
+                                contentDetails.vietnamAddress.wardName,
+                                contentDetails.vietnamAddress.districtName,
+                                contentDetails.vietnamAddress.provinceName
+                              ].filter(Boolean).join(', ')}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1 mt-2">
+                              {contentDetails.vietnamAddress.provinceName && (
+                                <Badge variant="outline" className="text-xs bg-blue-100">
+                                  {contentDetails.vietnamAddress.provinceName}
+                                </Badge>
+                              )}
+                              {contentDetails.vietnamAddress.districtName && (
+                                <>  
+                                  <span className="text-blue-400 text-xs">→</span>
+                                  <Badge variant="outline" className="text-xs bg-blue-100">
+                                    {contentDetails.vietnamAddress.districtName}
+                                  </Badge>
+                                </>
+                              )}
+                              {contentDetails.vietnamAddress.wardName && (
+                                <>
+                                  <span className="text-blue-400 text-xs">→</span>
+                                  <Badge variant="outline" className="text-xs bg-blue-100">
+                                    {contentDetails.vietnamAddress.wardName}
+                                  </Badge>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Address Conversion Display - Old vs New */}
+                          {contentDetails.addressConversion?.hasChanges && (
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium text-blue-800 flex items-center gap-2">
+                                🔄 So sánh địa chỉ trước và sau sáp nhập hành chính:
+                              </p>
+                              
+                              {/* Old Address */}
+                              <div className="bg-white p-3 rounded border border-gray-200">
+                                <p className="text-xs font-medium text-gray-800 mb-2">📍 Địa chỉ hành chính cũ:</p>
+                                <p className="text-sm font-mono text-gray-900 bg-gray-50 p-2 rounded">
+                                  {[
+                                    contentDetails.addressConversion.oldAddress.ward?.name,
+                                    contentDetails.addressConversion.oldAddress.district?.name,
+                                    contentDetails.addressConversion.oldAddress.province?.name
+                                  ].filter(Boolean).join(', ')}
+                                </p>
+                                <p className="text-xs text-gray-600 mt-1">
+                                  Cấu trúc: Xã/Phường, Huyện/Quận, Tỉnh/Thành Phố
+                                </p>
+                              </div>
+                              
+                              {/* New Address */}
+                              {contentDetails.addressConversion.newAddress && (
+                                <div className="bg-white p-3 rounded border border-green-200">
+                                  <p className="text-xs font-medium text-green-800 mb-2">✅ Địa chỉ hành chính mới:</p>
+                                  <p className="text-sm font-mono text-green-900 bg-green-50 p-2 rounded">
+                                    {[
+                                      contentDetails.addressConversion.newAddress.ward?.name,
+                                      contentDetails.addressConversion.newAddress.district?.name || contentDetails.addressConversion.newAddress.province?.name
+                                    ].filter(Boolean).join(', ')}
+                                    {contentDetails.addressConversion.newAddress.district && contentDetails.addressConversion.newAddress.province && `, ${contentDetails.addressConversion.newAddress.province.name}`}
+                                  </p>
+                                  <p className="text-xs text-green-700 mt-1">
+                                    Cấu trúc: {contentDetails.addressConversion.newAddress.district ? 'Xã/Phường, Huyện/Quận, Tỉnh/TP' : 'Xã/Phường, Tỉnh/TP'}
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {/* Conversion Details */}
+                              <div className="bg-amber-50 p-3 rounded border border-amber-200">
+                                <p className="text-xs font-medium text-amber-800 mb-1">📋 Chi tiết thay đổi:</p>
+                                <p className="text-xs text-amber-700">{contentDetails.addressConversion.conversionMessage}</p>
+                                
+                                {!contentDetails.addressConversion.newAddress?.district && contentDetails.addressConversion.oldAddress.district && (
+                                  <p className="text-xs text-amber-800 mt-2 p-2 bg-amber-100 rounded">
+                                    ⚠️ <strong>Quan trọng:</strong> Cấu trúc hành chính đã thay đổi từ 3 cấp xuống 2 cấp.
+                                    Bỏ cấp huyện: <strong>{contentDetails.addressConversion.oldAddress.district.name}</strong>
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* No conversion case */}
+                          {contentDetails.addressConversion && !contentDetails.addressConversion.hasChanges && (
+                            <div className="p-3 bg-gray-50 border border-gray-200 rounded">
+                              <p className="text-xs text-gray-600">ℹ️ Địa chỉ này không thay đổi sau cải cách hành chính hoặc chưa được kiểm tra conversion.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div>
-                      <Label className="text-sm font-medium text-muted">Địa chỉ</Label>
+                      <Label className="text-sm font-medium text-muted">Địa chỉ cụ thể</Label>
                       <p className="text-base mt-1">{contentDetails.address || 'Chưa cập nhật'}</p>
+                      
+                      {/* Combined full address display */}
+                      {contentDetails.vietnamAddress?.fullAddress && (
+                        <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                          <p className="text-xs text-green-700">
+                            <strong>Địa chỉ hoàn chỉnh:</strong> {contentDetails.address}
+                            {contentDetails.address && !contentDetails.address.includes(contentDetails.vietnamAddress.provinceName) && 
+                              `, ${contentDetails.vietnamAddress.fullAddress}`
+                            }
+                          </p>
+                        </div>
+                      )}
                     </div>
                     
                     {contentDetails.coordinates?.lat && contentDetails.coordinates?.lng && (
@@ -706,51 +987,92 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 <Separator />
 
                 <div className="space-y-3">
+                  {/* Quy trình theo tài liệu 2.2.1: Phải claim trước khi duyệt */}
                   {reviewItem.status === 'pending' && (
-                    <Button
-                      className="w-full justify-start"
-                      onClick={() => handleAction('start_review')}
-                      disabled={isProcessing}
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Bắt đầu duyệt
-                    </Button>
+                    <div className="space-y-3">
+                      <Button
+                        className="w-full justify-start bg-blue-600 hover:bg-blue-700"
+                        onClick={() => handleAction('start_review')}
+                        disabled={isProcessing}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Nhận việc và bắt đầu duyệt
+                      </Button>
+                      
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-xs text-amber-700">
+                          ⚠️ <strong>Quy trình:</strong> Phải nhận việc trước khi có thể duyệt nội dung
+                        </p>
+                      </div>
+                    </div>
                   )}
                   
-                  <Button
-                    className="w-full justify-start"
-                    onClick={() => handleAction('approve')}
-                    disabled={isProcessing}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Duyệt và xuất bản
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => handleAction('reject')}
-                    disabled={isProcessing}
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Từ chối
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => handleAction('escalate')}
-                    disabled={isProcessing}
-                  >
-                    <AlertTriangle className="w-4 h-4 mr-2" />
-                    Chuyển lên cấp cao hơn
-                  </Button>
+                  {/* Chỉ hiện các nút duyệt chính khi đã claim (status = in_review hoặc claimed) */}
+                  {(reviewItem.status === 'in_review' || reviewItem.status === 'claimed') && (
+                    <>
+                      <Button
+                        className="w-full justify-start bg-green-600 hover:bg-green-700"
+                        onClick={() => handleAction('approve')}
+                        disabled={isProcessing}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Duyệt và xuất bản
+                      </Button>
+                      
+                      {/* Yêu cầu chỉnh sửa - theo tài liệu 2.2.2 (b) */}
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                        onClick={() => handleAction('request_edit')}
+                        disabled={isProcessing}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Yêu cầu chỉnh sửa
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => handleAction('reject')}
+                        disabled={isProcessing}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Từ chối
+                      </Button>
+                      
+                      {/* Chuyển lên cấp cao hơn - chỉ hiện với Moderator */}
+                      {user?.role === 'moderator' && (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => handleAction('escalate')}
+                          disabled={isProcessing}
+                        >
+                          <AlertTriangle className="w-4 h-4 mr-2" />
+                          Chuyển lên cấp cao hơn
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    <strong>Lưu ý:</strong> Tất cả hành động kiểm duyệt sẽ được ghi lại và thông báo đến tác giả qua email.
+                    <strong>Quy trình Kiểm duyệt (theo tài liệu 2.2):</strong>
                   </p>
+                  <ul className="text-xs text-blue-600 mt-1 space-y-1">
+                    <li>• <strong>Bước 1:</strong> Nhận việc (claim) để bắt đầu kiểm duyệt</li>
+                    <li>• <strong>Bước 2:</strong> Chọn 1 trong 4 hành động:</li>
+                    <li className="ml-4">→ <strong>Chấp thuận:</strong> Xuất bản ngay + ISR revalidation</li>
+                    <li className="ml-4">→ <strong>Yêu cầu chỉnh sửa:</strong> Gửi notification cho tác giả</li>
+                    <li className="ml-4">→ <strong>Từ chối:</strong> Đánh dấu rejected + archive</li>
+                    {user?.role === 'moderator' && (
+                      <li className="ml-4">→ <strong>Chuyển lên Admin:</strong> Escalate khi phức tạp</li>
+                    )}
+                    {user?.role === 'admin' && (
+                      <li className="ml-4 text-amber-600">📌 <strong>Admin:</strong> Có quyền cao nhất, không cần escalate</li>
+                    )}
+                  </ul>
                 </div>
               </CardContent>
             </Card>

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { NotificationService } from '@/lib/server/notification-service';
+import { CacheService } from '@/lib/server/cache-service';
 
 // POST /api/places/drafts/[draftId]/submit - Submit draft for review
 export async function POST(
@@ -22,7 +24,16 @@ export async function POST(
     const { draftId } = await params;
 
     // Check if draft exists and belongs to user
-    const draftDoc = await adminDb.collection('places').doc(draftId).get();
+    // First try places collection, then place_drafts for edit drafts
+    let draftDoc = await adminDb.collection('places').doc(draftId).get();
+    let collection = 'places';
+    
+    if (!draftDoc.exists) {
+      // Try place_drafts collection for edit drafts
+      draftDoc = await adminDb.collection('place_drafts').doc(draftId).get();
+      collection = 'place_drafts';
+    }
+    
     if (!draftDoc.exists) {
       return NextResponse.json(
         { success: false, error: 'Không tìm thấy bản nháp' },
@@ -39,8 +50,11 @@ export async function POST(
     }
 
     // Allow submission of draft, rejected, and resubmission of submitted places
+    // Special handling for edit drafts from published places
+    const isEditingPublished = draft?.isEditingPublished || draft?.originalPlaceId;
     const submittableStatuses = ['draft', 'submitted', 'rejected'];
-    if (!submittableStatuses.includes(draft?.status)) {
+    
+    if (!isEditingPublished && !submittableStatuses.includes(draft?.status)) {
       return NextResponse.json(
         { success: false, error: 'Không thể gửi địa điểm đang được duyệt hoặc đã xuất bản' },
         { status: 400 }
@@ -85,6 +99,55 @@ export async function POST(
       draft.images[0].isPrimary = true;
     }
 
+    // Handle edit submission differently
+    if (isEditingPublished) {
+      console.log('Processing edit submission for published place:', draft.originalPlaceId);
+      
+      // Update original place status to pending_edit
+      await adminDb.collection('places').doc(draft.originalPlaceId).update({
+        status: 'pending_edit',
+        updatedAt: new Date().toISOString()
+      });
+
+      // Create moderation queue entry for edit request
+      const queueData = {
+        itemId: draft.originalPlaceId,
+        itemType: 'place_edit',
+        action: 'edit_review',
+        status: 'pending',
+        priority: 'medium',
+        submittedBy: user.id,
+        submittedAt: new Date().toISOString(),
+        originalData: draft.originalData || {},
+        editedData: {
+          ...draft,
+          id: draftId
+        },
+        metadata: {
+          requestType: 'edit',
+          editDraftId: draftId,
+          reason: 'User submitted edited version of published place'
+        }
+      };
+
+      await adminDb.collection('moderation_queue').add(queueData);
+
+      // Notify moderators about new edit request
+      await NotificationService.notifyNewModerationItem(
+        'Yêu cầu chỉnh sửa địa điểm',
+        'medium',
+        draft.originalPlaceId,
+        user.fullName || user.email,
+        draft.name || 'Địa điểm'
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: 'Bản chỉnh sửa đã được gửi để kiểm duyệt. Nội dung gốc vẫn hiển thị cho đến khi được duyệt.'
+      });
+    }
+
+    // Regular draft submission logic
     // Determine trust label and status based on user role  
     let trustLabel = 'community';
     let finalStatus = 'submitted';
@@ -114,15 +177,31 @@ export async function POST(
       updateData.publishedAt = new Date().toISOString();
     }
 
-    await adminDb.collection('places').doc(draftId).update(updateData);
+    await adminDb.collection(collection).doc(draftId).update(updateData);
+
+    // Admin auto-publish: Trigger ISR rebuild immediately (Section 2.1.2)
+    if (user.role === 'admin') {
+      console.log('Admin created place - triggering immediate ISR rebuild');
+      
+      // Trigger ISR rebuild để update static pages ngay (Section 2.1.2)
+      await CacheService.revalidatePlaceApproval({
+        id: draftId,
+        slug: draft.slug,
+        region: draft.region,
+        province: province,
+        type: draft.type,
+        featured: draft.featured || false
+      });
+    }
 
     // Handle moderation queue entry (add or update existing)
     if (user.role !== 'admin') {
-      const priorityMap = {
-        'partner': 4,
-        'contributor': 3,
-        'traveler': 2,
-        'guest': 1
+      // Priority mapping based on user role (matching document specification)
+      const priorityMap: Record<string, string> = {
+        'partner': 'high',     // Partners get high priority
+        'contributor': 'medium', // Contributors get medium priority  
+        'traveler': 'low',       // Travelers get low priority (if they can submit)
+        'guest': 'low'           // Guests get low priority
       };
 
       // Check if there's already a moderation queue entry for this content
@@ -136,7 +215,7 @@ export async function POST(
         submittedBy: user.id,
         submittedAt: new Date().toISOString(),
         status: 'pending',
-        priority: priorityMap[user.role] || 1,
+        priority: priorityMap[user.role] || 'low',
         queueType: user.role === 'partner' ? 'partner_queue' : 'contributor_queue',
         metadata: {
           title: draft.name,
@@ -175,6 +254,16 @@ export async function POST(
         // Create new queue entry for first-time submission
         await adminDb.collection('moderation_queue').add(queueData);
         console.log(`Created new moderation queue entry for place ${draftId}`);
+
+        // Notify moderators about new place submission
+        const submissionType = user.role === 'partner' ? 'Địa điểm từ Partner' : 'Địa điểm mới';
+        await NotificationService.notifyNewModerationItem(
+          submissionType,
+          priorityMap[user.role] as any,
+          draftId,
+          user.fullName || user.email,
+          draft.name
+        );
       }
     }
 

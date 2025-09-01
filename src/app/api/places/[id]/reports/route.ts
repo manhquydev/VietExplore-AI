@@ -47,6 +47,20 @@ export async function POST(
       );
     }
 
+    // Rate limiting: Check user's recent reports (3 reports per user per week as per document)
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const recentReports = await adminDb.collection('place_reports')
+      .where('reportedBy', '==', user.id)
+      .where('createdAt', '>=', oneWeekAgo)
+      .get();
+
+    if (recentReports.size >= 3 && user.role !== 'moderator' && user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'Bạn chỉ có thể báo cáo tối đa 3 địa điểm trong 1 tuần' },
+        { status: 429 }
+      );
+    }
+
     const formData: ReportFormData = await request.json();
 
     // Validate required fields
@@ -78,11 +92,45 @@ export async function POST(
 
     const docRef = await adminDb.collection('place_reports').add(reportData);
 
-    // Update place report count
+    // Update place report count and check for auto-escalation
+    const newReportCount = (place?.reportCount || 0) + 1;
     await adminDb.collection('places').doc(placeId).update({
-      reportCount: (place?.reportCount || 0) + 1,
+      reportCount: newReportCount,
       updatedAt: new Date().toISOString()
     });
+
+    // Auto-escalation: Create urgent moderation queue item if reports exceed threshold
+    if (newReportCount >= 3 && place?.status === 'published') {
+      // Check if there's already a moderation queue item for this place
+      const existingModerationItem = await adminDb.collection('moderation_queue')
+        .where('itemId', '==', placeId)
+        .where('itemType', '==', 'place_reports_review')
+        .where('status', 'in', ['pending', 'claimed', 'in_review'])
+        .get();
+
+      if (existingModerationItem.empty) {
+        // Create urgent review item
+        await adminDb.collection('moderation_queue').add({
+          itemId: placeId,
+          itemType: 'place_reports_review',
+          contentType: 'place',
+          contentId: placeId,
+          status: 'pending',
+          priority: 'urgent',
+          queueType: 'contributor_queue',
+          submittedBy: 'system',
+          submittedAt: new Date().toISOString(),
+          metadata: {
+            reason: `Auto-escalated due to ${newReportCount} reports`,
+            reportCount: newReportCount,
+            latestReportType: formData.reportType,
+            triggerReportId: docRef.id
+          }
+        });
+        
+        console.log(`Auto-escalated place ${placeId} to urgent review due to ${newReportCount} reports`);
+      }
+    }
 
     // Log the report action
     await adminDb.collection('moderation_logs').add({

@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "regions": ["sin1", "hkg1"],
+  "functions": {
+    "src/app/api/edge/**/*.ts": {
+      "runtime": "edge"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-expired-claims",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-notifications", 
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, s-maxage=60, stale-while-revalidate=300"
+        }
+      ]
+    },
+    {
+      "source": "/places/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control", 
+          "value": "public, s-maxage=300, stale-while-revalidate=600"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/places/validate",
+      "destination": "/api/edge/validate-place"
+    },
+    {
+      "source": "/api/auth/verify",
+      "destination": "/api/edge/auth/verify"
+    },
+    {
+      "source": "/api/moderation/claim",
+      "destination": "/api/edge/moderation/claim"
+    }
+  ]
+}
