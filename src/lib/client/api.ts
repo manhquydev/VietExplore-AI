@@ -229,11 +229,16 @@ export const apiClient = {
   },
   moderation: {
     queue: {
-      list: (filters: { status?: string; contentType?: string; priority?: string; queueType?: string; limit?: number; } = {}) => {
+      list: (filters: { status?: string; contentType?: string; itemType?: string | string[]; priority?: string; queueType?: string; limit?: number; } = {}) => {
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            params.append(key, value.toString());
+            if (key === 'itemType' && Array.isArray(value)) {
+              // Handle array of item types by joining them with comma
+              params.append(key, value.join(','));
+            } else {
+              params.append(key, value.toString());
+            }
           }
         });
         return callApi(`/moderation/queue?${params.toString()}`);

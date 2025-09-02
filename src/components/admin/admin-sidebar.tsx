@@ -40,7 +40,7 @@ const navigation: NavItem[] = [
     title: "Kiểm duyệt",
     href: "/admin/moderation",
     icon: adminIcons.navigation.moderation,
-    description: "Xem xét nội dung đã gửi"
+    description: "Tổng quan hệ thống kiểm duyệt"
   },
   {
     title: "Người dùng", 

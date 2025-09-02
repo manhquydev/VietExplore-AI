@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'pending,claimed'; // Default to available items
     const contentType = searchParams.get('contentType');
+    const itemType = searchParams.get('itemType'); // Support for itemType filter
     const priority = searchParams.get('priority');
     const queueType = searchParams.get('queueType'); // partner_queue hoặc contributor_queue
     const claimedBy = searchParams.get('claimedBy'); // Filter by specific moderator
@@ -42,6 +43,22 @@ export async function GET(request: NextRequest) {
     if (contentType) {
       query = query.where('contentType', '==', contentType);
     }
+
+    // TODO: Re-enable server-side itemType filtering once Firestore index is built
+    // The composite index for itemType + status + priority + submittedAt is defined in firestore.indexes.json (lines 276-297)
+    // Firebase Console: https://console.firebase.google.com/v1/r/project/vietexplore-ai/firestore/indexes
+    // Temporarily using client-side filtering until index is ready
+    const requestedItemType = itemType;
+    
+    // FUTURE: Uncomment when index is ready:
+    // if (itemType) {
+    //   if (Array.isArray(itemType) || itemType.includes(',')) {
+    //     const itemTypes = Array.isArray(itemType) ? itemType : itemType.split(',').map(t => t.trim());
+    //     query = query.where('itemType', 'in', itemTypes);
+    //   } else {
+    //     query = query.where('itemType', '==', itemType);
+    //   }
+    // }
 
     // Filter by priority
     if (priority) {
@@ -241,10 +258,29 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Apply client-side itemType filtering until Firestore index is ready
+    let filteredItems = items;
+    if (requestedItemType) {
+      if (Array.isArray(requestedItemType) || requestedItemType.includes(',')) {
+        const itemTypes = Array.isArray(requestedItemType) ? requestedItemType : requestedItemType.split(',').map(t => t.trim());
+        filteredItems = items.filter(item => 
+          itemTypes.includes(item.itemType) || 
+          // Fallback logic for items without itemType field
+          (itemTypes.includes('new_place') && !item.itemType && item.contentType === 'place')
+        );
+      } else {
+        filteredItems = items.filter(item => 
+          item.itemType === requestedItemType ||
+          // Fallback logic for items without itemType field
+          (requestedItemType === 'new_place' && !item.itemType && item.contentType === 'place')
+        );
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      data: items,
-      total: items.length
+      data: filteredItems,
+      total: filteredItems.length
     });
 
   } catch (error) {

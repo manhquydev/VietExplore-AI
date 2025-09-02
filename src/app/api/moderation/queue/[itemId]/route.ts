@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { FieldValue } from 'firebase-admin/firestore';
-import { NotificationService } from '@/lib/server/notification-service';
+import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-service';
 import { CacheService } from '@/lib/server/cache-service';
 import { VersioningService } from '@/lib/server/versioning-service';
 import { SoftDeleteService } from '@/lib/server/soft-delete-service';
@@ -161,7 +161,7 @@ export async function PATCH(
 
       // Notify other moderators that item was claimed (optional)
       // This helps prevent multiple moderators from trying to claim the same item
-      // NotificationService.notifyModerators(
+      // EnhancedNotificationService.notifyModerators(
       //   'moderation_claimed',
       //   'Mục kiểm duyệt đã được nhận',
       //   `${moderator.fullName} đã nhận mục kiểm duyệt`,
@@ -255,22 +255,33 @@ export async function PUT(
 
     const itemData = itemDoc.data();
     
-    // Check if item is claimed and by current moderator (unless admin)
-    if (moderator.role !== 'admin' && itemData!.claimedBy && itemData!.claimedBy !== moderator.id) {
-      return NextResponse.json(
-        { error: 'Mục này đã được một kiểm duyệt viên khác nhận' },
-        { status: 403 }
-      );
-    }
-    
-    // Check if claim has expired (unless admin)
-    if (moderator.role !== 'admin' && itemData!.claimedBy === moderator.id && itemData!.claimExpiresAt) {
-      const claimExpiry = new Date(itemData!.claimExpiresAt);
-      if (claimExpiry < new Date()) {
+    // Check claim requirement - theo quy trình tài liệu mục 2.2.1
+    if (moderator.role !== 'admin') {
+      // Items with status 'pending' must be claimed first before processing
+      if (itemData!.status === 'pending' && !itemData!.claimedBy) {
         return NextResponse.json(
-          { error: 'Quyền nhận mục kiểm duyệt đã hết hạn' },
+          { error: 'Cần tiếp nhận địa điểm trước khi xử lý' },
           { status: 403 }
         );
+      }
+      
+      // Check if item is claimed by another moderator
+      if (itemData!.claimedBy && itemData!.claimedBy !== moderator.id) {
+        return NextResponse.json(
+          { error: 'Mục này đã được một kiểm duyệt viên khác nhận' },
+          { status: 403 }
+        );
+      }
+      
+      // Check if claim has expired
+      if (itemData!.claimedBy === moderator.id && itemData!.claimExpiresAt) {
+        const claimExpiry = new Date(itemData!.claimExpiresAt);
+        if (claimExpiry < new Date()) {
+          return NextResponse.json(
+            { error: 'Quyền nhận mục kiểm duyệt đã hết hạn' },
+            { status: 403 }
+          );
+        }
       }
     }
     
@@ -408,7 +419,8 @@ export async function PUT(
           }
           
           // Trigger cache invalidation for removed place
-          const placeData = placeDoc.exists ? placeDoc.data() : null;
+          const placeDocForCache = await adminDb.collection('places').doc(contentId).get();
+          const placeData = placeDocForCache.exists ? placeDocForCache.data() : null;
           if (placeData) {
             await CacheService.revalidatePlaceRemoval({
               id: contentId,
@@ -589,9 +601,10 @@ export async function PUT(
         });
         
         // Log critical action for audit trail
+        const placeDocForAudit = await adminDb.collection('places').doc(contentId).get();
         console.log(`CRITICAL: Direct delete by ${moderator.role} ${moderator.id} on place ${contentId}`, {
           moderator: { id: moderator.id, role: moderator.role, email: moderator.email },
-          place: { id: contentId, name: placeDoc.exists ? placeDoc.data()?.name : 'Unknown' },
+          place: { id: contentId, name: placeDocForAudit.exists ? placeDocForAudit.data()?.name : 'Unknown' },
           reason: reviewNotes,
           timestamp: now
         });
@@ -637,7 +650,7 @@ export async function PUT(
 
           // Send approval notification to submitter
           if (itemData!.itemType === 'place_edit') {
-            await NotificationService.notifyEditSubmitter(
+            await EnhancedNotificationService.notifyEditSubmitter(
               placeData.createdBy,
               contentId,
               placeData.name || 'Địa điểm',
@@ -645,7 +658,7 @@ export async function PUT(
               reviewNotes
             );
           } else {
-            await NotificationService.notifyPlaceSubmitter(
+            await EnhancedNotificationService.notifyPlaceSubmitter(
               placeData.createdBy,
               contentId,
               placeData.name || 'Địa điểm',
@@ -669,7 +682,7 @@ export async function PUT(
         const placeData = placeDoc.data();
         if (placeData?.createdBy) {
           if (itemData!.itemType === 'place_edit') {
-            await NotificationService.notifyEditSubmitter(
+            await EnhancedNotificationService.notifyEditSubmitter(
               placeData.createdBy,
               contentId,
               placeData.name || 'Địa điểm',
@@ -677,7 +690,7 @@ export async function PUT(
               reviewNotes
             );
           } else {
-            await NotificationService.notifyPlaceSubmitter(
+            await EnhancedNotificationService.notifyPlaceSubmitter(
               placeData.createdBy,
               contentId,
               placeData.name || 'Địa điểm',
@@ -688,7 +701,7 @@ export async function PUT(
         }
       } else if (action === 'escalate') {
         // Send escalation notification to admins
-        await NotificationService.notifyEscalation(
+        await EnhancedNotificationService.notifyEscalation(
           itemId,
           itemData!.itemType || itemData!.contentType,
           moderator.fullName || moderator.email,
@@ -728,10 +741,23 @@ export async function PUT(
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error reviewing moderation item:', error);
+    
+    // More detailed error logging
+    console.error('Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      itemId,
+      action,
+      moderator: moderator?.id
+    });
+    
     return NextResponse.json(
-      { error: 'Không thể xử lý yêu cầu duyệt' },
+      { 
+        success: false,
+        error: error?.message || 'Không thể xử lý yêu cầu duyệt'
+      },
       { status: 500 }
     );
   }

@@ -355,15 +355,22 @@ export function useModerationQueue(filters: {
     try {
       const result = await apiClient.moderation.queue.review(itemId, action, reviewNotes, newTrustLabel);
       
-      if (result.success) {
+      if (result && result.success) {
         // Refresh queue
         await fetchQueue();
         return { success: true, message: result.message };
       } else {
-        return { success: false, error: result.error };
+        return { 
+          success: false, 
+          error: result?.error || 'API trả về kết quả không hợp lệ' 
+        };
       }
     } catch (err: any) {
-      return { success: false, error: err.message || 'Có lỗi xảy ra' };
+      console.error('ReviewItem error:', err);
+      return { 
+        success: false, 
+        error: err?.error || err?.message || 'Có lỗi xảy ra khi xử lý yêu cầu' 
+      };
     }
   };
 

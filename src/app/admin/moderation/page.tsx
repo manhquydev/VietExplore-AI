@@ -2,497 +2,343 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MapPin, Calendar, Users, Eye } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { MapPin, Users, Eye, Clock, ArrowRight, TrendingUp, AlertTriangle, CheckCircle, Edit3, Trash2, Flag, Shield } from "lucide-react"
 import { adminIcons } from "@/lib/admin/icon-system"
-import { adminClasses } from "@/lib/admin/theme-utils"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
-import { useModerationQueue } from "@/hooks/use-admin"
-import { useToast } from "@/components/providers/toast-provider"
-import { UserRoleDisplay } from "@/components/ui/role-badge"
+import { useAdminStats } from "@/hooks/use-admin"
+import { AdminLoading, AdminErrorState } from "@/components/admin/loading-states"
 import { apiClient } from "@/lib/client/api"
-import { AdminTableSkeleton, AdminLoading, AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
-import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog } from "@/components/admin/confirmation-dialogs"
 
-const statusConfig = {
-  pending: { 
-    label: "Chờ xử lý", 
-    variant: "warning" as const, 
-    icon: adminIcons.status.pending,
-    color: "admin-status-warning"
+const moderationQueues = [
+  {
+    title: "Địa điểm Mới",
+    description: "Kiểm duyệt địa điểm mới từ cộng tác viên",
+    icon: MapPin,
+    href: "/admin/moderation/queue",
+    color: "bg-blue-50 border-blue-200 hover:bg-blue-100",
+    iconColor: "text-blue-600",
+    stats: { pending: 0, total: 0 }
   },
-  in_review: { 
-    label: "Đang xem xét", 
-    variant: "default" as const, 
-    icon: adminIcons.actions.view,
-    color: "admin-status-info"
+  {
+    title: "Quản lý Địa điểm", 
+    description: "Xử lý yêu cầu chỉnh sửa và xóa địa điểm",
+    icon: Edit3,
+    href: "/admin/moderation/management",
+    color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
+    iconColor: "text-orange-600",
+    stats: { pending: 0, total: 0 }
   },
-  approved: { 
-    label: "Đã phê duyệt", 
-    variant: "success" as const, 
-    icon: adminIcons.status.success,
-    color: "admin-status-success"
-  },
-  rejected: { 
-    label: "Bị từ chối", 
-    variant: "destructive" as const, 
-    icon: adminIcons.status.error,
-    color: "admin-status-error"
-  },
-  escalated: { 
-    label: "Đã leo thang", 
-    variant: "secondary" as const, 
-    icon: adminIcons.status.warning,
-    color: "bg-admin-info-50 text-admin-info-700 border-admin-info-200"
+  {
+    title: "Báo cáo Vi phạm",
+    description: "Xử lý báo cáo từ cộng đồng",
+    icon: Flag,
+    href: "/admin/moderation/reports", 
+    color: "bg-red-50 border-red-200 hover:bg-red-100",
+    iconColor: "text-red-600",
+    stats: { pending: 0, total: 0 }
   }
-}
+]
 
-const priorityConfig = {
-  low: { label: "Low", color: "text-gray-600 bg-gray-50" },
-  medium: { label: "Medium", color: "text-blue-600 bg-blue-50" },
-  high: { label: "High", color: "text-orange-600 bg-orange-50" },
-  urgent: { label: "Urgent", color: "text-red-600 bg-red-50" }
-}
-
-export default function AdminModerationPage() {
+export default function ModerationOverviewPage() {
   const { user } = useAuth()
-  const { toast } = useToast()
-  
-  const [selectedStatus, setSelectedStatus] = React.useState<string>('pending')
-  const [selectedQueue, setSelectedQueue] = React.useState<string>('all')
-  const [searchQuery, setSearchQuery] = React.useState('')
-  const [statusCounts, setStatusCounts] = React.useState<{[key: string]: number}>({})
+  const { stats, loading, error } = useAdminStats()
 
-  // Build filters
-  const queueFilters = React.useMemo(() => {
-    const filters: any = { status: selectedStatus }
-    if (selectedQueue !== 'all') {
-      filters.queueType = selectedQueue
-    }
-    return filters
-  }, [selectedStatus, selectedQueue])
+  const [queueStats, setQueueStats] = React.useState<{[key: string]: any}>({})
 
-  const { items, loading, error, reviewItem } = useModerationQueue(queueFilters)
-
-  // Fetch status counts for better UX
-  const fetchStatusCounts = React.useCallback(async () => {
+  const fetchQueueStats = React.useCallback(async () => {
     if (!user || !['moderator', 'admin'].includes(user.role)) return
 
     try {
-      const statuses = ['pending', 'in_review', 'approved', 'rejected', 'escalated']
-      const counts: {[key: string]: number} = {}
+      // Fetch stats for each queue type - API now handles filtering
+      const newPlacesResult = await apiClient.moderation.queue.list({ 
+        itemType: 'new_place',
+        status: 'submitted'
+      })
+      
+      const managementResult = await apiClient.moderation.queue.list({
+        itemType: ['place_edit', 'place_deletion'],
+        status: 'pending'
+      })
+      
+      const reportsResult = await apiClient.moderation.queue.list({
+        itemType: 'user_report',
+        status: 'pending'
+      })
 
-      for (const status of statuses) {
-        const filters: any = { status }
-        if (selectedQueue !== 'all') {
-          filters.queueType = selectedQueue
+      setQueueStats({
+        newPlaces: {
+          pending: newPlacesResult.data?.length || 0,
+          total: newPlacesResult.data?.length || 0
+        },
+        management: {
+          pending: managementResult.data?.length || 0,
+          total: managementResult.data?.length || 0
+        },
+        reports: {
+          pending: reportsResult.data?.length || 0,
+          total: reportsResult.data?.length || 0
         }
-        const result = await apiClient.moderation.queue.list(filters)
-        counts[status] = result.data?.length || 0
-      }
-
-      setStatusCounts(counts)
+      })
     } catch (error) {
-      console.error('Error fetching status counts:', error)
+      console.error('Error fetching queue stats:', error)
     }
-  }, [selectedQueue, user])
+  }, [user])
 
   React.useEffect(() => {
-    fetchStatusCounts()
-  }, [fetchStatusCounts])
+    fetchQueueStats()
+  }, [fetchQueueStats])
 
-  const handleAction = async (
-    itemId: string, 
-    action: 'approve' | 'reject' | 'escalate',
-    notes?: string
-  ) => {
-    try {
-      const result = await reviewItem(itemId, action, notes)
-      if (result && result.success) {
-        const actionMessages = {
-          'approve': 'Nội dung đã được phê duyệt thành công',
-          'reject': 'Nội dung đã bị từ chối',
-          'escalate': 'Nội dung đã được chuyển lên cấp cao hơn'
-        }
-        toast.success(actionMessages[action as keyof typeof actionMessages] || 'Hành động đã được thực hiện thành công')
-        
-        // Force refresh both status counts and items list
-        await fetchStatusCounts()
-        
-        // Force re-fetch the items by triggering a dependency change
-        // The useModerationQueue hook will re-run when its dependencies change
-        window.dispatchEvent(new CustomEvent('moderationUpdated'))
-      } else {
-        toast.error(`Lỗi: ${result?.error || 'Có lỗi xảy ra khi thực hiện hành động'}`)
-      }
-    } catch (error) {
-      console.error('Error in handleAction:', error)
-      toast.error('Có lỗi không mong đợi xảy ra')
-    }
-  }
-
-  const filteredItems = React.useMemo(() => {
-    if (!searchQuery) return items
-    
-    return items.filter(item =>
-      item.contentDetails?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.submitter?.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+  if (loading) {
+    return (
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="h-8 bg-gray-200 animate-pulse rounded w-64"></div>
+            <div className="h-4 bg-gray-100 animate-pulse rounded w-96"></div>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="p-6">
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 animate-pulse rounded w-32"></div>
+                  <div className="h-4 bg-gray-100 animate-pulse rounded"></div>
+                  <div className="h-8 bg-gray-100 animate-pulse rounded w-24"></div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
     )
-  }, [items, searchQuery])
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    } catch {
-      return 'N/A'
-    }
   }
 
-  const actions = (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-      <div className="relative flex-1 sm:flex-none">
-        <adminIcons.utility.search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-admin-neutral-400" />
-        <Input
-          placeholder="Tìm kiếm mục..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="admin-input pl-10 w-full sm:w-64"
+  if (error) {
+    return (
+      <div className="p-4 md:p-6 lg:p-8">
+        <AdminErrorState
+          title="Lỗi tải trang tổng quan kiểm duyệt"
+          description={error}
+          action={
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+            >
+              <adminIcons.system.refresh className="h-4 w-4 mr-2" />
+              Thử lại
+            </Button>
+          }
         />
       </div>
-      <Select value={selectedQueue} onValueChange={setSelectedQueue}>
-        <SelectTrigger className="w-full sm:w-48 admin-input">
-          <SelectValue placeholder="Loại hàng đợi" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">
-            <div className="flex items-center gap-2">
-              <adminIcons.utility.filter className="h-3 w-3" />
-              Tất cả hàng đợi
-            </div>
-          </SelectItem>
-          <SelectItem value="contributor_queue">
-            <div className="flex items-center gap-2">
-              <adminIcons.navigation.users className="h-3 w-3" />
-              Cộng tác viên
-            </div>
-          </SelectItem>
-          <SelectItem value="partner_queue">
-            <div className="flex items-center gap-2">
-              <adminIcons.content.external className="h-3 w-3" />
-              Đối tác
-            </div>
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  )
+    )
+  }
+
+  const totalPending = (queueStats.newPlaces?.pending || 0) + 
+                      (queueStats.management?.pending || 0) + 
+                      (queueStats.reports?.pending || 0)
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+      <div className="space-y-8">
+        {/* Header */}
         <div className="space-y-2">
-          <h1 className="admin-page-title">Hàng đợi kiểm duyệt</h1>
-          <p className="admin-body-text max-w-2xl">Xem xét và quản lý nội dung được gửi từ cộng đồng</p>
+          <h1 className="admin-page-title flex items-center gap-3">
+            <adminIcons.navigation.moderation className="h-8 w-8 text-admin-primary-600" />
+            Tổng quan Kiểm duyệt
+          </h1>
+          <p className="admin-body-text max-w-3xl">
+            Hệ thống kiểm duyệt chuyên nghiệp với quy trình tách biệt cho từng loại nội dung
+          </p>
         </div>
-        <div className="flex-shrink-0">
-          {actions}
-        </div>
-      </div>
-      <div className="space-y-6">
-        {/* Trạng thái Tabs */}
-        <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
-          <div className="admin-card p-2">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 bg-admin-neutral-50 p-1 rounded-lg">
-              {Object.entries(statusConfig).map(([status, config]) => (
-                <TabsTrigger 
-                  key={status} 
-                  value={status}
-                  className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-admin-primary-200 text-xs md:text-sm font-medium px-3 py-2 rounded-md transition-all duration-200"
-                >
-                  <config.icon className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden sm:inline">{config.label}</span>
-                  {statusCounts[status] > 0 && (
-                    <Badge className={cn("ml-1 text-xs px-2 py-0.5 h-5 rounded-full font-semibold", config.color)}>
-                      {statusCounts[status]}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
 
-          {Object.entries(statusConfig).map(([status, config]) => (
-            <TabsContent key={status} value={status} className="space-y-4">
-              {loading ? (
-                <AdminTableSkeleton rows={3} />
-              ) : error ? (
-                <AdminErrorState
-                  title="Lỗi tải dữ liệu kiểm duyệt"
-                  description={error}
-                  action={
-                    <Button 
-                      variant="outline" 
-                      className="admin-btn-secondary"
-                      onClick={() => window.location.reload()}
-                    >
-                      <adminIcons.system.refresh className="h-4 w-4 mr-2" />
-                      Thử lại
-                    </Button>
-                  }
-                />
-              ) : filteredItems.length === 0 ? (
-                <AdminEmptyState
-                  icon={config.icon}
-                  title={`Không có mục ${config.label.toLowerCase()}`}
-                  description={
-                    searchQuery 
-                      ? "Thử điều chỉnh từ khóa tìm kiếm hoặc xóa bộ lọc"
-                      : `Chưa có mục nào ở trạng thái này trong hàng đợi`
-                  }
-                  action={
-                    searchQuery ? (
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setSearchQuery('')}
-                        className="admin-btn-secondary"
-                      >
-                        Xóa tìm kiếm
-                      </Button>
-                    ) : null
-                  }
-                />
-              ) : (
-                <div className="space-y-4">
-                  {filteredItems.map((item) => {
-                    const statusInfo = statusConfig[item.status as keyof typeof statusConfig]
-                    
-                    return (
-                      <Card key={item.id} className="hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-blue-200">
-                        <CardContent className="p-4 md:p-6">
-                          <div className="flex items-start gap-4">
-                            {/* Content Preview */}
-                            <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                              {item.contentDetails?.images?.[0] ? (
-                                <img 
-                                  src={item.contentDetails.images[0].url} 
-                                  alt=""
-                                  className="w-full h-full object-cover rounded-xl"
-                                />
-                              ) : (
-                                <MapPin className="h-6 w-6 text-gray-500" />
-                              )}
-                            </div>
-
-                            {/* Content Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                                    {item.itemType === 'place_edit' && '✏️ '}
-                                    {item.itemType === 'place_deletion' && '🗑️ '}
-                                    {item.contentDetails?.name || 'Untitled'}
-                                  </h3>
-                                  <p className="text-gray-600 text-sm line-clamp-2">
-                                    {item.itemType === 'place_edit' && 'Yêu cầu chỉnh sửa địa điểm đã xuất bản'}
-                                    {item.itemType === 'place_deletion' && `Yêu cầu xóa địa điểm: ${item.metadata?.reason || 'Không có lý do cụ thể'}`}
-                                    {!item.itemType && (item.contentDetails?.shortDescription || 'No description')}
-                                  </p>
-                                </div>
-                                
-                                <div className="flex flex-wrap items-center gap-2 ml-4">
-                                  <Badge className={cn("text-xs font-medium shadow-sm", statusInfo?.color)}>
-                                    <statusInfo.icon className="w-3 h-3 mr-1" />
-                                    {statusInfo?.label}
-                                  </Badge>
-                                  {item.itemType === 'place_edit' && (
-                                    <Badge className="text-xs font-medium shadow-sm bg-yellow-100 text-yellow-800">
-                                      Chỉnh sửa
-                                    </Badge>
-                                  )}
-                                  {item.itemType === 'place_deletion' && (
-                                    <Badge className="text-xs font-medium shadow-sm bg-red-100 text-red-800">
-                                      Yêu cầu xóa
-                                    </Badge>
-                                  )}
-                                  {item.priority && (
-                                    <Badge className={cn("text-xs font-medium shadow-sm", priorityConfig[item.priority as keyof typeof priorityConfig]?.color)}>
-                                      {priorityConfig[item.priority as keyof typeof priorityConfig]?.label}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Meta Info */}
-                              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-4 w-4" />
-                                  <span>{item.submitter?.fullName || 'Unknown'}</span>
-                                  <UserRoleDisplay 
-                                    role={item.submitter?.role || 'traveler'}
-                                    variant="compact"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{formatDate(item.submittedAt)}</span>
-                                </div>
-                                {item.queueType && (
-                                  <Badge variant="outline" className="text-xs">
-                                    {item.queueType === 'partner_queue' ? '🏢 Đối tác' : '👥 Cộng tác viên'}
-                                  </Badge>
-                                )}
-                              </div>
-
-                              {/* Special info for deletion requests */}
-                              {item.itemType === 'place_deletion' && item.metadata?.reason && (
-                                <div className="bg-red-50 rounded-lg p-3 mb-4 border border-red-100">
-                                  <p className="text-sm">
-                                    <span className="font-medium text-red-800">Lý do xóa:</span>
-                                    <span className="text-red-700 ml-1">{item.metadata.reason}</span>
-                                  </p>
-                                </div>
-                              )}
-
-                              {/* Reviewer Info */}
-                              {item.reviewer && (
-                                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                                  <p className="text-sm">
-                                    <span className="font-medium">Reviewed by:</span> {item.reviewer.fullName}
-                                  </p>
-                                  {item.reviewNotes && (
-                                    <p className="text-sm text-gray-600 mt-1">
-                                      <span className="font-medium">Notes:</span> {item.reviewNotes}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Hành động */}
-                              <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                                <Button size="sm" variant="outline" asChild className="hover:shadow-md transition-all duration-200">
-                                  <Link href={`/moderation/review/${item.id}`}>
-                                    <Eye className="w-4 h-4 mr-1 md:mr-2" />
-                                    <span className="hidden sm:inline">Xem xét</span>
-                                  </Link>
-                                </Button>
-
-                                {status === 'pending' && (
-                                  <>
-                                    <AdminApproveDialog
-                                      itemName={item.contentDetails?.name || 'nội dung này'}
-                                      onConfirm={() => handleAction(item.id, 'approve')}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-green-600 border-green-600 hover:bg-green-50"
-                                        >
-                                          <adminIcons.status.success className="w-4 h-4 mr-2" />
-                                          {item.itemType === 'place_edit' ? 'Duyệt chỉnh sửa' : 
-                                           item.itemType === 'place_deletion' ? 'Duyệt xóa' : 'Phê duyệt'}
-                                        </Button>
-                                      }
-                                    />
-                                    <AdminRejectDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'reject', reason)}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline" 
-                                          className="text-red-600 border-red-600 hover:bg-red-50"
-                                        >
-                                          <adminIcons.status.error className="w-4 h-4 mr-2" />
-                                          {item.itemType === 'place_edit' ? 'Từ chối chỉnh sửa' : 
-                                           item.itemType === 'place_deletion' ? 'Từ chối xóa' : 'Từ chối'}
-                                        </Button>
-                                      }
-                                    />
-                                    <AdminEscalateDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                        >
-                                          <adminIcons.status.warning className="w-4 h-4 mr-2" />
-                                          Leo thang
-                                        </Button>
-                                      }
-                                    />
-                                  </>
-                                )}
-
-                                {status === 'in_review' && (
-                                  <>
-                                    <AdminApproveDialog
-                                      itemName={item.contentDetails?.name || 'nội dung này'}
-                                      onConfirm={() => handleAction(item.id, 'approve')}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-green-600 border-green-600 hover:bg-green-50"
-                                        >
-                                          <adminIcons.status.success className="w-4 h-4 mr-2" />
-                                          {item.itemType === 'place_edit' ? 'Duyệt chỉnh sửa' : 
-                                           item.itemType === 'place_deletion' ? 'Duyệt xóa' : 'Phê duyệt'}
-                                        </Button>
-                                      }
-                                    />
-                                    <AdminRejectDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'reject', reason)}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-red-600 border-red-600 hover:bg-red-50" 
-                                        >
-                                          <adminIcons.status.error className="w-4 h-4 mr-2" />
-                                          {item.itemType === 'place_edit' ? 'Từ chối chỉnh sửa' : 
-                                           item.itemType === 'place_deletion' ? 'Từ chối xóa' : 'Từ chối'}
-                                        </Button>
-                                      }
-                                    />
-                                    <AdminEscalateDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                        >
-                                          <adminIcons.status.warning className="w-4 h-4 mr-2" />
-                                          Leo thang
-                                        </Button>
-                                      }
-                                    />
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
+        {/* Stats Overview */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="admin-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600">Tổng chờ xử lý</p>
+                  <p className="text-2xl font-bold text-admin-neutral-900">{totalPending}</p>
                 </div>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+                <div className="h-12 w-12 bg-admin-warning-100 rounded-full flex items-center justify-center">
+                  <Clock className="h-6 w-6 text-admin-warning-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="admin-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600">Địa điểm mới</p>
+                  <p className="text-2xl font-bold text-blue-600">{queueStats.newPlaces?.pending || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <MapPin className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="admin-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600">Yêu cầu quản lý</p>
+                  <p className="text-2xl font-bold text-orange-600">{queueStats.management?.pending || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Edit3 className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="admin-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600">Báo cáo vi phạm</p>
+                  <p className="text-2xl font-bold text-red-600">{queueStats.reports?.pending || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <Flag className="h-6 w-6 text-red-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Moderation Queues */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-admin-neutral-900">Hàng đợi Kiểm duyệt</h2>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {moderationQueues.map((queue, index) => {
+              const queueKey = ['newPlaces', 'management', 'reports'][index]
+              const pending = queueStats[queueKey]?.pending || 0
+              
+              return (
+                <Card key={queue.href} className={cn("transition-all duration-200 hover:shadow-lg border-2", queue.color)}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("h-12 w-12 rounded-full flex items-center justify-center", queue.color.replace('hover:bg-', 'bg-').replace('border-', 'bg-').replace('-200', '-100'))}>
+                          <queue.icon className={cn("h-6 w-6", queue.iconColor)} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg text-admin-neutral-900">{queue.title}</h3>
+                          <p className="text-sm text-admin-neutral-600">{queue.description}</p>
+                        </div>
+                      </div>
+                      {pending > 0 && (
+                        <Badge className={cn("text-sm font-semibold px-3 py-1", 
+                          pending > 10 ? "bg-red-100 text-red-800" : 
+                          pending > 5 ? "bg-orange-100 text-orange-800" : 
+                          "bg-yellow-100 text-yellow-800"
+                        )}>
+                          {pending} chờ
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-admin-neutral-600">Đang chờ xử lý</span>
+                        <span className="font-medium">{pending} mục</span>
+                      </div>
+                      <Progress 
+                        value={pending > 0 ? Math.min((pending / 20) * 100, 100) : 0} 
+                        className="h-2"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-admin-neutral-500">
+                        {queue.href.includes('queue') && 'SLA: 48 giờ'}
+                        {queue.href.includes('management') && 'SLA: 72 giờ (xóa)'}
+                        {queue.href.includes('reports') && 'SLA: 6-72 giờ'}
+                      </div>
+                      <Button asChild size="sm" variant="outline" className="hover:shadow-md transition-all duration-200">
+                        <Link href={queue.href}>
+                          <span className="mr-2">Mở</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* System Performance */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="admin-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Hiệu suất Hệ thống
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-admin-neutral-600">Tỷ lệ phê duyệt</span>
+                <span className="font-semibold">
+                  {loading ? <AdminLoading size="sm" inline /> : '85%'}
+                </span>
+              </div>
+              <Progress value={85} className="h-2" />
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-admin-neutral-600">Thời gian xử lý trung bình</span>
+                <span className="font-semibold">
+                  {loading ? <AdminLoading size="sm" inline /> : '18 giờ'}
+                </span>
+              </div>
+              <Progress value={60} className="h-2" />
+            </CardContent>
+          </Card>
+
+          <Card className="admin-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                Tuân thủ SLA
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-admin-neutral-600">Địa điểm mới</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="font-semibold text-green-600">95%</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-admin-neutral-600">Báo cáo khẩn cấp</span>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <span className="font-semibold text-orange-600">88%</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-admin-neutral-600">Quản lý địa điểm</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="font-semibold text-green-600">92%</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

@@ -10,7 +10,7 @@
  */
 
 import { getAdminDb } from './firebaseAdmin';
-import { NotificationService } from './notification-service';
+import { EnhancedNotificationService } from './enhanced-notification-service';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export interface DeletionRequest {
@@ -489,7 +489,7 @@ export class SoftDeleteService {
                       urgencyLevel === 'high' ? 'MEDIUM' : 'LOW';
       
       // Sử dụng NotificationService (giả định có sẵn)
-      // await NotificationService.notifyModerators(
+      // await EnhancedNotificationService.notifyModerators(
       //   'deletion_request',
       //   `Yêu cầu xóa địa điểm: ${placeName}`,
       //   `${requesterRole} yêu cầu xóa địa điểm`,

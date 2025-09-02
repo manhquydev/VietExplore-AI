@@ -349,23 +349,6 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               </TabsList>
 
               <TabsContent value="content" className="space-y-6 mt-6">
-                {/* Debug Info */}
-                {process.env.NODE_ENV === 'development' && (
-                  <Card className="border-yellow-200 bg-yellow-50">
-                    <CardHeader>
-                      <CardTitle className="text-sm text-yellow-800">🐛 Debug Info</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs text-yellow-700 space-y-1">
-                      <p>Item Type: {reviewItem?.itemType || reviewItem?.contentType}</p>
-                      <p>Is Edit Request: {(contentDetails.isEditRequest || reviewItem?.itemType === 'place_edit' || reviewItem?.action === 'edit_review') ? '✅' : '❌'}</p>
-                      <p>Has Original Data: {(contentDetails.originalData || reviewItem?.originalData) ? '✅' : '❌'}</p>
-                      <p>Original Place ID: {contentDetails.originalPlaceId || reviewItem?.metadata?.originalPlaceId || 'N/A'}</p>
-                      <p>Content Details Keys: {Object.keys(contentDetails).join(', ')}</p>
-                      {reviewItem?.action && <p>Review Action: {reviewItem.action}</p>}
-                      {reviewItem?.metadata && <p>Metadata Keys: {Object.keys(reviewItem.metadata).join(', ')}</p>}
-                    </CardContent>
-                  </Card>
-                )}
 
                 {/* Edit Comparison for Published Places */}
                 {(contentDetails.isEditRequest || reviewItem?.itemType === 'place_edit' || reviewItem?.action === 'edit_review') && (

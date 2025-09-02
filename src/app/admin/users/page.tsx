@@ -116,7 +116,7 @@ export default function AdminUsersPage() {
     if (result.success) {
       toast.success('Người dùng role updated successfully')
     } else {
-      toast.error(`Failed to update role: ${result.error}`)
+      toast.error(`Failed to update role: ${result.error || 'Unknown error occurred'}`)
     }
   }
 
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Tổng người dùng</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
                     {loading ? (
                       <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
                     ) : (
@@ -240,7 +240,7 @@ export default function AdminUsersPage() {
                         {users?.length || 0}
                       </span>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Users className="h-5 w-5 md:h-6 md:w-6 text-white" />
@@ -254,7 +254,7 @@ export default function AdminUsersPage() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Người dùng hoạt động</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
                     {loading ? (
                       <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
                     ) : (
@@ -262,7 +262,7 @@ export default function AdminUsersPage() {
                         {users?.filter(u => !u.disabled && u.verified).length || 0}
                       </span>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
@@ -276,7 +276,7 @@ export default function AdminUsersPage() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Chờ xác minh</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
                     {loading ? (
                       <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
                     ) : (
@@ -284,7 +284,7 @@ export default function AdminUsersPage() {
                         {users?.filter(u => !u.verified && !u.disabled).length || 0}
                       </span>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
                   <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
@@ -298,7 +298,7 @@ export default function AdminUsersPage() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Cộng tác viên</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
                     {loading ? (
                       <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
                     ) : (
@@ -306,7 +306,7 @@ export default function AdminUsersPage() {
                         {users?.filter(u => ['contributor', 'partner'].includes(u.role)).length || 0}
                       </span>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                   <adminIcons.navigation.users className="h-5 w-5 md:h-6 md:w-6 text-white" />

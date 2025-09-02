@@ -60,6 +60,13 @@ const statusConfig = {
     description: "Cần chỉnh sửa theo góp ý",
     help: "Xem lý do từ chối bên dưới và chỉnh sửa để gửi lại"
   },
+  needs_revision: {
+    label: "Cần chỉnh sửa",
+    variant: "warning" as const,
+    icon: "edit-3",
+    description: "Cần sửa theo yêu cầu",
+    help: "Kiểm duyệt viên đã yêu cầu chỉnh sửa. Xem lý do bên dưới và chỉnh sửa để gửi lại"
+  },
   pending_edit: {
     label: "Chờ duyệt chỉnh sửa",
     variant: "warning" as const,
@@ -311,8 +318,8 @@ export default function MyDraftsPage() {
 
         {/* Stats */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 mb-8">
-            {Array.from({ length: 7 }).map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-8 gap-4 mb-8">
+            {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="text-center">
                 <Skeleton className="h-8 w-12 mx-auto mb-1" />
                 <Skeleton className="h-4 w-16 mx-auto" />
@@ -320,7 +327,7 @@ export default function MyDraftsPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-8 gap-4 mb-8">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{stats.total}</div>
               <div className="text-sm text-muted">Tổng số</div>
@@ -340,6 +347,10 @@ export default function MyDraftsPage() {
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{stats.rejected}</div>
               <div className="text-sm text-muted">{statusConfig.rejected.label}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{stats.needs_revision || 0}</div>
+              <div className="text-sm text-muted">{statusConfig.needs_revision.label}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{stats.pending_edit || 0}</div>
@@ -405,13 +416,14 @@ export default function MyDraftsPage() {
         ) : !loading && !error && (
           <div className="space-y-4">
             {drafts.map((draft) => {
-              const statusInfo = statusConfig[draft.status]
+              const statusInfo = statusConfig[draft.status] || statusConfig.draft
               
               // Determine primary action based on status
               const getPrimaryAction = () => {
                 switch (draft.status) {
                   case 'draft':
                   case 'rejected':
+                  case 'needs_revision':
                   case 'submitted':  // Allow editing submitted drafts
                     return () => router.push(`/contribute/edit/${draft.id}`)
                   case 'in_review':
@@ -431,6 +443,7 @@ export default function MyDraftsPage() {
                 switch (draft.status) {
                   case 'draft':
                   case 'rejected':
+                  case 'needs_revision':
                   case 'submitted':  // Allow editing submitted drafts
                     return 'Chỉnh sửa'
                   case 'in_review':
@@ -526,7 +539,7 @@ export default function MyDraftsPage() {
                         </Button>
                         
                         {/* Quick actions based on status */}
-                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected' || draft.status === 'pending_edit' || draft.status === 'pending_deletion') && (
+                        {(draft.status === 'submitted' || draft.status === 'in_review' || draft.status === 'rejected' || draft.status === 'needs_revision' || draft.status === 'pending_edit' || draft.status === 'pending_deletion') && (
                           <Button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -672,6 +685,19 @@ export default function MyDraftsPage() {
                           <div>
                             <p className="text-sm font-medium text-red-800 mb-1">Lý do từ chối:</p>
                             <p className="text-sm text-red-700">{draft.rejectionReason}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {draft.status === 'needs_revision' && draft.revisionNotes && (
+                      <div className="px-6 py-3 bg-orange-50 border-t border-orange-100">
+                        <div className="flex items-start gap-2">
+                          <Icon name="edit-3" className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-orange-800 mb-1">Yêu cầu chỉnh sửa:</p>
+                            <p className="text-sm text-orange-700">{draft.revisionNotes}</p>
+                            <p className="text-xs text-orange-600 mt-1">Vui lòng chỉnh sửa theo yêu cầu và gửi lại để kiểm duyệt</p>
                           </div>
                         </div>
                       </div>

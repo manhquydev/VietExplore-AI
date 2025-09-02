@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SoftDeleteService } from '@/lib/server/soft-delete-service';
 import { ConflictResolutionService } from '@/lib/server/conflict-resolution-service';
 import { ClaimTimeoutService } from '@/lib/server/claim-timeout-service';
+import { AutoEscalationService } from '@/lib/server/auto-escalation-service';
+import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-service';
+import { OrphanedContentService } from '@/lib/server/orphaned-content-service';
 
 /**
  * Cron job để xử lý expired requests
@@ -26,7 +29,10 @@ export async function POST(request: NextRequest) {
     const results = {
       deletionRequests: { processed: 0, errors: 0 },
       conflictRequests: { processed: 0, errors: 0 },
-      claimTimeouts: { processed: 0, errors: 0 }
+      claimTimeouts: { processed: 0, errors: 0 },
+      autoEscalations: { processed: 0, errors: 0 },
+      notificationCleanup: { processed: 0, errors: 0 },
+      orphanedContent: { processed: 0, errors: 0 }
     };
 
     // 1. Process expired deletion requests
@@ -68,6 +74,59 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('❌ Error processing claim timeouts:', error);
       results.claimTimeouts.errors = 1;
+    }
+
+    // 4. Process auto-escalations - theo tài liệu 7.2
+    try {
+      const escalationResults = await AutoEscalationService.processAutoEscalation();
+      results.autoEscalations.processed = escalationResults.escalatedItems;
+      
+      if (escalationResults.errors.length > 0) {
+        results.autoEscalations.errors = escalationResults.errors.length;
+        console.error('Some auto-escalation errors:', escalationResults.errors);
+      }
+      
+      console.log(`✅ Auto-escalated ${escalationResults.escalatedItems} items:`, escalationResults.triggers);
+      
+    } catch (error) {
+      console.error('❌ Error processing auto-escalations:', error);
+      results.autoEscalations.errors = 1;
+    }
+
+    // 5. Cleanup expired notifications 
+    try {
+      await EnhancedNotificationService.cleanupExpiredNotifications();
+      results.notificationCleanup.processed = 1;
+      console.log('✅ Cleaned up expired notifications');
+      
+    } catch (error) {
+      console.error('❌ Error cleaning up notifications:', error);
+      results.notificationCleanup.errors = 1;
+    }
+
+    // 6. Process orphaned content - theo tài liệu 7.1 (chạy hàng ngày)
+    try {
+      const orphanedResults = await OrphanedContentService.scanOrphanedContent();
+      results.orphanedContent.processed = orphanedResults.newOrphans.length;
+      
+      if (orphanedResults.errors.length > 0) {
+        results.orphanedContent.errors = orphanedResults.errors.length;
+        console.error('Some orphaned content scan errors:', orphanedResults.errors);
+      }
+      
+      // Also process ready orphaned content
+      const processResults = await OrphanedContentService.processOrphanedContent();
+      results.orphanedContent.processed += processResults.processed;
+      
+      console.log(`✅ Scanned orphaned content: ${orphanedResults.newOrphans.length} new, processed: ${processResults.processed}`);
+      
+      // Cleanup old processed orphans
+      await OrphanedContentService.cleanupProcessedOrphans();
+      console.log('✅ Cleaned up old processed orphans');
+      
+    } catch (error) {
+      console.error('❌ Error processing orphaned content:', error);
+      results.orphanedContent.errors = 1;
     }
 
     console.log('=== CRON JOB COMPLETED ===', results);

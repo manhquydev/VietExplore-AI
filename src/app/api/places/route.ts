@@ -150,6 +150,9 @@ export async function POST(request: NextRequest) {
     if (user.role === 'contributor') trustLabel = 'contributor';
     if (user.role === 'partner') trustLabel = 'partner';
     if (user.role === 'admin') trustLabel = 'verified'; // Admin gets special verified label
+    
+    // Admin bypass authority - directly publish with special trust label
+    const isAdminBypass = user.role === 'admin' && formData.status !== 'draft';
 
     // Create place document
     const placeData: Omit<Place, 'id'> = {
@@ -180,9 +183,9 @@ export async function POST(request: NextRequest) {
       },
       status: formData.status === 'draft' 
         ? 'draft' 
-        : user.role === 'admin' 
+        : isAdminBypass
         ? 'published' 
-        : 'submitted', // Handle draft, admin auto-publish, or normal submission
+        : 'submitted', // Handle draft, admin bypass auto-publish, or normal submission
       rating: {
         average: 0,
         count: 0,
@@ -191,7 +194,7 @@ export async function POST(request: NextRequest) {
       tags: formData.tags || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      ...(user.role === 'admin' ? { publishedAt: new Date().toISOString() } : {}),
+      ...(isAdminBypass ? { publishedAt: new Date().toISOString() } : {}),
       createdBy: user.id,
       viewCount: 0,
       likeCount: 0,
@@ -201,8 +204,32 @@ export async function POST(request: NextRequest) {
 
     const docRef = await adminDb.collection('places').add(placeData);
 
-    // Add to moderation queue if not admin and status is submitted (not draft)
-    if (user.role !== 'admin' && placeData.status === 'submitted') {
+    // Log admin bypass authority usage
+    if (isAdminBypass) {
+      await adminDb.collection('admin_audit_log').add({
+        action: 'admin_bypass_place_creation',
+        adminId: user.id,
+        adminEmail: user.email,
+        contentType: 'place',
+        contentId: docRef.id,
+        contentDetails: {
+          name: formData.name,
+          type: formData.type,
+          region: formData.region,
+          province: formData.province
+        },
+        bypassReason: 'Admin created place directly published',
+        timestamp: new Date().toISOString(),
+        metadata: {
+          trustLabel: 'verified',
+          skipModeration: true,
+          directPublish: true
+        }
+      });
+    }
+
+    // Add to moderation queue if not admin bypass and status is submitted (not draft)
+    if (!isAdminBypass && placeData.status === 'submitted') {
       const priorityMap = {
         'partner': 4,
         'contributor': 3,
@@ -213,6 +240,7 @@ export async function POST(request: NextRequest) {
       await adminDb.collection('moderation_queue').add({
         contentType: 'place',
         contentId: docRef.id,
+        itemType: 'new_place', // Add itemType for proper filtering
         submittedBy: user.id,
         submittedAt: new Date().toISOString(),
         status: 'pending',
@@ -269,8 +297,10 @@ export async function POST(request: NextRequest) {
         id: docRef.id,
         ...placeData
       },
-      message: user.role === 'admin' 
-        ? 'Địa điểm đã được tạo và xuất bản thành công với nhãn "Xác thực đặc biệt"'
+      message: isAdminBypass
+        ? '🎉 Admin đã tạo và xuất bản thành công địa điểm với nhãn "Xác thực đặc biệt" - Bỏ qua kiểm duyệt'
+        : formData.status === 'draft'
+        ? 'Địa điểm đã được lưu dưới dạng bản nháp'
         : user.role === 'partner'
         ? 'Địa điểm đã được gửi vào hàng đợi kiểm duyệt ưu tiên dành cho Partner. Thời gian xử lý: 12-24 giờ.'
         : 'Địa điểm đã được gửi để kiểm duyệt. Thời gian xử lý: 24-48 giờ.'

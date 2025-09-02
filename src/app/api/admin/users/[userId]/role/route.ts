@@ -132,7 +132,7 @@ export async function PUT(
       code: error.code,
       message: error.message,
       stack: error.stack,
-      userId: params.userId
+      userId: (await params).userId
     });
     
     return NextResponse.json(

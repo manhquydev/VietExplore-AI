@@ -22,6 +22,7 @@ function initializeFirebaseAdmin() {
         credential: admin.credential.cert(serviceAccount),
         projectId: process.env.FIREBASE_PROJECT_ID,
         storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
+        databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com/`
       });
     } catch (error: any) {
       console.error('Firebase Admin SDK initialization error:', error);
@@ -45,6 +46,11 @@ export function getAdminAuth() {
 export function getAdminDb() {
   if (!app) throw new Error("Firebase Admin not initialized.");
   return admin.firestore(app);
+}
+
+export function getRealtimeDb() {
+  if (!app) throw new Error("Firebase Admin not initialized.");
+  return admin.database(app);
 }
 
 export function getAdminStorage() {

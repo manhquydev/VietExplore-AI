@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { NotificationService } from '@/lib/server/notification-service';
+import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-service';
 import { CacheService } from '@/lib/server/cache-service';
 
 // POST /api/places/drafts/[draftId]/submit - Submit draft for review
@@ -133,7 +133,7 @@ export async function POST(
       await adminDb.collection('moderation_queue').add(queueData);
 
       // Notify moderators about new edit request
-      await NotificationService.notifyNewModerationItem(
+      await EnhancedNotificationService.notifyNewModerationItem(
         'Yêu cầu chỉnh sửa địa điểm',
         'medium',
         draft.originalPlaceId,
@@ -212,6 +212,7 @@ export async function POST(
       const queueData = {
         contentType: 'place',
         contentId: draftId,
+        itemType: 'new_place', // Add itemType for proper filtering
         submittedBy: user.id,
         submittedAt: new Date().toISOString(),
         status: 'pending',
@@ -257,7 +258,7 @@ export async function POST(
 
         // Notify moderators about new place submission
         const submissionType = user.role === 'partner' ? 'Địa điểm từ Partner' : 'Địa điểm mới';
-        await NotificationService.notifyNewModerationItem(
+        await EnhancedNotificationService.notifyNewModerationItem(
           submissionType,
           priorityMap[user.role] as any,
           draftId,

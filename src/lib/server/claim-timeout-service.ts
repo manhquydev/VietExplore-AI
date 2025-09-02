@@ -9,7 +9,7 @@
  */
 
 import { getAdminDb } from './firebaseAdmin';
-import { NotificationService } from './notification-service';
+import { EnhancedNotificationService } from './enhanced-notification-service';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export interface ClaimStatus {
@@ -444,7 +444,7 @@ export class ClaimTimeoutService {
       : `${expiredClaims.length} claims của bạn đã timeout`;
 
     // Use NotificationService to send notification
-    // await NotificationService.notifyUser(
+    // await EnhancedNotificationService.sendNotification(
     //   moderatorId,
     //   'claim_timeout',
     //   'Claims đã timeout',
@@ -464,7 +464,7 @@ export class ClaimTimeoutService {
   ): Promise<void> {
     const hoursRemaining = Math.ceil(claim.timeRemaining / (60 * 60 * 1000));
     
-    // await NotificationService.notifyUser(
+    // await EnhancedNotificationService.sendNotification(
     //   moderatorId,
     //   'claim_expiring',
     //   'Claim sắp hết hạn',

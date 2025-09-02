@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuthToken } from '@/lib/server/auth-middleware'
 import { getAdminDb } from '@/lib/server/firebaseAdmin'
 import { FieldValue } from 'firebase-admin/firestore'
+import { RevisionLimitService } from '@/lib/server/revision-limit-service'
+import { ConflictResolutionService } from '@/lib/server/conflict-resolution-service'
+import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-service'
 
 export async function POST(
   request: NextRequest,
@@ -27,6 +30,23 @@ export async function POST(
     const placeId = params.id
     
     console.log('User authenticated:', user.id)
+
+    // 1. Check revision limit FIRST - tránh spam requests
+    const canRequest = await RevisionLimitService.canRequestRevision(placeId, user.id);
+    if (!canRequest.allowed) {
+      return NextResponse.json({ 
+        error: `Bạn đã đạt giới hạn ${canRequest.limit} lần yêu cầu chỉnh sửa cho địa điểm này. ${canRequest.message}` 
+      }, { status: 429 });
+    }
+
+    // 2. Check for conflicts - prevent concurrent edits
+    const conflictCheck = await ConflictResolutionService.checkEditConflicts(placeId, user.id, user.role);
+    if (conflictCheck.hasConflict) {
+      return NextResponse.json({
+        error: conflictCheck.message,
+        conflictDetails: conflictCheck.details
+      }, { status: 409 });
+    }
 
     // Get the place document
     console.log('Getting place document...')
@@ -73,38 +93,79 @@ export async function POST(
       return NextResponse.json({ error: 'Chỉ có thể chỉnh sửa địa điểm đã xuất bản' }, { status: 400 })
     }
     
-    console.log('All checks passed, updating place status...')
+    console.log('All checks passed, processing edit request...')
 
-    // Update place status to pending_edit
-    await adminDb.collection('places').doc(placeId).update({
-      status: 'pending_edit',
-      updatedAt: FieldValue.serverTimestamp()
-    })
-
-    // Create moderation queue entry
-    await adminDb.collection('moderation_queue').add({
-      itemId: placeId,
-      itemType: 'place_edit',
-      action: 'edit_request',
-      status: 'pending',
-      priority: 'medium',
-      submittedBy: user.id,
-      submittedAt: FieldValue.serverTimestamp(),
-      originalData: {
-        ...place,
-        id: placeId
-      },
+    // 3. Create edit request through ConflictResolutionService 
+    const editResult = await ConflictResolutionService.createEditRequest({
+      placeId,
+      requesterId: user.id,
+      requesterRole: user.role,
+      requestType: 'edit_request',
+      reason: 'User requested to edit published place',
       metadata: {
-        requestType: 'edit',
-        reason: 'User requested to edit published place'
+        placeName: place.name,
+        placeType: place.type,
+        currentStatus: place.status
       }
-    })
+    });
+
+    // 4. Record revision attempt
+    await RevisionLimitService.recordRevisionRequest(placeId, user.id, 'edit_request');
+
+    // 5. Create moderation queue entry if no conflicts
+    if (editResult.status === 'queued') {
+      const moderationEntry = await adminDb.collection('moderation_queue').add({
+        itemId: placeId,
+        itemType: 'place_edit',
+        action: 'edit_request',
+        status: 'pending',
+        priority: editResult.priority || 'medium',
+        queueType: user.role === 'partner' ? 'partner_queue' : 'contributor_queue',
+        submittedBy: user.id,
+        submittedAt: FieldValue.serverTimestamp(),
+        originalData: {
+          ...place,
+          id: placeId
+        },
+        editRequestId: editResult.requestId,
+        metadata: {
+          requestType: 'edit',
+          reason: 'User requested to edit published place',
+          submitterRole: user.role,
+          submitterName: user.fullName || user.email
+        }
+      });
+
+      // Update place status to pending_edit
+      await adminDb.collection('places').doc(placeId).update({
+        status: 'pending_edit',
+        editRequestId: editResult.requestId,
+        updatedAt: FieldValue.serverTimestamp()
+      });
+
+      // Notify moderators
+      await EnhancedNotificationService.notifyNewModerationItem(
+        'Yêu cầu chỉnh sửa địa điểm',
+        editResult.priority as any || 'medium',
+        moderationEntry.id,
+        user.fullName || user.email,
+        place.name
+      );
+    }
     
-    console.log('Successfully created edit request')
+    console.log('Successfully processed edit request:', editResult)
 
     return NextResponse.json({ 
       success: true,
-      message: 'Đã tạo yêu cầu chỉnh sửa thành công'
+      message: editResult.status === 'queued' 
+        ? 'Đã tạo yêu cầu chỉnh sửa thành công. Moderator sẽ xem xét trong thời gian sớm nhất.' 
+        : `Yêu cầu đã được xếp hàng. ${editResult.message}`,
+      data: {
+        requestId: editResult.requestId,
+        status: editResult.status,
+        priority: editResult.priority,
+        estimatedWaitTime: editResult.status === 'queued' ? '24-48 giờ' : '1-3 ngày'
+      }
     })
 
   } catch (error) {

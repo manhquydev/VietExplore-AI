@@ -368,3 +368,20 @@ export const AdminApproveDialog = ({ itemName, onConfirm, trigger }: {
     trigger={trigger}
   />
 )
+
+export const AdminRequestEditDialog = ({ onConfirm, trigger }: {
+  onConfirm: (reason: string) => void | Promise<void>
+  trigger: React.ReactNode
+}) => (
+  <AdminInputDialog
+    title="Yêu cầu chỉnh sửa"
+    description="Hướng dẫn cụ thể để người đăng có thể chỉnh sửa và gửi lại."
+    placeholder="Nhập yêu cầu chỉnh sửa..."
+    label="Nội dung cần chỉnh sửa"
+    confirmText="Gửi yêu cầu"
+    variant="warning"
+    onConfirm={onConfirm}
+    trigger={trigger}
+    multiline
+  />
+)
