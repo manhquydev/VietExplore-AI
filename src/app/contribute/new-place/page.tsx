@@ -295,7 +295,7 @@ export default function NewPlacePage() {
         })
         
         // Check if it's in an editable status and belongs to current user
-        const editableStatuses = ['draft', 'submitted', 'rejected']
+        const editableStatuses = ['draft', 'submitted', 'rejected', 'needs_revision']
         if (!editableStatuses.includes(draft.status)) {
           console.error('Cannot edit this draft: Status is', draft.status, 'Editable statuses:', editableStatuses)
           alert(`Không thể chỉnh sửa địa điểm này. Địa điểm có trạng thái: ${draft.status}`)

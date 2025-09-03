@@ -49,10 +49,10 @@ export async function POST(
       );
     }
 
-    // Allow submission of draft, rejected, and resubmission of submitted places
+    // Allow submission of draft, rejected, needs_revision, and resubmission of submitted places
     // Special handling for edit drafts from published places
     const isEditingPublished = draft?.isEditingPublished || draft?.originalPlaceId;
-    const submittableStatuses = ['draft', 'submitted', 'rejected'];
+    const submittableStatuses = ['draft', 'submitted', 'rejected', 'needs_revision'];
     
     if (!isEditingPublished && !submittableStatuses.includes(draft?.status)) {
       return NextResponse.json(
@@ -103,9 +103,11 @@ export async function POST(
     if (isEditingPublished) {
       console.log('Processing edit submission for published place:', draft.originalPlaceId);
       
-      // Update original place status to pending_edit
+      // DON'T change status of original place - keep it published so it stays visible
+      // Just update the last modified time for tracking
       await adminDb.collection('places').doc(draft.originalPlaceId).update({
-        status: 'pending_edit',
+        hasEditPending: true,
+        editSubmittedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
 

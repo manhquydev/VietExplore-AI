@@ -22,7 +22,8 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -64,6 +65,12 @@ const statusConfig = {
     variant: "danger" as const, 
     icon: XCircle,
     description: "Địa điểm bị từ chối"
+  },
+  needs_revision: { 
+    label: "Cần chỉnh sửa", 
+    variant: "warning" as const, 
+    icon: RefreshCw,
+    description: "Kiểm duyệt viên yêu cầu chỉnh sửa"
   }
 }
 
@@ -295,7 +302,72 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
               </CardContent>
             </Card>
 
-            {/* Moderation History */}
+            {/* Moderation Progress Summary */}
+            {draft.moderationInfo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Tiến độ kiểm duyệt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Trạng thái:</span>
+                      <Badge variant={statusInfo?.variant} className="ml-2 text-xs">
+                        {statusInfo?.label}
+                      </Badge>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Gửi lúc:</span>
+                      <span className="ml-2 font-medium">
+                        {draft.moderationInfo.submittedAt ? formatDate(draft.moderationInfo.submittedAt) : 'Chưa gửi'}
+                      </span>
+                    </div>
+                    {draft.moderationInfo.reviewer && (
+                      <>
+                        <div>
+                          <span className="text-gray-500">Kiểm duyệt viên:</span>
+                          <span className="ml-2 font-medium">{draft.moderationInfo.reviewer.fullName}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Duyệt lúc:</span>
+                          <span className="ml-2 font-medium">
+                            {draft.moderationInfo.reviewedAt ? formatDate(draft.moderationInfo.reviewedAt) : 'Chưa duyệt'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Processing Time */}
+                  {draft.moderationInfo.submittedAt && draft.moderationInfo.reviewedAt && (
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-sm text-blue-700">
+                        <span className="font-medium">Thời gian xử lý:</span> {' '}
+                        {(() => {
+                          const diffMs = new Date(draft.moderationInfo.reviewedAt).getTime() - new Date(draft.moderationInfo.submittedAt).getTime();
+                          const diffMinutes = Math.round(diffMs / (1000 * 60));
+                          const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+                          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                          
+                          if (diffMinutes < 60) {
+                            return `${diffMinutes} phút`;
+                          } else if (diffHours < 24) {
+                            return `${diffHours} giờ`;
+                          } else {
+                            return `${diffDays} ngày`;
+                          }
+                        })()}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Complete Activity Log */}
             <ModerationHistory 
               contentId={draft.id}
               history={draft.moderationHistory || []}
@@ -328,6 +400,25 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                       <h4 className="font-medium text-red-900 mb-1">Lý do từ chối:</h4>
                       <p className="text-sm text-red-700">{draft.rejectionReason}</p>
+                    </div>
+                  )}
+                  
+                  {(draft.revisionReason || (draft.status === 'needs_revision' && draft.moderationInfo?.reviewNotes)) && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <h4 className="font-medium text-yellow-900 mb-1">Yêu cầu chỉnh sửa:</h4>
+                      <p className="text-sm text-yellow-700">
+                        {draft.revisionReason || draft.moderationInfo?.reviewNotes}
+                      </p>
+                      {draft.moderationInfo?.reviewer && (
+                        <div className="mt-2 pt-2 border-t border-yellow-200">
+                          <p className="text-xs text-yellow-600">
+                            Kiểm duyệt bởi: <span className="font-medium">{draft.moderationInfo.reviewer.fullName}</span>
+                            {draft.moderationInfo.reviewedAt && (
+                              <span className="ml-2">• {formatDate(draft.moderationInfo.reviewedAt)}</span>
+                            )}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                   
@@ -394,7 +485,7 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
                   Xem trước
                 </Button>
                 
-                {(draft.status === "draft" || draft.status === "submitted" || draft.status === "rejected") && (
+                {(draft.status === "draft" || draft.status === "submitted" || draft.status === "rejected" || draft.status === "needs_revision") && (
                   <Button 
                     onClick={() => router.push(`/contribute/edit/${draft.id}`)}
                     className="w-full"

@@ -64,7 +64,34 @@ export async function GET(request: NextRequest) {
     snapshot.forEach(doc => {
       const data = doc.data();
       
-      // Map Place to UserDraft format
+      // Handle published places with pending edits
+      if (data.status === 'published' && data.hasEditPending) {
+        // Show as published with note about pending edit
+        const draft: UserDraft = {
+          id: doc.id,
+          name: data.name || '',
+          shortDescription: data.shortDescription || '',
+          description: data.description || '',
+          type: data.type || '',
+          province: data.province || '',
+          region: data.region || '',
+          status: 'published',
+          trustLabel: data.trustLabel || 'community',
+          createdAt: data.createdAt || '',
+          updatedAt: data.updatedAt || '',
+          submittedAt: data.submittedAt,
+          reviewedAt: data.reviewedAt,
+          publishedAt: data.publishedAt,
+          coverImage: data.images?.[0]?.url,
+          tags: data.tags || [],
+          address: data.address || '',
+          moderatorNotes: 'Có bản chỉnh sửa đang chờ duyệt' // Indicate there's a pending edit
+        };
+        drafts.push(draft);
+        return;
+      }
+      
+      // Map Place to UserDraft format for other statuses
       const draft: UserDraft = {
         id: doc.id,
         name: data.name || '',
@@ -99,6 +126,41 @@ export async function GET(request: NextRequest) {
       drafts.push(draft);
     });
 
+    // Also query edit drafts in place_drafts collection
+    const editDraftsQuery = adminDb
+      .collection('place_drafts')
+      .where('createdBy', '==', user.id)
+      .where('isEditingPublished', '==', true);
+    
+    const editDraftsSnapshot = await editDraftsQuery.get();
+    
+    editDraftsSnapshot.forEach(doc => {
+      const data = doc.data();
+      
+      const editDraft: UserDraft = {
+        id: doc.id,
+        name: data.name || '',
+        shortDescription: data.shortDescription || '',
+        description: data.description || '',
+        type: data.type || '',
+        province: data.province || '',
+        region: data.region || '',
+        status: 'submitted', // Edit drafts are in submitted state for moderation
+        trustLabel: data.trustLabel || 'community',
+        createdAt: data.editCreatedAt || data.createdAt || '',
+        updatedAt: data.updatedAt || '',
+        submittedAt: data.editCreatedAt || data.createdAt,
+        reviewedAt: data.reviewedAt,
+        publishedAt: null, // Edit drafts are not published yet
+        coverImage: data.images?.[0]?.url,
+        tags: data.tags || [],
+        address: data.address || '',
+        moderatorNotes: `Bản chỉnh sửa của: ${data.originalData?.name || 'địa điểm đã xuất bản'} - Đang chờ duyệt`
+      };
+      
+      drafts.push(editDraft);
+    });
+
     // Sort by updatedAt descending (most recent first)
     drafts.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
@@ -112,7 +174,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get stats
+    // Get stats (include pending_edit in submitted count since those are edit submissions)
     const stats = {
       total: drafts.length,
       draft: drafts.filter(d => d.status === 'draft').length,
@@ -120,6 +182,7 @@ export async function GET(request: NextRequest) {
       in_review: drafts.filter(d => d.status === 'in_review').length,
       published: drafts.filter(d => d.status === 'published').length,
       rejected: drafts.filter(d => d.status === 'rejected').length,
+      pending_edit: drafts.filter(d => d.moderatorNotes?.includes('Có bản chỉnh sửa')).length
     };
 
     return NextResponse.json({

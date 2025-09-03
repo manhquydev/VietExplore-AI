@@ -6,12 +6,14 @@ import { FieldValue } from 'firebase-admin/firestore'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  console.log('=== POST /api/places/[id]/create-edit-draft ===')
-  console.log('PlaceId:', params.id)
+  console.log('=== POST /api/places/[id]/create-edit-draft - v2 ===')
   
   try {
+    const { id: placeId } = await params
+    console.log('PlaceId:', placeId)
+    
     const adminDb = getAdminDb()
     
     // Verify authentication
@@ -25,7 +27,6 @@ export async function POST(
     }
 
     const user = tokenResult.user
-    const placeId = params.id
     
     console.log('User authenticated:', user.id)
 
@@ -80,23 +81,7 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const { editReason } = body;
 
-    // Use VersioningService để tạo version mới theo tài liệu 2.3.1
-    const versionResult = await VersioningService.createEditVersion(
-      placeId,
-      {}, // Data sẽ được update sau khi user chỉnh sửa
-      user.id,
-      editReason || 'Yêu cầu chỉnh sửa địa điểm đã xuất bản'
-    );
-
-    if (!versionResult.success) {
-      console.log('Failed to create version:', versionResult.error);
-      return NextResponse.json(
-        { error: versionResult.error },
-        { status: 400 }
-      );
-    }
-
-    console.log('Successfully created edit version:', versionResult.versionId);
+    console.log('Creating edit draft without complex versioning for now...');
 
     // Fallback: Tạo draft trong place_drafts collection cho compatibility
     const editDraftData = {
@@ -105,7 +90,6 @@ export async function POST(
       isEditingPublished: true,
       originalPlaceId: placeId,
       originalData: { ...place, id: placeId },
-      versionId: versionResult.versionId, // Link to version
       editCreatedAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       publishedAt: null,
@@ -120,10 +104,9 @@ export async function POST(
 
     return NextResponse.json({ 
       success: true,
-      message: 'Đã tạo bản chỉnh sửa với versioning thành công',
+      message: 'Đã tạo bản chỉnh sửa thành công',
       data: {
         editDraftId: editDraftRef.id,
-        versionId: versionResult.versionId,
         originalPlaceId: placeId
       }
     })

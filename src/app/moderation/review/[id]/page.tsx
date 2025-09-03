@@ -105,8 +105,12 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
         let item = null;
         
         if (queueResponse.ok) {
-          const queueData = await queueResponse.json()
-          item = queueData.data?.find((item: any) => item.id === id)
+          try {
+            const queueData = await queueResponse.json()
+            item = queueData.data?.find((item: any) => item.id === id)
+          } catch (jsonError) {
+            console.warn('Failed to parse queue response JSON:', jsonError)
+          }
         }
         
         // If not found in general queue, try specifically looking for the item with different status filters
@@ -120,9 +124,13 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
             });
             
             if (statusResponse.ok) {
-              const statusData = await statusResponse.json();
-              item = statusData.data?.find((item: any) => item.id === id);
-              if (item) break;
+              try {
+                const statusData = await statusResponse.json();
+                item = statusData.data?.find((item: any) => item.id === id);
+                if (item) break;
+              } catch (jsonError) {
+                console.warn(`Failed to parse status response JSON for status ${status}:`, jsonError)
+              }
             }
           }
         }
@@ -174,9 +182,27 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
         })
       })
 
-      const result = await response.json()
+      // Check if response has content before parsing JSON
+      let result;
+      const responseText = await response.text()
+      
+      if (!responseText.trim()) {
+        throw new Error('Server returned empty response')
+      }
+      
+      try {
+        result = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError)
+        console.error('Response text:', responseText)
+        throw new Error('Server returned invalid response format')
+      }
 
-      if (!response.ok || !result.success) {
+      if (!response.ok) {
+        throw new Error(result?.error || `Server error: ${response.status}`)
+      }
+      
+      if (!result.success) {
         throw new Error(result.error || 'Không thể thực hiện hành động')
       }
       

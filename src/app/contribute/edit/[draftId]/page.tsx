@@ -41,7 +41,7 @@ export default function EditDraftPage() {
       
       if (result.success && result.data) {
         // Check if it can be edited and belongs to current user
-        const editableStatuses = ['draft', 'submitted', 'rejected'];
+        const editableStatuses = ['draft', 'submitted', 'rejected', 'needs_revision'];
         
         // Special handling for edit drafts from published places
         const isEditingPublished = result.data.isEditingPublished || editingPublishedId

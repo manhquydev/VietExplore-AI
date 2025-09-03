@@ -14,14 +14,16 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useModerationQueue } from "@/hooks/use-admin"
 import { useToast } from "@/components/providers/toast-provider"
+import { auth } from "@/lib/firebase"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { apiClient } from "@/lib/client/api"
 import { AdminTableSkeleton, AdminLoading, AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
 import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog, AdminRequestEditDialog } from "@/components/admin/confirmation-dialogs"
 
+// Chỉ các trạng thái cho NEW PLACE moderation queue
 const statusConfig = {
   pending: { 
-    label: "Chờ xử lý", 
+    label: "Chờ duyệt", 
     variant: "warning" as const, 
     icon: adminIcons.status.pending,
     color: "admin-status-warning"
@@ -38,7 +40,7 @@ const statusConfig = {
     icon: adminIcons.actions.view,
     color: "admin-status-info"
   },
-  published: { 
+  approved: { 
     label: "Đã duyệt", 
     variant: "success" as const, 
     icon: adminIcons.status.success,
@@ -49,6 +51,12 @@ const statusConfig = {
     variant: "destructive" as const, 
     icon: adminIcons.status.error,
     color: "admin-status-error"
+  },
+  needs_revision: { 
+    label: "Yêu cầu sửa", 
+    variant: "secondary" as const, 
+    icon: adminIcons.actions.edit,
+    color: "admin-status-warning"
   }
 }
 
@@ -88,7 +96,7 @@ export default function NewPlaceQueuePage() {
     if (!user || !['moderator', 'admin'].includes(user.role)) return
 
     try {
-      const statuses = ['pending', 'claimed', 'in_review', 'published', 'rejected']
+      const statuses = ['pending', 'claimed', 'in_review', 'approved', 'rejected', 'needs_revision']
       const counts: {[key: string]: number} = {}
 
       for (const status of statuses) {
@@ -114,31 +122,42 @@ export default function NewPlaceQueuePage() {
   }, [fetchStatusCounts])
 
   const handleClaim = async (itemId: string) => {
-    if (claimingItemId) return // Prevent double claiming
+    if (claimingItemId) return // Prevent double claiming - fixed TypeError
     
     setClaimingItemId(itemId)
     try {
+      const firebaseUser = auth.currentUser
+      if (!firebaseUser) {
+        toast.error('Vui lòng đăng nhập lại')
+        return
+      }
+
+      const token = await firebaseUser.getIdToken()
       const response = await fetch(`/api/moderation/queue/${itemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await user?.getIdToken()}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ action: 'claim' })
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
       const result = await response.json()
-      if (result.success) {
+      if (result && result.success) {
         toast.success('Đã tiếp nhận địa điểm để kiểm duyệt')
         await fetchStatusCounts()
         window.dispatchEvent(new CustomEvent('moderationUpdated'))
       } else {
-        const errorMessage = result?.error || 'Có lỗi xảy ra khi tiếp nhận'
+        const errorMessage = (result && result.error) || 'Có lỗi xảy ra khi tiếp nhận'
         toast.error(`Lỗi: ${errorMessage}`)
       }
     } catch (error: any) {
       console.error('Error claiming item:', error)
-      const errorMessage = error?.error || error?.message || 'Có lỗi không mong đợi xảy ra'
+      const errorMessage = error?.message || 'Có lỗi không mong đợi xảy ra'
       toast.error(`Lỗi: ${errorMessage}`)
     } finally {
       setClaimingItemId(null)
@@ -164,12 +183,12 @@ export default function NewPlaceQueuePage() {
         await fetchStatusCounts()
         window.dispatchEvent(new CustomEvent('moderationUpdated'))
       } else {
-        const errorMessage = result?.error || 'Có lỗi xảy ra khi thực hiện hành động'
+        const errorMessage = (result && result.error) || 'Có lỗi xảy ra khi thực hiện hành động'
         toast.error(`Lỗi: ${errorMessage}`)
       }
     } catch (error: any) {
       console.error('Error in handleAction:', error)
-      const errorMessage = error?.error || error?.message || 'Có lỗi không mong đợi xảy ra'
+      const errorMessage = error?.message || 'Có lỗi không mong đợi xảy ra'
       toast.error(`Lỗi: ${errorMessage}`)
     }
   }
@@ -278,7 +297,7 @@ export default function NewPlaceQueuePage() {
         {/* Status Tabs */}
         <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
           <div className="admin-card p-2">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-admin-neutral-50 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 bg-admin-neutral-50 p-1 rounded-lg">
               {Object.entries(statusConfig).map(([status, config]) => (
                 <TabsTrigger 
                   key={status} 
@@ -542,20 +561,34 @@ export default function NewPlaceQueuePage() {
                                     className="text-orange-600 border-orange-600 hover:bg-orange-50"
                                     onClick={async () => {
                                       try {
+                                        const firebaseUser = auth.currentUser
+                                        if (!firebaseUser) {
+                                          toast.error('Vui lòng đăng nhập lại')
+                                          return
+                                        }
+
+                                        const token = await firebaseUser.getIdToken()
                                         const response = await fetch(`/api/moderation/queue/${item.id}`, {
                                           method: 'PATCH',
                                           headers: {
                                             'Content-Type': 'application/json',
-                                            'Authorization': `Bearer ${await user?.getIdToken()}`
+                                            'Authorization': `Bearer ${token}`
                                           },
                                           body: JSON.stringify({ action: 'release' })
                                         })
                                         
+                                        if (!response.ok) {
+                                          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+                                        }
+
                                         const result = await response.json()
-                                        if (result.success) {
+                                        if (result && result.success) {
                                           toast.success('Đã bỏ tiếp nhận địa điểm')
                                           await fetchStatusCounts()
                                           window.dispatchEvent(new CustomEvent('moderationUpdated'))
+                                        } else {
+                                          const errorMessage = (result && result.error) || 'Có lỗi xảy ra khi bỏ tiếp nhận'
+                                          toast.error(`Lỗi: ${errorMessage}`)
                                         }
                                       } catch (error) {
                                         toast.error('Không thể bỏ tiếp nhận')

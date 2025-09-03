@@ -150,10 +150,10 @@ export async function PUT(
       );
     }
 
-    // Allow editing of draft, submitted, and rejected places (but not in_review or published)
+    // Allow editing of draft, submitted, rejected, and needs_revision places (but not in_review or published)
     // Special handling for edit drafts from published places
     const isEditingPublished = draft?.isEditingPublished || draft?.originalPlaceId;
-    const editableStatuses = ['draft', 'submitted', 'rejected'];
+    const editableStatuses = ['draft', 'submitted', 'rejected', 'needs_revision'];
     
     if (!isEditingPublished && !editableStatuses.includes(draft?.status)) {
       return NextResponse.json(

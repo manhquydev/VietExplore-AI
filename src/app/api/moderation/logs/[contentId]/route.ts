@@ -57,8 +57,33 @@ export async function GET(
         moderatorData = moderatorDoc.data();
       }
       
+      // Follow Audit Log Structure from documentation
       allLogs.push({
         id: doc.id,
+        timestamp: logData.timestamp,
+        action_type: logData.action,
+        actor: {
+          user_id: logData.moderatorId,
+          role: moderatorData?.role || 'moderator',
+          ip: logData.ip || null,
+          fullName: moderatorData?.fullName || null,
+          avatar: moderatorData?.avatar || null
+        },
+        target: {
+          place_id: contentId,
+          version: logData.version || 1
+        },
+        changes: {
+          before: { status: logData.oldStatus },
+          after: { status: logData.newStatus }
+        },
+        metadata: {
+          reason: logData.reason || null,
+          notes: logData.reviewNotes || null,
+          system_generated: false,
+          ...logData.metadata
+        },
+        // Keep backward compatibility fields
         source: 'moderation_logs',
         action: logData.action,
         moderatorId: logData.moderatorId,
@@ -69,10 +94,8 @@ export async function GET(
           avatar: moderatorData.avatar
         } : null,
         reviewNotes: logData.reviewNotes,
-        timestamp: logData.timestamp,
         oldStatus: logData.oldStatus,
-        newStatus: logData.newStatus,
-        metadata: logData.metadata || {}
+        newStatus: logData.newStatus
       });
     }
 
@@ -99,36 +122,78 @@ export async function GET(
       if (placeData.createdAt) {
         const hasCreationLog = allLogs.some(log => log.action === 'created');
         if (!hasCreationLog) {
+          // Follow Audit Log Structure
           allLogs.push({
             id: `creation-${contentId}`,
+            timestamp: placeData.createdAt,
+            action_type: 'created',
+            actor: {
+              user_id: placeData.createdBy,
+              role: authorData?.role || 'contributor',
+              ip: null,
+              fullName: authorData?.fullName || null,
+              avatar: authorData?.avatar || null
+            },
+            target: {
+              place_id: contentId,
+              version: 1
+            },
+            changes: {
+              before: null,
+              after: { status: 'draft', name: placeData.name }
+            },
+            metadata: {
+              reason: null,
+              notes: 'Địa điểm được tạo mới',
+              system_generated: true,
+              isFromDrafts,
+              collection: isFromDrafts ? 'place_drafts' : 'places'
+            },
+            // Backward compatibility
             source: 'place_data',
             action: 'created',
             userId: placeData.createdBy,
             userName: authorData?.fullName,
-            userRole: authorData?.role,
-            timestamp: placeData.createdAt,
-            metadata: {
-              isFromDrafts,
-              collection: isFromDrafts ? 'place_drafts' : 'places'
-            }
+            userRole: authorData?.role
           });
         }
       }
       
       // Add edit creation log for edit drafts
       if (placeData.editCreatedAt && placeData.isEditingPublished) {
+        // Follow Audit Log Structure
         allLogs.push({
           id: `edit-creation-${contentId}`,
+          timestamp: placeData.editCreatedAt,
+          action_type: 'edit_draft_created',
+          actor: {
+            user_id: placeData.createdBy,
+            role: authorData?.role || 'contributor',
+            ip: null,
+            fullName: authorData?.fullName || null,
+            avatar: authorData?.avatar || null
+          },
+          target: {
+            place_id: contentId,
+            version: (placeData.version || 1) + 1
+          },
+          changes: {
+            before: null,
+            after: { status: 'draft', editing_published: true }
+          },
+          metadata: {
+            reason: null,
+            notes: 'Tạo bản chỉnh sửa từ địa điểm đã xuất bản',
+            system_generated: false,
+            originalPlaceId: placeData.originalPlaceId,
+            isEditRequest: true
+          },
+          // Backward compatibility
           source: 'place_data',
           action: 'edit_draft_created',
           userId: placeData.createdBy,
           userName: authorData?.fullName,
-          userRole: authorData?.role,
-          timestamp: placeData.editCreatedAt,
-          metadata: {
-            originalPlaceId: placeData.originalPlaceId,
-            isEditRequest: true
-          }
+          userRole: authorData?.role
         });
       }
       

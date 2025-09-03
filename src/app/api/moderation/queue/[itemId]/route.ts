@@ -378,7 +378,9 @@ export async function PUT(
                 isEditingPublished: undefined,
                 originalPlaceId: undefined,
                 originalData: undefined,
-                editCreatedAt: undefined
+                editCreatedAt: undefined,
+                hasEditPending: false,
+                editSubmittedAt: null
               };
               
               await adminDb.collection('place_drafts').doc(editDraftId).delete();
@@ -386,6 +388,8 @@ export async function PUT(
           }
           
           placeUpdate.status = 'published';
+          placeUpdate.hasEditPending = false;
+          placeUpdate.editSubmittedAt = null;
         } else if (itemData!.itemType === 'place_deletion') {
           // Use SoftDeleteService để approve deletion theo tài liệu 2.4.1
           const deletionRequestId = itemData!.metadata?.deletionRequestId;
@@ -510,6 +514,8 @@ export async function PUT(
           placeUpdate.editRejectedAt = now;
           placeUpdate.editRejectedBy = moderator.id;
           placeUpdate.editRejectionReason = reviewNotes || 'Chỉnh sửa bị từ chối';
+          placeUpdate.hasEditPending = false;
+          placeUpdate.editSubmittedAt = null;
         } else if (itemData!.itemType === 'place_deletion') {
           // Use SoftDeleteService để reject deletion
           const deletionRequestId = itemData!.metadata?.deletionRequestId;
