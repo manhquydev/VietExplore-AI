@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { getDatabase, ref, set, get, serverTimestamp } from 'firebase-admin/database';
 
 // POST /api/places/[id]/saved - Save place for later
 export async function POST(
@@ -69,6 +70,9 @@ export async function POST(
     const savedRef = await adminDb.collection('user_saved_places').add(savedData);
     console.log('Created saved place:', savedRef.id);
 
+    // Update place stats
+    await updatePlaceSaveCount(adminDb, id, 1);
+
     return NextResponse.json({
       success: true,
       message: 'Đã lưu địa điểm',
@@ -120,6 +124,9 @@ export async function DELETE(
     // Remove from saved places
     const deletePromises = existingSaved.docs.map(doc => doc.ref.delete());
     await Promise.all(deletePromises);
+
+    // Update place stats
+    await updatePlaceSaveCount(adminDb, id, -1);
 
     return NextResponse.json({
       success: true,
@@ -174,5 +181,39 @@ export async function GET(
       { error: 'Không thể kiểm tra địa điểm đã lưu' },
       { status: 500 }
     );
+  }
+}
+
+// Helper function to update place save count
+async function updatePlaceSaveCount(adminDb: FirebaseFirestore.Firestore, placeId: string, increment: number) {
+  try {
+    const placeRef = adminDb.collection('places').doc(placeId);
+    const placeDoc = await placeRef.get();
+    
+    if (placeDoc.exists) {
+      const placeData = placeDoc.data();
+      const currentSaves = placeData?.stats?.saves || 0;
+      const newSaves = Math.max(0, currentSaves + increment);
+      
+      await placeRef.update({
+        'stats.saves': newSaves,
+        updatedAt: new Date().toISOString()
+      });
+      
+      console.log(`Updated place ${placeId} saves: ${currentSaves} -> ${newSaves}`);
+
+      // Also update real-time database for immediate UI updates
+      try {
+        const rtdb = getDatabase();
+        const statsRef = ref(rtdb, `places/${placeId}/stats/saves`);
+        await set(statsRef, newSaves);
+        await set(ref(rtdb, `places/${placeId}/stats/lastUpdated`), serverTimestamp());
+      } catch (rtError) {
+        console.error('Error updating real-time database:', rtError);
+      }
+    }
+  } catch (error) {
+    console.error('Error updating place save count:', error);
+    // Don't throw error as this is non-critical
   }
 }

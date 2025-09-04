@@ -2,7 +2,6 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import { RoleSwitcher } from "@/components/dev/role-switcher";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ToastNotifications } from "@/components/ui/toast-notifications";
@@ -60,7 +59,6 @@ export default function RootLayout({
             <AuthProvider>
               {children}
               <Toaster />
-              <RoleSwitcher />
               <ToastNotifications />
               <NetworkStatus />
             </AuthProvider>

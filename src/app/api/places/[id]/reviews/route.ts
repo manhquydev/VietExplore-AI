@@ -9,7 +9,17 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const adminDb = getAdminDb();
+    let adminDb;
+    try {
+      adminDb = getAdminDb();
+    } catch (adminError) {
+      console.error('Firebase Admin initialization error:', adminError);
+      return NextResponse.json(
+        { success: false, error: 'Lỗi cấu hình máy chủ' },
+        { status: 500 }
+      );
+    }
+    
     const authResult = await verifyAuthToken(request);
     
     if (!authResult.success || !authResult.user) {
@@ -52,12 +62,29 @@ export async function POST(
       );
     }
 
-    const formData: ReviewFormData = await request.json();
+    let formData: ReviewFormData;
+    try {
+      formData = await request.json();
+      console.log('Review form data received:', formData);
+    } catch (parseError) {
+      console.error('Error parsing request JSON:', parseError);
+      return NextResponse.json(
+        { success: false, error: 'Dữ liệu gửi lên không hợp lệ' },
+        { status: 400 }
+      );
+    }
 
     // Validate required fields
     if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
       return NextResponse.json(
         { success: false, error: 'Vui lòng chọn đánh giá từ 1-5 sao' },
+        { status: 400 }
+      );
+    }
+
+    if (!formData.content || !formData.content.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Vui lòng nhập nội dung đánh giá' },
         { status: 400 }
       );
     }
@@ -69,14 +96,16 @@ export async function POST(
       userId: user.id,
       userInfo: {
         id: user.id,
-        name: formData.isAnonymous ? 'Người dùng ẩn danh' : (user.fullName || user.email),
+        name: formData.isAnonymous ? 'Người dùng ẩn danh' : (user.fullName || user.email || `User ${user.id.slice(0, 8)}`),
         role: user.role,
-        avatar: user.avatar
+        ...(user.avatar && { avatar: user.avatar })
       },
       rating: formData.rating,
       title: formData.title,
-      content: formData.content,
-      images: formData.images as string[] || [],
+      content: formData.content.trim(),
+      images: Array.isArray(formData.images) 
+        ? formData.images.filter((img): img is string => typeof img === 'string')
+        : [],
       visitDate: formData.visitDate,
       isAnonymous: formData.isAnonymous || false,
       isVerified: false, // TODO: Implement visit verification
@@ -87,16 +116,38 @@ export async function POST(
       updatedAt: new Date().toISOString()
     };
 
-    const docRef = await adminDb.collection('place_reviews').add(reviewData);
+    console.log('Creating review with data:', reviewData);
+    let docRef;
+    try {
+      docRef = await adminDb.collection('place_reviews').add(reviewData);
+      console.log('Review created with ID:', docRef.id);
+    } catch (dbError) {
+      console.error('Error creating review in database:', dbError);
+      return NextResponse.json(
+        { success: false, error: 'Lỗi khi lưu đánh giá vào cơ sở dữ liệu' },
+        { status: 500 }
+      );
+    }
 
     // Update place rating
-    await updatePlaceRating(adminDb, placeId);
+    console.log('Updating place rating for placeId:', placeId);
+    try {
+      await updatePlaceRating(adminDb, placeId);
+    } catch (ratingError) {
+      console.error('Error updating place rating:', ratingError);
+      // Don't fail the request, just log the error
+    }
 
     // Update user stats
-    await adminDb.collection('users').doc(user.id).update({
-      'stats.reviewsWritten': (user.stats?.reviewsWritten || 0) + 1,
-      updatedAt: new Date().toISOString()
-    });
+    try {
+      await adminDb.collection('users').doc(user.id).update({
+        'stats.reviewsWritten': (user.stats?.reviewsWritten || 0) + 1,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (statsError) {
+      console.error('Error updating user stats:', statsError);
+      // Don't fail the request, just log the error
+    }
 
     return NextResponse.json({
       success: true,

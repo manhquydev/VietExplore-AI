@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card-custom"
 import { Badge } from "@/components/ui/badge"
 import { TrustBadge } from "@/components/ui/role-badge"
+import { ProfessionalRoleBadge } from "@/components/ui/professional-role-badge"
+import { PlaceClassificationBadge } from "@/components/ui/place-classification-badge"
 import { Separator } from "@/components/ui/separator"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -153,8 +155,8 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [modalImageIndex, setModalImageIndex] = React.useState(0)
   
   // Use custom hooks for real functionality
-  const { interactions, toggleLike, toggleSave, error: interactionError } = usePlaceInteractions(place.id, place.stats.likes)
-  const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError } = usePlaceReviews(place.id, { limit: 5 })
+  const { interactions, toggleLike, toggleSave, error: interactionError } = usePlaceInteractions(place.id, place.stats.likes || 0, place.stats.saves || 0)
+  const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError, hasUserReviewed, userReview } = usePlaceReviews(place.id, { limit: 5 })
 
   // Track page views
   React.useEffect(() => {
@@ -348,9 +350,23 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
 
   const handleReview = () => {
     if (!isAuthenticated) {
-      alert("Bạn cần đăng nhập để đánh giá địa điểm")
+      toast({
+        title: "Cần đăng nhập",
+        description: "Bạn cần đăng nhập để đánh giá địa điểm",
+        variant: "destructive"
+      })
       return
     }
+    
+    if (hasUserReviewed) {
+      toast({
+        title: "Đã đánh giá",
+        description: "Bạn đã đánh giá địa điểm này rồi. Mỗi người chỉ được đánh giá một lần.",
+        variant: "default"
+      })
+      return
+    }
+    
     setShowReviewModal(true)
   }
 
@@ -363,10 +379,13 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
           {place.images && place.images.length > 0 ? (
             <>
               <img
-                src={place.images[currentImageIndex]?.url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'}
+                src={place.images[currentImageIndex]?.url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&q=90'}
                 alt={place.images[currentImageIndex]?.alt || place.name}
                 className="absolute inset-0 w-full h-full object-cover cursor-pointer transition-transform duration-1000 hover:scale-[1.02]"
                 onClick={() => openImageModal(currentImageIndex)}
+                loading="eager"
+                fetchPriority="high"
+                style={{ imageRendering: 'high-quality' }}
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80" />
               
@@ -390,16 +409,21 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     <ChevronRight className="h-5 w-5" />
                   </Button>
                   
-                  {/* Gallery Indicator */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-8 right-8 bg-black/30 backdrop-blur-md hover:bg-black/50 text-white z-20 border border-white/20 rounded-full gap-2"
-                    onClick={() => openImageModal(currentImageIndex)}
-                  >
-                    <ZoomIn className="h-4 w-4" />
-                    <span className="text-sm font-medium">{currentImageIndex + 1}/{place.images.length}</span>
-                  </Button>
+                  {/* Gallery Indicator & Hint */}
+                  <div className="absolute top-8 right-8 z-20 flex flex-col items-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="bg-black/30 backdrop-blur-md hover:bg-black/50 text-white border border-white/20 rounded-full gap-2 animate-pulse hover:animate-none"
+                      onClick={() => openImageModal(currentImageIndex)}
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                      <span className="text-sm font-medium">{currentImageIndex + 1}/{place.images.length}</span>
+                    </Button>
+                    <div className="bg-black/20 backdrop-blur-md text-white/80 px-3 py-1 rounded-full text-xs border border-white/20 animate-bounce">
+                      👆 Click để xem ảnh gốc
+                    </div>
+                  </div>
                   
                   {/* Modern Progress Dots */}
                   <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-2 z-20">
@@ -459,15 +483,41 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
             {/* Main Hero Content */}
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="max-w-6xl mx-auto">
-                {/* Trust & Type Indicators */}
+                {/* Professional Classification & Trust Indicators */}
                 <div className="flex flex-wrap items-center gap-4 mb-6">
-                  <TrustBadge level={place.trustLevel} className="scale-125 shadow-2xl" />
-                  <Badge className="bg-gradient-to-r from-indigo-500/90 to-purple-600/90 backdrop-blur-md text-white border-none px-6 py-2 text-base font-semibold shadow-xl rounded-full">
-                    {typeLabels[place.type]}
-                  </Badge>
-                  <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-md px-6 py-2 font-medium text-base rounded-full">
-                    {regionLabels[place.region]}
-                  </Badge>
+                  <div className="backdrop-blur-md bg-black/20 p-3 rounded-2xl border border-white/20 shadow-2xl">
+                    <PlaceClassificationBadge 
+                      type={place.type} 
+                      region={place.region} 
+                      size="lg"
+                      className="scale-110"
+                    />
+                  </div>
+                  <div className="backdrop-blur-md bg-black/20 p-3 rounded-2xl border border-white/20 shadow-2xl">
+                    <ProfessionalRoleBadge 
+                      role={place.authorRole} 
+                      size="lg"
+                      showLabel={true}
+                      className="scale-110"
+                    />
+                  </div>
+                  <div className="backdrop-blur-md bg-gradient-to-r from-white/20 to-white/10 p-3 rounded-2xl border border-white/30 shadow-2xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-white font-bold text-sm">
+                          {place.trustLevel === 'partner' ? 'Đối tác xác thực' :
+                           place.trustLevel === 'contributor' ? 'Cộng tác viên' :
+                           place.trustLevel === 'verified' ? 'Đã xác minh' : 'Cộng đồng'}
+                        </div>
+                        <div className="text-white/80 text-xs">Độ tin cậy cao</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Hero Title */}
@@ -493,7 +543,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   </div>
                   <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/20 text-white">
                     <Eye className="h-5 w-5" />
-                    <span className="font-medium text-lg">{place.stats.views.toLocaleString()}</span>
+                    <span className="font-medium text-lg">{(place.stats.views || 0).toLocaleString()}</span>
                     <span className="text-white/80">lượt xem</span>
                   </div>
                 </div>
@@ -544,7 +594,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
               )}
             >
               <Heart className={cn("h-4 w-4", interactions.isLiked && "fill-current")} />
-              <span className="ml-1 md:ml-2 font-semibold text-sm md:text-base">{interactions.likeCount}</span>
+              <span className="ml-1 md:ml-2 font-semibold text-sm md:text-base">{interactions.likeCount || 0}</span>
             </Button>
             <Button 
               variant={interactions.isSaved ? "default" : "ghost"} 
@@ -622,15 +672,15 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 border border-gray-200/50">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{place.stats.views.toLocaleString()}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{(place.stats.views || 0).toLocaleString()}</div>
                   <div className="text-gray-600 font-medium text-sm md:text-base">Lượt xem</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{place.stats.likes.toLocaleString()}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{(place.stats.likes || 0).toLocaleString()}</div>
                   <div className="text-gray-600 font-medium text-sm md:text-base">Yêu thích</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{interactions.saveCount}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{interactions.saveCount || 0}</div>
                   <div className="text-gray-600 font-medium text-sm md:text-base">Đã lưu</div>
                 </div>
                 <div className="text-center">
@@ -726,11 +776,28 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
               {/* Visual Documentation */}
               {place.images && place.images.length > 1 && (
                 <section>
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                      <ZoomIn className="h-6 w-6 text-white" />
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                        <ZoomIn className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="text-4xl font-bold text-gray-900">Tư liệu hình ảnh</h3>
                     </div>
-                    <h3 className="text-4xl font-bold text-gray-900">Tư liệu hình ảnh</h3>
+                    
+                    {/* Gallery Interaction Hint */}
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
+                        <div className="flex items-center gap-2 text-blue-700">
+                          <div className="w-6 h-6 border-2 border-blue-400 rounded-full flex items-center justify-center">
+                            <ZoomIn className="h-3 w-3" />
+                          </div>
+                          <span className="text-sm font-medium">Click ảnh để xem chi tiết</span>
+                        </div>
+                      </div>
+                      <div className="w-6 h-10 border-2 border-blue-300 rounded-full flex justify-center animate-bounce">
+                        <div className="w-1 h-3 bg-blue-400 rounded-full mt-2 animate-pulse"></div>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -740,16 +807,36 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                           src={image.url}
                           alt={image.alt}
                           className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                          loading="lazy"
+                          style={{ imageRendering: 'high-quality' }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-start p-6">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-start p-6">
                           <div className="text-white">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                              <span className="text-xs font-medium text-green-400">Ảnh gốc HD</span>
+                            </div>
                             <p className="font-semibold text-lg mb-1">Hình {index + 1}</p>
                             <p className="text-sm opacity-90">{image.caption || image.alt}</p>
                           </div>
                         </div>
-                        <div className="absolute top-4 right-4 w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <ZoomIn className="h-5 w-5 text-white" />
+                        
+                        {/* Enhanced Zoom Indicator */}
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                          <div className="bg-black/40 backdrop-blur-sm rounded-full p-3 border border-white/20">
+                            <ZoomIn className="h-5 w-5 text-white" />
+                          </div>
                         </div>
+                        
+                        {/* Click Hint */}
+                        <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100">
+                          <div className="bg-blue-500/80 backdrop-blur-sm rounded-full px-3 py-1 border border-blue-300/50">
+                            <span className="text-white text-xs font-medium">👆 Click xem</span>
+                          </div>
+                        </div>
+                        
+                        {/* Interactive Border Effect */}
+                        <div className="absolute inset-0 border-4 border-transparent group-hover:border-blue-400/50 rounded-2xl transition-all duration-300"></div>
                       </div>
                     ))}
                   </div>
@@ -888,7 +975,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                           <div>
                             <div className="flex text-amber-400 mb-2">
                               {[1,2,3,4,5].map(i => {
-                                const rating = stats?.averageRating || (place.stats?.reviews > 0 ? 4 : 0)
+                                const rating = stats?.averageRating || ((place.stats?.reviews || 0) > 0 ? 4 : 0)
                                 return (
                                   <Star key={i} className={cn("h-8 w-8", i <= Math.floor(rating) ? "fill-current" : "")} />
                                 )
@@ -926,10 +1013,62 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   </CardContent>
                 </Card>
 
+                {/* User's Review (if exists) */}
+                {hasUserReviewed && userReview && (
+                  <Card className="border-2 border-amber-300 shadow-xl bg-gradient-to-r from-amber-50 to-orange-50 mb-8">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                        <CardTitle className="text-lg text-amber-800">Đánh giá của bạn</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold">
+                            {userReview.userInfo.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="font-semibold text-amber-800">{userReview.userInfo.name}</span>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={cn(
+                                    "h-4 w-4",
+                                    i < userReview.rating ? "fill-amber-400 text-amber-400" : "text-gray-300"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {new Date(userReview.createdAt).toLocaleDateString('vi-VN')}
+                            </span>
+                          </div>
+                          {userReview.title && (
+                            <h4 className="font-semibold text-gray-900 mb-2">{userReview.title}</h4>
+                          )}
+                          <p className="text-gray-700 leading-relaxed">{userReview.content}</p>
+                          {userReview.visitDate && (
+                            <p className="text-sm text-gray-500 mt-2">
+                              Ngày ghé thăm: {new Date(userReview.visitDate).toLocaleDateString('vi-VN')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Real Reviews */}
                 {reviews && reviews.length > 0 ? (
                   <div className="space-y-8 mb-12">
-                    {reviews.slice(0, 5).map((review) => {
+                    {reviews
+                      .filter(review => !hasUserReviewed || review.userId !== user?.id)
+                      .slice(0, 5)
+                      .map((review) => {
                       const getInitials = (name: string) => {
                         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       }
@@ -947,19 +1086,26 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-start justify-between mb-3">
-                                  <div>
+                                  <div className="space-y-2">
                                     <div className="flex items-center gap-3">
                                       <h4 className="font-bold text-xl text-gray-900">{review.userInfo.name}</h4>
                                       {review.isVerified && (
                                         <CheckCircle className="h-5 w-5 text-blue-500" title="Đã xác minh" />
                                       )}
                                     </div>
-                                    <p className="text-blue-600 font-medium">
-                                      {review.userInfo.role === 'admin' ? 'Quản trị viên' : 
-                                       review.userInfo.role === 'moderator' ? 'Điều hành viên' :
-                                       review.userInfo.role === 'partner' ? 'Đối tác' :
-                                       review.userInfo.role === 'contributor' ? 'Cộng tác viên' : 'Du khách'}
-                                    </p>
+                                    {(review.userInfo.role === 'admin' || review.userInfo.role === 'moderator' || review.userInfo.role === 'partner' || review.userInfo.role === 'contributor') ? (
+                                      <ProfessionalRoleBadge 
+                                        role={review.userInfo.role} 
+                                        size="sm"
+                                        showLabel={true}
+                                        className="bg-white/80 backdrop-blur-sm"
+                                      />
+                                    ) : (
+                                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full">
+                                        <User className="h-3 w-3 text-gray-600" />
+                                        <span className="text-xs font-medium text-gray-600">Du khách</span>
+                                      </div>
+                                    )}
                                   </div>
                                   <span className="text-gray-500">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
                                 </div>
@@ -1011,17 +1157,27 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 {/* Contribute Review */}
                 <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50">
                   <CardContent className="p-12 text-center">
-                    <h3 className="text-3xl font-bold text-amber-900 mb-4">Đóng góp đánh giá khoa học</h3>
+                    <h3 className="text-3xl font-bold text-amber-900 mb-4">
+                      {hasUserReviewed ? "Cảm ơn bạn đã đóng góp!" : "Đóng góp đánh giá khoa học"}
+                    </h3>
                     <p className="text-amber-700 mb-8 text-xl leading-relaxed">
-                      Chia sẻ quan điểm chuyên môn của bạn để xây dựng cơ sở dữ liệu du lịch khoa học
+                      {hasUserReviewed 
+                        ? "Bạn đã đánh giá địa điểm này. Đánh giá của bạn giúp cộng đồng du lịch có thêm thông tin hữu ích."
+                        : "Chia sẻ quan điểm chuyên môn của bạn để xây dựng cơ sở dữ liệu du lịch khoa học"
+                      }
                     </p>
                     <Button 
                       size="lg"
-                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-10 py-4 text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
-                      onClick={() => setShowReviewModal(true)}
+                      className={cn(
+                        "px-10 py-4 text-xl font-bold rounded-full shadow-2xl transition-all duration-300",
+                        hasUserReviewed
+                          ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                          : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white hover:shadow-3xl hover:scale-105"
+                      )}
+                      onClick={handleReview}
                     >
                       <Star className="h-6 w-6 mr-3" />
-                      Viết đánh giá khoa học
+                      {hasUserReviewed ? "Đã đánh giá" : "Viết đánh giá khoa học"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -1265,11 +1421,11 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-6 text-xs lg:text-sm">
                             <div>
                               <dt className="text-gray-500 mb-1">Vĩ độ (Latitude)</dt>
-                              <dd className="font-mono text-gray-900 text-sm lg:text-lg font-semibold break-all">{place.coordinates.lat.toFixed(6)}°</dd>
+                              <dd className="font-mono text-gray-900 text-sm lg:text-lg font-semibold break-all">{(place.coordinates.lat || 0).toFixed(6)}°</dd>
                             </div>
                             <div>
                               <dt className="text-gray-500 mb-1">Kinh độ (Longitude)</dt>
-                              <dd className="font-mono text-gray-900 text-sm lg:text-lg font-semibold break-all">{place.coordinates.lng.toFixed(6)}°</dd>
+                              <dd className="font-mono text-gray-900 text-sm lg:text-lg font-semibold break-all">{(place.coordinates.lng || 0).toFixed(6)}°</dd>
                             </div>
                           </div>
                         </div>
@@ -1383,80 +1539,38 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 </Card>
               )}
 
-              {/* Author Information */}
-              <Card className="border-none shadow-lg bg-white">
-                <CardHeader className="pb-3 px-4 lg:px-6">
-                  <CardTitle className="text-base lg:text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <div className="w-6 h-6 lg:w-8 lg:h-8 flex items-center justify-center flex-shrink-0">
-                      {place.authorRole === 'partner' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 108 108" className="w-full h-full">
-                          <defs>
-                            <linearGradient id="grad-partner-header" x1="0" y1="0" x2="1" y2="1">
-                              <stop offset="0%" stopColor="#DC2626"/>
-                              <stop offset="100%" stopColor="#991B1B"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M42 70 L36 96 L54 84 L72 96 L66 70 Z" fill="#FFD700" opacity="0.9"/>
-                          <circle cx="54" cy="44" r="28" fill="url(#grad-partner-header)" stroke="#FFD700" strokeWidth="3"/>
-                          <polygon points="54,28 58,40 70,40 60,48 64,60 54,52 44,60 48,48 38,40 50,40" fill="#FFD700"/>
-                          <circle cx="72" cy="28" r="10" fill="white" stroke="#FFD700" strokeWidth="2"/>
-                          <path d="M68 28 L71 31 L76 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      ) : place.authorRole === 'admin' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 120 120" className="w-full h-full">
-                          <defs>
-                            <linearGradient id="grad-admin-header" x1="0" y1="0" x2="1" y2="1">
-                              <stop offset="0%" stopColor="#FFD700"/>
-                              <stop offset="100%" stopColor="#B8860B"/>
-                            </linearGradient>
-                          </defs>
-                          <circle cx="60" cy="60" r="50" fill="url(#grad-admin-header)" stroke="#FFF8DC" strokeWidth="3"/>
-                          <path d="M30 60 C28 52 32 44 40 36 C36 46 36 54 38 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                          <path d="M34 64 L28 68" stroke="white" strokeWidth="2" />
-                          <path d="M36 56 L30 60" stroke="white" strokeWidth="2" />
-                          <path d="M90 60 C92 52 88 44 80 36 C84 46 84 54 82 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                          <path d="M86 64 L92 68" stroke="white" strokeWidth="2" />
-                          <path d="M84 56 L90 60" stroke="white" strokeWidth="2" />
-                          <polygon points="60,36 66,52 84,52 70,62 76,78 60,68 44,78 50,62 36,52 54,52" fill="white"/>
-                          <circle cx="92" cy="28" r="12" fill="white" stroke="#FFD700" strokeWidth="3"/>
-                          <path d="M88 28 L92 32 L98 22" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 96 96" className="w-full h-full">
-                          <defs>
-                            <linearGradient id="grad-contributor-header" x1="0" y1="0" x2="1" y2="1">
-                              <stop offset="0%" stopColor="#21C1C5"/>
-                              <stop offset="100%" stopColor="#2178F5"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M38 62 L32 88 L48 78 L64 88 L58 62 Z" fill="#1F6DE8" opacity="0.85"/>
-                          <path d="M38 62 L48 72 L58 62 Z" fill="#FFFFFF" opacity="0.15"/>
-                          <circle cx="48" cy="40" r="28" fill="url(#grad-contributor-header)"/>
-                          <circle cx="48" cy="40" r="28" fill="none" stroke="#FFFFFF" strokeOpacity="0.18" strokeWidth="2"/>
-                          <path d="M36 41 L45 50 L63 32" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
-                          <g transform="translate(68,22)" fill="#FFFFFF">
-                            <circle cx="4" cy="4" r="2" opacity="0.95"/>
-                            <path d="M4 0 L4 8 M0 4 L8 4" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-                          </g>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="truncate text-sm lg:text-base">Người đóng góp</span>
+              {/* Professional Author Information */}
+              <Card className="border-none shadow-lg bg-gradient-to-br from-white to-gray-50/50">
+                <CardHeader className="pb-4 px-4 lg:px-6">
+                  <CardTitle className="text-base lg:text-lg font-bold text-gray-900">
+                    Thông tin đóng góp
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 lg:p-6 pt-0">
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-base lg:text-lg text-gray-900 leading-tight">
-                      {place.authorName}
-                    </h3>
+                  <div className="space-y-4">
+                    {/* Professional Role Badge */}
+                    <div className="flex items-center justify-center">
+                      <ProfessionalRoleBadge 
+                        role={place.authorRole} 
+                        authorName={place.authorName}
+                        size="lg"
+                        className="shadow-lg hover:shadow-xl transition-all duration-300"
+                      />
+                    </div>
                     
-                    <div className="space-y-2">
+                    {/* Trust Level Indicator */}
+                    <div className="flex items-center justify-center pt-2">
+                      <TrustBadge level={place.trustLevel} className="shadow-md" />
+                    </div>
+                    
+                    {/* Timestamps */}
+                    <div className="border-t border-gray-100 pt-4 space-y-2">
                       <div className="text-xs lg:text-sm text-gray-600">
-                        <span className="font-medium">Ngày tạo:</span>
-                        <span className="ml-2 text-gray-900">
+                        <span className="font-medium">Ngày đăng:</span>
+                        <span className="ml-2 text-gray-900 font-semibold">
                           {new Date(place.createdAt).toLocaleDateString('vi-VN', { 
                             year: 'numeric', 
-                            month: 'short', 
+                            month: 'long', 
                             day: 'numeric' 
                           })}
                         </span>
@@ -1464,16 +1578,26 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                       {/* Only show update date if it's different from creation date */}
                       {place.updatedAt !== place.createdAt && (
                         <div className="text-xs lg:text-sm text-gray-600">
-                          <span className="font-medium">Cập nhật:</span>
-                          <span className="ml-2 text-gray-900">
+                          <span className="font-medium">Cập nhật lần cuối:</span>
+                          <span className="ml-2 text-gray-900 font-semibold">
                             {new Date(place.updatedAt).toLocaleDateString('vi-VN', { 
                               year: 'numeric', 
-                              month: 'short', 
+                              month: 'long', 
                               day: 'numeric' 
                             })}
                           </span>
                         </div>
                       )}
+                    </div>
+                    
+                    {/* Quality Assurance Indicator */}
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs lg:text-sm text-green-700 font-medium">
+                          ✓ Đã được xác minh bởi hệ thống VietExplore
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -1483,65 +1607,132 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
         </div>
       </main>
       
-        {/* Image Modal */}
+        {/* Professional Image Modal */}
         {showImageModal && (
-          <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center">
-            <div className="relative w-full h-full flex items-center justify-center p-6">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-6 right-6 z-60 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full"
-                onClick={closeImageModal}
-              >
-                <X className="h-6 w-6" />
-              </Button>
-              
+          <div className="fixed inset-0 z-50 bg-black backdrop-blur-sm flex items-center justify-center">
+            {/* Header Bar */}
+            <div className="absolute top-0 left-0 right-0 z-60 bg-gradient-to-b from-black/50 to-transparent p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                    <span className="text-white font-semibold text-sm">
+                      Ảnh gốc chất lượng cao • {modalImageIndex + 1} / {place.images.length}
+                    </span>
+                  </div>
+                  {/* Quality Indicator */}
+                  <div className="bg-green-500/20 backdrop-blur-sm rounded-full px-3 py-1 border border-green-400/30">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-green-400 text-xs font-medium">HD Original</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-full border border-white/20 transition-all duration-300"
+                  onClick={closeImageModal}
+                >
+                  <X className="h-6 w-6" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="relative w-full h-full flex items-center justify-center p-6 pt-20 pb-32">
+              {/* Navigation Buttons */}
               {place.images.length > 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute left-6 top-1/2 -translate-y-1/2 z-60 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full"
+                    className="absolute left-6 top-1/2 -translate-y-1/2 z-60 bg-black/30 backdrop-blur-md hover:bg-black/50 text-white rounded-full w-12 h-12 border border-white/20 transition-all duration-300 hover:scale-110"
                     onClick={prevModalImage}
                   >
-                    <ChevronLeft className="h-8 w-8" />
+                    <ChevronLeft className="h-6 w-6" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-6 top-1/2 -translate-y-1/2 z-60 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 z-60 bg-black/30 backdrop-blur-md hover:bg-black/50 text-white rounded-full w-12 h-12 border border-white/20 transition-all duration-300 hover:scale-110"
                     onClick={nextModalImage}
                   >
-                    <ChevronRight className="h-8 w-8" />
+                    <ChevronRight className="h-6 w-6" />
                   </Button>
+                  
+                  {/* Professional Navigation Hints */}
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 -translate-x-full z-50">
+                    <div className="bg-black/20 backdrop-blur-md text-white/60 px-3 py-1 rounded-full text-xs border border-white/10 whitespace-nowrap">
+                      ← Ảnh trước
+                    </div>
+                  </div>
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 translate-x-full z-50">
+                    <div className="bg-black/20 backdrop-blur-md text-white/60 px-3 py-1 rounded-full text-xs border border-white/10 whitespace-nowrap">
+                      Ảnh tiếp →
+                    </div>
+                  </div>
                 </>
               )}
               
-              <img
-                src={place.images[modalImageIndex]?.url}
-                alt={place.images[modalImageIndex]?.alt || place.name}
-                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
-              />
-              
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-6 py-3 rounded-full max-w-2xl text-center">
-                <p className="font-semibold text-lg">{place.images[modalImageIndex]?.caption || place.images[modalImageIndex]?.alt}</p>
-                <p className="text-sm text-gray-300 mt-1">{modalImageIndex + 1} / {place.images.length}</p>
-              </div>
-              
-              {place.images.length > 1 && (
-                <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2">
-                  {place.images.map((_, index) => (
-                    <button
-                      key={index}
-                      className={cn(
-                        "w-3 h-3 rounded-full transition-all duration-300 hover:scale-125",
-                        index === modalImageIndex ? "bg-white shadow-lg" : "bg-white/50 hover:bg-white/70"
-                      )}
-                      onClick={() => setModalImageIndex(index)}
-                    />
-                  ))}
+              {/* Main Image */}
+              <div className="relative max-w-full max-h-full">
+                <img
+                  src={place.images[modalImageIndex]?.url}
+                  alt={place.images[modalImageIndex]?.alt || place.name}
+                  className="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg shadow-2xl"
+                  loading="eager"
+                  style={{ 
+                    imageRendering: 'high-quality',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                />
+                
+                {/* Image Loading Indicator */}
+                <div className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <span className="text-white text-xs">Đang tải ảnh gốc...</span>
+                  </div>
                 </div>
-              )}
+              </div>
+            </div>
+            
+            {/* Bottom Information Bar */}
+            <div className="absolute bottom-0 left-0 right-0 z-60 bg-gradient-to-t from-black/60 to-transparent p-6">
+              <div className="text-center">
+                <div className="bg-black/40 backdrop-blur-md text-white px-6 py-4 rounded-2xl max-w-4xl mx-auto border border-white/10">
+                  <h3 className="font-bold text-lg mb-1">{place.images[modalImageIndex]?.caption || place.images[modalImageIndex]?.alt}</h3>
+                  <p className="text-white/80 text-sm">{place.name} • Ảnh chất lượng cao</p>
+                </div>
+                
+                {/* Navigation Dots */}
+                {place.images.length > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    {place.images.map((_, index) => (
+                      <button
+                        key={index}
+                        className={cn(
+                          "h-2 rounded-full transition-all duration-300 hover:scale-125 border",
+                          index === modalImageIndex 
+                            ? "bg-white w-8 shadow-lg border-white" 
+                            : "bg-white/30 w-2 hover:bg-white/50 border-white/30"
+                        )}
+                        onClick={() => setModalImageIndex(index)}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {/* Keyboard Shortcuts Hint */}
+                <div className="mt-3 text-white/50 text-xs flex items-center justify-center gap-4">
+                  <span>← → Di chuyển</span>
+                  <span>•</span>
+                  <span>ESC Thoát</span>
+                  <span>•</span>
+                  <span>Click để chuyển ảnh</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

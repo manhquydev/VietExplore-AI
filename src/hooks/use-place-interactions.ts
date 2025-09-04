@@ -20,13 +20,13 @@ interface UseInteractionsResult {
   error: string | null;
 }
 
-export function usePlaceInteractions(placeId: string, initialLikeCount = 0): UseInteractionsResult {
+export function usePlaceInteractions(placeId: string, initialLikeCount = 0, initialSaveCount = 0): UseInteractionsResult {
   const { isAuthenticated, user } = useAuth();
   const [interactions, setInteractions] = useState<PlaceInteractions>({
     isLiked: false,
     isSaved: false,
     likeCount: initialLikeCount,
-    saveCount: 0
+    saveCount: initialSaveCount
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,11 +35,27 @@ export function usePlaceInteractions(placeId: string, initialLikeCount = 0): Use
   useEffect(() => {
     if (!placeId) return;
 
+    // Initialize from real-time database and sync if needed
+    const initializeStats = async () => {
+      try {
+        const realtimeStats = await RealtimeService.getPlaceStats(placeId);
+        setInteractions(prev => ({
+          ...prev,
+          likeCount: Math.max(prev.likeCount, realtimeStats.likes || 0),
+          saveCount: Math.max(prev.saveCount, realtimeStats.saves || 0)
+        }));
+      } catch (error) {
+        console.error('Error initializing stats from real-time DB:', error);
+      }
+    };
+
+    initializeStats();
+
     const unsubscribe = RealtimeService.subscribeToPlaceStats(placeId, (stats) => {
       setInteractions(prev => ({
         ...prev,
-        likeCount: stats.likes,
-        saveCount: stats.saves
+        likeCount: stats.likes || prev.likeCount,
+        saveCount: stats.saves || prev.saveCount
       }));
     });
 

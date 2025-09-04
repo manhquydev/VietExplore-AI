@@ -11,7 +11,7 @@ export interface PlaceReview {
   };
   rating: number; // 1-5 stars
   title?: string;
-  content?: string;
+  content: string;
   images?: string[]; // Optional review images
   visitDate?: string; // When user visited the place
   isAnonymous: boolean;
@@ -28,7 +28,7 @@ export interface ReviewFormData {
   placeId: string;
   rating: number;
   title?: string;
-  content?: string;
+  content: string;
   images?: File[] | string[];
   visitDate?: string;
   isAnonymous?: boolean;

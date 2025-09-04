@@ -11,6 +11,8 @@ interface UseReviewsResult {
   isLoading: boolean;
   hasMore: boolean;
   error: string | null;
+  userReview: PlaceReview | null;
+  hasUserReviewed: boolean;
   submitReview: (reviewData: ReviewFormData) => Promise<void>;
   loadMore: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -25,7 +27,7 @@ export function usePlaceReviews(
   placeId: string, 
   options: UseReviewsOptions = {}
 ): UseReviewsResult {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { sortBy = 'newest', limit = 10 } = options;
   
   const [reviews, setReviews] = useState<PlaceReview[]>([]);
@@ -34,6 +36,8 @@ export function usePlaceReviews(
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
+  const [userReview, setUserReview] = useState<PlaceReview | null>(null);
+  const [hasUserReviewed, setHasUserReviewed] = useState(false);
 
   const loadReviews = async (reset = false) => {
     try {
@@ -84,6 +88,16 @@ export function usePlaceReviews(
         setOffset(prev => prev + limit);
       }
       
+      // Check if current user has reviewed this place
+      if (isAuthenticated && user) {
+        const currentUserReview = data.data?.find((review: PlaceReview) => review.userId === user.id);
+        setUserReview(currentUserReview || null);
+        setHasUserReviewed(!!currentUserReview);
+      } else {
+        setUserReview(null);
+        setHasUserReviewed(false);
+      }
+      
       setStats(data.stats);
       setHasMore(data.pagination?.hasMore || false);
       
@@ -117,15 +131,27 @@ export function usePlaceReviews(
         if (response.status === 401) {
           throw new Error('Bạn cần đăng nhập để đánh giá địa điểm');
         }
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Không thể gửi đánh giá');
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Không thể gửi đánh giá');
+        } catch (parseError) {
+          // If response can't be parsed as JSON, use status text
+          throw new Error(`Không thể gửi đánh giá: ${response.statusText || 'Lỗi máy chủ'}`);
+        }
       }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Phản hồi từ máy chủ không hợp lệ');
+      }
       
-      // Add the new review to the top of the list
+      // Add the new review to the top of the list and update user review status
       if (result.data) {
         setReviews(prev => [result.data, ...prev]);
+        setUserReview(result.data);
+        setHasUserReviewed(true);
         
         // Update stats if available
         if (result.data.rating && stats) {
@@ -176,6 +202,8 @@ export function usePlaceReviews(
     isLoading,
     hasMore,
     error,
+    userReview,
+    hasUserReviewed,
     submitReview,
     loadMore,
     refresh
