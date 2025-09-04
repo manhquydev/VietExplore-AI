@@ -2,10 +2,11 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { BrandedLoading, LotusLogo, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 
 interface LoadingSpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg" | "xl"
-  variant?: "default" | "primary" | "secondary"
+  variant?: "default" | "primary" | "secondary" | "branded"
 }
 
 const sizeClasses = {
@@ -18,7 +19,8 @@ const sizeClasses = {
 const variantClasses = {
   default: "text-muted",
   primary: "text-primary",
-  secondary: "text-secondary"
+  secondary: "text-secondary",
+  branded: "text-pink-600"
 }
 
 export function LoadingSpinner({ 
@@ -27,6 +29,15 @@ export function LoadingSpinner({
   className,
   ...props 
 }: LoadingSpinnerProps) {
+  // Use branded loading for the branded variant
+  if (variant === "branded") {
+    return (
+      <div className={cn(className)} {...props}>
+        <BrandedLoading size={size} variant="spinner" showText={false} />
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(
@@ -61,10 +72,9 @@ export function LoadingOverlay({
     <div className={cn("relative", className)}>
       {children}
       {isLoading && (
-        <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-10">
-          <div className="flex flex-col items-center gap-3">
-            <LoadingSpinner size="lg" variant="primary" />
-            <p className="text-sm text-muted font-medium">{loadingText}</p>
+        <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="bg-white rounded-2xl shadow-2xl p-6">
+            <BrandedLoading size="md" variant="logo" text={loadingText} />
           </div>
         </div>
       )}
@@ -85,35 +95,12 @@ export function LoadingCard({
   showImage = false,
   className 
 }: LoadingCardProps) {
+  // Use BrandedCardSkeleton for a more branded experience
   return (
-    <div className={cn("animate-pulse space-y-4", className)}>
-      {showImage && (
-        <div className="bg-muted rounded-lg aspect-[3/2]" />
-      )}
-      
-      <div className="space-y-3">
-        {showAvatar && (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-muted rounded-full" />
-            <div className="h-4 bg-muted rounded w-24" />
-          </div>
-        )}
-        
-        <div className="space-y-2">
-          {Array.from({ length: lines }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "h-4 bg-muted rounded",
-                i === 0 && "w-3/4",
-                i === 1 && "w-full", 
-                i === 2 && "w-2/3",
-                i > 2 && "w-1/2"
-              )}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <BrandedCardSkeleton 
+      showImage={showImage}
+      lines={lines}
+      className={className}
+    />
   )
 }

@@ -86,110 +86,175 @@ export default function AdminSettingsPage() {
   )
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 md:mb-8">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Cài đặt hệ thống</h1>
-          <p className="text-sm md:text-base text-gray-600">Cấu hình cài đặt và tùy chọn nền tảng</p>
-        </div>
-        <div className="flex-shrink-0">
-          {actions}
+    <div className="min-h-screen bg-gradient-to-br from-admin-neutral-50 via-white to-admin-primary-50/20">
+      
+      {/* Modern Header Section */}
+      <div className="relative px-4 md:px-6 lg:px-8 pt-6 pb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-admin-primary-500/5 via-admin-info-500/3 to-admin-warning-500/5 rounded-b-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-primary-600 to-admin-warning-700 rounded-2xl flex items-center justify-center shadow-lg">
+                  <SettingsIcon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold text-admin-neutral-900 tracking-tight">
+                    Cài đặt Hệ thống
+                  </h1>
+                  <p className="text-admin-neutral-600 mt-1">
+                    Cấu hình và tùy chỉnh nền tảng theo yêu cầu
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Actions Card */}
+            <div className="bg-white/80 backdrop-blur-sm border border-admin-neutral-200/50 rounded-xl px-6 py-4 shadow-lg">
+              <div className="flex items-center gap-4">
+                {actions}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-gray-100 p-1 rounded-lg">
-          <TabsTrigger value="general" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <SettingsIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">General</span>
-          </TabsTrigger>
-          <TabsTrigger value="moderation" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Shield className="w-4 h-4" />
-            <span className="hidden sm:inline">Moderation</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Bell className="w-4 h-4" />
-            <span className="hidden sm:inline">Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Database className="w-4 h-4" />
-            <span className="hidden sm:inline">Security</span>
-          </TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="general" className="space-y-4 md:space-y-6">
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <SettingsIcon className="h-5 w-5 text-blue-600" />
-                Cấu hình trang web
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-8">
+      <Tabs defaultValue="general" className="space-y-8">
+        <div className="bg-white/60 backdrop-blur-sm border border-admin-neutral-200/50 rounded-2xl p-2 shadow-lg">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-transparent gap-2">
+            <TabsTrigger 
+              value="general" 
+              className="group flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-primary-600 data-[state=active]:to-admin-primary-700 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-admin-neutral-100/50"
+            >
+              <SettingsIcon className="w-4 h-4 group-data-[state=active]:text-white text-admin-neutral-600" />
+              <span className="hidden sm:inline font-medium">Tổng quan</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="moderation" 
+              className="group flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-success-600 data-[state=active]:to-admin-success-700 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-admin-neutral-100/50"
+            >
+              <Shield className="w-4 h-4 group-data-[state=active]:text-white text-admin-neutral-600" />
+              <span className="hidden sm:inline font-medium">Kiểm duyệt</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="notifications" 
+              className="group flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-info-600 data-[state=active]:to-admin-info-700 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-admin-neutral-100/50"
+            >
+              <Bell className="w-4 h-4 group-data-[state=active]:text-white text-admin-neutral-600" />
+              <span className="hidden sm:inline font-medium">Thông báo</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="security" 
+              className="group flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-error-600 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-admin-neutral-100/50"
+            >
+              <Database className="w-4 h-4 group-data-[state=active]:text-white text-admin-neutral-600" />
+              <span className="hidden sm:inline font-medium">Bảo mật</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="general" className="space-y-6">
+          <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-primary-500/5 via-transparent to-admin-primary-600/5"></div>
+            <CardHeader className="relative pb-6">
+              <CardTitle className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-admin-primary-600 to-admin-primary-700 rounded-xl flex items-center justify-center shadow-md">
+                  <SettingsIcon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-admin-neutral-900">Cấu hình Trang web</h3>
+                  <p className="text-sm text-admin-neutral-600">Thông tin cơ bản về nền tảng</p>
+                </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="relative space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label htmlFor="siteName" className="text-sm font-semibold text-gray-700">Tên trang web</Label>
+                  <Label htmlFor="siteName" className="text-sm font-semibold text-admin-neutral-700 flex items-center gap-2">
+                    Tên trang web
+                    <Badge variant="outline" className="text-xs">Bắt buộc</Badge>
+                  </Label>
                   <Input
                     id="siteName"
                     value={settings.general.siteName}
                     onChange={(e) => handleSettingChange('general', 'siteName', e.target.value)}
-                    className="focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Nhập tên trang web"
+                    className="focus:ring-2 focus:ring-admin-primary-500 focus:border-admin-primary-500 border-admin-neutral-300 bg-white/80 backdrop-blur-sm"
+                    placeholder="Nhập tên trang web của bạn"
                   />
                 </div>
                 <div className="space-y-3">
-                  <Label htmlFor="siteDescription" className="text-sm font-semibold text-gray-700">Mô tả trang web</Label>
+                  <Label htmlFor="siteDescription" className="text-sm font-semibold text-admin-neutral-700">Mô tả trang web</Label>
                   <Textarea
                     id="siteDescription"
                     value={settings.general.siteDescription}
                     onChange={(e) => handleSettingChange('general', 'siteDescription', e.target.value)}
                     rows={3}
-                    className="focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    placeholder="Mô tả ngắn về trang web"
+                    className="focus:ring-2 focus:ring-admin-primary-500 focus:border-admin-primary-500 border-admin-neutral-300 bg-white/80 backdrop-blur-sm resize-none"
+                    placeholder="Mô tả ngắn gọn về trang web và mục đích sử dụng"
                   />
                 </div>
               </div>
 
               <Separator />
 
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg border">
-                  <div className="space-y-1 flex-1">
-                    <Label className="text-sm font-semibold text-gray-700">Chế độ bảo trì</Label>
-                    <p className="text-sm text-gray-600">
-                      Tạm thời vô hiệu hóa truy cập trang web để bảo trì
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={settings.general.maintenanceMode}
-                      onCheckedChange={(checked) => handleSettingChange('general', 'maintenanceMode', checked)}
-                      className="data-[state=checked]:bg-red-600"
-                    />
-                    {settings.general.maintenanceMode && (
-                      <Badge variant="destructive" className="animate-pulse">
-                        Đang hoạt động
-                      </Badge>
-                    )}
+              <div className="space-y-4">
+                <div className="relative group p-6 bg-gradient-to-r from-admin-error-50/50 to-red-50/50 border border-admin-error-200/50 rounded-2xl hover:shadow-md transition-all duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-admin-error-600 to-red-600 rounded-lg flex items-center justify-center shadow-sm">
+                          <AlertTriangle className="h-4 w-4 text-white" />
+                        </div>
+                        <Label className="text-sm font-semibold text-admin-neutral-900">Chế độ Bảo trì</Label>
+                      </div>
+                      <p className="text-sm text-admin-neutral-600 ml-11">
+                        Tạm thời vô hiệu hóa truy cập công khai để thực hiện bảo trì hệ thống
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={settings.general.maintenanceMode}
+                        onCheckedChange={(checked) => handleSettingChange('general', 'maintenanceMode', checked)}
+                        className="data-[state=checked]:bg-admin-error-600"
+                      />
+                      {settings.general.maintenanceMode && (
+                        <Badge variant="destructive" className="animate-pulse shadow-sm">
+                          <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                          Đang bảo trì
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg border">
-                  <div className="space-y-1 flex-1">
-                    <Label className="text-sm font-semibold text-gray-700">Đăng ký người dùng</Label>
-                    <p className="text-sm text-gray-600">
-                      Cho phép người dùng mới đăng ký tài khoản
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={settings.general.registrationEnabled}
-                      onCheckedChange={(checked) => handleSettingChange('general', 'registrationEnabled', checked)}
-                    />
-                    {!settings.general.registrationEnabled && (
-                      <Badge variant="outline" className="text-amber-700 border-amber-300">
-                        Tắt
-                      </Badge>
-                    )}
+                <div className="relative group p-6 bg-gradient-to-r from-admin-success-50/50 to-green-50/50 border border-admin-success-200/50 rounded-2xl hover:shadow-md transition-all duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-admin-success-600 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
+                          <Users className="h-4 w-4 text-white" />
+                        </div>
+                        <Label className="text-sm font-semibold text-admin-neutral-900">Đăng ký Người dùng</Label>
+                      </div>
+                      <p className="text-sm text-admin-neutral-600 ml-11">
+                        Cho phép người dùng mới tạo tài khoản và tham gia nền tảng
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={settings.general.registrationEnabled}
+                        onCheckedChange={(checked) => handleSettingChange('general', 'registrationEnabled', checked)}
+                        className="data-[state=checked]:bg-admin-success-600"
+                      />
+                      {!settings.general.registrationEnabled && (
+                        <Badge variant="outline" className="text-admin-warning-700 border-admin-warning-300 bg-admin-warning-50">
+                          Đã tắt
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -279,23 +344,42 @@ export default function AdminSettingsPage() {
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tùy chọn thông báo</CardTitle>
+          <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-info-500/5 via-transparent to-admin-info-600/5"></div>
+            <CardHeader className="relative pb-6">
+              <CardTitle className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-admin-info-600 to-admin-info-700 rounded-xl flex items-center justify-center shadow-md">
+                  <Bell className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-admin-neutral-900">Cài đặt Thông báo</h3>
+                  <p className="text-sm text-admin-neutral-600">Quản lý các loại thông báo hệ thống</p>
+                </div>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="relative space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label>Thông báo email</Label>
-                    <p className="text-sm text-gray-600">
-                      Send email notifications for important events
-                    </p>
+                <div className="relative group p-6 bg-gradient-to-r from-admin-info-50/50 to-blue-50/50 border border-admin-info-200/50 rounded-2xl hover:shadow-md transition-all duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-admin-info-600 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                          <Mail className="h-4 w-4 text-white" />
+                        </div>
+                        <Label className="text-sm font-semibold text-admin-neutral-900">Thông báo Email</Label>
+                      </div>
+                      <p className="text-sm text-admin-neutral-600 ml-11">
+                        Gửi thông báo email cho các sự kiện quan trọng và cập nhật
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={settings.notifications.emailNotifications}
+                        onCheckedChange={(checked) => handleSettingChange('notifications', 'emailNotifications', checked)}
+                        className="data-[state=checked]:bg-admin-info-600"
+                      />
+                    </div>
                   </div>
-                  <Switch
-                    checked={settings.notifications.emailNotifications}
-                    onCheckedChange={(checked) => handleSettingChange('notifications', 'emailNotifications', checked)}
-                  />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -430,6 +514,10 @@ export default function AdminSettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Bottom padding */}
+      <div className="pb-8"></div>
+      </div>
     </div>
   )
 }

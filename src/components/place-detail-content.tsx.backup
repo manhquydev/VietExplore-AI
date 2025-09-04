@@ -45,11 +45,6 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import Link from "next/link"
-import { usePlaceInteractions } from "@/hooks/use-place-interactions"
-import { usePlaceReviews } from "@/hooks/use-place-reviews"
-import { ReviewModal } from "@/components/modals/review-modal"
-import RealtimeService from "@/lib/firebase/realtime"
-import { useToast } from "@/hooks/use-toast"
 
 import { Place } from "@/lib/types/places"
 
@@ -144,44 +139,14 @@ const regionLabels = {
 
 export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const { user, isAuthenticated } = useAuth()
-  const { toast } = useToast()
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
+  const [isLiked, setIsLiked] = React.useState(false)
+  const [isSaved, setIsSaved] = React.useState(false)
   const [showReportModal, setShowReportModal] = React.useState(false)
   const [showSuggestionModal, setShowSuggestionModal] = React.useState(false)
   const [showReviewModal, setShowReviewModal] = React.useState(false)
   const [showImageModal, setShowImageModal] = React.useState(false)
   const [modalImageIndex, setModalImageIndex] = React.useState(0)
-  
-  // Use custom hooks for real functionality
-  const { interactions, toggleLike, toggleSave, error: interactionError } = usePlaceInteractions(place.id, place.stats.likes)
-  const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError } = usePlaceReviews(place.id, { limit: 5 })
-
-  // Track page views
-  React.useEffect(() => {
-    let hasTracked = false;
-    
-    const trackView = async () => {
-      if (hasTracked) return;
-      hasTracked = true;
-      
-      try {
-        await RealtimeService.updatePlaceStats(place.id, 'views', 1);
-        
-        // Record view interaction if user is logged in
-        if (user?.id) {
-          await RealtimeService.recordUserInteraction(user.id, place.id, 'view');
-        }
-      } catch (error) {
-        console.error('Error tracking view:', error);
-      }
-    };
-
-    const timer = setTimeout(trackView, 2000); // Track after 2 seconds
-    
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [place.id, user?.id])
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % place.images.length)
@@ -221,98 +186,19 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [showImageModal])
 
-  const handleLike = async () => {
+  const handleLike = () => {
     if (!isAuthenticated) {
-      toast({
-        title: "Cần đăng nhập",
-        description: "Bạn cần đăng nhập để thêm yêu thích",
-        variant: "destructive"
-      })
       return
     }
-    
-    try {
-      await toggleLike()
-      if (interactions.isLiked) {
-        toast({
-          title: "Thành công",
-          description: "Đã xóa khỏi danh sách yêu thích"
-        })
-      } else {
-        toast({
-          title: "Thành công",
-          description: "Đã thêm vào danh sách yêu thích"
-        })
-      }
-    } catch (error) {
-      // Error already handled in the hook
-    }
+    setIsLiked(!isLiked)
   }
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!isAuthenticated) {
-      toast({
-        title: "Cần đăng nhập",
-        description: "Bạn cần đăng nhập để lưu địa điểm",
-        variant: "destructive"
-      })
       return
     }
-    
-    try {
-      await toggleSave()
-      if (interactions.isSaved) {
-        toast({
-          title: "Thành công",
-          description: "Đã xóa khỏi danh sách đã lưu"
-        })
-      } else {
-        toast({
-          title: "Thành công",
-          description: "Đã lưu địa điểm"
-        })
-      }
-    } catch (error) {
-      // Error already handled in the hook
-    }
+    setIsSaved(!isSaved)
   }
-
-  const handleReviewSubmit = async (reviewData: any) => {
-    try {
-      await submitReview(reviewData)
-      toast({
-        title: "Thành công",
-        description: "Đánh giá của bạn đã được gửi thành công!",
-      })
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể gửi đánh giá. Vui lòng thử lại.",
-        variant: "destructive"
-      })
-    }
-  }
-
-  // Show error toasts for interaction errors (but skip auth errors)
-  React.useEffect(() => {
-    if (interactionError && !interactionError.includes('đăng nhập')) {
-      toast({
-        title: "Lỗi",
-        description: interactionError,
-        variant: "destructive"
-      })
-    }
-  }, [interactionError])
-
-  React.useEffect(() => {
-    if (reviewError && !reviewError.includes('tải đánh giá')) {
-      toast({
-        title: "Lỗi",
-        description: reviewError,
-        variant: "destructive"
-      })
-    }
-  }, [reviewError])
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -488,8 +374,8 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   </div>
                   <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/20 text-white">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium text-lg">{stats?.averageRating?.toFixed(1) || '0.0'}</span>
-                    <span className="text-white/80">({stats?.totalReviews || 0} đánh giá)</span>
+                    <span className="font-medium text-lg">4.5</span>
+                    <span className="text-white/80">(123 đánh giá)</span>
                   </div>
                   <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/20 text-white">
                     <Eye className="h-5 w-5" />
@@ -535,28 +421,28 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
           {/* Primary Actions */}
           <div className="flex items-center gap-2 md:gap-3 bg-white/95 backdrop-blur-md rounded-full px-4 md:px-6 py-3 md:py-4 shadow-2xl border border-gray-200/50">
             <Button 
-              variant={interactions.isLiked ? "default" : "ghost"} 
+              variant={isLiked ? "default" : "ghost"} 
               size="sm"
               onClick={handleLike}
               className={cn(
                 "rounded-full transition-all duration-300",
-                interactions.isLiked ? "bg-red-500 text-white hover:bg-red-600" : "hover:bg-red-50 hover:text-red-600"
+                isLiked ? "bg-red-500 text-white hover:bg-red-600" : "hover:bg-red-50 hover:text-red-600"
               )}
             >
-              <Heart className={cn("h-4 w-4", interactions.isLiked && "fill-current")} />
-              <span className="ml-1 md:ml-2 font-semibold text-sm md:text-base">{interactions.likeCount}</span>
+              <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
+              <span className="ml-1 md:ml-2 font-semibold text-sm md:text-base">{place.stats.likes + (isLiked ? 1 : 0)}</span>
             </Button>
             <Button 
-              variant={interactions.isSaved ? "default" : "ghost"} 
+              variant={isSaved ? "default" : "ghost"} 
               size="sm"
               onClick={handleSave}
               className={cn(
                 "rounded-full transition-all duration-300",
-                interactions.isSaved ? "bg-blue-500 text-white hover:bg-blue-600" : "hover:bg-blue-50 hover:text-blue-600"
+                isSaved ? "bg-blue-500 text-white hover:bg-blue-600" : "hover:bg-blue-50 hover:text-blue-600"
               )}
             >
-              <Bookmark className={cn("h-4 w-4", interactions.isSaved && "fill-current")} />
-              <span className="ml-1 md:ml-2 font-medium text-sm md:text-base hidden sm:inline">{interactions.isSaved ? "Đã lưu" : "Lưu"}</span>
+              <Bookmark className={cn("h-4 w-4", isSaved && "fill-current")} />
+              <span className="ml-1 md:ml-2 font-medium text-sm md:text-base hidden sm:inline">{isSaved ? "Đã lưu" : "Lưu"}</span>
             </Button>
             <Button 
               variant="ghost" 
@@ -630,11 +516,11 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   <div className="text-gray-600 font-medium text-sm md:text-base">Yêu thích</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{interactions.saveCount}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{place.stats.saves.toLocaleString()}</div>
                   <div className="text-gray-600 font-medium text-sm md:text-base">Đã lưu</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{stats?.totalReviews || 0}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{place.stats.reviews.toLocaleString()}</div>
                   <div className="text-gray-600 font-medium text-sm md:text-base">Đánh giá</div>
                 </div>
               </div>
@@ -882,131 +768,92 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     <div className="grid md:grid-cols-2 gap-12">
                       <div className="text-center md:text-left">
                         <div className="flex items-center justify-center md:justify-start gap-6 mb-4">
-                          <span className="text-6xl font-bold text-amber-500">
-                            {stats?.averageRating ? stats.averageRating.toFixed(1) : (place.stats?.reviews > 0 ? '4.0' : '0.0')}
-                          </span>
+                          <span className="text-6xl font-bold text-amber-500">4.5</span>
                           <div>
                             <div className="flex text-amber-400 mb-2">
-                              {[1,2,3,4,5].map(i => {
-                                const rating = stats?.averageRating || (place.stats?.reviews > 0 ? 4 : 0)
-                                return (
-                                  <Star key={i} className={cn("h-8 w-8", i <= Math.floor(rating) ? "fill-current" : "")} />
-                                )
-                              })}
+                              {[1,2,3,4,5].map(i => (
+                                <Star key={i} className={cn("h-8 w-8", i <= 4 ? "fill-current" : "")} />
+                              ))}
                             </div>
-                            <p className="text-gray-600 font-semibold text-lg">
-                              {stats?.totalReviews ?? place.stats?.reviews ?? 0} đánh giá khoa học
-                            </p>
+                            <p className="text-gray-600 font-semibold text-lg">{place.stats.reviews} đánh giá khoa học</p>
                           </div>
                         </div>
                       </div>
                       
                       <div className="space-y-4">
-                        {[5,4,3,2,1].map(star => {
-                          const count = stats?.ratingBreakdown?.[star as keyof typeof stats.ratingBreakdown] || 0
-                          const percentage = stats?.totalReviews ? Math.round((count / stats.totalReviews) * 100) : 0
-                          return (
-                            <div key={star} className="flex items-center gap-4">
-                              <span className="text-base w-4 font-semibold">{star}</span>
-                              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                              <div className="flex-1 bg-gray-200 rounded-full h-3">
-                                <div 
-                                  className="bg-amber-400 h-3 rounded-full transition-all duration-1000" 
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                              <span className="text-base text-gray-600 w-16 text-right font-semibold">
-                                {percentage}%
-                              </span>
+                        {[5,4,3,2,1].map(star => (
+                          <div key={star} className="flex items-center gap-4">
+                            <span className="text-base w-4 font-semibold">{star}</span>
+                            <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                            <div className="flex-1 bg-gray-200 rounded-full h-3">
+                              <div 
+                                className="bg-amber-400 h-3 rounded-full transition-all duration-1000" 
+                                style={{ width: `${star === 5 ? 70 : star === 4 ? 20 : star === 3 ? 8 : star === 2 ? 2 : 0}%` }}
+                              />
                             </div>
-                          )
-                        })}
+                            <span className="text-base text-gray-600 w-16 text-right font-semibold">
+                              {star === 5 ? '70%' : star === 4 ? '20%' : star === 3 ? '8%' : star === 2 ? '2%' : '0%'}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Real Reviews */}
-                {reviews && reviews.length > 0 ? (
-                  <div className="space-y-8 mb-12">
-                    {reviews.slice(0, 5).map((review) => {
-                      const getInitials = (name: string) => {
-                        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                      }
-                      
-                      return (
-                        <Card key={review.id} className="border-none shadow-lg hover:shadow-xl transition-shadow bg-white">
-                          <CardContent className="p-8">
-                            <div className="flex items-start gap-6">
-                              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0">
-                                {review.userInfo.avatar ? (
-                                  <img src={review.userInfo.avatar} alt={review.userInfo.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  getInitials(review.userInfo.name)
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between mb-3">
-                                  <div>
-                                    <div className="flex items-center gap-3">
-                                      <h4 className="font-bold text-xl text-gray-900">{review.userInfo.name}</h4>
-                                      {review.isVerified && (
-                                        <CheckCircle className="h-5 w-5 text-blue-500" title="Đã xác minh" />
-                                      )}
-                                    </div>
-                                    <p className="text-blue-600 font-medium">
-                                      {review.userInfo.role === 'admin' ? 'Quản trị viên' : 
-                                       review.userInfo.role === 'moderator' ? 'Điều hành viên' :
-                                       review.userInfo.role === 'partner' ? 'Đối tác' :
-                                       review.userInfo.role === 'contributor' ? 'Cộng tác viên' : 'Du khách'}
-                                    </p>
-                                  </div>
-                                  <span className="text-gray-500">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+                {/* Sample Scientific Reviews */}
+                <div className="space-y-8 mb-12">
+                  {[
+                    {
+                      author: "Dr. Minh Thu",
+                      expertise: "Chuyên gia Du lịch sinh thái",
+                      rating: 5,
+                      date: "2024-02-15",
+                      comment: "Địa điểm thực sự tuyệt vời từ góc nhìn khoa học! Hệ sinh thái đa dạng, giá trị địa chất cao. Rất phù hợp cho nghiên cứu và du lịch bền vững.",
+                      avatar: "MT",
+                      verified: true
+                    },
+                    {
+                      author: "GS. Anh Tuấn",
+                      expertise: "Nghiên cứu Địa lý Tự nhiên",
+                      rating: 4,
+                      date: "2024-02-10",
+                      comment: "Cấu trúc địa chất độc đáo, có giá trị nghiên cứu cao. Tuy nhiên cần quản lý tốt hơn lượng khách tham quan để bảo vệ môi trường.",
+                      avatar: "AT",
+                      verified: true
+                    }
+                  ].map((review, index) => (
+                    <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-shadow bg-white">
+                      <CardContent className="p-8">
+                        <div className="flex items-start gap-6">
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0">
+                            {review.avatar}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <div className="flex items-center gap-3">
+                                  <h4 className="font-bold text-xl text-gray-900">{review.author}</h4>
+                                  {review.verified && (
+                                    <CheckCircle className="h-5 w-5 text-blue-500" title="Chuyên gia được xác minh" />
+                                  )}
                                 </div>
-                                {review.title && (
-                                  <h5 className="font-semibold text-lg text-gray-900 mb-2">{review.title}</h5>
-                                )}
-                                <div className="flex text-amber-400 mb-4">
-                                  {[1,2,3,4,5].map(i => (
-                                    <Star key={i} className={cn("h-5 w-5", i <= review.rating ? "fill-current" : "")} />
-                                  ))}
-                                </div>
-                                <p className="text-gray-700 leading-relaxed text-lg">{review.content}</p>
-                                {review.visitDate && (
-                                  <p className="text-sm text-gray-500 mt-3">
-                                    Ghé thăm: {new Date(review.visitDate).toLocaleDateString('vi-VN')}
-                                  </p>
-                                )}
+                                <p className="text-blue-600 font-medium">{review.expertise}</p>
                               </div>
+                              <span className="text-gray-500">{new Date(review.date).toLocaleDateString('vi-VN')}</span>
                             </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                    
-                    {stats && stats.totalReviews > 5 && (
-                      <div className="text-center">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => refreshReviews()}
-                          className="px-8 py-3 text-base font-semibold"
-                        >
-                          Xem thêm đánh giá ({stats.totalReviews - 5} còn lại)
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      {reviewError ? 'Không thể tải đánh giá' : 'Chưa có đánh giá'}
-                    </h3>
-                    <p className="text-gray-600 text-lg">
-                      {reviewError ? 'Vui lòng thử lại sau.' : 'Hãy là người đầu tiên đánh giá địa điểm này!'}
-                    </p>
-                  </div>
-                )}
+                            <div className="flex text-amber-400 mb-4">
+                              {[1,2,3,4,5].map(i => (
+                                <Star key={i} className={cn("h-5 w-5", i <= review.rating ? "fill-current" : "")} />
+                              ))}
+                            </div>
+                            <p className="text-gray-700 leading-relaxed text-lg">{review.comment}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
                 
                 {/* Contribute Review */}
                 <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50">
@@ -1018,7 +865,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     <Button 
                       size="lg"
                       className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-10 py-4 text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
-                      onClick={() => setShowReviewModal(true)}
+                      onClick={handleReview}
                     >
                       <Star className="h-6 w-6 mr-3" />
                       Viết đánh giá khoa học
@@ -1079,182 +926,124 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                       <dd className="text-lg lg:text-xl font-bold text-gray-900">{regionLabels[place.region]}</dd>
                     </div>
 
-                    {/* Address Display Section */}
+                    {/* Address Evolution Section */}
                     <div className="space-y-4">
                       {/* Historical Address (Before Administrative Changes) */}
                       {place.addressConversion?.hasChanges && place.addressConversion.oldAddress && (
-                        <div>
-                          <h4 className="text-sm font-semibold text-gray-800 mb-3">Địa chỉ trước sáp nhập</h4>
+                        <div className="border-l-4 border-amber-500 pl-3 lg:pl-4 bg-amber-50 rounded-r-lg p-3">
+                          <dt className="text-xs lg:text-sm font-medium text-amber-700 mb-2 flex items-center gap-2">
+                            <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                            Địa chỉ trước sáp nhập
+                            <Badge variant="secondary" className="text-xs text-amber-700 bg-amber-200">
+                              Lịch sử
+                            </Badge>
+                          </dt>
                           
-                          {/* Structured Address Display */}
-                          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                            {place.address && (
-                              <div>
-                                <span className="text-xs text-gray-600 font-medium">Địa chỉ cụ thể:</span>
-                                <br />
-                                <span className="text-sm font-medium text-gray-900">{place.address}</span>
-                              </div>
-                            )}
-                            
-                            {place.addressConversion.oldAddress.ward?.name && (
-                              <div>
-                                <span className="text-xs text-gray-600 font-medium">Xã/Phường:</span>
-                                <br />
-                                <span className="text-sm font-medium text-gray-900">{place.addressConversion.oldAddress.ward.name}</span>
-                              </div>
-                            )}
-                            
-                            {place.addressConversion.oldAddress.district?.name && (
-                              <div>
-                                <span className="text-xs text-gray-600 font-medium">Quận/Huyện:</span>
-                                <br />
-                                <span className="text-sm font-medium text-gray-900">{place.addressConversion.oldAddress.district.name}</span>
-                              </div>
-                            )}
-                            
-                            {place.addressConversion.oldAddress.province?.name && (
-                              <div>
-                                <span className="text-xs text-gray-600 font-medium">Tỉnh/Thành phố:</span>
-                                <br />
-                                <span className="text-sm font-medium text-gray-900">{place.addressConversion.oldAddress.province.name}</span>
-                              </div>
-                            )}
-                            
-                            <div>
-                              <span className="text-xs text-gray-600 font-medium">Quốc gia:</span>
-                              <br />
-                              <span className="text-sm font-medium text-gray-900">Việt Nam</span>
-                            </div>
-                            
-                            {/* Copy Button */}
-                            <div className="mt-3 pt-3 border-t border-gray-200">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-xs"
-                                onClick={() => {
-                                  const fullAddress = [
-                                    place.address,
-                                    place.addressConversion?.oldAddress.ward?.name && `Xã ${place.addressConversion.oldAddress.ward.name}`,
-                                    place.addressConversion?.oldAddress.district?.name && `Huyện ${place.addressConversion.oldAddress.district.name}`,
-                                    place.addressConversion?.oldAddress.province?.name,
-                                    'Việt Nam'
-                                  ].filter(Boolean).join(', ');
-                                  navigator.clipboard.writeText(fullAddress);
-                                }}
-                              >
-                                Copy địa chỉ
-                              </Button>
-                            </div>
-                          </div>
+                          <dd className="text-sm lg:text-base font-semibold text-amber-900 mb-2 leading-relaxed">
+                            {place.address ? `${place.address}, ` : ''}
+                            {[
+                              place.addressConversion.oldAddress.ward?.name,
+                              place.addressConversion.oldAddress.district?.name,
+                              place.addressConversion.oldAddress.province?.name
+                            ].filter(Boolean).join(', ')}
+                          </dd>
+
+                          <p className="text-xs text-amber-600 italic">
+                            📅 Cấu trúc hành chính trước khi thay đổi
+                          </p>
                         </div>
                       )}
 
-                      {/* Current Address */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-800 mb-3">
+                      {/* Current Address (After Administrative Changes) */}
+                      <div className="border-l-4 border-blue-500 pl-3 lg:pl-4 bg-blue-50 rounded-r-lg p-3">
+                        <dt className="text-xs lg:text-sm font-medium text-blue-700 mb-2 flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                           {place.addressConversion?.hasChanges ? 'Địa chỉ sau sáp nhập' : 'Địa chỉ hiện tại'}
-                        </h4>
+                          <Badge variant="secondary" className="text-xs text-blue-700 bg-blue-200">
+                            {place.addressConversion?.hasChanges ? 'Hiện tại' : 'Chính thức'}
+                          </Badge>
+                        </dt>
                         
-                        {/* Structured Address Display */}
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        <dd className="text-sm lg:text-base font-semibold text-blue-900 mb-2 leading-relaxed">
+                          {place.address ? `${place.address}, ` : ''}
+                          {place.addressConversion?.newAddress ? (
+                            [
+                              place.addressConversion.newAddress.ward?.name,
+                              place.addressConversion.newAddress.district?.name,
+                              place.addressConversion.newAddress.province?.name
+                            ].filter(Boolean).join(', ')
+                          ) : place.vietnamAddress ? (
+                            [
+                              place.vietnamAddress.wardName,
+                              place.vietnamAddress.districtName,
+                              place.vietnamAddress.provinceName
+                            ].filter(Boolean).join(', ')
+                          ) : place.province}
+                        </dd>
+
+                        {place.addressConversion?.hasChanges && (
+                          <p className="text-xs text-blue-600 italic">
+                            ✅ Cập nhật theo thay đổi hành chính mới nhất
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Administrative Changes Summary */}
+                      {place.addressConversion?.hasChanges && (
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                            <span className="text-sm font-semibold text-green-900">Thông tin sáp nhập</span>
+                          </div>
+                          <p className="text-xs text-green-700">
+                            🔄 {place.addressConversion.conversionMessage || 'Địa điểm này đã trải qua thay đổi cấu trúc hành chính. VietExplore đã cập nhật thông tin để đảm bảo độ chính xác.'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                      {/* Administrative Structure */}
+                      <div className="bg-gray-50 rounded-xl p-3 lg:p-6">
+                        <h4 className="text-sm lg:text-base font-semibold text-gray-900 mb-3 lg:mb-4">Cấu trúc hành chính</h4>
+                        <div className="space-y-2 lg:space-y-3">
                           {place.address && (
-                            <div>
-                              <span className="text-xs text-gray-600 font-medium">Địa chỉ cụ thể:</span>
-                              <br />
-                              <span className="text-sm font-medium text-gray-900">{place.address}</span>
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs lg:text-sm">
+                              <span className="text-gray-600 font-medium">Địa chỉ cụ thể</span>
+                              <span className="font-medium text-gray-900 break-words">{place.address}</span>
                             </div>
                           )}
                           
                           {(place.addressConversion?.newAddress?.ward?.name || place.vietnamAddress?.wardName) && (
-                            <div>
-                              <span className="text-xs text-gray-600 font-medium">Xã/Phường:</span>
-                              <br />
-                              <span className="text-sm font-medium text-gray-900">
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs lg:text-sm">
+                              <span className="text-gray-600 font-medium">Xã/Phường</span>
+                              <span className="font-medium text-gray-900 break-words">
                                 {place.addressConversion?.newAddress?.ward?.name || place.vietnamAddress?.wardName}
                               </span>
                             </div>
                           )}
                           
-                          {/* Bỏ Quận/Huyện cho địa chỉ sau sáp nhập nếu có changes */}
-                          {!place.addressConversion?.hasChanges && (place.addressConversion?.newAddress?.district?.name || place.vietnamAddress?.districtName) && (
-                            <div>
-                              <span className="text-xs text-gray-600 font-medium">Quận/Huyện:</span>
-                              <br />
-                              <span className="text-sm font-medium text-gray-900">
+                          {(place.addressConversion?.newAddress?.district?.name || 
+                            (!place.addressConversion?.hasChanges && place.vietnamAddress?.districtName)) && (
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs lg:text-sm">
+                              <span className="text-gray-600 font-medium">Quận/Huyện</span>
+                              <span className="font-medium text-gray-900 break-words">
                                 {place.addressConversion?.newAddress?.district?.name || place.vietnamAddress?.districtName}
                               </span>
                             </div>
                           )}
                           
-                          <div>
-                            <span className="text-xs text-gray-600 font-medium">Tỉnh/Thành phố:</span>
-                            <br />
-                            <span className="text-sm font-medium text-gray-900">
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs lg:text-sm">
+                            <span className="text-gray-600 font-medium">Tỉnh/Thành phố</span>
+                            <span className="font-medium text-gray-900 break-words">
                               {place.addressConversion?.newAddress?.province?.name || place.vietnamAddress?.provinceName || place.province}
                             </span>
                           </div>
-                          
-                          <div>
-                            <span className="text-xs text-gray-600 font-medium">Quốc gia:</span>
-                            <br />
-                            <span className="text-sm font-medium text-gray-900">Việt Nam</span>
-                          </div>
-                          
-                          {/* Copy Button */}
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="text-xs"
-                              onClick={() => {
-                                const addressParts = [place.address];
-                                
-                                if (place.addressConversion?.newAddress) {
-                                  if (place.addressConversion.newAddress.ward?.name) {
-                                    addressParts.push(`Xã ${place.addressConversion.newAddress.ward.name}`);
-                                  }
-                                  if (!place.addressConversion.hasChanges && place.addressConversion.newAddress.district?.name) {
-                                    addressParts.push(`Huyện ${place.addressConversion.newAddress.district.name}`);
-                                  }
-                                  if (place.addressConversion.newAddress.province?.name) {
-                                    addressParts.push(place.addressConversion.newAddress.province.name);
-                                  }
-                                } else if (place.vietnamAddress) {
-                                  if (place.vietnamAddress.wardName) {
-                                    addressParts.push(`Xã ${place.vietnamAddress.wardName}`);
-                                  }
-                                  if (!place.addressConversion?.hasChanges && place.vietnamAddress.districtName) {
-                                    addressParts.push(`Huyện ${place.vietnamAddress.districtName}`);
-                                  }
-                                  if (place.vietnamAddress.provinceName) {
-                                    addressParts.push(place.vietnamAddress.provinceName);
-                                  }
-                                } else {
-                                  addressParts.push(place.province);
-                                }
-                                
-                                addressParts.push('Việt Nam');
-                                const fullAddress = addressParts.filter(Boolean).join(', ');
-                                navigator.clipboard.writeText(fullAddress);
-                              }}
-                            >
-                              Copy địa chỉ
-                            </Button>
-                          </div>
                         </div>
                       </div>
-
-                      {/* Administrative Changes Summary - Simplified */}
-                      {place.addressConversion?.hasChanges && (
-                        <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                          <h5 className="text-sm font-semibold text-amber-900 mb-2">Thông tin sáp nhập</h5>
-                          <p className="text-xs text-amber-700 leading-relaxed">
-                            {place.addressConversion.conversionMessage || 'Địa điểm này đã trải qua thay đổi cấu trúc hành chính. VietExplore đã cập nhật thông tin để đảm bảo độ chính xác.'}
-                          </p>
-                        </div>
-                      )}
                     </div>
+                    
 
                     {/* GPS Coordinates */}
                     {place.coordinates && place.coordinates.lat && place.coordinates.lng && (
@@ -1383,99 +1172,140 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 </Card>
               )}
 
-              {/* Author Information */}
+              {/* Author Information with Trust Badge */}
               <Card className="border-none shadow-lg bg-white">
                 <CardHeader className="pb-3 px-4 lg:px-6">
                   <CardTitle className="text-base lg:text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <div className="w-6 h-6 lg:w-8 lg:h-8 flex items-center justify-center flex-shrink-0">
-                      {place.authorRole === 'partner' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 108 108" className="w-full h-full">
-                          <defs>
-                            <linearGradient id="grad-partner-header" x1="0" y1="0" x2="1" y2="1">
-                              <stop offset="0%" stopColor="#DC2626"/>
-                              <stop offset="100%" stopColor="#991B1B"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M42 70 L36 96 L54 84 L72 96 L66 70 Z" fill="#FFD700" opacity="0.9"/>
-                          <circle cx="54" cy="44" r="28" fill="url(#grad-partner-header)" stroke="#FFD700" strokeWidth="3"/>
-                          <polygon points="54,28 58,40 70,40 60,48 64,60 54,52 44,60 48,48 38,40 50,40" fill="#FFD700"/>
-                          <circle cx="72" cy="28" r="10" fill="white" stroke="#FFD700" strokeWidth="2"/>
-                          <path d="M68 28 L71 31 L76 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      ) : place.authorRole === 'admin' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 120 120" className="w-full h-full">
-                          <defs>
-                            <linearGradient id="grad-admin-header" x1="0" y1="0" x2="1" y2="1">
-                              <stop offset="0%" stopColor="#FFD700"/>
-                              <stop offset="100%" stopColor="#B8860B"/>
-                            </linearGradient>
-                          </defs>
-                          <circle cx="60" cy="60" r="50" fill="url(#grad-admin-header)" stroke="#FFF8DC" strokeWidth="3"/>
-                          <path d="M30 60 C28 52 32 44 40 36 C36 46 36 54 38 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                          <path d="M34 64 L28 68" stroke="white" strokeWidth="2" />
-                          <path d="M36 56 L30 60" stroke="white" strokeWidth="2" />
-                          <path d="M90 60 C92 52 88 44 80 36 C84 46 84 54 82 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                          <path d="M86 64 L92 68" stroke="white" strokeWidth="2" />
-                          <path d="M84 56 L90 60" stroke="white" strokeWidth="2" />
-                          <polygon points="60,36 66,52 84,52 70,62 76,78 60,68 44,78 50,62 36,52 54,52" fill="white"/>
-                          <circle cx="92" cy="28" r="12" fill="white" stroke="#FFD700" strokeWidth="3"/>
-                          <path d="M88 28 L92 32 L98 22" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 96 96" className="w-full h-full">
-                          <defs>
-                            <linearGradient id="grad-contributor-header" x1="0" y1="0" x2="1" y2="1">
-                              <stop offset="0%" stopColor="#21C1C5"/>
-                              <stop offset="100%" stopColor="#2178F5"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M38 62 L32 88 L48 78 L64 88 L58 62 Z" fill="#1F6DE8" opacity="0.85"/>
-                          <path d="M38 62 L48 72 L58 62 Z" fill="#FFFFFF" opacity="0.15"/>
-                          <circle cx="48" cy="40" r="28" fill="url(#grad-contributor-header)"/>
-                          <circle cx="48" cy="40" r="28" fill="none" stroke="#FFFFFF" strokeOpacity="0.18" strokeWidth="2"/>
-                          <path d="M36 41 L45 50 L63 32" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
-                          <g transform="translate(68,22)" fill="#FFFFFF">
-                            <circle cx="4" cy="4" r="2" opacity="0.95"/>
-                            <path d="M4 0 L4 8 M0 4 L8 4" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-                          </g>
-                        </svg>
-                      )}
+                    <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="h-3 w-3 lg:h-4 lg:w-4 text-white" />
                     </div>
                     <span className="truncate text-sm lg:text-base">Người đóng góp</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 lg:p-6 pt-0">
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-base lg:text-lg text-gray-900 leading-tight">
-                      {place.authorName}
-                    </h3>
-                    
-                    <div className="space-y-2">
-                      <div className="text-xs lg:text-sm text-gray-600">
-                        <span className="font-medium">Ngày tạo:</span>
-                        <span className="ml-2 text-gray-900">
-                          {new Date(place.createdAt).toLocaleDateString('vi-VN', { 
-                            year: 'numeric', 
-                            month: 'short', 
-                            day: 'numeric' 
-                          })}
-                        </span>
+                  {/* Author Header with Professional Layout */}
+                  <div className="flex items-start gap-4 lg:gap-6 mb-6 lg:mb-8">
+                    {/* SVG Icon with Shadow */}
+                    <div className="relative">
+                      <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center shrink-0 drop-shadow-lg">
+                        {place.authorRole === 'partner' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 108 108" className="w-full h-full">
+                            <defs>
+                              <linearGradient id="grad-partner-sidebar" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor="#DC2626"/>
+                                <stop offset="100%" stopColor="#991B1B"/>
+                              </linearGradient>
+                            </defs>
+                            <path d="M42 70 L36 96 L54 84 L72 96 L66 70 Z" fill="#FFD700" opacity="0.9"/>
+                            <circle cx="54" cy="44" r="28" fill="url(#grad-partner-sidebar)" stroke="#FFD700" strokeWidth="3"/>
+                            <polygon points="54,28 58,40 70,40 60,48 64,60 54,52 44,60 48,48 38,40 50,40" fill="#FFD700"/>
+                            <circle cx="72" cy="28" r="10" fill="white" stroke="#FFD700" strokeWidth="2"/>
+                            <path d="M68 28 L71 31 L76 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : place.authorRole === 'admin' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 120 120" className="w-full h-full">
+                            <defs>
+                              <linearGradient id="grad-admin-sidebar" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor="#FFD700"/>
+                                <stop offset="100%" stopColor="#B8860B"/>
+                              </linearGradient>
+                            </defs>
+                            <circle cx="60" cy="60" r="50" fill="url(#grad-admin-sidebar)" stroke="#FFF8DC" strokeWidth="3"/>
+                            <path d="M30 60 C28 52 32 44 40 36 C36 46 36 54 38 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+                            <path d="M34 64 L28 68" stroke="white" strokeWidth="2" />
+                            <path d="M36 56 L30 60" stroke="white" strokeWidth="2" />
+                            <path d="M90 60 C92 52 88 44 80 36 C84 46 84 54 82 62" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+                            <path d="M86 64 L92 68" stroke="white" strokeWidth="2" />
+                            <path d="M84 56 L90 60" stroke="white" strokeWidth="2" />
+                            <polygon points="60,36 66,52 84,52 70,62 76,78 60,68 44,78 50,62 36,52 54,52" fill="white"/>
+                            <circle cx="92" cy="28" r="12" fill="white" stroke="#FFD700" strokeWidth="3"/>
+                            <path d="M88 28 L92 32 L98 22" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 96 96" className="w-full h-full">
+                            <defs>
+                              <linearGradient id="grad-contributor-sidebar" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor="#21C1C5"/>
+                                <stop offset="100%" stopColor="#2178F5"/>
+                              </linearGradient>
+                            </defs>
+                            <path d="M38 62 L32 88 L48 78 L64 88 L58 62 Z" fill="#1F6DE8" opacity="0.85"/>
+                            <path d="M38 62 L48 72 L58 62 Z" fill="#FFFFFF" opacity="0.15"/>
+                            <circle cx="48" cy="40" r="28" fill="url(#grad-contributor-sidebar)"/>
+                            <circle cx="48" cy="40" r="28" fill="none" stroke="#FFFFFF" strokeOpacity="0.18" strokeWidth="2"/>
+                            <path d="M36 41 L45 50 L63 32" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+                            <g transform="translate(68,22)" fill="#FFFFFF">
+                              <circle cx="4" cy="4" r="2" opacity="0.95"/>
+                              <path d="M4 0 L4 8 M0 4 L8 4" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+                            </g>
+                          </svg>
+                        )}
                       </div>
-                      {/* Only show update date if it's different from creation date */}
-                      {place.updatedAt !== place.createdAt && (
-                        <div className="text-xs lg:text-sm text-gray-600">
-                          <span className="font-medium">Cập nhật:</span>
-                          <span className="ml-2 text-gray-900">
-                            {new Date(place.updatedAt).toLocaleDateString('vi-VN', { 
-                              year: 'numeric', 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}
-                          </span>
+                      {/* Status Indicator */}
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+
+                    {/* Author Information */}
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <h3 className="font-bold text-lg lg:text-xl text-gray-900 leading-tight">{place.authorName}</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {place.authorRole === 'partner' && '🏢 Đối tác chính thức được VietExplore xác thực'}
+                          {place.authorRole === 'admin' && '👑 Quản trị viên VietExplore'}
+                          {place.authorRole === 'contributor' && '✨ Cộng tác viên đáng tin cậy'}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="text-xs font-semibold border-2">
+                          {place.authorRole === 'partner' ? 'Đối tác chính thức' : place.authorRole === 'admin' ? 'Quản trị viên' : 'Cộng tác viên'}
+                        </Badge>
+                        <TrustBadge level={place.trustLevel} />
+                      </div>
+
+                      {/* Expert Validation Section */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                          <span className="text-sm font-semibold text-blue-900">Đánh giá chuyên gia</span>
                         </div>
-                      )}
+                        <p className="text-xs text-blue-700">
+                          {place.trustLevel === 'verified' && "✅ Được xác thực bởi các chuyên gia du lịch và địa lý"}
+                          {place.trustLevel === 'partner' && "⭐ Được kiểm duyệt bởi đội ngũ chuyên gia VietExplore"}
+                          {place.trustLevel === 'contributor' && "🔍 Đang được các chuyên gia xem xét và đánh giá"}
+                          {place.trustLevel === 'community' && "📝 Chờ đánh giá từ cộng đồng chuyên gia"}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="bg-gray-50 rounded-lg p-3 lg:p-4 space-y-2 lg:space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs lg:text-sm">
+                      <span className="text-gray-600 font-medium">Ngày tạo:</span>
+                      <span className="font-semibold text-gray-900">
+                        {new Date(place.createdAt).toLocaleDateString('vi-VN', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs lg:text-sm">
+                      <span className="text-gray-600 font-medium">Cập nhật:</span>
+                      <span className="font-semibold text-gray-900">
+                        {new Date(place.updatedAt).toLocaleDateString('vi-VN', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                    </div>
+                  </div>
+
                 </CardContent>
               </Card>
             </div>
@@ -1545,16 +1375,6 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
             </div>
           </div>
         )}
-        
-        {/* Review Modal */}
-        <ReviewModal
-          isOpen={showReviewModal}
-          onClose={() => setShowReviewModal(false)}
-          onSubmit={handleReviewSubmit}
-          placeName={place.name}
-          placeId={place.id}
-        />
-        
       <Footer />
     </>
   )

@@ -13,10 +13,11 @@ import { adminIcons } from "@/lib/admin/icon-system"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useModerationQueue } from "@/hooks/use-admin"
-import { useToast } from "@/components/providers/toast-provider"
+import { useToast } from "@/hooks/use-toast"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { apiClient } from "@/lib/client/api"
-import { AdminTableSkeleton, AdminLoading, AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
+import { AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
+import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog } from "@/components/admin/confirmation-dialogs"
 
 const statusConfig = {
@@ -146,18 +147,30 @@ export default function ReportsHandlingPage() {
           'dismiss': 'Báo cáo đã được bỏ qua',
           'escalate': 'Báo cáo đã được chuyển lên Admin xử lý'
         }
-        toast.success(actionMessages[action as keyof typeof actionMessages] || 'Hành động đã được thực hiện thành công')
+        toast({ 
+          title: "Thành công",
+          description: actionMessages[action as keyof typeof actionMessages] || 'Hành động đã được thực hiện thành công',
+          variant: "success"
+        })
         
         await fetchStatusCounts()
         window.dispatchEvent(new CustomEvent('moderationUpdated'))
       } else {
         const errorMessage = result?.error || 'Có lỗi xảy ra khi thực hiện hành động'
-        toast.error(`Lỗi: ${errorMessage}`)
+        toast({
+          title: "Lỗi",
+          description: errorMessage,
+          variant: "destructive"
+        })
       }
     } catch (error: any) {
       console.error('Error in handleAction:', error)
       const errorMessage = error?.error || error?.message || 'Có lỗi không mong đợi xảy ra'
-      toast.error(`Lỗi: ${errorMessage}`)
+      toast({
+        title: "Lỗi",
+        description: errorMessage,
+        variant: "destructive"
+      })
     }
   }
 
@@ -306,7 +319,11 @@ export default function ReportsHandlingPage() {
           {Object.entries(statusConfig).map(([status, config]) => (
             <TabsContent key={status} value={status} className="space-y-4">
               {loading ? (
-                <AdminTableSkeleton rows={3} />
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <BrandedCardSkeleton key={i} showImage={true} lines={6} />
+                  ))}
+                </div>
               ) : error ? (
                 <AdminErrorState
                   title="Lỗi tải danh sách báo cáo"

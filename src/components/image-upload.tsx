@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Camera, Upload, X, Loader2, Link as LinkIcon } from "lucide-react"
+import { BrandedLoading, LoadingButton } from "@/components/ui/branded-loading"
 import { uploadImage, validateImageFile, resizeImage } from "@/lib/client/firebase-storage"
 import { useAuth } from "@/components/auth/auth-provider"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/components/providers/toast-provider"
+import { useToast } from "@/hooks/use-toast"
 
 export interface ImageData {
   id: string
@@ -34,7 +35,7 @@ export function ImageUpload({
   className 
 }: ImageUploadProps) {
   const { user } = useAuth()
-  const toast = useToast()
+  const { success, error, info } = useToast()
   const [uploading, setUploading] = React.useState<string | null>(null)
   const [uploadMethod, setUploadMethod] = React.useState<'file' | 'url'>('file')
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -64,11 +65,20 @@ export function ImageUpload({
     // Validate file
     const validation = validateImageFile(file)
     if (!validation.valid) {
-      toast.error(validation.error || 'File không hợp lệ')
+      error({
+        title: "File không hợp lệ",
+        description: validation.error || "Vui lòng chọn file ảnh phù hợp (JPG, PNG, WebP, tối đa 5MB)"
+      })
       return
     }
 
     setUploading(imageId)
+
+    // Show info notification about starting upload
+    info({
+      title: "Đang xử lý ảnh",
+      description: "Đang tối ưu hóa và tải lên ảnh, vui lòng chờ trong giây lát..."
+    })
 
     try {
       // Resize image before upload
@@ -88,11 +98,17 @@ export function ImageUpload({
         alt: file.name.split('.')[0] // Use filename as default alt text
       })
 
-      toast.success('Tải lên hình ảnh thành công!')
+      success({
+        title: "Tải lên thành công!",
+        description: "Hình ảnh đã được tải lên và xử lý thành công"
+      })
 
     } catch (error: any) {
       console.error('Upload failed:', error)
-      toast.error(error.message || 'Không thể tải lên hình ảnh. Vui lòng thử lại.')
+      error({
+        title: "Lỗi tải lên",
+        description: error.message || "Không thể tải lên hình ảnh. Vui lòng kiểm tra kết nối và thử lại"
+      })
     } finally {
       setUploading(null)
     }
@@ -153,7 +169,7 @@ export function ImageUpload({
                 {/* Image Preview */}
                 <div className="w-24 h-18 bg-surface rounded border flex items-center justify-center flex-shrink-0 relative">
                   {uploading === image.id ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <BrandedLoading variant="spinner" size="sm" showText={false} />
                   ) : image.url ? (
                     <img 
                       src={image.url} 
@@ -220,26 +236,17 @@ export function ImageUpload({
                   {/* Upload Interface */}
                   {uploadMethod === 'file' ? (
                     <div>
-                      <Button
+                      <LoadingButton
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="secondary"
                         onClick={() => triggerFileSelect(image.id)}
-                        disabled={uploading === image.id}
-                        className="w-full"
+                        isLoading={uploading === image.id}
+                        loadingText="Đang tải lên..."
+                        className="w-full text-sm py-2"
                       >
-                        {uploading === image.id ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Đang tải lên...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Chọn file từ máy tính
-                          </>
-                        )}
-                      </Button>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Chọn file từ máy tính
+                      </LoadingButton>
                       {image.url && (
                         <p className="text-xs text-success mt-2">✓ Đã tải lên thành công</p>
                       )}

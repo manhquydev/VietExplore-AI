@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/branded-loading"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
@@ -175,20 +176,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </button>
               </div>
 
-              <Button 
+              <LoadingButton 
                 type="submit" 
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                disabled={isLoading}
+                className="w-full h-11"
+                variant="primary"
+                isLoading={isLoading}
+                loadingText="Đang đăng nhập..."
               >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Đang đăng nhập...
-                  </div>
-                ) : (
-                  "Đăng nhập"
-                )}
-              </Button>
+                Đăng nhập
+              </LoadingButton>
             </form>
 
             {/* Switch to Register */}

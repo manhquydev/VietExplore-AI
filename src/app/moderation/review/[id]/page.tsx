@@ -220,19 +220,18 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
         setModeratorNotes('')
         
       } else if (action === 'request_edit') {
-        // For request_edit, show success message and redirect
-        alert('Đã gửi yêu cầu chỉnh sửa đến tác giả thành công!')
+        // For request_edit, redirect immediately after successful response
+        console.log('Đã gửi yêu cầu chỉnh sửa đến tác giả thành công!')
         router.push('/admin/moderation')
         
       } else {
-        // For final actions (approve, reject, escalate), redirect to dashboard
+        // For final actions (approve, reject, escalate), redirect immediately
         const messages = {
           approve: 'Đã duyệt và xuất bản thành công!',
           reject: 'Đã từ chối nội dung!',
           escalate: 'Đã chuyển lên cấp cao hơn!'
         }
         if (messages[action as keyof typeof messages]) {
-          // Don't use alert - it might be causing the error
           console.log(messages[action as keyof typeof messages])
         }
         router.push('/admin/moderation')

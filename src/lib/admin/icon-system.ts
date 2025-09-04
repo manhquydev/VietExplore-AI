@@ -72,6 +72,7 @@ export const adminIcons = {
     delete: Trash,
     add: Plus,
     save: Save,
+    close: X,
   },
 
   // === UTILITY ACTIONS ===
@@ -99,6 +100,7 @@ export const adminIcons = {
     next: ChevronRight,
     expand: ChevronDown,
     collapse: ChevronUp,
+    refresh: RefreshCw,
   },
 
   // === CONTENT TYPES ===

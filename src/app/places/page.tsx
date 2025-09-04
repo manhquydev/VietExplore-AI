@@ -8,7 +8,7 @@ import { PlaceCard } from "@/components/place-card"
 import { FilterBar } from "@/components/filter-bar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
+import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { usePlaces } from "@/hooks/use-places"
 
 // Mock data removed - now using real API data from Firestore
@@ -147,13 +147,11 @@ export default function PlacesPage() {
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={`loading-${i}`} className="glass-card p-0 overflow-hidden">
-                  <Skeleton className="aspect-[3/2] w-full" />
-                  <div className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                </div>
+                <BrandedCardSkeleton 
+                  key={`loading-${i}`} 
+                  showImage={true} 
+                  lines={3}
+                />
               ))}
             </div>
           ) : filteredPlaces.length === 0 ? (

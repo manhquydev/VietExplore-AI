@@ -13,11 +13,12 @@ import { adminIcons } from "@/lib/admin/icon-system"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useModerationQueue } from "@/hooks/use-admin"
-import { useToast } from "@/components/providers/toast-provider"
+import { useToast } from "@/hooks/use-toast"
 import { auth } from "@/lib/firebase"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { apiClient } from "@/lib/client/api"
 import { AdminTableSkeleton, AdminLoading, AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
+import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog, AdminRequestEditDialog } from "@/components/admin/confirmation-dialogs"
 
 // Chỉ các trạng thái cho NEW PLACE moderation queue
@@ -147,12 +148,12 @@ export default function NewPlaceQueuePage() {
       }
 
       const result = await response.json()
-      if (result && result.success) {
+      if (result?.success) {
         toast.success('Đã tiếp nhận địa điểm để kiểm duyệt')
         await fetchStatusCounts()
         window.dispatchEvent(new CustomEvent('moderationUpdated'))
       } else {
-        const errorMessage = (result && result.error) || 'Có lỗi xảy ra khi tiếp nhận'
+        const errorMessage = result?.error || 'Có lỗi xảy ra khi tiếp nhận'
         toast.error(`Lỗi: ${errorMessage}`)
       }
     } catch (error: any) {
@@ -171,7 +172,7 @@ export default function NewPlaceQueuePage() {
   ) => {
     try {
       const result = await reviewItem(itemId, action, notes)
-      if (result && result.success) {
+      if (result?.success) {
         const actionMessages = {
           'approve': 'Địa điểm mới đã được phê duyệt và xuất bản',
           'reject': 'Địa điểm mới đã bị từ chối',
@@ -183,7 +184,7 @@ export default function NewPlaceQueuePage() {
         await fetchStatusCounts()
         window.dispatchEvent(new CustomEvent('moderationUpdated'))
       } else {
-        const errorMessage = (result && result.error) || 'Có lỗi xảy ra khi thực hiện hành động'
+        const errorMessage = result?.error || 'Có lỗi xảy ra khi thực hiện hành động'
         toast.error(`Lỗi: ${errorMessage}`)
       }
     } catch (error: any) {
@@ -319,7 +320,11 @@ export default function NewPlaceQueuePage() {
           {Object.entries(statusConfig).map(([status, config]) => (
             <TabsContent key={status} value={status} className="space-y-4">
               {loading ? (
-                <AdminTableSkeleton rows={3} />
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <BrandedCardSkeleton key={i} showImage={true} lines={4} />
+                  ))}
+                </div>
               ) : error ? (
                 <AdminErrorState
                   title="Lỗi tải danh sách địa điểm mới"
@@ -337,8 +342,8 @@ export default function NewPlaceQueuePage() {
                 />
               ) : filteredItems.length === 0 ? (
                 <AdminEmptyState
-                  icon={config.icon}
-                  title={`Không có địa điểm ${config.label.toLowerCase()}`}
+                  icon={config?.icon}
+                  title={`Không có địa điểm ${config?.label?.toLowerCase() || 'này'}`}
                   description={
                     searchQuery 
                       ? "Thử điều chỉnh từ khóa tìm kiếm hoặc xóa bộ lọc"
@@ -402,7 +407,7 @@ export default function NewPlaceQueuePage() {
                                 
                                 <div className="flex flex-wrap items-center gap-2 ml-4">
                                   <Badge className={cn("text-xs font-medium shadow-sm", statusInfo?.color)}>
-                                    <statusInfo.icon className="w-3 h-3 mr-1" />
+                                    {statusInfo && <statusInfo.icon className="w-3 h-3 mr-1" />}
                                     {statusInfo?.label}
                                   </Badge>
                                   <Badge className="text-xs font-medium shadow-sm bg-green-100 text-green-800">
@@ -582,12 +587,12 @@ export default function NewPlaceQueuePage() {
                                         }
 
                                         const result = await response.json()
-                                        if (result && result.success) {
+                                        if (result?.success) {
                                           toast.success('Đã bỏ tiếp nhận địa điểm')
                                           await fetchStatusCounts()
                                           window.dispatchEvent(new CustomEvent('moderationUpdated'))
                                         } else {
-                                          const errorMessage = (result && result.error) || 'Có lỗi xảy ra khi bỏ tiếp nhận'
+                                          const errorMessage = result?.error || 'Có lỗi xảy ra khi bỏ tiếp nhận'
                                           toast.error(`Lỗi: ${errorMessage}`)
                                         }
                                       } catch (error) {

@@ -10,10 +10,11 @@ function mapPlaceToDestination(place: any): Destination {
     location: place.province,
     description: place.shortDescription,
     image: place.images[0]?.url || 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&h=400&fit=crop&q=80',
-    'data-ai-hint': place.slug,
+    'data-ai-hint': place.slug || place.id,
     rating: place.rating?.average || 0,
     reviews: place.rating?.count || 0,
-    type: place.trustLabel || 'community'
+    type: place.trustLabel || 'community',
+    slug: place.slug // Pass slug for URL generation
   };
 }
 

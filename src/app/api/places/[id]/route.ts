@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { Place } from '@/lib/types/places';
+import { parseCompoundUrl } from '@/lib/utils/url-helpers';
 
 // GET /api/places/[id] - Get single place by ID or slug
 export async function GET(
@@ -14,21 +15,24 @@ export async function GET(
     let placeDoc: FirebaseFirestore.DocumentSnapshot | null = null;
     let placeId = id;
 
-    // First, try to get by document ID
-    placeDoc = await adminDb.collection('places').doc(id).get();
-    
-    // If not found and the ID doesn't look like a Firebase doc ID, try to find by slug
-    if (!placeDoc.exists && !id.match(/^[a-zA-Z0-9]{20}$/)) {
-      const querySnapshot = await adminDb.collection('places')
-        .where('slug', '==', id)
+    // Handle compound URLs (slug-shortId format)
+    if (!id.match(/^[a-zA-Z0-9]{20}$/)) {
+      // Get all published place IDs for parsing (cached query would be better)
+      const placesSnapshot = await adminDb.collection('places')
         .where('status', '==', 'published')
-        .limit(1)
+        .select() // Only get document IDs for performance
         .get();
       
-      if (!querySnapshot.empty) {
-        placeDoc = querySnapshot.docs[0];
-        placeId = placeDoc.id;
+      const allPlaceIds = placesSnapshot.docs.map(doc => doc.id);
+      const resolvedId = parseCompoundUrl(id, allPlaceIds);
+      
+      if (resolvedId) {
+        placeId = resolvedId;
+        placeDoc = await adminDb.collection('places').doc(resolvedId).get();
       }
+    } else {
+      // Direct Firebase ID lookup
+      placeDoc = await adminDb.collection('places').doc(id).get();
     }
     
     if (!placeDoc.exists) {

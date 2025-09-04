@@ -8,8 +8,8 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -188,6 +188,10 @@ function useToast() {
     ...state,
     toast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    success: (props: Omit<Toast, 'variant'>) => toast({ ...props, variant: "success" }),
+    error: (props: Omit<Toast, 'variant'>) => toast({ ...props, variant: "destructive" }),
+    warning: (props: Omit<Toast, 'variant'>) => toast({ ...props, variant: "warning" }),
+    info: (props: Omit<Toast, 'variant'>) => toast({ ...props, variant: "info" }),
   }
 }
 

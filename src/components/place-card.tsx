@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Place } from "@/lib/types/places"
+import { generatePlaceUrl } from "@/lib/utils/url-helpers"
 
 interface PlaceCardProps {
   place: Place
@@ -23,8 +24,13 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   onAddToItinerary,
 }) => {
   const primaryImage = place.images?.find(img => img.isPrimary) || place.images?.[0]
-  // Use slug if available, otherwise fall back to id
-  const placeUrl = place.slug ? `/places/${place.slug}` : `/places/${place.id}`
+  
+  // Always generate compound URL (slug-shortId format) for consistency
+  const placeUrl = generatePlaceUrl({
+    id: place.id,
+    name: place.name,
+    slug: place.slug
+  })
 
   return (
     <Link href={placeUrl} className="block">

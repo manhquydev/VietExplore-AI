@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { auth } from "@/lib/firebase"
 import { ImageUpload, type ImageData } from "@/components/image-upload"
-import { LoadingSpinner, LoadingOverlay } from "@/components/ui/loading-spinner"
+import { BrandedLoading, PageLoadingOverlay } from "@/components/ui/branded-loading"
 import { PlacePreviewProfessional } from "@/components/place-preview-professional"
 import { apiClient } from "@/lib/client/api"
 
@@ -1201,7 +1201,7 @@ export default function NewPlacePage() {
       <Header />
       
       <main className="container py-8">
-        <LoadingOverlay isLoading={isSubmitting} loadingText="Đang gửi địa điểm để kiểm duyệt...">
+        <PageLoadingOverlay isLoading={isSubmitting} loadingText="Đang gửi địa điểm để kiểm duyệt...">
           <div className="max-w-4xl mx-auto">
           {/* Header with workflow info */}
           <div className="mb-8">
@@ -2123,7 +2123,7 @@ export default function NewPlacePage() {
             </div>
           </div>
         </div>
-        </LoadingOverlay>
+        </PageLoadingOverlay>
       </main>
 
       <Footer />

@@ -6,7 +6,7 @@ import { ReviewFormData, PlaceReview, ReviewStats } from '@/lib/types/reviews';
 // POST /api/places/[placeId]/reviews - Add a review
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -20,7 +20,7 @@ export async function POST(
     }
 
     const user = authResult.user;
-    const { id: placeId } = params;
+    const { id: placeId } = await params;
 
     // Check if place exists and is published
     const placeDoc = await adminDb.collection('places').doc(placeId).get();
@@ -119,11 +119,11 @@ export async function POST(
 // GET /api/places/[placeId]/reviews - Get reviews for a place
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
-    const { id: placeId } = params;
+    const { id: placeId } = await params;
     const { searchParams } = new URL(request.url);
     
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -139,46 +139,44 @@ export async function GET(
       );
     }
 
+    // Ultra-simplified query to avoid any index requirements
+    // Get all reviews for this place and filter/sort in memory
     let query: FirebaseFirestore.Query = adminDb.collection('place_reviews')
       .where('placeId', '==', placeId)
-      .where('status', '==', 'published');
-
-    // Apply sorting
-    switch (sortBy) {
-      case 'oldest':
-        query = query.orderBy('createdAt', 'asc');
-        break;
-      case 'highest_rating':
-        query = query.orderBy('rating', 'desc').orderBy('createdAt', 'desc');
-        break;
-      case 'lowest_rating':
-        query = query.orderBy('rating', 'asc').orderBy('createdAt', 'desc');
-        break;
-      case 'most_helpful':
-        query = query.orderBy('helpfulCount', 'desc').orderBy('createdAt', 'desc');
-        break;
-      default: // newest
-        query = query.orderBy('createdAt', 'desc');
-        break;
-    }
-
-    // Apply pagination
-    if (limit) {
-      query = query.limit(limit + offset);
-    }
+      .limit(100); // Get reasonable amount
 
     const snapshot = await query.get();
     const allReviews: PlaceReview[] = [];
 
     snapshot.forEach(doc => {
-      allReviews.push({
-        id: doc.id,
-        ...doc.data()
-      } as PlaceReview);
+      const reviewData = doc.data();
+      // Filter by status in memory to avoid index requirement
+      if (reviewData.status === 'published') {
+        allReviews.push({
+          id: doc.id,
+          ...reviewData
+        } as PlaceReview);
+      }
     });
 
-    // Apply offset
-    const reviews = allReviews.slice(offset);
+    // Apply sorting in memory
+    allReviews.sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'highest_rating':
+          return b.rating - a.rating;
+        case 'lowest_rating':
+          return a.rating - b.rating;
+        case 'most_helpful':
+          return b.helpfulCount - a.helpfulCount;
+        default: // newest
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+
+    // Apply pagination
+    const reviews = allReviews.slice(offset, offset + limit);
 
     // Get review stats
     const stats = await getReviewStats(adminDb, placeId);

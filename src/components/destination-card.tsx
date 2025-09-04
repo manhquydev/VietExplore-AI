@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { generatePlaceUrl } from '@/lib/utils/url-helpers';
 
 import {
   Card,
@@ -17,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export interface Destination {
-  id: number;
+  id: string; // Changed to string to support Firebase IDs
   name: string;
   location: string;
   description: string;
@@ -26,6 +27,7 @@ export interface Destination {
   rating: number;
   reviews: number;
   type: 'contributor' | 'partner' | 'verified';
+  slug?: string; // Optional slug for URL generation
 }
 
 interface DestinationCardProps {
@@ -36,6 +38,14 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  
+  // Always generate compound URL (slug-shortId format)
+  // Even if slug is missing, we'll generate one from name
+  const placeUrl = generatePlaceUrl({
+    id: destination.id,
+    name: destination.name,
+    slug: destination.slug // Can be undefined, generatePlaceUrl will handle it
+  });
 
   const renderBadge = () => {
     // Chỉ có Contributor và Partner mới có thể đăng địa điểm
@@ -131,7 +141,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
 
   return (
     <Card className="glass-card overflow-hidden flex flex-col h-full motion-gentle hover:scale-105 hover:shadow-2xl touch-target-44">
-      <Link href={`/places/${destination.id}`} className="block">
+      <Link href={placeUrl} className="block">
         <CardHeader className="p-0 relative cursor-pointer">
           <div className="relative h-48 sm:h-56 w-full bg-surface">
           {/* Loading skeleton */}
@@ -188,7 +198,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
         {renderBadge()}
       </CardHeader>
       </Link>
-      <Link href={`/places/${destination.id}`} className="block flex-grow">
+      <Link href={placeUrl} className="block flex-grow">
         <CardContent className="pt-4 sm:pt-6 flex-grow space-y-3 sm:space-y-4 px-4 sm:px-6 cursor-pointer">
           <div className="space-y-2">
             <CardTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground leading-tight line-clamp-2 hover:text-primary transition-colors">

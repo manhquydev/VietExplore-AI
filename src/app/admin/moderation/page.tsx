@@ -6,40 +6,54 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Users, Eye, Clock, ArrowRight, TrendingUp, AlertTriangle, CheckCircle, Edit3, Trash2, Flag, Shield } from "lucide-react"
+import { 
+  MapPin, Users, Eye, Clock, ArrowRight, TrendingUp, AlertTriangle, 
+  CheckCircle, Edit3, Trash2, Flag, Shield, Activity, BarChart3,
+  Timer, FileCheck, Target, Zap
+} from "lucide-react"
 import { adminIcons } from "@/lib/admin/icon-system"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminStats } from "@/hooks/use-admin"
-import { AdminLoading, AdminErrorState } from "@/components/admin/loading-states"
+import { AdminErrorState } from "@/components/admin/loading-states"
+import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { apiClient } from "@/lib/client/api"
 
 const moderationQueues = [
   {
     title: "Địa điểm Mới",
-    description: "Kiểm duyệt địa điểm mới từ cộng tác viên",
+    description: "Kiểm duyệt địa điểm mới từ cộng tác viên và đối tác",
     icon: MapPin,
     href: "/admin/moderation/queue",
-    color: "bg-blue-50 border-blue-200 hover:bg-blue-100",
-    iconColor: "text-blue-600",
+    gradient: "from-admin-primary-500 to-admin-info-600",
+    bgGradient: "from-admin-primary-50/50 to-admin-info-100/30",
+    borderColor: "border-admin-primary-200/50",
+    iconColor: "text-white",
+    priority: "Cao",
     stats: { pending: 0, total: 0 }
   },
   {
     title: "Quản lý Địa điểm", 
-    description: "Xử lý yêu cầu chỉnh sửa và xóa địa điểm",
+    description: "Xử lý yêu cầu chỉnh sửa, cập nhật và xóa địa điểm",
     icon: Edit3,
     href: "/admin/moderation/management",
-    color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
-    iconColor: "text-orange-600",
+    gradient: "from-admin-warning-500 to-admin-success-600",
+    bgGradient: "from-admin-warning-50/50 to-admin-success-100/30",
+    borderColor: "border-admin-warning-200/50",
+    iconColor: "text-white",
+    priority: "Trung bình",
     stats: { pending: 0, total: 0 }
   },
   {
     title: "Báo cáo Vi phạm",
-    description: "Xử lý báo cáo từ cộng đồng",
+    description: "Xử lý báo cáo vi phạm và khiếu nại từ cộng đồng",
     icon: Flag,
     href: "/admin/moderation/reports", 
-    color: "bg-red-50 border-red-200 hover:bg-red-100",
-    iconColor: "text-red-600",
+    gradient: "from-admin-error-500 to-admin-error-600",
+    bgGradient: "from-admin-error-50/50 to-admin-error-100/30",
+    borderColor: "border-admin-error-200/50",
+    iconColor: "text-white",
+    priority: "Khẩn cấp",
     stats: { pending: 0, total: 0 }
   }
 ]
@@ -96,22 +110,12 @@ export default function ModerationOverviewPage() {
   if (loading) {
     return (
       <div className="p-4 md:p-6 lg:p-8">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <div className="h-8 bg-gray-200 animate-pulse rounded w-64"></div>
-            <div className="h-4 bg-gray-100 animate-pulse rounded w-96"></div>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="p-6">
-                <div className="space-y-4">
-                  <div className="h-6 bg-gray-200 animate-pulse rounded w-32"></div>
-                  <div className="h-4 bg-gray-100 animate-pulse rounded"></div>
-                  <div className="h-8 bg-gray-100 animate-pulse rounded w-24"></div>
-                </div>
-              </Card>
-            ))}
-          </div>
+        <div className="min-h-[400px] flex items-center justify-center">
+          <BrandedLoading 
+            variant="logo" 
+            size="lg"
+            text="Đang tải tổng quan kiểm duyệt..."
+          />
         </div>
       </div>
     )
@@ -142,204 +146,241 @@ export default function ModerationOverviewPage() {
                       (queueStats.reports?.pending || 0)
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="admin-page-title flex items-center gap-3">
-            <adminIcons.navigation.moderation className="h-8 w-8 text-admin-primary-600" />
-            Tổng quan Kiểm duyệt
-          </h1>
-          <p className="admin-body-text max-w-3xl">
-            Hệ thống kiểm duyệt chuyên nghiệp với quy trình tách biệt cho từng loại nội dung
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-admin-neutral-50 via-white to-admin-warning-50/20">
+      
+      {/* Modern Header Section */}
+      <div className="relative px-4 md:px-6 lg:px-8 pt-6 pb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-admin-warning-500/5 via-admin-primary-500/3 to-admin-error-500/5 rounded-b-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-warning-600 to-admin-error-700 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Shield className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold text-admin-neutral-900 tracking-tight">
+                    Trung tâm Kiểm duyệt
+                  </h1>
+                  <p className="text-admin-neutral-600 mt-1">
+                    Hệ thống kiểm duyệt nội dung chuyên nghiệp và an toàn
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Status Overview Card */}
+            <div className="bg-white/80 backdrop-blur-sm border border-admin-neutral-200/50 rounded-xl px-6 py-4 shadow-lg">
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-admin-warning-700">{totalPending}</div>
+                  <div className="text-xs font-medium text-admin-neutral-600">Chờ duyệt</div>
+                </div>
+                <div className="w-px h-10 bg-admin-neutral-200"></div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-admin-success-700">
+                    {stats?.moderationStats?.dailyProcessed || 0}
+                  </div>
+                  <div className="text-xs font-medium text-admin-neutral-600">Đã xử lý hôm nay</div>
+                </div>
+                <div className="relative">
+                  <div className={`h-3 w-3 rounded-full ${totalPending > 10 ? 'bg-admin-error-500' : 'bg-admin-success-500'}`}></div>
+                  <div className={`absolute inset-0 h-3 w-3 rounded-full animate-ping opacity-20 ${totalPending > 10 ? 'bg-admin-error-500' : 'bg-admin-success-500'}`}></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Stats Overview */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="admin-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-admin-neutral-600">Tổng chờ xử lý</p>
-                  <p className="text-2xl font-bold text-admin-neutral-900">{totalPending}</p>
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-8">
+        
+        {/* Quick Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Total Pending */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-warning-500/10 via-transparent to-admin-warning-600/5"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Tổng chờ xử lý
+                  </p>
+                  <p className="text-3xl font-bold text-admin-warning-700 mt-1">{totalPending}</p>
                 </div>
-                <div className="h-12 w-12 bg-admin-warning-100 rounded-full flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-admin-warning-600" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-warning-500 to-admin-warning-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Timer className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <div className={`h-2 w-2 rounded-full ${totalPending > 10 ? 'bg-admin-error-500' : 'bg-admin-success-500'}`}></div>
+                <span className="text-xs font-medium text-admin-neutral-500">
+                  {totalPending > 10 ? 'Cần xử lý khẩn cấp' : 'Trong tầm kiểm soát'}
+                </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="admin-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-admin-neutral-600">Địa điểm mới</p>
-                  <p className="text-2xl font-bold text-blue-600">{queueStats.newPlaces?.pending || 0}</p>
+          {/* New Places */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-primary-500/10 via-transparent to-admin-info-500/10"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Địa điểm mới
+                  </p>
+                  <p className="text-3xl font-bold text-admin-primary-700 mt-1">{queueStats.newPlaces?.pending || 0}</p>
                 </div>
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <MapPin className="h-6 w-6 text-blue-600" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-primary-500 to-admin-info-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <MapPin className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              <div className="flex items-center gap-1 mt-3">
+                <Target className="h-3 w-3 text-admin-primary-600" />
+                <span className="text-xs font-medium text-admin-primary-600">Ưu tiên cao</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="admin-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-admin-neutral-600">Yêu cầu quản lý</p>
-                  <p className="text-2xl font-bold text-orange-600">{queueStats.management?.pending || 0}</p>
+          {/* Management Requests */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-success-500/10 via-transparent to-admin-warning-500/10"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Quản lý địa điểm
+                  </p>
+                  <p className="text-3xl font-bold text-admin-success-700 mt-1">{queueStats.management?.pending || 0}</p>
                 </div>
-                <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Edit3 className="h-6 w-6 text-orange-600" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-success-500 to-admin-warning-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <FileCheck className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              <div className="flex items-center gap-1 mt-3">
+                <Activity className="h-3 w-3 text-admin-success-600" />
+                <span className="text-xs font-medium text-admin-success-600">Trung bình</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="admin-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-admin-neutral-600">Báo cáo vi phạm</p>
-                  <p className="text-2xl font-bold text-red-600">{queueStats.reports?.pending || 0}</p>
+          {/* Reports */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-error-500/10 via-transparent to-admin-error-600/5"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Báo cáo vi phạm
+                  </p>
+                  <p className="text-3xl font-bold text-admin-error-700 mt-1">{queueStats.reports?.pending || 0}</p>
                 </div>
-                <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <Flag className="h-6 w-6 text-red-600" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-error-500 to-admin-error-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Flag className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              <div className="flex items-center gap-1 mt-3">
+                <Zap className="h-3 w-3 text-admin-error-600" />
+                <span className="text-xs font-medium text-admin-error-600">Khẩn cấp</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Moderation Queues */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-admin-neutral-900">Hàng đợi Kiểm duyệt</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-admin-neutral-900">Hàng đợi Kiểm duyệt</h2>
+              <p className="text-admin-neutral-600 mt-1">Xử lý nội dung theo quy trình chuyên nghiệp</p>
+            </div>
+            <Button variant="outline" className="text-sm">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Xem báo cáo
+            </Button>
+          </div>
+          
+          <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
             {moderationQueues.map((queue, index) => {
               const queueKey = ['newPlaces', 'management', 'reports'][index]
               const pending = queueStats[queueKey]?.pending || 0
               
               return (
-                <Card key={queue.href} className={cn("transition-all duration-200 hover:shadow-lg border-2", queue.color)}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={cn("h-12 w-12 rounded-full flex items-center justify-center", queue.color.replace('hover:bg-', 'bg-').replace('border-', 'bg-').replace('-200', '-100'))}>
-                          <queue.icon className={cn("h-6 w-6", queue.iconColor)} />
+                <Card key={queue.href} className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-2xl transition-all duration-300 group">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${queue.bgGradient}`}></div>
+                  
+                  <CardContent className="relative p-8">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-start gap-4">
+                        <div className={`h-16 w-16 bg-gradient-to-br ${queue.gradient} rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-200`}>
+                          <queue.icon className={`h-8 w-8 ${queue.iconColor}`} />
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-lg text-admin-neutral-900">{queue.title}</h3>
-                          <p className="text-sm text-admin-neutral-600">{queue.description}</p>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-admin-neutral-900 mb-2">{queue.title}</h3>
+                          <p className="text-admin-neutral-600 text-sm leading-relaxed">{queue.description}</p>
                         </div>
                       </div>
-                      {pending > 0 && (
-                        <Badge className={cn("text-sm font-semibold px-3 py-1", 
-                          pending > 10 ? "bg-red-100 text-red-800" : 
-                          pending > 5 ? "bg-orange-100 text-orange-800" : 
-                          "bg-yellow-100 text-yellow-800"
+                      
+                      {/* Priority Badge */}
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge className={cn("text-xs font-semibold px-3 py-1 border-0", 
+                          queue.priority === 'Khẩn cấp' ? "bg-admin-error-100 text-admin-error-700" : 
+                          queue.priority === 'Cao' ? "bg-admin-warning-100 text-admin-warning-700" : 
+                          "bg-admin-success-100 text-admin-success-700"
                         )}>
-                          {pending} chờ
+                          {queue.priority}
                         </Badge>
-                      )}
+                        {pending > 0 && (
+                          <Badge className="bg-admin-primary-600 text-white text-sm font-bold px-3 py-1 shadow-lg">
+                            {pending}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-admin-neutral-600">Đang chờ xử lý</span>
-                        <span className="font-medium">{pending} mục</span>
+                    {/* Stats */}
+                    <div className="space-y-4 mb-6">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-admin-neutral-700">Chờ xử lý</span>
+                        <span className="text-2xl font-bold text-admin-neutral-900">{pending}</span>
                       </div>
-                      <Progress 
-                        value={pending > 0 ? Math.min((pending / 20) * 100, 100) : 0} 
-                        className="h-2"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-admin-neutral-500">
-                        {queue.href.includes('queue') && 'SLA: 48 giờ'}
-                        {queue.href.includes('management') && 'SLA: 72 giờ (xóa)'}
-                        {queue.href.includes('reports') && 'SLA: 6-72 giờ'}
+                      
+                      <div className="w-full bg-admin-neutral-200 rounded-full h-3 overflow-hidden">
+                        <div 
+                          className={`h-full bg-gradient-to-r ${queue.gradient} rounded-full transition-all duration-500`}
+                          style={{ width: `${Math.min((pending / 20) * 100, 100)}%` }}
+                        />
                       </div>
-                      <Button asChild size="sm" variant="outline" className="hover:shadow-md transition-all duration-200">
-                        <Link href={queue.href}>
-                          <span className="mr-2">Mở</span>
-                          <ArrowRight className="h-3 w-3" />
-                        </Link>
-                      </Button>
+                      
+                      <div className="text-xs text-admin-neutral-500 text-center">
+                        {pending === 0 ? 'Không có mục nào chờ xử lý' : 
+                         pending < 5 ? 'Tình trạng bình thường' :
+                         pending < 10 ? 'Cần chú ý' : 'Yêu cầu xử lý khẩn cấp'}
+                      </div>
                     </div>
+                    
+                    {/* Action Button */}
+                    <Button 
+                      asChild 
+                      className={`w-full bg-gradient-to-r ${queue.gradient} hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-white border-0`}
+                    >
+                      <Link href={queue.href}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Xử lý ngay ({pending})
+                        <ArrowRight className="h-4 w-4 ml-auto" />
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               )
             })}
           </div>
         </div>
-
-        {/* System Performance */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="admin-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                Hiệu suất Hệ thống
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-admin-neutral-600">Tỷ lệ phê duyệt</span>
-                <span className="font-semibold">
-                  {loading ? <AdminLoading size="sm" inline /> : '85%'}
-                </span>
-              </div>
-              <Progress value={85} className="h-2" />
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-admin-neutral-600">Thời gian xử lý trung bình</span>
-                <span className="font-semibold">
-                  {loading ? <AdminLoading size="sm" inline /> : '18 giờ'}
-                </span>
-              </div>
-              <Progress value={60} className="h-2" />
-            </CardContent>
-          </Card>
-
-          <Card className="admin-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                Tuân thủ SLA
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-admin-neutral-600">Địa điểm mới</span>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="font-semibold text-green-600">95%</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-admin-neutral-600">Báo cáo khẩn cấp</span>
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
-                  <span className="font-semibold text-orange-600">88%</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-admin-neutral-600">Quản lý địa điểm</span>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="font-semibold text-green-600">92%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )
-}
+} 

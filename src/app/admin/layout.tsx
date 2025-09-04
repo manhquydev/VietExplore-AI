@@ -2,6 +2,7 @@
 
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { useAuth } from "@/components/auth/auth-provider"
+import { BrandedLoading } from "@/components/ui/branded-loading"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
@@ -21,8 +22,12 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center">
+        <BrandedLoading 
+          variant="logo" 
+          size="lg"
+          text="Đang xác thực quyền truy cập quản trị..."
+        />
       </div>
     )
   }
@@ -32,10 +37,12 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       <AdminSidebar />
-      <main className="flex-1 ml-64">
-        {children}
+      <main className="flex-1 ml-64 min-h-screen">
+        <div className="h-full bg-gradient-to-br from-pink-50 via-white to-purple-50">
+          {children}
+        </div>
       </main>
     </div>
   )

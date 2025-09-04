@@ -22,7 +22,17 @@ import {
   Calendar, 
   MapPin, 
   MoreHorizontal, 
-  Mail 
+  Mail,
+  Filter,
+  Download,
+  UserPlus,
+  Settings,
+  TrendingUp,
+  Crown,
+  Shield,
+  Star,
+  Eye,
+  Edit3
 } from "lucide-react"
 import { adminIcons } from "@/lib/admin/icon-system"
 import { adminClasses } from "@/lib/admin/theme-utils"
@@ -34,19 +44,69 @@ import { useToast } from "@/components/providers/toast-provider"
 import { UserRole } from "@/lib/types/auth"
 
 const roleConfig = {
-  admin: { label: "Quản trị viên", color: 'bg-purple-100 text-purple-800', icon: adminIcons.status.success },
-  moderator: { label: "Kiểm duyệt viên", color: 'bg-blue-100 text-blue-800', icon: adminIcons.navigation.moderation },
-  partner: { label: "Đối tác", color: 'bg-green-100 text-green-800', icon: adminIcons.status.success },
-  contributor: { label: "Cộng tác viên", color: 'bg-yellow-100 text-yellow-800', icon: adminIcons.navigation.users },
-  traveler: { label: "Du khách", color: 'bg-gray-100 text-gray-800', icon: adminIcons.navigation.users },
-  guest: { label: "Khách", color: 'bg-gray-100 text-gray-600', icon: adminIcons.navigation.users }
+  admin: { 
+    label: "Quản trị viên", 
+    color: 'bg-gradient-to-r from-admin-primary-100 to-admin-info-100 text-admin-primary-800 border border-admin-primary-200', 
+    icon: Crown,
+    priority: 6 
+  },
+  moderator: { 
+    label: "Kiểm duyệt viên", 
+    color: 'bg-gradient-to-r from-admin-warning-100 to-admin-success-100 text-admin-warning-800 border border-admin-warning-200', 
+    icon: Shield,
+    priority: 5 
+  },
+  partner: { 
+    label: "Đối tác", 
+    color: 'bg-gradient-to-r from-admin-success-100 to-admin-success-200 text-admin-success-800 border border-admin-success-300', 
+    icon: Star,
+    priority: 4 
+  },
+  contributor: { 
+    label: "Cộng tác viên", 
+    color: 'bg-gradient-to-r from-admin-info-100 to-admin-primary-100 text-admin-info-800 border border-admin-info-200', 
+    icon: Edit3,
+    priority: 3 
+  },
+  traveler: { 
+    label: "Du khách", 
+    color: 'bg-gradient-to-r from-admin-neutral-100 to-admin-neutral-200 text-admin-neutral-700 border border-admin-neutral-300', 
+    icon: Users,
+    priority: 2 
+  },
+  guest: { 
+    label: "Khách", 
+    color: 'bg-gradient-to-r from-admin-neutral-50 to-admin-neutral-100 text-admin-neutral-600 border border-admin-neutral-200', 
+    icon: Eye,
+    priority: 1 
+  }
 }
 
 const statusConfig = {
-  active: { label: "Hoạt động", color: 'bg-green-100 text-green-800', icon: CheckCircle },
-  pending: { label: "Chờ xử lý", color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
-  disabled: { label: "Bị vô hiệu", color: 'bg-red-100 text-red-800', icon: Ban },
-  inactive: { label: "Không hoạt động", color: 'bg-gray-100 text-gray-800', icon: ShieldX }
+  active: { 
+    label: "Hoạt động", 
+    color: 'bg-admin-success-50 text-admin-success-700 border border-admin-success-200', 
+    icon: CheckCircle,
+    dotColor: 'bg-admin-success-500'
+  },
+  pending: { 
+    label: "Chờ xác thực", 
+    color: 'bg-admin-warning-50 text-admin-warning-700 border border-admin-warning-200', 
+    icon: AlertCircle,
+    dotColor: 'bg-admin-warning-500'
+  },
+  disabled: { 
+    label: "Bị khóa", 
+    color: 'bg-admin-error-50 text-admin-error-700 border border-admin-error-200', 
+    icon: Ban,
+    dotColor: 'bg-admin-error-500'
+  },
+  inactive: { 
+    label: "Không hoạt động", 
+    color: 'bg-admin-neutral-50 text-admin-neutral-600 border border-admin-neutral-200', 
+    icon: ShieldX,
+    dotColor: 'bg-admin-neutral-400'
+  }
 }
 
 export default function AdminUsersPage() {
@@ -213,128 +273,220 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 md:mb-8">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
-          <p className="text-sm md:text-base text-gray-600">Quản lý người dùng, vai trò và quyền hạn trên nền tảng của bạn</p>
-        </div>
-        <div className="flex-shrink-0">
-          {actions}
+    <div className="min-h-screen bg-gradient-to-br from-admin-neutral-50 via-white to-admin-primary-50/20">
+      
+      {/* Modern Header Section */}
+      <div className="relative px-4 md:px-6 lg:px-8 pt-6 pb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-admin-primary-500/5 via-admin-info-500/3 to-admin-success-500/5 rounded-b-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-primary-600 to-admin-info-700 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold text-admin-neutral-900 tracking-tight">
+                    Quản lý Người dùng
+                  </h1>
+                  <p className="text-admin-neutral-600 mt-1">
+                    Hệ thống quản lý người dùng và phân quyền chuyên nghiệp
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Actions Card */}
+            <div className="bg-white/80 backdrop-blur-sm border border-admin-neutral-200/50 rounded-xl px-6 py-4 shadow-lg">
+              <div className="flex items-center gap-4">
+                {actions}
+                <Button 
+                  className="bg-gradient-to-r from-admin-success-600 to-admin-success-700 hover:from-admin-success-700 hover:to-admin-success-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  size="sm"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Thêm người dùng
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
-      <div className="space-y-6">
-        {/* Thống kê Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Tổng người dùng</p>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-8">
+        
+        {/* User Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Total Users */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-primary-500/10 via-transparent to-admin-primary-600/5"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Tổng người dùng
+                  </p>
+                  <div className="flex items-baseline gap-2">
                     {loading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <div className="h-8 w-20 bg-admin-neutral-200 rounded animate-pulse"></div>
                     ) : (
-                      <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                      <span className="text-3xl font-bold text-admin-primary-700">
                         {users?.length || 0}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Users className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-primary-500 to-admin-primary-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
+                  <Users className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 text-admin-success-600" />
+                <span className="text-xs font-medium text-admin-success-700">
+                  +{users?.filter(u => {
+                    const joinDate = new Date(u.createdAt || Date.now())
+                    const monthAgo = new Date()
+                    monthAgo.setMonth(monthAgo.getMonth() - 1)
+                    return joinDate >= monthAgo
+                  }).length || 0} tháng này
+                </span>
               </div>
             </CardContent>
           </Card>
-          
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Người dùng hoạt động</p>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+
+          {/* Active Users */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-success-500/10 via-transparent to-admin-success-600/5"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Đang hoạt động
+                  </p>
+                  <div className="flex items-baseline gap-2">
                     {loading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <div className="h-8 w-16 bg-admin-neutral-200 rounded animate-pulse"></div>
                     ) : (
-                      <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
+                      <span className="text-3xl font-bold text-admin-success-700">
                         {users?.filter(u => !u.disabled && u.verified).length || 0}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-success-500 to-admin-success-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
+                  <Activity className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-admin-success-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-admin-success-700">
+                  {Math.round(((users?.filter(u => !u.disabled && u.verified).length || 0) / Math.max(users?.length || 1, 1)) * 100)}% tổng số
+                </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all duration-200 border-l-4 border-l-amber-400">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Chờ xác minh</p>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+          {/* Pending Verification */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-warning-500/10 via-transparent to-admin-warning-600/5"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Chờ xác thực
+                  </p>
+                  <div className="flex items-baseline gap-2">
                     {loading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <div className="h-8 w-16 bg-admin-neutral-200 rounded animate-pulse"></div>
                     ) : (
-                      <span className={`${users?.filter(u => !u.verified && !u.disabled).length > 5 ? 'text-amber-600' : 'text-gray-900'} font-bold`}>
+                      <span className={`text-3xl font-bold ${users?.filter(u => !u.verified && !u.disabled).length > 5 ? 'text-admin-warning-700' : 'text-admin-warning-600'}`}>
                         {users?.filter(u => !u.verified && !u.disabled).length || 0}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-warning-500 to-admin-warning-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
+                  <AlertCircle className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Settings className="h-3 w-3 text-admin-warning-600" />
+                <span className="text-xs font-medium text-admin-warning-700">
+                  {users?.filter(u => !u.verified && !u.disabled).length > 5 ? 'Cần xử lý' : 'Bình thường'}
+                </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wide">Cộng tác viên</p>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+          {/* Contributors & Partners */}
+          <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-admin-info-500/10 via-transparent to-admin-primary-500/10"></div>
+            <CardContent className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-admin-neutral-600 uppercase tracking-wide">
+                    Cộng tác viên
+                  </p>
+                  <div className="flex items-baseline gap-2">
                     {loading ? (
-                      <div className="animate-pulse bg-gray-200 h-6 md:h-8 w-12 md:w-16 rounded"></div>
+                      <div className="h-8 w-16 bg-admin-neutral-200 rounded animate-pulse"></div>
                     ) : (
-                      <span className="bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-transparent">
+                      <span className="text-3xl font-bold text-admin-info-700">
                         {users?.filter(u => ['contributor', 'partner'].includes(u.role)).length || 0}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <adminIcons.navigation.users className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="h-12 w-12 bg-gradient-to-br from-admin-info-500 to-admin-primary-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
+                  <Star className="h-6 w-6 text-white" />
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Crown className="h-3 w-3 text-admin-info-600" />
+                <span className="text-xs font-medium text-admin-info-700">
+                  Thành viên chủ chốt
+                </span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Users Table */}
-        <Card className="hover:shadow-md transition-all duration-200">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-600" />
-                <span className="text-lg font-semibold">Danh sách người dùng</span>
+        {/* Users Table - Modern Design */}
+        <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-admin-neutral-200/50 shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-br from-admin-neutral-50/30 via-transparent to-admin-primary-50/20"></div>
+          
+          <CardHeader className="relative pb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-admin-primary-500 to-admin-info-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-admin-neutral-900">Danh sách Người dùng</h2>
+                  <p className="text-sm text-admin-neutral-600">Quản lý và theo dõi hoạt động người dùng</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              
+              <div className="flex items-center gap-3">
+                <Badge className="bg-admin-primary-100 text-admin-primary-800 border border-admin-primary-200 px-3 py-1">
+                  <Users className="h-3 w-3 mr-1.5" />
                   {filteredUsers.length} / {users?.length || 0}
                 </Badge>
                 {(roleFilter !== 'all' || statusFilter !== 'all' || searchQuery) && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge className="bg-admin-warning-100 text-admin-warning-800 border border-admin-warning-200 px-3 py-1">
+                    <Filter className="h-3 w-3 mr-1.5" />
                     Đã lọc
                   </Badge>
                 )}
               </div>
-            </CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (

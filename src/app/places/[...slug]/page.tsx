@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 import { PlaceDetailContent } from "@/components/place-detail-content"
 import { Place } from "@/lib/types/places"
+import { Metadata } from "next"
+import { getCanonicalPlaceUrl } from "@/lib/utils/url-helpers"
 
 interface PlaceData {
   id: string
@@ -230,6 +232,57 @@ const regionLabels = {
   "bac-bo": "Miền Bắc",
   "trung-bo": "Miền Trung", 
   "nam-bo": "Miền Nam"
+}
+
+// Generate metadata for SEO and social sharing
+export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const placeId = slug[0];
+  
+  const place = await getPlaceData(placeId);
+  
+  if (!place) {
+    return {
+      title: 'Địa điểm không tồn tại - VietExplore',
+      description: 'Không tìm thấy địa điểm này trên VietExplore'
+    };
+  }
+
+  // Generate canonical compound URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+  const canonicalUrl = getCanonicalPlaceUrl({
+    id: place.id,
+    name: place.name,
+    slug: place.slug
+  }, baseUrl);
+  
+  return {
+    title: `${place.name} - ${place.province} | VietExplore`,
+    description: place.shortDescription,
+    alternates: {
+      canonical: canonicalUrl
+    },
+    openGraph: {
+      title: place.name,
+      description: place.shortDescription,
+      url: canonicalUrl,
+      siteName: 'VietExplore',
+      images: place.images.length > 0 ? [
+        {
+          url: place.images[0].url,
+          width: 1200,
+          height: 630,
+          alt: place.name
+        }
+      ] : []
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: place.name,
+      description: place.shortDescription,
+      images: place.images.length > 0 ? [place.images[0].url] : []
+    }
+  };
 }
 
 export default async function PlaceDetailPage({ params }: { params: Promise<{ slug: string[] }> }) {

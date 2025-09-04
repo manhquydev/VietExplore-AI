@@ -7,6 +7,8 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card-custom'
+import { BrandedLoading } from '@/components/ui/branded-loading'
+import { AlertTriangle, Edit, Calendar, ArrowLeft, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/client/api'
 import { PlaceFormData } from '@/lib/types/places'
 
@@ -87,11 +89,11 @@ export default function EditDraftPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       <Header />
       
       <main className="container py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             {editingPublishedId || draft?.isEditingPublished ? (
               <>
@@ -121,31 +123,35 @@ export default function EditDraftPage() {
           </div>
 
           {loading && (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">⏳</div>
-              <h3 className="text-xl font-semibold mb-2">Đang tải...</h3>
-              <p className="text-muted-foreground">
-                Vui lòng chờ trong giây lát
-              </p>
+            <div className="min-h-[400px] flex items-center justify-center">
+              <BrandedLoading 
+                variant="logo" 
+                size="lg"
+                text="Đang tải thông tin bản nháp..."
+              />
             </div>
           )}
 
           {error && (
-            <Card>
+            <Card className="border-red-200 bg-red-50/50">
               <CardContent className="p-8">
                 <div className="text-center">
-                  <div className="text-6xl mb-4">⚠️</div>
-                  <h3 className="text-xl font-semibold mb-2 text-destructive">
-                    Có lỗi xảy ra
+                  <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-red-900">
+                    Không thể tải bản nháp
                   </h3>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-red-700 mb-6 max-w-md mx-auto">
                     {error}
                   </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button variant="outline" onClick={() => router.back()}>
+                  <div className="flex gap-3 justify-center">
+                    <Button variant="outline" onClick={() => router.back()} className="border-red-300 text-red-700 hover:bg-red-100">
+                      <ArrowLeft className="w-4 h-4 mr-2" />
                       Quay lại
                     </Button>
-                    <Button onClick={() => router.push('/contribute/my-drafts')}>
+                    <Button onClick={() => router.push('/contribute/my-drafts')} className="bg-red-600 hover:bg-red-700">
+                      <FileText className="w-4 h-4 mr-2" />
                       Về trang bản nháp
                     </Button>
                   </div>
@@ -155,15 +161,43 @@ export default function EditDraftPage() {
           )}
 
           {draft && !error && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  📝 {draft.name || 'Bản nháp chưa có tên'}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Tạo lúc: {new Date(draft.createdAt).toLocaleString('vi-VN')} • 
-                  Cập nhật: {new Date(draft.updatedAt).toLocaleString('vi-VN')}
-                </p>
+            <Card className="bg-white/80 backdrop-blur-sm shadow-2xl border-0">
+              <CardHeader className="pb-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center">
+                        <Edit className="w-5 h-5 text-pink-600" />
+                      </div>
+                      {draft.name || 'Bản nháp chưa có tên'}
+                    </CardTitle>
+                    <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        Tạo: {new Date(draft.createdAt).toLocaleDateString('vi-VN')}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Edit className="w-4 h-4" />
+                        Cập nhật: {new Date(draft.updatedAt).toLocaleDateString('vi-VN')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {draft.status && (
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        draft.status === 'draft' ? 'bg-gray-100 text-gray-700' :
+                        draft.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                        draft.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {draft.status === 'draft' ? 'Bản nháp' :
+                         draft.status === 'submitted' ? 'Đã gửi duyệt' :
+                         draft.status === 'rejected' ? 'Bị từ chối' :
+                         'Cần chỉnh sửa'}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -210,15 +244,21 @@ export default function EditDraftPage() {
                   </div>
                 )}
 
-                <div className="flex gap-4 pt-4">
-                  <Button onClick={handleEditRedirect} className="flex-1">
-                    📝 Chỉnh sửa bản nháp
+                <div className="flex gap-3 pt-6 border-t">
+                  <Button 
+                    onClick={handleEditRedirect} 
+                    className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Chỉnh sửa bản nháp
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => router.push('/contribute/my-drafts')}
+                    className="px-6 border-gray-300 hover:bg-gray-50"
                   >
-                    🔙 Quay lại danh sách
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Danh sách bản nháp
                   </Button>
                 </div>
               </CardContent>
