@@ -94,29 +94,29 @@ const formatDate = (dateString: string) => {
 
 export default function CommunityPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-20 sm:py-24 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 "></div>
           
           <div className="relative container">
             <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
               <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                <div className="w-12 h-12 rounded-2xl bg-slate-100  flex items-center justify-center">
+                  <Users className="w-6 h-6 text-sky-600 " />
                 </div>
                 <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                   Cộng Đồng Du Lịch Việt
                 </h1>
               </div>
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-slate-600  mb-8 max-w-2xl mx-auto leading-relaxed">
                 Kết nối với hàng nghìn người yêu du lịch Việt Nam. Chia sẻ trải nghiệm, khám phá địa điểm mới và lên kế hoạch chuyến đi cùng nhau.
               </p>
               
-              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600 dark:text-slate-300 mb-8">
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600  mb-8">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-sky-500" />
                   <span>{communityStats.totalMembers.toLocaleString()} thành viên</span>
@@ -151,46 +151,46 @@ export default function CommunityPage() {
             <div className="lg:col-span-2 space-y-8">
               {/* Community Stats */}
               <div className="glass-card p-6">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Tổng quan cộng đồng</h2>
+                <h2 className="text-2xl font-bold text-slate-900  mb-6">Tổng quan cộng đồng</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    <div className="w-12 h-12 bg-blue-100  rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Users className="w-6 h-6 text-blue-600 " />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <div className="text-2xl font-bold text-slate-900 ">
                       {communityStats.totalMembers.toLocaleString()}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Thành viên</div>
+                    <div className="text-sm text-slate-600 ">Thành viên</div>
                   </div>
                   
                   <div className="text-center">
                     <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <MapPin className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <div className="text-2xl font-bold text-slate-900 ">
                       {communityStats.placesContributed.toLocaleString()}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Địa điểm</div>
+                    <div className="text-sm text-slate-600 ">Địa điểm</div>
                   </div>
                   
                   <div className="text-center">
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <div className="text-2xl font-bold text-slate-900 ">
                       {communityStats.itinerariesShared.toLocaleString()}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Lịch trình</div>
+                    <div className="text-sm text-slate-600 ">Lịch trình</div>
                   </div>
                   
                   <div className="text-center">
                     <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <div className="text-2xl font-bold text-slate-900 ">
                       +{communityStats.monthlyGrowth}%
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Tăng trưởng</div>
+                    <div className="text-sm text-slate-600 ">Tăng trưởng</div>
                   </div>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function CommunityPage() {
               {/* Announcements */}
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Thông báo cộng đồng</h2>
+                  <h2 className="text-2xl font-bold text-slate-900 ">Thông báo cộng đồng</h2>
                   <Link href="/community/announcements">
                     <Button variant="secondary" size="sm" className="glass-subtle">
                       Xem tất cả
@@ -217,7 +217,7 @@ export default function CommunityPage() {
                               Quan trọng
                             </Badge>
                           )}
-                          <span className="text-sm text-slate-600 dark:text-slate-300">
+                          <span className="text-sm text-slate-600 ">
                             {formatDate(announcement.date)}
                           </span>
                         </div>
@@ -226,11 +226,11 @@ export default function CommunityPage() {
                         </span>
                       </div>
                       
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-bold text-slate-900  mb-2">
                         {announcement.title}
                       </h3>
                       
-                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-slate-600  leading-relaxed">
                         {announcement.content}
                       </p>
                     </div>
@@ -240,15 +240,15 @@ export default function CommunityPage() {
 
               {/* Community Guidelines */}
               <div className="glass-card p-6">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Quy tắc cộng đồng</h2>
+                <h2 className="text-2xl font-bold text-slate-900  mb-6">Quy tắc cộng đồng</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Link href="/community/guidelines">
                     <div className="glass-subtle p-4 rounded-xl hover:scale-105 transition-transform cursor-pointer">
                       <div className="flex items-center gap-3 mb-2">
                         <BookOpen className="w-5 h-5 text-sky-600" />
-                        <h3 className="font-semibold text-slate-900 dark:text-white">Hướng dẫn đóng góp</h3>
+                        <h3 className="font-semibold text-slate-900 ">Hướng dẫn đóng góp</h3>
                       </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">
+                      <p className="text-sm text-slate-600 ">
                         Cách chia sẻ địa điểm và lịch trình hiệu quả
                       </p>
                     </div>
@@ -258,9 +258,9 @@ export default function CommunityPage() {
                     <div className="glass-subtle p-4 rounded-xl hover:scale-105 transition-transform cursor-pointer">
                       <div className="flex items-center gap-3 mb-2">
                         <FileText className="w-5 h-5 text-teal-600" />
-                        <h3 className="font-semibold text-slate-900 dark:text-white">Cẩm nang thành viên</h3>
+                        <h3 className="font-semibold text-slate-900 ">Cẩm nang thành viên</h3>
                       </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">
+                      <p className="text-sm text-slate-600 ">
                         Tất cả về cách sử dụng platform hiệu quả
                       </p>
                     </div>
@@ -273,7 +273,7 @@ export default function CommunityPage() {
             <div className="space-y-6">
               {/* Top Contributors */}
               <div className="glass-card p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-900  mb-4 flex items-center gap-2">
                   <Award className="w-5 h-5 text-yellow-500" />
                   Người đóng góp hàng đầu
                 </h3>
@@ -294,7 +294,7 @@ export default function CommunityPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-slate-900 dark:text-white text-sm">
+                          <h4 className="font-semibold text-slate-900  text-sm">
                             {contributor.name}
                           </h4>
                           {contributor.verified && (
@@ -303,7 +303,7 @@ export default function CommunityPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-2 text-xs text-slate-600 ">
                           <span>@{contributor.username}</span>
                           <span>•</span>
                           <span>{contributor.contributions} đóng góp</span>
@@ -316,7 +316,7 @@ export default function CommunityPage() {
 
               {/* Quick Actions */}
               <div className="glass-card p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Hành động nhanh</h3>
+                <h3 className="text-lg font-bold text-slate-900  mb-4">Hành động nhanh</h3>
                 <div className="space-y-3">
                   <Link href="/contribute/new-place">
                     <Button variant="secondary" className="w-full glass-subtle justify-start">
@@ -343,16 +343,16 @@ export default function CommunityPage() {
 
               {/* Community Highlights */}
               <div className="glass-card p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Nổi bật tuần này</h3>
+                <h3 className="text-lg font-bold text-slate-900  mb-4">Nổi bật tuần này</h3>
                 <div className="space-y-4">
                   <div className="glass-subtle p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <Heart className="w-4 h-4 text-red-500" />
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">
+                      <span className="text-sm font-medium text-slate-900 ">
                         Địa điểm được yêu thích nhất
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                    <p className="text-sm text-slate-600 ">
                       Phố cổ Hội An với 1,234 lượt thích
                     </p>
                   </div>
@@ -360,11 +360,11 @@ export default function CommunityPage() {
                   <div className="glass-subtle p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">
+                      <span className="text-sm font-medium text-slate-900 ">
                         Lịch trình hot nhất
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                    <p className="text-sm text-slate-600 ">
                       "Miền Trung 7 ngày" bởi @travel_explorer
                     </p>
                   </div>
@@ -372,11 +372,11 @@ export default function CommunityPage() {
                   <div className="glass-subtle p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <Globe className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">
+                      <span className="text-sm font-medium text-slate-900 ">
                         Xu hướng tìm kiếm
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                    <p className="text-sm text-slate-600 ">
                       #DaLat #PhuQuoc #SaPa đang trending
                     </p>
                   </div>

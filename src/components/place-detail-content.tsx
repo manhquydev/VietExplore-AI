@@ -501,7 +501,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                       className="scale-110"
                     />
                   </div>
-                  <div className="backdrop-blur-md bg-gradient-to-r from-white/20 to-white/10 p-3 rounded-2xl border border-white/30 shadow-2xl">
+                  <div className="backdrop-blur-md bg-gradient-to-r from-black/40 to-gray-900/30 p-3 rounded-2xl border border-white/20 shadow-2xl">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -509,12 +509,12 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                         </svg>
                       </div>
                       <div>
-                        <div className="text-white font-bold text-sm">
+                        <div className="text-white font-bold text-sm drop-shadow-lg">
                           {place.trustLevel === 'partner' ? 'Đối tác xác thực' :
                            place.trustLevel === 'contributor' ? 'Cộng tác viên' :
                            place.trustLevel === 'verified' ? 'Đã xác minh' : 'Cộng đồng'}
                         </div>
-                        <div className="text-white/80 text-xs">Độ tin cậy cao</div>
+                        <div className="text-green-200 text-xs font-medium drop-shadow-md">Độ tin cậy cao</div>
                       </div>
                     </div>
                   </div>
@@ -1542,25 +1542,21 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
               {/* Professional Author Information */}
               <Card className="border-none shadow-lg bg-gradient-to-br from-white to-gray-50/50">
                 <CardHeader className="pb-4 px-4 lg:px-6">
-                  <CardTitle className="text-base lg:text-lg font-bold text-gray-900">
+                  <CardTitle className="text-base lg:text-lg font-bold text-gray-900 flex items-center gap-3">
+                    <ProfessionalRoleBadge 
+                      role={place.authorRole} 
+                      size="lg"
+                      showLabel={false}
+                      className="flex-shrink-0"
+                    />
                     Thông tin đóng góp
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 lg:p-6 pt-0">
                   <div className="space-y-4">
-                    {/* Professional Role Badge */}
-                    <div className="flex items-center justify-center">
-                      <ProfessionalRoleBadge 
-                        role={place.authorRole} 
-                        authorName={place.authorName}
-                        size="lg"
-                        className="shadow-lg hover:shadow-xl transition-all duration-300"
-                      />
-                    </div>
-                    
-                    {/* Trust Level Indicator */}
-                    <div className="flex items-center justify-center pt-2">
-                      <TrustBadge level={place.trustLevel} className="shadow-md" />
+                    {/* Author Name */}
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-gray-900">{place.authorName}</p>
                     </div>
                     
                     {/* Timestamps */}
@@ -1569,35 +1565,25 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                         <span className="font-medium">Ngày đăng:</span>
                         <span className="ml-2 text-gray-900 font-semibold">
                           {new Date(place.createdAt).toLocaleDateString('vi-VN', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
                           })}
                         </span>
                       </div>
                       {/* Only show update date if it's different from creation date */}
                       {place.updatedAt !== place.createdAt && (
                         <div className="text-xs lg:text-sm text-gray-600">
-                          <span className="font-medium">Cập nhật lần cuối:</span>
+                          <span className="font-medium whitespace-nowrap">Cập nhật lần cuối:</span>
                           <span className="ml-2 text-gray-900 font-semibold">
                             {new Date(place.updatedAt).toLocaleDateString('vi-VN', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
                             })}
                           </span>
                         </div>
                       )}
-                    </div>
-                    
-                    {/* Quality Assurance Indicator */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-100">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs lg:text-sm text-green-700 font-medium">
-                          ✓ Đã được xác minh bởi hệ thống VietExplore
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </CardContent>

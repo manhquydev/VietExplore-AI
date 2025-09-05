@@ -72,7 +72,7 @@ export function LoadingOverlay({
     <div className={cn("relative", className)}>
       {children}
       {isLoading && (
-        <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
           <div className="bg-white rounded-2xl shadow-2xl p-6">
             <BrandedLoading size="md" variant="logo" text={loadingText} />
           </div>

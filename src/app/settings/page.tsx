@@ -58,19 +58,19 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
       <Header />
       
       <main className="container py-8 max-w-4xl">
         {/* Header */}
         <div className="glass-card p-8 mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center">
-              <Settings className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+            <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center">
+              <Settings className="w-6 h-6 text-sky-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Cài đặt tài khoản</h1>
-              <p className="text-slate-600 dark:text-slate-300 mt-1">
+              <h1 className="text-3xl font-bold text-slate-900">Cài đặt tài khoản</h1>
+              <p className="text-slate-600 mt-1">
                 Quản lý thông tin cá nhân và tùy chỉnh trải nghiệm của bạn
               </p>
             </div>
@@ -80,63 +80,63 @@ export default function SettingsPage() {
         <div className="space-y-8">
           {/* Profile Settings */}
           <div className="glass-card p-8">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900/30 rounded-lg flex items-center justify-center">
-                <User className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center">
+                <User className="w-4 h-4 text-sky-600" />
               </div>
               Thông tin cá nhân
             </h2>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="fullName" className="text-slate-700 dark:text-slate-300">Họ và tên</Label>
+                  <Label htmlFor="fullName" className="text-slate-700">Họ và tên</Label>
                   <Input
                     id="fullName"
                     defaultValue={user?.fullName}
                     placeholder="Nhập họ và tên"
-                    className="glass-subtle border-white/20 dark:border-slate-700/50"
+                    className="glass-subtle border-white/20"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="username" className="text-slate-700 dark:text-slate-300">Tên người dùng</Label>
+                  <Label htmlFor="username" className="text-slate-700">Tên người dùng</Label>
                   <Input
                     id="username"
                     defaultValue={user?.username}
                     placeholder="Nhập tên người dùng"
-                    className="glass-subtle border-white/20 dark:border-slate-700/50"
+                    className="glass-subtle border-white/20"
                   />
                 </div>
               </div>
               
               <div>
-                <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">Email</Label>
+                <Label htmlFor="email" className="text-slate-700">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   defaultValue={user?.email}
                   placeholder="Nhập địa chỉ email"
-                  className="glass-subtle border-white/20 dark:border-slate-700/50"
+                  className="glass-subtle border-white/20"
                 />
               </div>
               
               <div>
-                <Label htmlFor="bio" className="text-slate-700 dark:text-slate-300">Giới thiệu bản thân</Label>
+                <Label htmlFor="bio" className="text-slate-700">Giới thiệu bản thân</Label>
                 <Textarea
                   id="bio"
                   defaultValue={user?.profile?.bio}
                   placeholder="Viết vài dòng về bản thân..."
                   rows={3}
-                  className="glass-subtle border-white/20 dark:border-slate-700/50"
+                  className="glass-subtle border-white/20"
                 />
               </div>
               
               <div>
-                <Label htmlFor="location" className="text-slate-700 dark:text-slate-300">Địa điểm</Label>
+                <Label htmlFor="location" className="text-slate-700">Địa điểm</Label>
                 <Input
                   id="location"
                   defaultValue={user?.profile?.location}
                   placeholder="Thành phố, quốc gia"
-                  className="glass-subtle border-white/20 dark:border-slate-700/50"
+                  className="glass-subtle border-white/20"
                 />
               </div>
             </div>
@@ -144,17 +144,17 @@ export default function SettingsPage() {
 
           {/* Privacy Settings */}
           <div className="glass-card p-8">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Shield className="w-4 h-4 text-emerald-600" />
               </div>
               Quyền riêng tư
             </h2>
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 glass-subtle rounded-xl">
                 <div className="space-y-1">
-                  <Label className="text-slate-900 dark:text-white">Hiển thị hồ sơ công khai</Label>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Cho phép người khác xem hồ sơ của bạn</p>
+                  <Label className="text-slate-900">Hiển thị hồ sơ công khai</Label>
+                  <p className="text-sm text-slate-600">Cho phép người khác xem hồ sơ của bạn</p>
                 </div>
                 <Switch
                   checked={privacy.profileVisible}
@@ -165,8 +165,8 @@ export default function SettingsPage() {
               
               <div className="flex items-center justify-between p-4 glass-subtle rounded-xl">
                 <div className="space-y-1">
-                  <Label className="text-slate-900 dark:text-white">Hiển thị thống kê đóng góp</Label>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Hiển thị số lượng địa điểm và lịch trình đã tạo</p>
+                  <Label className="text-slate-900">Hiển thị thống kê đóng góp</Label>
+                  <p className="text-sm text-slate-600">Hiển thị số lượng địa điểm và lịch trình đã tạo</p>
                 </div>
                 <Switch
                   checked={privacy.showStats}
@@ -177,8 +177,8 @@ export default function SettingsPage() {
               
               <div className="flex items-center justify-between p-4 glass-subtle rounded-xl">
                 <div className="space-y-1">
-                  <Label className="text-slate-900 dark:text-white">Cho phép tin nhắn</Label>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Người dùng khác có thể gửi tin nhắn cho bạn</p>
+                  <Label className="text-slate-900">Cho phép tin nhắn</Label>
+                  <p className="text-sm text-slate-600">Người dùng khác có thể gửi tin nhắn cho bạn</p>
                 </div>
                 <Switch
                   checked={privacy.allowMessages}
@@ -191,17 +191,17 @@ export default function SettingsPage() {
 
           {/* Notification Settings */}
           <div className="glass-card p-8">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Bell className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Bell className="w-4 h-4 text-purple-600" />
               </div>
               Thông báo
             </h2>
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 glass-subtle rounded-xl">
                 <div className="space-y-1">
-                  <Label className="text-slate-900 dark:text-white">Thông báo qua email</Label>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Nhận email về hoạt động quan trọng</p>
+                  <Label className="text-slate-900">Thông báo qua email</Label>
+                  <p className="text-sm text-slate-600">Nhận email về hoạt động quan trọng</p>
                 </div>
                 <Switch
                   checked={notifications.email}
@@ -212,8 +212,8 @@ export default function SettingsPage() {
               
               <div className="flex items-center justify-between p-4 glass-subtle rounded-xl">
                 <div className="space-y-1">
-                  <Label className="text-slate-900 dark:text-white">Thông báo đẩy</Label>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Nhận thông báo trên trình duyệt</p>
+                  <Label className="text-slate-900">Thông báo đẩy</Label>
+                  <p className="text-sm text-slate-600">Nhận thông báo trên trình duyệt</p>
                 </div>
                 <Switch
                   checked={notifications.push}
@@ -224,8 +224,8 @@ export default function SettingsPage() {
               
               <div className="flex items-center justify-between p-4 glass-subtle rounded-xl">
                 <div className="space-y-1">
-                  <Label className="text-slate-900 dark:text-white">Email marketing</Label>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Nhận thông tin về tính năng mới và cập nhật</p>
+                  <Label className="text-slate-900">Email marketing</Label>
+                  <p className="text-sm text-slate-600">Nhận thông tin về tính năng mới và cập nhật</p>
                 </div>
                 <Switch
                   checked={notifications.marketing}
@@ -238,18 +238,18 @@ export default function SettingsPage() {
 
           {/* Appearance & Language Settings */}
           <div className="glass-card p-8">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                <Monitor className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Monitor className="w-4 h-4 text-amber-600" />
               </div>
               Giao diện & Ngôn ngữ
             </h2>
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="language" className="text-slate-700 dark:text-slate-300">Ngôn ngữ</Label>
+                  <Label htmlFor="language" className="text-slate-700">Ngôn ngữ</Label>
                   <Select defaultValue="vi">
-                    <SelectTrigger className="glass-subtle border-white/20 dark:border-slate-700/50">
+                    <SelectTrigger className="glass-subtle border-white/20">
                       <SelectValue placeholder="Chọn ngôn ngữ" />
                     </SelectTrigger>
                     <SelectContent>
@@ -260,9 +260,9 @@ export default function SettingsPage() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="timezone" className="text-slate-700 dark:text-slate-300">Múi giờ</Label>
+                  <Label htmlFor="timezone" className="text-slate-700">Múi giờ</Label>
                   <Select defaultValue="asia/ho_chi_minh">
-                    <SelectTrigger className="glass-subtle border-white/20 dark:border-slate-700/50">
+                    <SelectTrigger className="glass-subtle border-white/20">
                       <SelectValue placeholder="Chọn múi giờ" />
                     </SelectTrigger>
                     <SelectContent>
@@ -275,7 +275,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <Label className="text-slate-700 dark:text-slate-300 mb-3 block">Chủ đề giao diện</Label>
+                <Label className="text-slate-700 mb-3 block">Chủ đề giao diện</Label>
                 <div className="grid grid-cols-3 gap-4">
                   {[
                     { value: 'light', label: 'Sáng', icon: Sun },
@@ -287,15 +287,15 @@ export default function SettingsPage() {
                       onClick={() => setTheme(value)}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         theme === value
-                          ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20'
-                          : 'border-white/20 dark:border-slate-700/50 glass-subtle hover:border-sky-300'
+                          ? 'border-sky-500 bg-sky-50'
+                          : 'border-white/20 glass-subtle hover:border-sky-300'
                       }`}
                     >
                       <Icon className={`w-6 h-6 mx-auto mb-2 ${
-                        theme === value ? 'text-sky-600' : 'text-slate-600 dark:text-slate-400'
+                        theme === value ? 'text-sky-600' : 'text-slate-600'
                       }`} />
                       <div className={`text-sm font-medium ${
-                        theme === value ? 'text-sky-900 dark:text-sky-100' : 'text-slate-700 dark:text-slate-300'
+                        theme === value ? 'text-sky-900' : 'text-slate-700'
                       }`}>
                         {label}
                       </div>
@@ -308,40 +308,40 @@ export default function SettingsPage() {
 
           {/* Account Security */}
           <div className="glass-card p-8">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-                <Key className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <Key className="w-4 h-4 text-indigo-600" />
               </div>
               Bảo mật tài khoản
             </h2>
             <div className="space-y-6">
-              <h3 className="font-medium text-slate-900 dark:text-white">Thay đổi mật khẩu</h3>
+              <h3 className="font-medium text-slate-900">Thay đổi mật khẩu</h3>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="currentPassword" className="text-slate-700 dark:text-slate-300">Mật khẩu hiện tại</Label>
+                  <Label htmlFor="currentPassword" className="text-slate-700">Mật khẩu hiện tại</Label>
                   <Input
                     id="currentPassword"
                     type="password"
                     placeholder="Nhập mật khẩu hiện tại"
-                    className="glass-subtle border-white/20 dark:border-slate-700/50"
+                    className="glass-subtle border-white/20"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="newPassword" className="text-slate-700 dark:text-slate-300">Mật khẩu mới</Label>
+                  <Label htmlFor="newPassword" className="text-slate-700">Mật khẩu mới</Label>
                   <Input
                     id="newPassword"
                     type="password"
                     placeholder="Nhập mật khẩu mới"
-                    className="glass-subtle border-white/20 dark:border-slate-700/50"
+                    className="glass-subtle border-white/20"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">Xác nhận mật khẩu mới</Label>
+                  <Label htmlFor="confirmPassword" className="text-slate-700">Xác nhận mật khẩu mới</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
                     placeholder="Nhập lại mật khẩu mới"
-                    className="glass-subtle border-white/20 dark:border-slate-700/50"
+                    className="glass-subtle border-white/20"
                   />
                 </div>
                 <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white">
@@ -353,16 +353,16 @@ export default function SettingsPage() {
           </div>
 
           {/* Danger Zone */}
-          <div className="glass-card p-8 border-2 border-red-200/50 dark:border-red-800/50">
-            <h2 className="text-xl font-bold text-red-700 dark:text-red-400 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <div className="glass-card p-8 border-2 border-red-200/50">
+            <h2 className="text-xl font-bold text-red-700 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
               </div>
               Vùng nguy hiểm
             </h2>
-            <div className="p-6 bg-red-50/50 dark:bg-red-900/20 rounded-xl border border-red-200/50 dark:border-red-800/50">
-              <h3 className="font-medium text-red-900 dark:text-red-100 mb-2">Xóa tài khoản</h3>
-              <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+            <div className="p-6 bg-red-50/50 rounded-xl border border-red-200/50">
+              <h3 className="font-medium text-red-900 mb-2">Xóa tài khoản</h3>
+              <p className="text-sm text-red-700 mb-4">
                 Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.
               </p>
               <Button 

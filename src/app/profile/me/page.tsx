@@ -88,15 +88,15 @@ export default function ProfilePage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
         <Header />
         <main className="container py-16">
           <div className="glass-card max-w-md mx-auto text-center p-8">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <User className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <User className="w-8 h-8 text-sky-600" />
             </div>
-            <h1 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Đăng nhập để xem hồ sơ</h1>
-            <p className="text-slate-600 dark:text-slate-300 mb-6">Bạn cần đăng nhập để truy cập trang hồ sơ cá nhân</p>
+            <h1 className="text-2xl font-bold mb-4 text-slate-900">Đăng nhập để xem hồ sơ</h1>
+            <p className="text-slate-600 mb-6">Bạn cần đăng nhập để truy cập trang hồ sơ cá nhân</p>
             <Button className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white">
               Đăng nhập ngay
             </Button>
@@ -108,7 +108,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
       <Header />
       
       <main className="container py-8">
@@ -136,44 +136,44 @@ export default function ProfilePage() {
                 {isEditing ? (
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="fullName" className="text-slate-700 dark:text-slate-300">Họ và tên</Label>
+                      <Label htmlFor="fullName" className="text-slate-700">Họ và tên</Label>
                       <Input
                         id="fullName"
                         value={formData.fullName}
                         onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                        className="glass-subtle border-white/20 dark:border-slate-700/50"
+                        className="glass-subtle border-white/20"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="bio" className="text-slate-700 dark:text-slate-300">Giới thiệu bản thân</Label>
+                      <Label htmlFor="bio" className="text-slate-700">Giới thiệu bản thân</Label>
                       <Textarea
                         id="bio"
                         placeholder="Chia sẻ về bản thân, sở thích du lịch..."
                         value={formData.bio}
                         onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                         rows={3}
-                        className="glass-subtle border-white/20 dark:border-slate-700/50"
+                        className="glass-subtle border-white/20"
                       />
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="location" className="text-slate-700 dark:text-slate-300">Địa điểm</Label>
+                        <Label htmlFor="location" className="text-slate-700">Địa điểm</Label>
                         <Input
                           id="location"
                           placeholder="VD: Hà Nội, Việt Nam"
                           value={formData.location}
                           onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                          className="glass-subtle border-white/20 dark:border-slate-700/50"
+                          className="glass-subtle border-white/20"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="website" className="text-slate-700 dark:text-slate-300">Website</Label>
+                        <Label htmlFor="website" className="text-slate-700">Website</Label>
                         <Input
                           id="website"
                           placeholder="https://yourwebsite.com"
                           value={formData.website}
                           onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                          className="glass-subtle border-white/20 dark:border-slate-700/50"
+                          className="glass-subtle border-white/20"
                         />
                       </div>
                     </div>
@@ -195,7 +195,7 @@ export default function ProfilePage() {
                   <div>
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h1 className="text-2xl font-bold mb-1 flex items-center gap-2 text-slate-900 dark:text-white">
+                        <h1 className="text-2xl font-bold mb-1 flex items-center gap-2 text-slate-900">
                           {user.fullName || 'User'}
                           {user.verified && (
                             <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0">
@@ -204,7 +204,7 @@ export default function ProfilePage() {
                             </Badge>
                           )}
                         </h1>
-                        <p className="text-slate-600 dark:text-slate-400">@{user.username}</p>
+                        <p className="text-slate-600">@{user.username}</p>
                         <div className="mt-2">
                           <UserRoleDisplay 
                             role={user.role}
@@ -223,10 +223,10 @@ export default function ProfilePage() {
                     </div>
 
                     {user.profile?.bio && (
-                      <p className="text-slate-600 dark:text-slate-300 mb-4">{user.profile.bio}</p>
+                      <p className="text-slate-600 mb-4">{user.profile.bio}</p>
                     )}
 
-                    <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="flex flex-wrap gap-4 text-sm text-slate-600">
                       {user.profile?.location && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
@@ -276,52 +276,52 @@ export default function ProfilePage() {
                 {/* Stats Cards */}
                 <div className="grid sm:grid-cols-3 gap-6">
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <MapPin className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                    <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <MapPin className="w-6 h-6 text-sky-600" />
                     </div>
-                    <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <div className="text-3xl font-bold text-slate-900 mb-2">
                       {user.stats?.placesContributed || 0}
                     </div>
-                    <div className="text-slate-600 dark:text-slate-400">Địa điểm đóng góp</div>
+                    <div className="text-slate-600">Địa điểm đóng góp</div>
                   </div>
                   
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <BookOpen className="w-6 h-6 text-purple-600" />
                     </div>
-                    <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <div className="text-3xl font-bold text-slate-900 mb-2">
                       {user.stats?.itinerariesCreated || 0}
                     </div>
-                    <div className="text-slate-600 dark:text-slate-400">Lịch trình tạo</div>
+                    <div className="text-slate-600">Lịch trình tạo</div>
                   </div>
                   
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Heart className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+                    <div className="w-12 h-12 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Heart className="w-6 h-6 text-rose-600" />
                     </div>
-                    <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <div className="text-3xl font-bold text-slate-900 mb-2">
                       {user.stats?.helpfulVotes || 0}
                     </div>
-                    <div className="text-slate-600 dark:text-slate-400">Lượt thích nhận</div>
+                    <div className="text-slate-600">Lượt thích nhận</div>
                   </div>
                 </div>
 
                 {/* Badges/Achievements */}
                 <div className="glass-subtle p-6 rounded-2xl">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-sky-600" />
                     Huy hiệu & Thành tích
                   </h3>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {user.badges && user.badges.length > 0 ? (
                       user.badges.map((badge, index) => (
-                        <div key={index} className="flex items-center gap-3 p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                        <div key={index} className="flex items-center gap-3 p-4 bg-white/50 rounded-xl">
                           <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
                             <Award className="w-5 h-5 text-white" />
                           </div>
                           <div>
-                            <div className="font-medium text-slate-900 dark:text-white">{badge}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">Huy hiệu thành tích</div>
+                            <div className="font-medium text-slate-900">{badge}</div>
+                            <div className="text-xs text-slate-600">Huy hiệu thành tích</div>
                           </div>
                         </div>
                       ))
@@ -330,8 +330,8 @@ export default function ProfilePage() {
                         <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
                           <Award className="w-8 h-8 text-white" />
                         </div>
-                        <p className="text-slate-600 dark:text-slate-300 mb-2">Chưa có huy hiệu nào</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Đóng góp nội dung để nhận huy hiệu đầu tiên!</p>
+                        <p className="text-slate-600 mb-2">Chưa có huy hiệu nào</p>
+                        <p className="text-sm text-slate-500">Đóng góp nội dung để nhận huy hiệu đầu tiên!</p>
                       </div>
                     )}
                   </div>
@@ -343,8 +343,8 @@ export default function ProfilePage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-sky-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
                     <MapPin className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Chưa có đóng góp nào</h3>
-                  <p className="text-slate-600 dark:text-slate-300 mb-6">Bắt đầu chia sẻ những địa điểm tuyệt vời bạn đã khám phá!</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Chưa có đóng góp nào</h3>
+                  <p className="text-slate-600 mb-6">Bắt đầu chia sẻ những địa điểm tuyệt vời bạn đã khám phá!</p>
                   <Button 
                     className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
                     asChild
@@ -362,8 +362,8 @@ export default function ProfilePage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
                     <BookOpen className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Chưa có lịch trình nào</h3>
-                  <p className="text-slate-600 dark:text-slate-300 mb-6">Tạo lịch trình đầu tiên để lưu kế hoạch du lịch!</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Chưa có lịch trình nào</h3>
+                  <p className="text-slate-600 mb-6">Tạo lịch trình đầu tiên để lưu kế hoạch du lịch!</p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button 
                       className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
@@ -389,8 +389,8 @@ export default function ProfilePage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
                     <BarChart3 className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Chưa có hoạt động nào</h3>
-                  <p className="text-slate-600 dark:text-slate-300">Hoạt động của bạn sẽ được hiển thị ở đây</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Chưa có hoạt động nào</h3>
+                  <p className="text-slate-600">Hoạt động của bạn sẽ được hiển thị ở đây</p>
                 </div>
               </TabsContent>
             </Tabs>

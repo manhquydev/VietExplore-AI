@@ -29,25 +29,25 @@ const coreValues = [
     title: "Minh bạch",
     description: "Mọi thông tin đều có nguồn rõ ràng và được xác minh bởi cộng đồng",
     icon: Shield,
-    iconColor: "text-blue-600 dark:text-blue-400"
+    iconColor: "text-blue-600 "
   },
   {
     title: "Cộng đồng", 
     description: "Xây dựng bởi cộng đồng, vì cộng đồng, không vì lợi nhuận",
     icon: Heart,
-    iconColor: "text-rose-600 dark:text-rose-400"
+    iconColor: "text-rose-600 "
   },
   {
     title: "Bền vững",
     description: "Khuyến khích du lịch có trách nhiệm với môi trường và văn hóa",
     icon: Globe,
-    iconColor: "text-emerald-600 dark:text-emerald-400"
+    iconColor: "text-emerald-600 "
   },
   {
     title: "Đổi mới",
     description: "Ứng dụng AI và công nghệ mới để cải thiện trải nghiệm du lịch",
     icon: Star,
-    iconColor: "text-amber-600 dark:text-amber-400"
+    iconColor: "text-amber-600 "
   }
 ]
 
@@ -56,31 +56,31 @@ const principles = [
     title: "Xác thực và đáng tin cậy",
     description: "Mọi thông tin đều được kiểm chứng bởi cộng đồng người dùng thực tế",
     icon: CheckCircle,
-    iconColor: "text-emerald-600 dark:text-emerald-400"
+    iconColor: "text-emerald-600 "
   },
   {
     title: "Miễn phí và công bằng",
     description: "Không có phí ẩn, không thiên vị thương mại, chỉ có thông tin trung thực",
     icon: Heart,
-    iconColor: "text-rose-600 dark:text-rose-400"
+    iconColor: "text-rose-600 "
   },
   {
     title: "Hỗ trợ địa phương",
     description: "Ưu tiên các doanh nghiệp nhỏ, cộng đồng địa phương và du lịch bền vững",
     icon: Users,
-    iconColor: "text-blue-600 dark:text-blue-400"
+    iconColor: "text-blue-600 "
   },
   {
     title: "Công nghệ thông minh",
     description: "Tích hợp AI để cung cấp gợi ý cá nhân hóa và trải nghiệm tốt nhất",
     icon: Zap,
-    iconColor: "text-purple-600 dark:text-purple-400"
+    iconColor: "text-purple-600 "
   }
 ]
 
 export default function MissionPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
       <Header />
       
       <main className="container py-16 max-w-6xl">
@@ -94,7 +94,7 @@ export default function MissionPage() {
             Sứ mệnh của Du Lịch Việt
           </h1>
           
-          <p className="text-xl sm:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed mb-8">
+          <p className="text-xl sm:text-2xl text-slate-600  max-w-4xl mx-auto leading-relaxed mb-8">
             Xây dựng nền tảng phi lợi nhuận, cung cấp thông tin du lịch Việt Nam đáng tin cậy, 
             tích hợp AI để nâng cao trải nghiệm khám phá đất nước.
           </p>
@@ -122,13 +122,13 @@ export default function MissionPage() {
         {/* Mission Statement */}
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           <div className="glass-card p-8">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <Target className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+            <h2 className="text-3xl font-bold text-slate-900  mb-6 flex items-center gap-3">
+              <Target className="w-8 h-8 text-sky-600 " />
               Sứ mệnh
             </h2>
-            <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+            <div className="space-y-4 text-slate-600  leading-relaxed">
               <p className="text-lg">
-                <strong className="text-slate-900 dark:text-white">Tạo ra kho dữ liệu du lịch minh bạch – xác thực – dễ tiếp cận</strong> cho mọi người, 
+                <strong className="text-slate-900 ">Tạo ra kho dữ liệu du lịch minh bạch – xác thực – dễ tiếp cận</strong> cho mọi người, 
                 giúp du khách có những quyết định thông minh cho chuyến đi của mình.
               </p>
               <p>
@@ -139,13 +139,13 @@ export default function MissionPage() {
           </div>
 
           <div className="glass-card p-8">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <Lightbulb className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-3xl font-bold text-slate-900  mb-6 flex items-center gap-3">
+              <Lightbulb className="w-8 h-8 text-purple-600 " />
               Tầm nhìn
             </h2>
-            <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+            <div className="space-y-4 text-slate-600  leading-relaxed">
               <p className="text-lg">
-                <strong className="text-slate-900 dark:text-white">Trở thành nguồn thông tin du lịch Việt Nam đáng tin cậy nhất</strong>, 
+                <strong className="text-slate-900 ">Trở thành nguồn thông tin du lịch Việt Nam đáng tin cậy nhất</strong>, 
                 được xây dựng và duy trì bởi chính cộng đồng yêu du lịch.
               </p>
               <p>
@@ -160,7 +160,7 @@ export default function MissionPage() {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h2 className="gradient-text text-3xl font-bold mb-4">Giá trị cốt lõi</h2>
-            <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-slate-600  max-w-2xl mx-auto">
               Những nguyên tắc định hướng mọi quyết định và hoạt động của chúng tôi
             </p>
           </div>
@@ -171,8 +171,8 @@ export default function MissionPage() {
                 <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <value.icon className={`w-8 h-8 ${value.iconColor}`} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{value.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{value.description}</p>
+                <h3 className="text-xl font-bold text-slate-900  mb-3">{value.title}</h3>
+                <p className="text-slate-600  text-sm leading-relaxed">{value.description}</p>
               </div>
             ))}
           </div>
@@ -182,7 +182,7 @@ export default function MissionPage() {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h2 className="gradient-text text-3xl font-bold mb-4">Nguyên tắc hoạt động</h2>
-            <p className="text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+            <p className="text-slate-600  max-w-3xl mx-auto">
               Cách chúng tôi vận hành để đảm bảo chất lượng và độ tin cậy của nền tảng
             </p>
           </div>
@@ -195,8 +195,8 @@ export default function MissionPage() {
                     <principle.icon className={`w-6 h-6 ${principle.iconColor}`} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{principle.title}</h3>
-                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{principle.description}</p>
+                    <h3 className="text-xl font-bold text-slate-900  mb-3">{principle.title}</h3>
+                    <p className="text-slate-600  leading-relaxed">{principle.description}</p>
                   </div>
                 </div>
               </div>
@@ -208,21 +208,21 @@ export default function MissionPage() {
         <div className="glass-card p-8 sm:p-12 mb-16 bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
           <div className="text-center">
             <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Award className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+              <Award className="w-8 h-8 text-sky-600 " />
             </div>
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
+            <h2 className="text-3xl font-bold text-slate-900  mb-6">
               Tác động mong muốn
             </h2>
             <div className="max-w-4xl mx-auto">
-              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+              <p className="text-lg text-slate-600  leading-relaxed mb-6">
                 Chúng tôi mong muốn Du Lịch Việt không chỉ là một nền tảng thông tin, 
                 mà còn là cầu nối giúp du khách hiểu sâu hơn về văn hóa, con người và thiên nhiên Việt Nam.
               </p>
-              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-lg text-slate-600  leading-relaxed">
                 Mỗi chuyến đi được lên kế hoạch qua nền tảng của chúng tôi sẽ góp phần 
-                <strong className="text-slate-900 dark:text-white"> phát triển du lịch bền vững</strong>, 
-                <strong className="text-slate-900 dark:text-white"> hỗ trợ cộng đồng địa phương</strong>, 
-                và <strong className="text-slate-900 dark:text-white">bảo tồn di sản văn hóa</strong> cho thế hệ tương lai.
+                <strong className="text-slate-900 "> phát triển du lịch bền vững</strong>, 
+                <strong className="text-slate-900 "> hỗ trợ cộng đồng địa phương</strong>, 
+                và <strong className="text-slate-900 ">bảo tồn di sản văn hóa</strong> cho thế hệ tương lai.
               </p>
             </div>
           </div>
@@ -230,10 +230,10 @@ export default function MissionPage() {
 
         {/* Call to Action */}
         <div className="glass-card text-center p-8 sm:p-12">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
+          <h2 className="text-3xl font-bold text-slate-900  mb-6">
             Tham gia cùng chúng tôi
           </h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600  mb-8 max-w-2xl mx-auto">
             Hãy là một phần của cộng đồng xây dựng nền tảng du lịch Việt Nam tốt nhất
           </p>
           

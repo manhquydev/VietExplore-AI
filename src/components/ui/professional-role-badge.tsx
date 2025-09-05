@@ -66,9 +66,9 @@ export function ProfessionalRoleBadge({
         }
       case 'lg':
         return {
-          container: 'px-6 py-3 text-lg',
-          icon: 'w-8 h-8',
-          gap: 'gap-3'
+          container: 'px-3 py-2 text-lg',
+          icon: 'w-12 h-12',
+          gap: 'gap-2'
         }
       case 'md':
       default:

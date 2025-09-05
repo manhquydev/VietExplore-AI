@@ -160,24 +160,24 @@ export default function ItineraryBuilderPage() {
   const totalCost = itinerary.places.reduce((sum, place) => sum + place.estimatedCost, 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-16 sm:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 "></div>
           
           <div className="relative container">
             <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
               <h1 className="gradient-text text-4xl sm:text-5xl font-bold mb-6 leading-tight">
                 Tạo Lịch Trình
               </h1>
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-slate-600  mb-8 max-w-2xl mx-auto leading-relaxed">
                 Thiết kế chuyến đi hoàn hảo với công cụ thông minh và gợi ý cá nhân hóa
               </p>
               
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600 ">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-sky-500" />
                   <span>Kéo thả dễ dàng</span>
@@ -201,29 +201,29 @@ export default function ItineraryBuilderPage() {
             <div className="lg:col-span-3 space-y-6">
               {/* Basic Information */}
               <div className="glass-card p-6">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900  mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-sky-600" />
                   Thông tin cơ bản
                 </h2>
                 <div className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="title" className="text-slate-700 dark:text-slate-300">Tên lịch trình *</Label>
+                      <Label htmlFor="title" className="text-slate-700 ">Tên lịch trình *</Label>
                       <Input
                         id="title"
                         placeholder="VD: Đà Nẵng - Hội An 3 ngày 2 đêm"
                         value={itinerary.title}
                         onChange={(e) => setItinerary(prev => ({ ...prev, title: e.target.value }))}
-                        className="glass-subtle border-white/20 dark:border-slate-700/50"
+                        className="glass-subtle border-white/20 "
                       />
                     </div>
                     <div>
-                      <Label htmlFor="duration" className="text-slate-700 dark:text-slate-300">Số ngày</Label>
+                      <Label htmlFor="duration" className="text-slate-700 ">Số ngày</Label>
                       <Select
                         value={itinerary.duration.toString()}
                         onValueChange={(value) => setItinerary(prev => ({ ...prev, duration: parseInt(value) }))}
                       >
-                        <SelectTrigger className="glass-subtle border-white/20 dark:border-slate-700/50">
+                        <SelectTrigger className="glass-subtle border-white/20 ">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -238,24 +238,24 @@ export default function ItineraryBuilderPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="description" className="text-slate-700 dark:text-slate-300">Mô tả</Label>
+                    <Label htmlFor="description" className="text-slate-700 ">Mô tả</Label>
                     <textarea
                       id="description"
                       placeholder="Mô tả ngắn về chuyến đi..."
                       value={itinerary.description}
                       onChange={(e) => setItinerary(prev => ({ ...prev, description: e.target.value }))}
-                      className="glass-subtle border-white/20 dark:border-slate-700/50 w-full p-3 rounded-lg resize-none h-20"
+                      className="glass-subtle border-white/20  w-full p-3 rounded-lg resize-none h-20"
                     />
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="tripType" className="text-slate-700 dark:text-slate-300">Loại chuyến đi</Label>
+                      <Label htmlFor="tripType" className="text-slate-700 ">Loại chuyến đi</Label>
                       <Select
                         value={itinerary.tripType}
                         onValueChange={(value) => setItinerary(prev => ({ ...prev, tripType: value }))}
                       >
-                        <SelectTrigger className="glass-subtle border-white/20 dark:border-slate-700/50">
+                        <SelectTrigger className="glass-subtle border-white/20 ">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -268,7 +268,7 @@ export default function ItineraryBuilderPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-slate-700 dark:text-slate-300">Ngân sách dự kiến</Label>
+                      <Label className="text-slate-700 ">Ngân sách dự kiến</Label>
                       <div className="flex gap-2">
                         <Input
                           type="number"
@@ -278,7 +278,7 @@ export default function ItineraryBuilderPage() {
                             ...prev,
                             budget: { ...prev.budget, min: parseInt(e.target.value) || 0 }
                           }))}
-                          className="glass-subtle border-white/20 dark:border-slate-700/50"
+                          className="glass-subtle border-white/20 "
                         />
                         <Input
                           type="number"
@@ -288,7 +288,7 @@ export default function ItineraryBuilderPage() {
                             ...prev,
                             budget: { ...prev.budget, max: parseInt(e.target.value) || 0 }
                           }))}
-                          className="glass-subtle border-white/20 dark:border-slate-700/50"
+                          className="glass-subtle border-white/20 "
                         />
                       </div>
                     </div>
@@ -306,7 +306,7 @@ export default function ItineraryBuilderPage() {
 
               {/* Daily Timeline */}
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Lịch trình chi tiết</h2>
+                <h2 className="text-xl font-bold text-slate-900 ">Lịch trình chi tiết</h2>
                 {Array.from({ length: itinerary.duration }, (_, i) => {
                   const day = i + 1
                   const dayPlaces = placesByDay[day] || []
@@ -314,7 +314,7 @@ export default function ItineraryBuilderPage() {
                   return (
                     <div key={day} className="glass-card p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-slate-900  flex items-center gap-2">
                           <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold text-sm">
                             {day}
                           </div>
@@ -335,8 +335,8 @@ export default function ItineraryBuilderPage() {
                               className="w-16 h-12 object-cover rounded-lg"
                             />
                             <div className="flex-1">
-                              <h4 className="font-semibold text-slate-900 dark:text-white">{place.name}</h4>
-                              <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+                              <h4 className="font-semibold text-slate-900 ">{place.name}</h4>
+                              <div className="flex items-center gap-4 text-sm text-slate-600 ">
                                 <span className="flex items-center gap-1">
                                   <MapPin className="w-3 h-3" />
                                   {place.province}
@@ -413,15 +413,15 @@ export default function ItineraryBuilderPage() {
             <div className="space-y-6">
               {/* Budget Summary */}
               <div className="glass-card p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Tổng quan ngân sách</h3>
+                <h3 className="text-lg font-bold text-slate-900  mb-4">Tổng quan ngân sách</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 dark:text-slate-300">Chi phí ước tính:</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totalCost)}</span>
+                    <span className="text-slate-600 ">Chi phí ước tính:</span>
+                    <span className="font-bold text-slate-900 ">{formatCurrency(totalCost)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 dark:text-slate-300">Ngân sách:</span>
-                    <span className="text-slate-900 dark:text-white">
+                    <span className="text-slate-600 ">Ngân sách:</span>
+                    <span className="text-slate-900 ">
                       {formatCurrency(itinerary.budget.min)} - {formatCurrency(itinerary.budget.max)}
                     </span>
                   </div>
@@ -438,7 +438,7 @@ export default function ItineraryBuilderPage() {
 
               {/* Suggested Places */}
               <div className="glass-card p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Địa điểm gợi ý</h3>
+                <h3 className="text-lg font-bold text-slate-900  mb-4">Địa điểm gợi ý</h3>
                 <div className="space-y-3">
                   {suggestedPlaces.map((place) => (
                     <div key={place.id} className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
@@ -449,10 +449,10 @@ export default function ItineraryBuilderPage() {
                           className="w-12 h-9 object-cover rounded"
                         />
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                          <h4 className="font-medium text-sm text-slate-900  truncate">
                             {place.name}
                           </h4>
-                          <p className="text-xs text-slate-600 dark:text-slate-300">{place.province}</p>
+                          <p className="text-xs text-slate-600 ">{place.province}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="secondary" className="text-xs">{place.type}</Badge>
                           </div>
@@ -474,8 +474,8 @@ export default function ItineraryBuilderPage() {
 
               {/* Tips */}
               <div className="glass-card p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">💡 Gợi ý</h3>
-                <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <h3 className="text-lg font-bold text-slate-900  mb-4">💡 Gợi ý</h3>
+                <div className="space-y-2 text-sm text-slate-600 ">
                   <p>• Thêm địa điểm bằng cách click "Thêm địa điểm"</p>
                   <p>• Sử dụng AI để có gợi ý thông minh</p>
                   <p>• Chia sẻ lịch trình với bạn bè</p>

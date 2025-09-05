@@ -53,14 +53,14 @@ export default function PlacesPage() {
   const paginatedPlaces = filteredPlaces.slice(startIndex, startIndex + itemsPerPage)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section - Glassmorphism */}
         <section className="relative py-20 sm:py-24 overflow-hidden">
           {/* Background with subtle gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 "></div>
           
           {/* Glass morphism container */}
           <div className="relative container">
@@ -68,7 +68,7 @@ export default function PlacesPage() {
               <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 Khám Phá Việt Nam
               </h1>
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-slate-600  mb-8 max-w-2xl mx-auto leading-relaxed">
                 Hành trình qua hàng nghìn địa điểm tuyệt vời được cộng đồng tin tưởng và xác minh
               </p>
               
@@ -93,25 +93,25 @@ export default function PlacesPage() {
           {/* Results Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <p className="text-slate-600 dark:text-slate-300">
-                Hiển thị <strong className="text-slate-900 dark:text-white">{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPlaces.length)}</strong> trong tổng số <strong className="text-slate-900 dark:text-white">{filteredPlaces.length}</strong> kết quả
+              <p className="text-slate-600 ">
+                Hiển thị <strong className="text-slate-900 ">{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPlaces.length)}</strong> trong tổng số <strong className="text-slate-900 ">{filteredPlaces.length}</strong> kết quả
               </p>
               
               {/* Active Filters - Enhanced styling */}
               {(searchQuery || Object.values(filters).some(Boolean)) && (
                 <div className="flex flex-wrap gap-2">
                   {searchQuery && (
-                    <Badge variant="outline" className="glass-subtle border-teal-200 dark:border-teal-800">
+                    <Badge variant="outline" className="glass-subtle border-teal-200 ">
                       Tìm kiếm: "{searchQuery}"
                     </Badge>
                   )}
                   {filters.type && (
-                    <Badge variant="outline" className="glass-subtle border-sky-200 dark:border-sky-800">
+                    <Badge variant="outline" className="glass-subtle border-sky-200 ">
                       Loại: {filters.type}
                     </Badge>
                   )}
                   {filters.province && (
-                    <Badge variant="outline" className="glass-subtle border-blue-200 dark:border-blue-800">
+                    <Badge variant="outline" className="glass-subtle border-blue-200 ">
                       Tỉnh: {filters.province}
                     </Badge>
                   )}
@@ -121,12 +121,12 @@ export default function PlacesPage() {
 
             {/* View Mode Toggle - Glass effect */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600 dark:text-slate-300 mr-2">Hiển thị:</span>
-              <div className="glass-subtle flex rounded-xl border border-white/20 dark:border-slate-700/50 overflow-hidden backdrop-blur-sm">
+              <span className="text-sm text-slate-600  mr-2">Hiển thị:</span>
+              <div className="glass-subtle flex rounded-xl border border-white/20  overflow-hidden backdrop-blur-sm">
                 <Button
                   variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                   size="sm"
-                  className={viewMode === 'grid' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10 dark:hover:bg-slate-800/50 border-0'}
+                  className={viewMode === 'grid' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10  border-0'}
                   onClick={() => setViewMode('grid')}
                 >
                   Lưới
@@ -134,7 +134,7 @@ export default function PlacesPage() {
                 <Button
                   variant={viewMode === 'list' ? 'primary' : 'ghost'}
                   size="sm"
-                  className={viewMode === 'list' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10 dark:hover:bg-slate-800/50 border-0'}
+                  className={viewMode === 'list' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10  border-0'}
                   onClick={() => setViewMode('list')}
                 >
                   Danh sách
@@ -157,16 +157,16 @@ export default function PlacesPage() {
           ) : filteredPlaces.length === 0 ? (
             <div className="glass-card text-center py-16">
               <div className="max-w-md mx-auto">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100  flex items-center justify-center">
                   <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-slate-900  mb-2">
                   Không tìm thấy địa điểm nào
                 </h3>
-                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                <p className="text-slate-600  mb-6">
                   Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc để tìm những địa điểm phù hợp
                 </p>
                 <Button 
@@ -207,9 +207,9 @@ export default function PlacesPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-xl mb-2 text-slate-900 dark:text-white">{place.name}</h3>
-                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-2">{place.province} • {place.type}</p>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{place.shortDescription}</p>
+                        <h3 className="font-semibold text-xl mb-2 text-slate-900 ">{place.name}</h3>
+                        <p className="text-slate-600  text-sm mb-2">{place.province} • {place.type}</p>
+                        <p className="text-slate-600  text-sm mb-4 line-clamp-2">{place.shortDescription}</p>
                         <div className="flex items-center justify-between">
                           <div className="flex gap-2">
                             {place.tags?.slice(0, 2).map((tag, i) => (
@@ -242,7 +242,7 @@ export default function PlacesPage() {
                         size="sm"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
-                        className="hover:bg-white/10 dark:hover:bg-slate-800/50"
+                        className="hover:bg-white/10 "
                       >
                         ← Trước
                       </Button>
@@ -257,7 +257,7 @@ export default function PlacesPage() {
                             onClick={() => setCurrentPage(page)}
                             className={currentPage === page ? 
                               'bg-gradient-to-r from-sky-500 to-teal-500 text-white' : 
-                              'hover:bg-white/10 dark:hover:bg-slate-800/50'
+                              'hover:bg-white/10 '
                             }
                           >
                             {page}
@@ -270,7 +270,7 @@ export default function PlacesPage() {
                         size="sm"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
-                        className="hover:bg-white/10 dark:hover:bg-slate-800/50"
+                        className="hover:bg-white/10 "
                       >
                         Sau →
                       </Button>

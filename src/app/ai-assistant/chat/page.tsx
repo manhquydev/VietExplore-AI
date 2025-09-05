@@ -160,27 +160,27 @@ export default function AIChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-16 sm:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60"></div>
           
           <div className="relative container">
             <div className="glass-card text-center p-8 mb-8">
-              <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bot className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+              <div className="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bot className="w-8 h-8 text-sky-600" />
               </div>
               <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
                 AI Trợ lý Du lịch
               </h1>
-              <p className="text-slate-600 dark:text-slate-300 text-lg mb-6">
+              <p className="text-slate-600 text-lg mb-6">
                 Lập kế hoạch thông minh cho chuyến đi của bạn
               </p>
               
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-sky-500" />
                   <span>Trò chuyện tự nhiên</span>
@@ -198,7 +198,7 @@ export default function AIChatPage() {
               <Button 
                 onClick={clearChat}
                 variant="secondary" 
-                className="mt-6 glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
+                className="mt-6 glass-subtle hover:bg-white/40"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Làm mới cuộc trò chuyện
@@ -223,8 +223,8 @@ export default function AIChatPage() {
                         )}
                       >
                         {message.role === "assistant" && (
-                          <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                            <Bot className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                          <div className="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <Bot className="w-5 h-5 text-sky-600" />
                           </div>
                         )}
 
@@ -236,9 +236,9 @@ export default function AIChatPage() {
                             "rounded-2xl px-4 py-3",
                             message.role === "user"
                               ? "bg-gradient-to-r from-sky-500 to-teal-500 text-white"
-                              : "glass-subtle border border-white/20 dark:border-slate-700/50"
+                              : "glass-subtle border border-white/20"
                           )}>
-                            <div className="prose prose-sm dark:prose-invert prose-p:my-2 prose-headings:my-3 max-w-none">
+                            <div className="prose prose-sm prose-p:my-2 prose-headings:my-3 max-w-none">
                               <ReactMarkdown>{message.content}</ReactMarkdown>
                             </div>
                           </div>
@@ -249,7 +249,7 @@ export default function AIChatPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 rounded-full glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
+                                className="h-7 w-7 p-0 rounded-full glass-subtle hover:bg-white/40"
                                 onClick={() => copyMessage(message.content)}
                                 title="Sao chép"
                               >
@@ -258,7 +258,7 @@ export default function AIChatPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 rounded-full glass-subtle hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600"
+                                className="h-7 w-7 p-0 rounded-full glass-subtle hover:bg-green-50 hover:text-green-600"
                                 onClick={() => rateMessage(message.id, 'up')}
                                 title="Hữu ích"
                               >
@@ -267,7 +267,7 @@ export default function AIChatPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 rounded-full glass-subtle hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
+                                className="h-7 w-7 p-0 rounded-full glass-subtle hover:bg-red-50 hover:text-red-600"
                                 onClick={() => rateMessage(message.id, 'down')}
                                 title="Không hữu ích"
                               >
@@ -276,7 +276,7 @@ export default function AIChatPage() {
                             </div>
                           )}
 
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="text-xs text-slate-500">
                             {new Date(message.timestamp).toLocaleTimeString('vi-VN', {
                               hour: '2-digit',
                               minute: '2-digit'
@@ -285,9 +285,9 @@ export default function AIChatPage() {
                         </div>
 
                         {message.role === "user" && (
-                          <Avatar className="w-10 h-10 flex-shrink-0 mt-1 border-2 border-white dark:border-slate-700">
+                          <Avatar className="w-10 h-10 flex-shrink-0 mt-1 border-2 border-white">
                             <AvatarImage src={user?.avatar} />
-                            <AvatarFallback className="bg-gradient-to-r from-sky-100 to-teal-100 dark:from-sky-900 dark:to-teal-900">
+                            <AvatarFallback className="bg-gradient-to-r from-sky-100 to-teal-100">
                               <User className="w-5 h-5 text-sky-600" />
                             </AvatarFallback>
                           </Avatar>
@@ -298,13 +298,13 @@ export default function AIChatPage() {
                     {/* Loading indicator */}
                     {isLoading && (
                       <div className="flex gap-4 justify-start">
-                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                        <div className="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-5 h-5 text-sky-600" />
                         </div>
-                        <div className="glass-subtle border border-white/20 dark:border-slate-700/50 rounded-2xl px-4 py-3">
+                        <div className="glass-subtle border border-white/20 rounded-2xl px-4 py-3">
                           <div className="flex items-center gap-3">
                             <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
-                            <span className="text-slate-600 dark:text-slate-300 text-sm">Đang suy nghĩ...</span>
+                            <span className="text-slate-600 text-sm">Đang suy nghĩ...</span>
                           </div>
                         </div>
                       </div>
@@ -313,7 +313,7 @@ export default function AIChatPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="border-t border-white/20 dark:border-slate-700/50 p-6 glass-subtle">
+                <div className="border-t border-white/20 p-6 glass-subtle">
                   <div className="flex gap-3">
                     <div className="flex-1 relative">
                       <Input
@@ -322,7 +322,7 @@ export default function AIChatPage() {
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyPress={handleKeyPress}
                         disabled={isLoading}
-                        className="h-12 rounded-2xl glass-subtle border-white/20 dark:border-slate-700/50 focus:border-sky-300 dark:focus:border-sky-600"
+                        className="h-12 rounded-2xl glass-subtle border-white/20 focus:border-sky-300"
                       />
                     </div>
                     <Button
@@ -346,7 +346,7 @@ export default function AIChatPage() {
                           key={index}
                           variant="ghost"
                           size="sm"
-                          className="h-8 text-xs rounded-full glass-subtle hover:bg-sky-50/50 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400"
+                          className="h-8 text-xs rounded-full glass-subtle hover:bg-sky-50/50 text-sky-600"
                           onClick={() => handleQuickSuggestion(suggestion)}
                         >
                           {suggestion}
@@ -362,9 +362,9 @@ export default function AIChatPage() {
             <div className="w-full lg:w-96 space-y-6 order-1 lg:order-2">
               {/* Quick Suggestions */}
               <div className="glass-card p-6">
-                <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900">
+                  <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
                   </div>
                   Gợi ý nhanh
                 </h3>
@@ -374,10 +374,10 @@ export default function AIChatPage() {
                       key={index}
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-start h-auto p-3 text-left rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 border border-white/20 dark:border-slate-700/50"
+                      className="w-full justify-start h-auto p-3 text-left rounded-xl glass-subtle hover:bg-white/40 border border-white/20"
                       onClick={() => handleQuickSuggestion(suggestion)}
                     >
-                      <span className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{suggestion}</span>
+                      <span className="text-sm leading-relaxed text-slate-700">{suggestion}</span>
                     </Button>
                   ))}
                 </div>
@@ -385,35 +385,35 @@ export default function AIChatPage() {
 
               {/* Features */}
               <div className="glass-card p-6">
-                <h3 className="font-bold mb-4 text-lg text-slate-900 dark:text-white">Tôi có thể giúp bạn</h3>
+                <h3 className="font-bold mb-4 text-lg text-slate-900">Tôi có thể giúp bạn</h3>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-sky-50 dark:bg-sky-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                  <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 transition-colors duration-200">
+                    <div className="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Tìm địa điểm</p>
-                      <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">Khám phá hàng nghìn địa điểm đáng tin cậy</p>
+                      <p className="font-semibold text-sm mb-1 text-slate-900">Tìm địa điểm</p>
+                      <p className="text-slate-600 text-xs leading-relaxed">Khám phá hàng nghìn địa điểm đáng tin cậy</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-teal-50 dark:bg-teal-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                  <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 transition-colors duration-200">
+                    <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-teal-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Lập lịch trình</p>
-                      <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">Tạo kế hoạch chi tiết theo sở thích</p>
+                      <p className="font-semibold text-sm mb-1 text-slate-900">Lập lịch trình</p>
+                      <p className="text-slate-600 text-xs leading-relaxed">Tạo kế hoạch chi tiết theo sở thích</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200">
-                    <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <div className="flex items-start gap-4 p-3 rounded-xl glass-subtle hover:bg-white/40 transition-colors duration-200">
+                    <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">Tính chi phí</p>
-                      <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">Ước tính ngân sách phù hợp</p>
+                      <p className="font-semibold text-sm mb-1 text-slate-900">Tính chi phí</p>
+                      <p className="text-slate-600 text-xs leading-relaxed">Ước tính ngân sách phù hợp</p>
                     </div>
                   </div>
                 </div>
@@ -421,28 +421,28 @@ export default function AIChatPage() {
 
               {/* Tips */}
               <div className="glass-card p-6">
-                <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900 dark:text-white">
-                  <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                <h3 className="font-bold mb-4 flex items-center gap-3 text-lg text-slate-900">
+                  <div className="w-8 h-8 bg-yellow-50 rounded-xl flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-yellow-600" />
                   </div>
                   Mẹo sử dụng
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3 p-3 rounded-xl glass-subtle">
                     <div className="w-2 h-2 bg-sky-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">Hãy cụ thể về thời gian và ngân sách</p>
+                    <p className="text-sm leading-relaxed text-slate-600">Hãy cụ thể về thời gian và ngân sách</p>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-xl glass-subtle">
                     <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">Cho tôi biết sở thích của bạn</p>
+                    <p className="text-sm leading-relaxed text-slate-600">Cho tôi biết sở thích của bạn</p>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-xl glass-subtle">
                     <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">Đặt nhiều câu hỏi để có gợi ý tốt nhất</p>
+                    <p className="text-sm leading-relaxed text-slate-600">Đặt nhiều câu hỏi để có gợi ý tốt nhất</p>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-xl glass-subtle">
                     <div className="w-2 h-2 bg-pink-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">Sử dụng gợi ý nhanh để bắt đầu</p>
+                    <p className="text-sm leading-relaxed text-slate-600">Sử dụng gợi ý nhanh để bắt đầu</p>
                   </div>
                 </div>
               </div>

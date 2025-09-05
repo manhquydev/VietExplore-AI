@@ -33,19 +33,19 @@ export const metadata: Metadata = {
 
 export default function ResourcesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
       <Header />
       
       <main className="container py-16 max-w-7xl">
         {/* Hero Section */}
         <div className="glass-card text-center p-8 sm:p-12 mb-12">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+          <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <BookOpen className="w-8 h-8 text-sky-600" />
           </div>
           <h1 className="gradient-text text-4xl sm:text-5xl font-bold mb-6 leading-tight">
             Tài nguyên du lịch
           </h1>
-          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
             Tổng hợp đầy đủ các hướng dẫn, công cụ và thông tin cần thiết 
             để bạn có chuyến khám phá Việt Nam an toàn và trọn vẹn.
           </p>
@@ -55,9 +55,9 @@ export default function ResourcesPage() {
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
           {/* Travel Planning */}
           <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-purple-600" />
               </div>
               Lập kế hoạch
             </h2>
@@ -92,16 +92,16 @@ export default function ResourcesPage() {
                 <Link 
                   key={index}
                   href={item.href}
-                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors group"
+                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    <div className="font-medium text-slate-900 group-hover:text-purple-600 transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
@@ -113,9 +113,9 @@ export default function ResourcesPage() {
 
           {/* Transportation */}
           <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                <Plane className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Plane className="w-4 h-4 text-emerald-600" />
               </div>
               Di chuyển
             </h2>
@@ -155,16 +155,16 @@ export default function ResourcesPage() {
                   href={item.href}
                   target={item.external ? "_blank" : undefined}
                   rel={item.external ? "noopener noreferrer" : undefined}
-                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors group"
+                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    <div className="font-medium text-slate-900 group-hover:text-emerald-600 transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
@@ -176,9 +176,9 @@ export default function ResourcesPage() {
 
           {/* Safety & Health */}
           <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                <Shield className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <Shield className="w-4 h-4 text-red-600" />
               </div>
               An toàn & sức khỏe
             </h2>
@@ -213,16 +213,16 @@ export default function ResourcesPage() {
                 <Link 
                   key={index}
                   href={item.href}
-                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors group"
+                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-red-600" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                    <div className="font-medium text-slate-900 group-hover:text-red-600 transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
@@ -235,9 +235,9 @@ export default function ResourcesPage() {
 
         {/* Essential Apps Section */}
         <div className="glass-card p-8 mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center flex items-center justify-center gap-3">
-            <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900/30 rounded-lg flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center flex items-center justify-center gap-3">
+            <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center">
+              <Smartphone className="w-4 h-4 text-sky-600" />
             </div>
             Ứng dụng thiết yếu
           </h2>
@@ -248,32 +248,32 @@ export default function ResourcesPage() {
                 name: "Google Translate",
                 description: "Dịch tiếng Việt offline",
                 category: "Ngôn ngữ",
-                colorBg: "bg-blue-100 dark:bg-blue-900/30",
-                colorIcon: "text-blue-600 dark:text-blue-400",
+                colorBg: "bg-blue-100",
+                colorIcon: "text-blue-600",
                 icon: Globe
               },
               {
                 name: "Grab",
                 description: "Gọi xe, đặt món",
                 category: "Di chuyển",
-                colorBg: "bg-emerald-100 dark:bg-emerald-900/30",
-                colorIcon: "text-emerald-600 dark:text-emerald-400",
+                colorBg: "bg-emerald-100",
+                colorIcon: "text-emerald-600",
                 icon: Plane
               },
               {
                 name: "Zalo Pay/MoMo",
                 description: "Thanh toán không tiền mặt",
                 category: "Thanh toán",
-                colorBg: "bg-purple-100 dark:bg-purple-900/30",
-                colorIcon: "text-purple-600 dark:text-purple-400",
+                colorBg: "bg-purple-100",
+                colorIcon: "text-purple-600",
                 icon: CreditCard
               },
               {
                 name: "Maps.me",
                 description: "Bản đồ offline",
                 category: "Điều hướng",
-                colorBg: "bg-amber-100 dark:bg-amber-900/30",
-                colorIcon: "text-amber-600 dark:text-amber-400",
+                colorBg: "bg-amber-100",
+                colorIcon: "text-amber-600",
                 icon: MapPin
               }
             ].map((app, index) => (
@@ -281,9 +281,9 @@ export default function ResourcesPage() {
                 <div className={`w-12 h-12 ${app.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
                   <app.icon className={`w-6 h-6 ${app.colorIcon}`} />
                 </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-2">{app.name}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{app.description}</p>
-                <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300">
+                <h3 className="font-semibold text-slate-900 mb-2">{app.name}</h3>
+                <p className="text-sm text-slate-600 mb-3">{app.description}</p>
+                <Badge className="bg-sky-100 text-sky-700">
                   {app.category}
                 </Badge>
               </div>
@@ -293,9 +293,9 @@ export default function ResourcesPage() {
 
         {/* Emergency Contacts */}
         <div className="glass-card p-8 mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-red-600" />
             </div>
             Số điện thoại khẩn cấp
           </h2>
@@ -306,31 +306,31 @@ export default function ResourcesPage() {
                 service: "Cảnh sát",
                 number: "113",
                 description: "Báo cáo tội phạm, mất trộm",
-                colorBg: "bg-blue-100 dark:bg-blue-900/30",
-                colorIcon: "text-blue-600 dark:text-blue-400"
+                colorBg: "bg-blue-100",
+                colorIcon: "text-blue-600"
               },
               {
                 service: "Cứu hỏa",
                 number: "114",
                 description: "Hỏa hoạn, cứu hộ khẩn cấp",
-                colorBg: "bg-red-100 dark:bg-red-900/30",
-                colorIcon: "text-red-600 dark:text-red-400"
+                colorBg: "bg-red-100",
+                colorIcon: "text-red-600"
               },
               {
                 service: "Y tế khẩn cấp",
                 number: "115",
                 description: "Cấp cứu y tế, tai nạn",
-                colorBg: "bg-emerald-100 dark:bg-emerald-900/30",
-                colorIcon: "text-emerald-600 dark:text-emerald-400"
+                colorBg: "bg-emerald-100",
+                colorIcon: "text-emerald-600"
               }
             ].map((item, index) => (
               <div key={index} className="glass-subtle p-6 rounded-xl text-center">
                 <div className={`w-16 h-16 ${item.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
                   <Phone className={`w-8 h-8 ${item.colorIcon}`} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{item.service}</h3>
-                <div className="text-3xl font-bold text-red-600 dark:text-red-400 mb-3">{item.number}</div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{item.description}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{item.service}</h3>
+                <div className="text-3xl font-bold text-red-600 mb-3">{item.number}</div>
+                <p className="text-sm text-slate-600">{item.description}</p>
               </div>
             ))}
           </div>
@@ -338,13 +338,13 @@ export default function ResourcesPage() {
 
         {/* Download Guides */}
         <div className="glass-card text-center p-8">
-          <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Download className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Download className="w-8 h-8 text-amber-600" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
             Tải hướng dẫn offline
           </h2>
-          <p className="text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
             Tải về các hướng dẫn PDF để sử dụng khi không có internet trong chuyến du lịch.
           </p>
           

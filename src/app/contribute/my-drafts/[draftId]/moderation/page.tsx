@@ -138,7 +138,7 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="text-center">
@@ -153,7 +153,7 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-16">
@@ -168,7 +168,7 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
 
   if (error || !draft) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="text-center py-16">
@@ -204,7 +204,7 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -219,10 +219,10 @@ export default function ModerationDetailPage({ params }: ModerationPageProps) {
             Quay lại danh sách
           </Button>
           
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Chi tiết kiểm duyệt
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-gray-600">
             Theo dõi quá trình kiểm duyệt địa điểm của bạn
           </p>
         </div>

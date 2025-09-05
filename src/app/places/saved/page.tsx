@@ -182,7 +182,7 @@ export default function SavedPlacesPage() {
           <div className="mb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-                <TabsList className="grid w-full lg:w-auto grid-cols-2 bg-white shadow-lg border-0 p-1 rounded-2xl">
+                <TabsList className="grid w-full lg:w-auto grid-cols-2 bg-white shadow-lg border-0 p-1 rounded-2xl h-auto min-h-14">
                   <TabsTrigger 
                     value="favorites" 
                     className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-xl"

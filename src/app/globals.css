@@ -3,6 +3,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force Light Mode Only */
+html {
+  color-scheme: light only;
+}
+
+html.dark,
+html[data-theme="dark"],
+.dark {
+  color-scheme: light only !important;
+}
+
+/* Override any dark mode styles - Force light mode */
+html, body {
+  background-color: #FFFFFF !important;
+  color: #1A2332 !important;
+}
+
+/* Disable all dark mode styles */
+.dark {
+  --bg: #FFFFFF !important;
+  --surface: #FAFBFC !important;
+  --text: #1A2332 !important;
+  --muted: #6B7280 !important;
+  --border: #E5E7EB !important;
+}
+
 /* "A Window to Vietnam" Design System - Clear & Refined */
 :root {
   /* Color Palette - Inspired by clear morning in Ha Long Bay */
@@ -70,48 +96,6 @@
   --radius: 0.5rem;
 }
 
-.dark {
-  /* Dark Mode - Inspired by Vietnam evening sky */
-  --bg: #0A1628;                    /* Deep ocean night */
-  --surface: #0F1D2E;               /* Twilight depths */
-  --text: #E2E8F0;                  /* Moonlight on water */
-  --muted: #94A3B8;                 /* Misty evening */
-  --border: #1E293B;                /* Dark wave crests */
-  --primary: #22D3EE;               /* Bright teal - bioluminescence */
-  --primary-rgb: 34, 211, 238;      /* For gradients */
-  --primary-700: #0891B2;           /* Ocean teal */
-  --primary-50: rgba(34, 211, 238, 0.1); /* Soft glow */
-  --secondary: #38BDF8;             /* Bright sky blue - stars reflection */
-  --secondary-rgb: 56, 189, 248;    /* For gradients */
-  --success: #14B8A6;               /* Emerald glow */
-  --warn: #FBBF24;                  /* Golden moon */
-  --danger: #F87171;                /* Soft coral */
-  --overlay: rgba(10, 22, 40, 0.8); /* Deep night overlay */
-  
-  /* Dark Mode Glassmorphism */
-  --glass-bg: rgba(15, 29, 46, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-backdrop: blur(16px);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  
-  /* Keep existing shadcn dark variables */
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
-}
 
 /* === ADMIN DESIGN SYSTEM VARIABLES === */
 :root {
@@ -175,9 +159,6 @@
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #93C5FD;
 }
 
-:where([data-theme="dark"]) :where(button, a, input, textarea, select):focus-visible {
-  box-shadow: 0 0 0 2px #0B1220, 0 0 0 4px #93C5FD;
-}
 
 @layer components {
   .btn {
@@ -263,13 +244,6 @@
     color: transparent;
   }
   
-  .dark .gradient-text {
-    background: linear-gradient(135deg, #22D3EE 0%, #38BDF8 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
   
   /* Gentle Motion Utilities */
   .motion-gentle {
