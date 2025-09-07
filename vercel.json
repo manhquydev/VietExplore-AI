@@ -1,11 +1,6 @@
 {
   "version": 2,
   "regions": ["sin1"],
-  "functions": {
-    "src/app/api/edge/**/*.ts": {
-      "runtime": "edge"
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/cleanup-expired-claims",
