@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { PlaceDetailContent } from "@/components/place-detail-content"
 import { Place } from "@/lib/types/places"
 import { Metadata } from "next"
-import { getCanonicalPlaceUrl } from "@/lib/utils/url-helpers"
+import { getCanonicalPlaceUrl, parseCompoundUrl } from "@/lib/utils/url-helpers"
 
 interface PlaceData {
   id: string
@@ -78,6 +78,30 @@ interface PlaceData {
     hasChanges: boolean
     conversionMessage: string
     status: 'converted' | 'unchanged'
+  }
+}
+
+// Fetch all place IDs for compound URL parsing
+async function getAllPlaceIds(): Promise<string[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const response = await fetch(`${baseUrl}/api/places`, {
+      next: { revalidate: 3600 } // Cache for 1 hour
+    });
+    
+    if (!response.ok) {
+      return [];
+    }
+    
+    const result = await response.json();
+    if (!result.success || !result.data) {
+      return [];
+    }
+    
+    return result.data.map((place: any) => place.id);
+  } catch (error) {
+    console.error('Error fetching place IDs:', error);
+    return [];
   }
 }
 
@@ -237,7 +261,18 @@ const regionLabels = {
 // Generate metadata for SEO and social sharing
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   const { slug } = await params;
-  const placeId = slug[0];
+  const compoundSlug = slug[0];
+  
+  // Parse compound URL to get actual place ID
+  const allPlaceIds = await getAllPlaceIds();
+  const placeId = parseCompoundUrl(compoundSlug, allPlaceIds);
+  
+  if (!placeId) {
+    return {
+      title: 'Địa điểm không tồn tại - VietExplore',
+      description: 'Không tìm thấy địa điểm này trên VietExplore'
+    };
+  }
   
   const place = await getPlaceData(placeId);
   
@@ -286,7 +321,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PlaceDetailPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
-  const placeId = slug[0]; // First part of slug is the ID
+  const compoundSlug = slug[0]; // First part of slug is the compound slug
+  
+  // Parse compound URL to get actual place ID
+  const allPlaceIds = await getAllPlaceIds();
+  const placeId = parseCompoundUrl(compoundSlug, allPlaceIds);
+  
+  if (!placeId) {
+    notFound()
+  }
   
   // Fetch real place data
   const place = await getPlaceData(placeId);
