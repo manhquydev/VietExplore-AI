@@ -107,6 +107,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const { stats, loading } = useAdminStats()
   const focusTrapRef = useFocusTrap(!collapsed)
   const { focusedIndex, handleKeyDown } = useKeyboardNavigation(navigation.length)
+  
+  // Debug: Log focusedIndex để kiểm tra
+  console.log('🎯 FocusedIndex:', focusedIndex)
 
   const filteredNavigation = navigation.filter(item => 
     !item.roles || item.roles.includes(user?.role || '')
@@ -121,7 +124,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         "fixed left-0 top-0 z-50 w-64 flex flex-col h-screen bg-white border-r border-pink-200 shadow-lg transition-all duration-300",
         collapsed && "w-16"
       )}
-      onKeyDown={handleKeyDown}
+      // onKeyDown={handleKeyDown}
     >
       {/* Header - Project Branding */}
       <div className="flex items-center justify-between p-4 border-b border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
@@ -129,7 +132,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <div className="flex items-center gap-3">
             <div className="relative w-12 h-12 rounded-full bg-white shadow-lg border-2 border-pink-200 flex items-center justify-center overflow-hidden">
               <Image 
-                src="/logo-stacked.svg" 
+                src="/logo-icon.svg" 
                 alt="Du Lịch Việt Logo"
                 width={32}
                 height={32}
@@ -175,20 +178,34 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </div>
           ) : (
             filteredNavigation.map((item, index) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+              // Riêng button Tổng quan cần logic đặc biệt
+              const isActive = item.href === '/admin' 
+                ? pathname === '/admin' // Chỉ active khi CHÍNH XÁC trang /admin
+                : pathname === item.href || pathname.startsWith(item.href + '/')
+              
+              // Debug: Log để kiểm tra
+              if (item.href === '/admin') {
+                console.log('🔍 Tổng quan debug:', { 
+                  pathname, 
+                  href: item.href, 
+                  isActive,
+                  exactMatch: pathname === '/admin' 
+                })
+              }
               
               return (
               <Link
-                key={item.href}
+                key={`${item.href}-${pathname}`}
                 href={item.href}
                 role="menuitem"
-                tabIndex={focusedIndex === index ? 0 : -1}
+                tabIndex={-1}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                  "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium group relative border-l-4",
                   isActive 
-                    ? "bg-gradient-to-r from-pink-50 to-purple-50 text-pink-700 border-l-4 border-l-pink-600 shadow-sm" 
-                    : "text-gray-700 hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 hover:text-pink-700",
-                  focusedIndex === index && "ring-2 ring-pink-500 ring-offset-2"
+                    ? "bg-gradient-to-r from-pink-50 to-purple-50 text-pink-700 border-l-pink-600 shadow-sm" 
+                    : "bg-transparent text-gray-700 hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 hover:text-pink-700 border-l-transparent shadow-none",
+                  // Tạm tắt focus ring để debug
+                  // focusedIndex === index && !isActive && "ring-2 ring-pink-500 ring-offset-2"
                 )}
                 title={collapsed ? item.title : item.description}
                 aria-label={`${item.title}${item.description ? `: ${item.description}` : ''}`}

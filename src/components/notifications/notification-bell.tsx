@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useRealtimeNotifications, RealtimeNotification } from "@/hooks/use-realtime-notifications";
+import { useAuth } from "@/components/auth/auth-provider";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -247,8 +248,10 @@ export function NotificationBell() {
 // Connection status indicator component
 export function NotificationConnectionStatus() {
   const { isConnected } = useRealtimeNotifications();
+  const { user } = useAuth();
   
-  if (isConnected) return null;
+  // Only show reconnection message for authenticated users
+  if (isConnected || !user?.id) return null;
   
   return (
     <div className="fixed bottom-4 right-4 z-50">
