@@ -4,13 +4,16 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithCustomToken,
   sendPasswordResetEmail,
   signOut,
   updateProfile,
-  User
+  User,
+  AuthError
 } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+import { auth, googleProvider, isMobileDevice } from '@/lib/firebase';
 import { AuthUser, LoginFormData, RegisterFormData } from '@/lib/types/auth';
 import { EmailVerificationService } from '@/lib/auth/email-verification';
 
@@ -61,6 +64,21 @@ export const useAuth = () => {
       setLoading(false);
     });
 
+    // Check for redirect result on component mount (for mobile devices)
+    const checkRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          console.log('Redirect authentication successful');
+          await handlePostAuthActions(result);
+        }
+      } catch (error) {
+        console.error('Redirect result error:', error);
+        setError(handleFirebaseError(error as AuthError));
+      }
+    };
+
+    checkRedirectResult();
     return () => unsubscribe();
   }, []);
 
@@ -178,51 +196,81 @@ export const useAuth = () => {
     }
   };
 
+  // Helper function for post-authentication actions
+  const handlePostAuthActions = async (result: any) => {
+    if (result.user) {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${await result.user.getIdToken()}`
+        }
+      });
+      
+      // If user document doesn't exist (401), create it
+      if (response.status === 401) {
+        const createResponse = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: result.user.email,
+            password: 'google-auth', // placeholder for Google users
+            fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
+            acceptTerms: true,
+            isGoogleAuth: true
+          }),
+        });
+        
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json();
+          throw new Error(errorData.error || 'Không thể tạo tài khoản');
+        }
+      }
+    }
+  };
+
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
       setError('');
       setLoading(true);
       
-      const result = await signInWithPopup(auth, googleProvider);
+      // Enhanced 2025 approach: Use different methods for mobile vs desktop
+      const isMobile = isMobileDevice();
       
-      // Check if user document exists, create if not
-      if (result.user) {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${await result.user.getIdToken()}`
-          }
-        });
-        
-        // If user document doesn't exist (401), create it
-        if (response.status === 401) {
-          const createResponse = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: result.user.email,
-              password: 'google-auth', // placeholder for Google users
-              fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
-              acceptTerms: true,
-              isGoogleAuth: true
-            }),
-          });
-          
-          if (!createResponse.ok) {
-            const errorData = await createResponse.json();
-            setError(errorData.error || 'Không thể tạo tài khoản');
-            return false;
-          }
-        }
+      if (isMobile) {
+        // Use redirect method for mobile devices (more reliable)
+        console.log('Using redirect method for mobile device');
+        await signInWithRedirect(auth, googleProvider);
+        // Note: The actual authentication result will be handled by getRedirectResult in useEffect
+        return true; // Return true immediately for redirect flow
+      } else {
+        // Use popup method for desktop (better UX)
+        console.log('Using popup method for desktop device');
+        const result = await signInWithPopup(auth, googleProvider);
+        await handlePostAuthActions(result);
+        return true;
       }
       
-      return true;
     } catch (error: any) {
-      setError(handleFirebaseError(error));
+      console.error('Google authentication error:', error);
+      
+      // Enhanced error handling for 2025
+      if (error.code === 'auth/popup-blocked') {
+        setError('Popup bị chặn. Vui lòng cho phép popup và thử lại.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('Đăng nhập đã bị hủy bởi người dùng.');
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        setError('Tài khoản với email này đã tồn tại với phương thức đăng nhập khác.');
+      } else {
+        setError(handleFirebaseError(error));
+      }
       return false;
     } finally {
-      setLoading(false);
+      if (!isMobileDevice()) {
+        // Only set loading to false for popup flow
+        // For redirect flow, loading state will be managed by auth state change
+        setLoading(false);
+      }
     }
   };
 
