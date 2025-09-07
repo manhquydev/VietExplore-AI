@@ -84,7 +84,8 @@ interface PlaceData {
 // Fetch all place IDs for compound URL parsing
 async function getAllPlaceIds(): Promise<string[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002');
     const response = await fetch(`${baseUrl}/api/places`, {
       next: { revalidate: 3600 } // Cache for 1 hour
     });
@@ -108,7 +109,8 @@ async function getAllPlaceIds(): Promise<string[]> {
 // Fetch real place data from API
 async function getPlaceData(id: string): Promise<PlaceData | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002');
     const response = await fetch(`${baseUrl}/api/places/${id}`, {
       next: { revalidate: 300 } // Cache for 5 minutes
     });
@@ -284,7 +286,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   // Generate canonical compound URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+    (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002');
   const canonicalUrl = getCanonicalPlaceUrl({
     id: place.id,
     name: place.name

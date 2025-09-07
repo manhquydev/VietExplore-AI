@@ -43,8 +43,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate an email verification link
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002');
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/auth/verify-email`,
+      url: `${baseUrl}/auth/verify-email`,
       handleCodeInApp: false,
     };
 
