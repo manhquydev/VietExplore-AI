@@ -26,6 +26,7 @@ import {
   Award,
   Flag
 } from "lucide-react"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 const navigation = [
   { name: "Trang chủ", href: "/" },
@@ -111,6 +112,9 @@ export const Header: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Notification Bell */}
+            {isAuthenticated && user && <NotificationBell />}
+            
             {/* Enhanced Authenticated User Menu */}
             {isAuthenticated && user ? (
               <DropdownMenu>

@@ -6,7 +6,7 @@ import { EditSuggestionFormData, EditSuggestion } from '@/lib/types/reports';
 // POST /api/places/[placeId]/suggestions - Suggest edits for a place
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -20,7 +20,7 @@ export async function POST(
     }
 
     const user = authResult.user;
-    const { id: placeId } = params;
+    const { id: placeId } = await params;
 
     // Check if place exists
     const placeDoc = await adminDb.collection('places').doc(placeId).get();
@@ -103,7 +103,7 @@ export async function POST(
 // GET /api/places/[placeId]/suggestions - Get edit suggestions for a place (admin/moderator only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -124,7 +124,7 @@ export async function GET(
       );
     }
 
-    const { id: placeId } = params;
+    const { id: placeId } = await params;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 

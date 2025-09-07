@@ -51,6 +51,7 @@ export interface OrphanageStatistics {
     archived: number;
     deleted: number;
     reassigned: number;
+    escalate: number;
   };
 }
 
@@ -498,7 +499,8 @@ export class OrphanedContentService {
           flagged: 0,
           archived: 0,
           deleted: 0,
-          reassigned: 0
+          reassigned: 0,
+          escalate: 0
         },
         errors: [] as string[]
       };
@@ -524,7 +526,8 @@ export class OrphanedContentService {
             actionReason: 'Auto-processed by orphaned content service'
           });
 
-          results.actions[orphan.suggestedAction]++;
+          const actionKey = orphan.suggestedAction === 'flag' ? 'flagged' : orphan.suggestedAction;
+          results.actions[actionKey]++;
           results.processed++;
 
         } catch (error) {
@@ -697,7 +700,7 @@ export class OrphanedContentService {
         byReason: {},
         bySeverity: {},
         oldestItem: { id: '', daysSinceActivity: 0, contentType: '' },
-        actionsSummary: { flagged: 0, archived: 0, deleted: 0, reassigned: 0 }
+        actionsSummary: { flagged: 0, archived: 0, deleted: 0, reassigned: 0, escalate: 0 }
       };
 
       let oldestDays = 0;
@@ -745,7 +748,7 @@ export class OrphanedContentService {
         byReason: {},
         bySeverity: {},
         oldestItem: { id: '', daysSinceActivity: 0, contentType: '' },
-        actionsSummary: { flagged: 0, archived: 0, deleted: 0, reassigned: 0 }
+        actionsSummary: { flagged: 0, archived: 0, deleted: 0, reassigned: 0, escalate: 0 }
       };
     }
   }

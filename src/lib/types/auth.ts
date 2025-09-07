@@ -14,6 +14,7 @@ export interface User {
   avatar?: string;
   role: UserRole;
   verified: boolean;
+  emailVerified?: boolean;
   createdAt: string;
   updatedAt: string;
   profile?: {

@@ -6,7 +6,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb()
@@ -18,7 +18,7 @@ export async function POST(
     }
 
     const user = tokenResult.user
-    const placeId = params.id
+    const { id: placeId } = await params
     
     // Parse request body
     const body = await request.json()

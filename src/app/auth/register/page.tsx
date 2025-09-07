@@ -94,7 +94,12 @@ export default function RegisterPage() {
       })
       
       if (success) {
-        router.push('/')
+        // Show success message about email verification before redirecting
+        setErrors({ 
+          general: "" // Clear any errors
+        });
+        // Redirect to home page where global verification notice will show
+        router.push('/');
       } else {
         setErrors({ general: "Đăng ký thất bại" })
       }

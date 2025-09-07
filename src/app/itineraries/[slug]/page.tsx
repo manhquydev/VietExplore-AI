@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Header } from "@/components/header"
@@ -26,9 +27,9 @@ import {
 import { useAuth } from "@/components/auth/auth-provider"
 
 interface ItineraryPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 // Mock data cho itinerary detail
@@ -164,10 +165,36 @@ const tripTypeLabels = {
 
 export default function ItineraryDetailPage({ params }: ItineraryPageProps) {
   const { user, isAuthenticated } = useAuth()
+  const [slug, setSlug] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
   const [isLiked, setIsLiked] = React.useState(false)
   const [likeCount, setLikeCount] = React.useState(mockItinerary.stats.likes)
 
-  const itinerary = mockItinerary // In real app, fetch based on params.slug
+  useEffect(() => {
+    async function loadParams() {
+      const resolvedParams = await params
+      setSlug(resolvedParams.slug)
+      setIsLoading(false)
+    }
+    loadParams()
+  }, [params])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <div className="container mx-auto py-8 flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-muted">Đang tải lịch trình...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  const itinerary = mockItinerary // In real app, fetch based on slug
 
   // Group places by day
   const placesByDay = React.useMemo(() => {

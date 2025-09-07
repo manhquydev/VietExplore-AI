@@ -16,7 +16,7 @@ export async function PUT(
     const authResult = await verifyAuthToken(request);
     if (!authResult.success || !authResult.user || authResult.user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
+        { success: false, error: 'Chỉ admin mới có quyền thay đổi vai trò người dùng' },
         { status: 403 }
       );
     }
@@ -29,7 +29,7 @@ export async function PUT(
     const validRoles: UserRole[] = ['traveler', 'contributor', 'partner', 'moderator', 'admin'];
     if (!validRoles.includes(newRole)) {
       return NextResponse.json(
-        { error: 'Vai trò không hợp lệ' },
+        { success: false, error: 'Vai trò không hợp lệ' },
         { status: 400 }
       );
     }
@@ -38,7 +38,7 @@ export async function PUT(
     const userDoc = await adminDb.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json(
-        { error: 'Người dùng không tồn tại' },
+        { success: false, error: 'Người dùng không tồn tại' },
         { status: 404 }
       );
     }
@@ -48,14 +48,14 @@ export async function PUT(
 
     if (currentRole === newRole) {
       return NextResponse.json(
-        { error: 'Người dùng đã có vai trò này' },
+        { success: false, error: 'Người dùng đã có vai trò này' },
         { status: 400 }
       );
     }
 
     if (userId === admin.id) {
       return NextResponse.json(
-        { error: 'Bạn không thể thay đổi vai trò của chính mình' },
+        { success: false, error: 'Bạn không thể thay đổi vai trò của chính mình' },
         { status: 400 }
       );
     }
@@ -137,6 +137,7 @@ export async function PUT(
     
     return NextResponse.json(
       { 
+        success: false,
         error: errorMessage,
         details: process.env.NODE_ENV === 'development' ? {
           code: error.code,

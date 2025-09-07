@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/client/api';
 import { User, UserRole } from '@/lib/types/auth';
 import { Place, PlaceFilters } from '@/lib/types/places';
 import { useAuth } from '@/components/auth/auth-provider';
+import { RealtimeService } from '@/lib/firebase/realtime';
 
 // Hook to fetch admin dashboard statistics
 export function useAdminStats() {
@@ -17,7 +18,24 @@ export function useAdminStats() {
     lastUpdated: new Date(),
   });
   const [loading, setLoading] = useState(true);
+  const [realtimeReportStats, setRealtimeReportStats] = useState({ pending: 0, total: 0 });
   const { user } = useAuth();
+
+  // Subscribe to realtime report stats
+  useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      return;
+    }
+
+    const unsubscribe = RealtimeService.subscribeToReportStats((reportStats) => {
+      setRealtimeReportStats({
+        pending: reportStats.pending || 0,
+        total: reportStats.total || 0
+      });
+    });
+
+    return unsubscribe;
+  }, [user]);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -57,12 +75,17 @@ export function useAdminStats() {
         const userGrowth = currentUserCount > 0 ? ((last30DaysUsers / Math.max(currentUserCount - last30DaysUsers, 1)) * 100) : 0;
         const placeGrowth = currentPlaceCount > 0 ? ((last30DaysPlaces / Math.max(currentPlaceCount - last30DaysPlaces, 1)) * 100) : 0;
 
+        // Combine place moderation queue with report stats for total pending
+        const placePendingModeration = moderationResult.data?.length || 0;
+        const reportPendingModeration = realtimeReportStats.pending || 0;
+        const totalPendingModeration = placePendingModeration + reportPendingModeration;
+
         setStats({
           totalUsers: currentUserCount,
           totalPlaces: currentPlaceCount,
-          pendingModeration: moderationResult.data?.length || 0,
-          openReports: 0, // TODO: Implement reports system later
-          systemHealth: Math.min(99.9, Math.max(95, 100 - (moderationResult.data?.length || 0) * 0.1)), // Health based on pending items
+          pendingModeration: totalPendingModeration,
+          openReports: reportPendingModeration,
+          systemHealth: Math.min(99.9, Math.max(95, 100 - totalPendingModeration * 0.1)), // Health based on total pending items
           userGrowth: Math.round(userGrowth * 10) / 10,
           placeGrowth: Math.round(placeGrowth * 10) / 10,
           lastUpdated: new Date(),
@@ -74,8 +97,8 @@ export function useAdminStats() {
           ...prev,
           totalUsers: 0,
           totalPlaces: 0,
-          pendingModeration: 0,
-          openReports: 0,
+          pendingModeration: realtimeReportStats.pending || 0, // At least show report stats on error
+          openReports: realtimeReportStats.pending || 0,
           systemHealth: 95.0, // Lower health on error
           userGrowth: 0,
           placeGrowth: 0,
@@ -87,7 +110,7 @@ export function useAdminStats() {
     }
 
     fetchStats();
-  }, [user]);
+  }, [user, realtimeReportStats]);
 
   return { stats, loading };
 }
@@ -206,12 +229,14 @@ export function useAdminUsers(filters: {
       const result = await apiClient.admin.users.list(filters);
       
       if (result.success && result.data) {
-        setUsers(result.data);
+        setUsers(Array.isArray(result.data) ? result.data : []);
       } else {
         setError(result.error || 'Không thể tải danh sách người dùng');
+        setUsers([]); // Ensure users is always an array
       }
     } catch (err) {
       setError('Có lỗi xảy ra khi tải dữ liệu');
+      setUsers([]); // Ensure users is always an array
       console.error('Error fetching users:', err);
     } finally {
       setLoading(false);
@@ -228,18 +253,24 @@ export function useAdminUsers(filters: {
 
   const changeUserRole = async (userId: string, newRole: UserRole, reason?: string) => {
     try {
-      console.log('Calling API to change role:', { userId, newRole, reason }); // Debug log
+      console.log('useAdminUsers: Calling API to change role:', { userId, newRole, reason });
       const result = await apiClient.admin.users.changeRole(userId, newRole, reason);
-      console.log('API response for role change:', result); // Debug log
+      console.log('useAdminUsers: API response for role change:', result);
+      console.log('useAdminUsers: Result type:', typeof result, 'Is null?', result === null, 'Is undefined?', result === undefined);
       
       if (result && result.success) {
         await fetchUsers(); // Refresh user list
         return { success: true, message: result.message };
       }
-      return { success: false, error: result?.error || 'Không có phản hồi thành công từ server' };
+      
+      const errorResponse = { success: false, error: result?.error || 'Không có phản hồi thành công từ server' };
+      console.log('useAdminUsers: Returning error response:', errorResponse);
+      return errorResponse;
     } catch (err: any) {
-      console.error('Exception in changeUserRole:', err); // Debug log
-      return { success: false, error: err.message || 'Có lỗi xảy ra' };
+      console.error('useAdminUsers: Exception in changeUserRole:', err);
+      const errorResponse = { success: false, error: err?.message || 'Có lỗi xảy ra' };
+      console.log('useAdminUsers: Returning caught error response:', errorResponse);
+      return errorResponse;
     }
   };
 
@@ -406,13 +437,17 @@ export function useAdminPlaces(filters: {
     try {
       const result = await apiClient.admin.places.list(filters);
       
-      if (result.success && result.data) {
-        setPlaces(result.data);
+      if (result.success) {
+        // Handle both old format (result.data is array) and new format (result.data.places is array)
+        const placesData = Array.isArray(result.data) ? result.data : result.data?.places || [];
+        setPlaces(placesData);
       } else {
         setError(result.error || 'Không thể tải danh sách địa điểm');
+        setPlaces([]); // Ensure places is always an array
       }
     } catch (err) {
       setError('Có lỗi xảy ra khi tải dữ liệu');
+      setPlaces([]); // Ensure places is always an array
       console.error('Error fetching admin places:', err);
     } finally {
       setLoading(false);

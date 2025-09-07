@@ -60,8 +60,27 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 export function useToast() {
   const context = React.useContext(ToastContext)
+  
+  // Enhanced error checking and fallback
   if (!context) {
-    throw new Error("useToast must be used within a ToastProvider")
+    console.error("useToast: No ToastContext found! Component may not be wrapped in ToastProvider")
+    console.error("useToast: Stack trace:", new Error().stack)
+    
+    // Return fallback functions that log to console instead of crashing
+    const fallbackToast = (type: string, message: string) => {
+      console.warn(`Toast ${type}: ${message}`)
+    }
+    
+    return {
+      toasts: [],
+      addToast: () => console.warn("ToastProvider not available - addToast called"),
+      removeToast: () => console.warn("ToastProvider not available - removeToast called"), 
+      clearToasts: () => console.warn("ToastProvider not available - clearToasts called"),
+      success: (message: string) => fallbackToast("SUCCESS", message),
+      error: (message: string) => fallbackToast("ERROR", message),
+      warning: (message: string) => fallbackToast("WARNING", message),
+      info: (message: string) => fallbackToast("INFO", message),
+    }
   }
 
   const { addToast } = context

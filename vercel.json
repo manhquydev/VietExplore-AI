@@ -9,11 +9,7 @@
   "crons": [
     {
       "path": "/api/cron/cleanup-expired-claims",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/cron/sync-notifications", 
-      "schedule": "*/5 * * * *"
+      "schedule": "0 2 * * *"
     }
   ],
   "headers": [

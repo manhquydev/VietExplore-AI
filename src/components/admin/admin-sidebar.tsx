@@ -51,6 +51,13 @@ const navigation: NavItem[] = [
     description: "Tổng quan hệ thống kiểm duyệt"
   },
   {
+    title: "Quản lý Địa điểm",
+    href: "/admin/places",
+    icon: adminIcons.navigation.dashboard,
+    description: "Quản lý tất cả địa điểm trên hệ thống",
+    roles: ["moderator", "admin"]
+  },
+  {
     title: "Người dùng", 
     href: "/admin/users",
     icon: adminIcons.navigation.users,
@@ -61,11 +68,30 @@ const navigation: NavItem[] = [
     title: "Phân tích",
     href: "/admin/analytics", 
     icon: adminIcons.navigation.analytics,
-    description: "Báo cáo và thông tin chi tiết"
+    description: "Báo cáo và thông tin chi tiết",
+    subItems: [
+      {
+        title: "Tổng quan",
+        href: "/admin/analytics",
+        description: "Dashboard tổng quan"
+      },
+      {
+        title: "Địa điểm",
+        href: "/admin/analytics/places",
+        description: "Phân tích địa điểm"
+      }
+    ]
   },
   {
-    title: "Cài đặt",
-    href: "/admin/settings",
+    title: "Audit Logs",
+    href: "/admin/audit",
+    icon: adminIcons.navigation.settings,
+    description: "Nhật ký kiểm toán",
+    roles: ["admin"]
+  },
+  {
+    title: "Cấu hình",
+    href: "/admin/system/config",
     icon: adminIcons.navigation.settings,
     description: "Cấu hình hệ thống",
     roles: ["admin"]

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { ServerAuditService } from '@/lib/server/audit-service';
 
 // GET /api/places - Fetch places with filtering
 export async function GET(request: NextRequest) {
@@ -290,6 +291,23 @@ export async function POST(request: NextRequest) {
       'stats.placesContributed': (user.stats?.placesContributed || 0) + 1,
       updatedAt: new Date().toISOString()
     });
+
+    // Log audit action for place creation
+    await ServerAuditService.logPlaceAction(
+      'create',
+      user,
+      {
+        id: docRef.id,
+        title: formData.name
+      },
+      undefined,
+      {
+        reason: isAdminBypass 
+          ? `Admin tạo trực tiếp địa điểm với trạng thái ${placeData.status}` 
+          : `User tạo địa điểm với trạng thái ${placeData.status}`,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      }
+    );
 
     return NextResponse.json({
       success: true,

@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 
-// DELETE /api/admin/places/[placeId] - Delete a place (admin only)
+// DELETE /api/admin/places/[id] - Delete a place (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { placeId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify admin access
@@ -25,7 +25,7 @@ export async function DELETE(
       );
     }
 
-    const { placeId } = params;
+    const { id: placeId } = await params;
     const adminDb = getAdminDb();
 
     // Get place info for logging
@@ -72,6 +72,76 @@ export async function DELETE(
     console.error('Error deleting place:', error);
     return NextResponse.json(
       { success: false, error: 'Không thể xóa địa điểm' },
+      { status: 500 }
+    );
+  }
+}
+
+// GET /api/admin/places/[id] - Get single place with admin details
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Verify admin/moderator access
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const user = authResult.user;
+    if (!['admin', 'moderator'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Admin or Moderator role required' },
+        { status: 403 }
+      );
+    }
+
+    const { id: placeId } = await params;
+    const adminDb = getAdminDb();
+
+    // Get place with full details
+    const placeDoc = await adminDb.collection('places').doc(placeId).get();
+    if (!placeDoc.exists) {
+      return NextResponse.json(
+        { success: false, error: 'Place not found' },
+        { status: 404 }
+      );
+    }
+
+    const place = {
+      id: placeDoc.id,
+      ...placeDoc.data()
+    };
+
+    // Get moderation history
+    const moderationActions = await adminDb.collection('moderation_actions')
+      .where('placeId', '==', placeId)
+      .orderBy('createdAt', 'desc')
+      .limit(10)
+      .get();
+
+    const actions = moderationActions.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        place,
+        moderationActions: actions,
+        adminAccess: true
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching place details:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

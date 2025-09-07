@@ -3,7 +3,7 @@ import { TrustLabel, User } from './auth';
 // Place types based on existing structure
 export type PlaceType = "bien" | "nui" | "van-hoa" | "am-thuc" | "check-in";
 export type PlaceRegion = "bac-bo" | "trung-bo" | "nam-bo";
-export type PlaceStatus = "draft" | "submitted" | "in_review" | "published" | "rejected" | "hidden" | "pending_edit" | "pending_deletion" | "needs_revision";
+export type PlaceStatus = "draft" | "submitted" | "in_review" | "published" | "rejected" | "hidden" | "pending_edit" | "pending_deletion" | "needs_revision" | "temporarily_suspended" | "draft_edit";
 
 export interface PlaceImage {
   id: string;
@@ -107,6 +107,13 @@ export interface Place {
   createdBy: string; // User ID
   moderatedBy?: string; // User ID
   
+  // Temporary suspension fields
+  suspendedAt?: string;
+  suspendedBy?: string;
+  suspensionReason?: string;
+  suspensionExpiresAt?: string;
+  suspensionType?: "violation" | "investigation" | "quality_review" | "user_request";
+  
   // Additional metadata
   viewCount: number;
   likeCount: number;
@@ -148,12 +155,27 @@ export interface PlaceFilters {
 export interface PlaceModerationAction {
   id: string;
   placeId: string;
-  action: "approve" | "reject" | "hide" | "feature" | "verify" | "direct_delete" | "request_edit";
+  action: "approve" | "reject" | "hide" | "feature" | "verify" | "direct_delete" | "request_edit" | "suspend_temporary" | "unsuspend" | "force_edit";
   reason?: string;
   moderatorId: string;
   createdAt: string;
   previousStatus: PlaceStatus;
   newStatus: PlaceStatus;
+  suspensionData?: {
+    duration: number; // hours
+    type: "violation" | "investigation" | "quality_review" | "user_request";
+    autoExpire: boolean;
+  };
+}
+
+// Temporary suspension request
+export interface TemporarySuspensionRequest {
+  placeId: string;
+  reason: string;
+  duration: number; // hours, max 168 (7 days)
+  type: "violation" | "investigation" | "quality_review" | "user_request";
+  autoExpire?: boolean;
+  notifyOwner?: boolean;
 }
 
 // Moderation queue item

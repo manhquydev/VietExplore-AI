@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { useAdminStats, useAdminUsers, useAdminPlaces, useModerationQueue } from "@/hooks/use-admin"
 import { useToast } from "@/components/providers/toast-provider"
+import RealtimeService from "@/lib/firebase/realtime"
 
 // Helper function to calculate average processing time
 function calculateAverageProcessingTime(moderationItems: any[] = []) {
@@ -45,6 +46,7 @@ function calculateAverageProcessingTime(moderationItems: any[] = []) {
 export default function AdminAnalyticsPage() {
   const { toast } = useToast()
   const [timeRange, setTimeRange] = React.useState('30d')
+  const [realtimeStats, setRealtimeStats] = React.useState<Record<string, any>>({})
   
   // Real data hooks
   const { stats, loading: statsLoading } = useAdminStats()
@@ -56,6 +58,47 @@ export default function AdminAnalyticsPage() {
   const hasError = usersError || placesError || moderationError
   
   // Show errors
+  // Subscribe to real-time stats for all places
+  React.useEffect(() => {
+    if (!places || places.length === 0) return
+    
+    const placeIds = places.map(place => place.id)
+    const unsubscribes: (() => void)[] = []
+
+    // Initialize with current Firestore data as baseline
+    const initialStats: Record<string, any> = {}
+    places.forEach(place => {
+      initialStats[place.id] = {
+        views: place.viewCount || 0,
+        likes: place.likeCount || 0,
+        saves: 0,
+        lastUpdated: Date.now()
+      }
+    })
+    setRealtimeStats(initialStats)
+
+    placeIds.forEach(placeId => {
+      const unsubscribe = RealtimeService.subscribeToPlaceStats(placeId, (stats) => {
+        const currentPlace = places.find(place => place.id === placeId)
+        const firestoreViewCount = currentPlace?.viewCount || 0
+        
+        setRealtimeStats(prev => ({
+          ...prev,
+          [placeId]: {
+            ...stats,
+            views: Math.max(stats.views || 0, firestoreViewCount, prev[placeId]?.views || 0),
+            likes: Math.max(stats.likes || 0, currentPlace?.likeCount || 0)
+          }
+        }))
+      })
+      unsubscribes.push(unsubscribe)
+    })
+
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe())
+    }
+  }, [places])
+
   React.useEffect(() => {
     if (hasError) {
       toast.error(`Analytics data error: ${usersError || placesError || moderationError}`)
@@ -111,7 +154,7 @@ export default function AdminAnalyticsPage() {
         acc[regionName] = { region: regionName, places: 0, views: 0, engagement: 0, likes: 0 }
       }
       acc[regionName].places++
-      acc[regionName].views += place.viewCount || 0
+      acc[regionName].views += Math.max(realtimeStats[place.id]?.views || 0, place.viewCount || 0)
       acc[regionName].likes += place.likeCount || 0
       return acc
     }, {})
@@ -135,14 +178,16 @@ export default function AdminAnalyticsPage() {
     const topPlaces = places
       .filter(place => place.status === 'published')
       .sort((a, b) => {
-        const scoreA = (a.viewCount || 0) + (a.likeCount || 0) * 10 // Likes weighted 10x more than views
-        const scoreB = (b.viewCount || 0) + (b.likeCount || 0) * 10
+        const viewsA = Math.max(realtimeStats[a.id]?.views || 0, a.viewCount || 0)
+        const viewsB = Math.max(realtimeStats[b.id]?.views || 0, b.viewCount || 0)
+        const scoreA = viewsA + (a.likeCount || 0) * 10 // Likes weighted 10x more than views
+        const scoreB = viewsB + (b.likeCount || 0) * 10
         return scoreB - scoreA
       })
       .slice(0, 5)
       .map((place) => {
         // Use actual data from the place
-        const views = place.viewCount || 0
+        const views = Math.max(realtimeStats[place.id]?.views || 0, place.viewCount || 0)
         const likes = place.likeCount || 0
         // Estimate shares based on likes (assuming 5-15% of likes result in shares)
         const shares = Math.floor(likes * (0.05 + Math.random() * 0.1))
@@ -180,7 +225,10 @@ export default function AdminAnalyticsPage() {
     const placeGrowthRate = previousPlaces > 0 ? ((recentPlaces - previousPlaces) / previousPlaces) * 100 : recentPlaces > 0 ? 100 : 0
     
     // Calculate total views from actual place data
-    const totalViews = places.reduce((sum, place) => sum + (place.viewCount || 0), 0)
+    const totalViews = places.reduce((sum, place) => {
+      const realTimeViews = Math.max(realtimeStats[place.id]?.views || 0, place.viewCount || 0)
+      return sum + realTimeViews
+    }, 0)
     
     // Calculate engagement rate based on active users with contributions
     const activeUsers = users.filter(u => 

@@ -7,12 +7,18 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Place } from "@/lib/types/places"
 import { generatePlaceUrl } from "@/lib/utils/url-helpers"
+import { Eye } from "lucide-react"
 
 interface PlaceCardProps {
   place: Place
   showCTA?: boolean
   className?: string
   onAddToItinerary?: (placeId: string) => void
+  realtimeStats?: {
+    views?: number
+    likes?: number
+    saves?: number
+  }
 }
 
 
@@ -22,6 +28,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   showCTA = true,
   className,
   onAddToItinerary,
+  realtimeStats,
 }) => {
   const primaryImage = place.images?.find(img => img.isPrimary) || place.images?.[0]
   
@@ -118,17 +125,33 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
           )}
         </div>
 
-        {/* Rating - Professional star icon */}
-        {place.rating && place.rating.average > 0 && (
-          <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 bg-white/90 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 flex items-center gap-1">
-            <svg className="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 24 24">
-              <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-            </svg>
-            <span className="text-xs font-medium">
-              {place.rating.average.toFixed(1)}
-            </span>
-          </div>
-        )}
+        {/* Rating and View Count - Bottom overlay */}
+        <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between">
+          {/* Rating */}
+          {place.rating && place.rating.average > 0 && (
+            <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 flex items-center gap-1">
+              <svg className="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 24 24">
+                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+              </svg>
+              <span className="text-xs font-medium">
+                {place.rating.average.toFixed(1)}
+              </span>
+            </div>
+          )}
+          
+          {/* View Count */}
+          {(() => {
+            const viewCount = Math.max(realtimeStats?.views || 0, place.viewCount || 0);
+            return viewCount > 0 ? (
+              <div className="bg-black/60 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 flex items-center gap-1">
+                <Eye className="w-3 h-3 text-white" />
+                <span className="text-xs font-medium text-white">
+                  {viewCount.toLocaleString('vi-VN')}
+                </span>
+              </div>
+            ) : null;
+          })()}
+        </div>
       </div>
 
       <CardContent className="p-3 sm:p-4 space-y-2">

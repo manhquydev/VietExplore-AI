@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PlaceCard } from "@/components/place-card"
@@ -10,9 +11,9 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
 
 interface RegionPageProps {
-  params: {
+  params: Promise<{
     region: string
-  }
+  }>
 }
 
 const regionData = {
@@ -122,8 +123,26 @@ const mockPlacesByRegion = {
 }
 
 export default function RegionPage({ params }: RegionPageProps) {
-  const region = regionData[params.region as keyof typeof regionData]
-  const places = mockPlacesByRegion[params.region as keyof typeof mockPlacesByRegion] || []
+  const [regionKey, setRegionKey] = useState<string>('')
+  const [region, setRegion] = useState<any>(null)
+  const [places, setPlaces] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadParams() {
+      const resolvedParams = await params
+      const key = resolvedParams.region
+      setRegionKey(key)
+      setRegion(regionData[key as keyof typeof regionData])
+      setPlaces(mockPlacesByRegion[key as keyof typeof mockPlacesByRegion] || [])
+      setIsLoading(false)
+    }
+    loadParams()
+  }, [params])
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   if (!region) {
     return <div>Region not found</div>
@@ -216,7 +235,7 @@ export default function RegionPage({ params }: RegionPageProps) {
               </div>
               <SearchBar 
                 onSearch={handleSearch}
-                filters={{ region: params.region }}
+                filters={{ region: regionKey }}
                 placeholder={`Tìm kiếm địa điểm tại ${region.name}...`}
               />
             </div>

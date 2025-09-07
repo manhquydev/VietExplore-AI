@@ -6,6 +6,7 @@ import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-
 import { CacheService } from '@/lib/server/cache-service';
 import { VersioningService } from '@/lib/server/versioning-service';
 import { SoftDeleteService } from '@/lib/server/soft-delete-service';
+import { ServerAuditService } from '@/lib/server/audit-service';
 
 // GET /api/moderation/queue/[itemId] - Get moderation item details
 export async function GET(
@@ -167,6 +168,23 @@ export async function PATCH(
       //   `${moderator.fullName} đã nhận mục kiểm duyệt`,
       //   { itemId, claimedBy: moderator.fullName }
       // );
+
+      // Log audit action for claiming moderation item
+      const itemDoc1 = await adminDb.collection('moderation_queue').doc(itemId).get();
+      const itemData1 = itemDoc1.data();
+      await ServerAuditService.logModerationAction(
+        'claim',
+        moderator,
+        {
+          id: itemId,
+          contentType: itemData1?.contentType || 'unknown',
+          title: itemData1?.title || itemData1?.name
+        },
+        {
+          reason: 'Nhận mục kiểm duyệt để xử lý',
+          ip: request.headers.get('x-forwarded-for') || 'unknown'
+        }
+      );
 
       return NextResponse.json({
         success: true,
@@ -617,8 +635,8 @@ export async function PUT(
       }
 
       // Check if the place document exists before updating
-      const placeDoc = await adminDb.collection('places').doc(contentId).get();
-      if (!placeDoc.exists) {
+      const placeDocForUpdate = await adminDb.collection('places').doc(contentId).get();
+      if (!placeDocForUpdate.exists) {
         console.warn(`Place document ${contentId} not found, cleaning up moderation queue entry`);
         
         // Clean up the orphaned moderation queue entry
@@ -646,7 +664,7 @@ export async function PUT(
 
       // Update user stats and send notifications
       if (action === 'approve') {
-        const placeData = placeDoc.data();
+        const placeData = placeDocForUpdate.data();
         
         if (placeData?.createdBy) {
           await adminDb.collection('users').doc(placeData.createdBy).update({
@@ -685,7 +703,7 @@ export async function PUT(
         }
       } else if (action === 'reject') {
         // Send rejection notification to submitter
-        const placeData = placeDoc.data();
+        const placeData = placeDocForUpdate.data();
         if (placeData?.createdBy) {
           if (itemData!.itemType === 'place_edit') {
             await EnhancedNotificationService.notifyEditSubmitter(
@@ -735,6 +753,22 @@ export async function PUT(
       'request_edit': 'Đã yêu cầu chỉnh sửa nội dung',
       'direct_delete': 'Đã xóa nội dung trực tiếp'
     };
+
+    // Log audit action for moderation review
+    await ServerAuditService.logModerationAction(
+      action as 'approve' | 'reject' | 'escalate',
+      moderator,
+      {
+        id: itemId,
+        contentType: itemData?.contentType || 'unknown',
+        title: itemData?.title || itemData?.name || placeDocForUpdate?.data()?.name
+      },
+      {
+        reviewNotes,
+        reason: `${messages[action as keyof typeof messages]} - ${reviewNotes || 'Không có ghi chú'}`,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      }
+    );
 
     return NextResponse.json({
       success: true,

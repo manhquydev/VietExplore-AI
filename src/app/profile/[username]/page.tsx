@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -15,13 +16,40 @@ import { PlaceCard } from "@/components/place-card"
 import Link from "next/link"
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     username: string
-  }
+  }>
 }
 
 export default function ProfilePage({ params }: ProfilePageProps) {
-  const user = MOCK_USERS.find(u => u.username === params.username)
+  const [username, setUsername] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadParams() {
+      const resolvedParams = await params
+      setUsername(resolvedParams.username)
+      setIsLoading(false)
+    }
+    loadParams()
+  }, [params])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <div className="container mx-auto py-8 flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-muted">Đang tải hồ sơ...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  const user = MOCK_USERS.find(u => u.username === username)
   
   if (!user) {
     notFound()
@@ -152,7 +180,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 Địa điểm đã đóng góp
               </h2>
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/places?contributor=${user.username}`}>
+                <Link href={`/places?contributor=${username}`}>
                   Xem tất cả
                 </Link>
               </Button>

@@ -160,19 +160,19 @@ export default function MyItinerariesPage() {
   // Redirect if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-white/95 backdrop-blur-sm">
         <Header />
         <main className="min-h-screen pt-16">
           <section className="relative py-20 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white/40 to-sky-50/30"></div>
             
             <div className="relative container">
-              <div className="glass-card max-w-md mx-auto text-center p-8">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+              <div className="bg-white rounded-2xl shadow-lg border-0 max-w-md mx-auto text-center p-8">
+                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-blue-600" />
                 </div>
                 <h1 className="gradient-text text-2xl font-bold mb-4">Đăng nhập để xem lịch trình</h1>
-                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                <p className="text-gray-600 mb-6">
                   Bạn cần đăng nhập để quản lý lịch trình cá nhân
                 </p>
                 <Button 
@@ -191,23 +191,23 @@ export default function MyItinerariesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-white/95 backdrop-blur-sm">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-16 sm:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white/40 to-sky-50/30"></div>
           
           <div className="relative container">
-            <div className="glass-card text-center p-8 mb-8">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BarChart3 className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+            <div className="bg-white rounded-2xl shadow-lg border-0 text-center p-8 mb-8">
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-8 h-8 text-blue-600" />
               </div>
               <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
                 Lịch trình của tôi
               </h1>
-              <p className="text-slate-600 dark:text-slate-300 text-lg mb-6">
+              <p className="text-gray-600 text-lg mb-6">
                 Quản lý và chia sẻ các lịch trình du lịch của bạn
               </p>
               
@@ -224,48 +224,48 @@ export default function MyItinerariesPage() {
           </div>
         </section>
 
-        <section className="container py-8 relative">
+        <section className="container py-12 relative">
           {/* Stats Dashboard */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="glass-card p-6 text-center">
-              <div className="text-3xl font-bold text-sky-600 mb-2">{itineraries.length}</div>
-              <div className="text-sm text-slate-600 dark:text-slate-300">Tổng lịch trình</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
+            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
+              <div className="text-3xl font-bold text-blue-600 mb-2">{itineraries.length}</div>
+              <div className="text-sm text-gray-600">Tổng lịch trình</div>
             </div>
-            <div className="glass-card p-6 text-center">
-              <div className="text-3xl font-bold text-teal-600 mb-2">
+            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
+              <div className="text-3xl font-bold text-green-600 mb-2">
                 {itineraries.filter(i => i.isPublic).length}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-300">Công khai</div>
+              <div className="text-sm text-gray-600">Công khai</div>
             </div>
-            <div className="glass-card p-6 text-center">
+            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
               <div className="text-3xl font-bold text-purple-600 mb-2">
                 {itineraries.reduce((sum, i) => sum + i.stats.views, 0)}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-300">Lượt xem</div>
+              <div className="text-sm text-gray-600">Lượt xem</div>
             </div>
-            <div className="glass-card p-6 text-center">
+            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
               <div className="text-3xl font-bold text-pink-600 mb-2">
                 {itineraries.reduce((sum, i) => sum + i.stats.likes, 0)}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-300">Lượt thích</div>
+              <div className="text-sm text-gray-600">Lượt thích</div>
             </div>
           </div>
 
           {/* Filters & Search */}
-          <div className="glass-card p-6 mb-8">
+          <div className="bg-white rounded-xl shadow-md border-0 p-8 mb-10">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   placeholder="Tìm kiếm lịch trình..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 glass-subtle border-white/20 dark:border-slate-700/50"
+                  className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:bg-white"
                 />
               </div>
               
               <div className="flex gap-2">
-                <div className="flex rounded-lg glass-subtle border border-white/20 dark:border-slate-700/50 overflow-hidden">
+                <div className="flex rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
                   <Button
                     variant={filterStatus === 'all' ? 'primary' : 'ghost'}
                     size="sm"
@@ -292,7 +292,7 @@ export default function MyItinerariesPage() {
                   </Button>
                 </div>
 
-                <div className="flex rounded-lg glass-subtle border border-white/20 dark:border-slate-700/50 overflow-hidden">
+                <div className="flex rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
                   <Button
                     variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                     size="sm"
@@ -316,22 +316,22 @@ export default function MyItinerariesPage() {
 
           {/* Itineraries Grid/List */}
           {isLoading ? (
-            <div className="glass-card p-16 text-center">
-              <div className="w-8 h-8 border-2 border-sky-300 border-t-sky-600 rounded-full animate-spin mx-auto mb-4"></div>
-              <div className="text-slate-600 dark:text-slate-300">Đang tải...</div>
+            <div className="bg-white rounded-xl shadow-md border-0 p-16 text-center">
+              <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="text-gray-600">Đang tải...</div>
             </div>
           ) : filteredItineraries.length === 0 ? (
-            <div className="glass-card p-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-8 h-8 text-slate-500" />
+            <div className="bg-white rounded-xl shadow-md border-0 p-16 text-center">
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {searchQuery || filterStatus !== "all" 
                   ? "Không tìm thấy lịch trình nào" 
                   : "Chưa có lịch trình nào"
                 }
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6">
+              <p className="text-gray-600 mb-6">
                 {searchQuery || filterStatus !== "all"
                   ? "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc"
                   : "Tạo lịch trình đầu tiên để bắt đầu lên kế hoạch du lịch"
@@ -350,9 +350,9 @@ export default function MyItinerariesPage() {
           ) : (
             <>
               {viewMode === 'grid' ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredItineraries.map((itinerary) => (
-                    <div key={itinerary.id} className="glass-card overflow-hidden group">
+                    <div key={itinerary.id} className="bg-white rounded-xl shadow-md border-0 overflow-hidden group hover:shadow-lg transition-shadow">
                       <div className="relative aspect-[16/10] overflow-hidden">
                         <img
                           src={itinerary.coverImage}
@@ -362,7 +362,7 @@ export default function MyItinerariesPage() {
                         <div className="absolute top-3 left-3">
                           <Badge 
                             variant={itinerary.isPublic ? "default" : "secondary"}
-                            className="glass-subtle"
+                            className="bg-white/90 backdrop-blur-sm shadow-sm"
                           >
                             {itinerary.isPublic ? "Công khai" : "Riêng tư"}
                           </Badge>
@@ -372,7 +372,7 @@ export default function MyItinerariesPage() {
                             <Button 
                               variant="secondary" 
                               size="sm" 
-                              className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
+                              className="bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white"
                               onClick={() => {
                                 const dropdown = document.getElementById(`dropdown-${itinerary.id}`)
                                 if (dropdown) {
@@ -384,40 +384,40 @@ export default function MyItinerariesPage() {
                             </Button>
                             <div 
                               id={`dropdown-${itinerary.id}`}
-                              className="hidden absolute right-0 top-full mt-1 w-48 glass-card border border-white/20 dark:border-slate-700/50 z-10"
+                              className="hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
                             >
                               <div className="p-1">
                                 <Link 
                                   href={`/itineraries/${itinerary.slug}`}
-                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded"
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded"
                                 >
                                   <Eye className="w-4 h-4" />
                                   Xem chi tiết
                                 </Link>
                                 <Link 
                                   href={`/itineraries/builder?edit=${itinerary.id}`}
-                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded"
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded"
                                 >
                                   <Edit className="w-4 h-4" />
                                   Chỉnh sửa
                                 </Link>
                                 <button 
                                   onClick={() => handleDuplicate(itinerary)}
-                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded w-full text-left"
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded w-full text-left"
                                 >
                                   <Copy className="w-4 h-4" />
                                   Sao chép
                                 </button>
                                 <button 
                                   onClick={() => togglePublic(itinerary.id)}
-                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/40 dark:hover:bg-slate-800/40 rounded w-full text-left"
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded w-full text-left"
                                 >
                                   <Share2 className="w-4 h-4" />
                                   {itinerary.isPublic ? "Chuyển riêng tư" : "Công khai"}
                                 </button>
                                 <button 
                                   onClick={() => handleDelete(itinerary.id)}
-                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded w-full text-left"
+                                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 text-red-600 rounded w-full text-left"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                   Xóa
@@ -429,42 +429,42 @@ export default function MyItinerariesPage() {
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="font-semibold text-lg text-slate-900 dark:text-white mb-2 line-clamp-2">
+                        <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
                           {itinerary.title}
                         </h3>
-                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                           {itinerary.description}
                         </p>
                         
                         <div className="space-y-3 text-sm">
                           <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                            <span className="flex items-center gap-2 text-gray-600">
                               <Calendar className="w-4 h-4" />
                               {itinerary.duration} ngày
                             </span>
-                            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                            <span className="flex items-center gap-2 text-gray-600">
                               <MapPin className="w-4 h-4" />
                               {itinerary.placesCount} địa điểm
                             </span>
                           </div>
                           
                           <div className="flex items-center justify-between">
-                            <Badge variant="secondary" className="text-xs glass-subtle">
+                            <Badge variant="secondary" className="text-xs bg-gray-100">
                               {tripTypeLabels[itinerary.tripType as keyof typeof tripTypeLabels]}
                             </Badge>
-                            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                            <span className="flex items-center gap-2 text-gray-600">
                               <DollarSign className="w-4 h-4" />
                               {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
                             </span>
                           </div>
 
                           {itinerary.isPublic && (
-                            <div className="flex items-center justify-between pt-3 border-t border-white/20 dark:border-slate-700/50">
-                              <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                              <span className="flex items-center gap-1 text-xs text-gray-500">
                                 <Eye className="w-3 h-3" />
                                 {itinerary.stats.views}
                               </span>
-                              <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                              <span className="flex items-center gap-1 text-xs text-gray-500">
                                 <Heart className="w-3 h-3" />
                                 {itinerary.stats.likes}
                               </span>
@@ -476,9 +476,9 @@ export default function MyItinerariesPage() {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {filteredItineraries.map((itinerary) => (
-                    <div key={itinerary.id} className="glass-card p-6">
+                    <div key={itinerary.id} className="bg-white rounded-xl shadow-md border-0 p-6 hover:shadow-lg transition-shadow">
                       <div className="flex gap-4">
                         <img
                           src={itinerary.coverImage}
@@ -488,47 +488,47 @@ export default function MyItinerariesPage() {
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-lg text-slate-900 dark:text-white truncate pr-4">
+                            <h3 className="font-semibold text-lg text-gray-900 truncate pr-4">
                               {itinerary.title}
                             </h3>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              className="glass-subtle hover:bg-white/40 dark:hover:bg-slate-800/40"
+                              className="bg-gray-50 hover:bg-gray-100"
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </div>
                           
-                          <p className="text-slate-600 dark:text-slate-300 text-sm mb-3 line-clamp-1">
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-1">
                             {itinerary.description}
                           </p>
                           
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             <Badge 
                               variant={itinerary.isPublic ? "default" : "secondary"}
-                              className="glass-subtle"
+                              className="bg-gray-100"
                             >
                               {itinerary.isPublic ? "Công khai" : "Riêng tư"}
                             </Badge>
                             
-                            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                            <span className="flex items-center gap-1 text-gray-600">
                               <Calendar className="w-4 h-4" />
                               {itinerary.duration} ngày
                             </span>
                             
-                            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                            <span className="flex items-center gap-1 text-gray-600">
                               <MapPin className="w-4 h-4" />
                               {itinerary.placesCount} địa điểm
                             </span>
                             
-                            <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                            <span className="flex items-center gap-1 text-gray-600">
                               <DollarSign className="w-4 h-4" />
                               {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
                             </span>
 
                             {itinerary.isPublic && (
-                              <span className="text-slate-500 dark:text-slate-400">
+                              <span className="text-gray-500">
                                 {itinerary.stats.views} lượt xem • {itinerary.stats.likes} lượt thích
                               </span>
                             )}

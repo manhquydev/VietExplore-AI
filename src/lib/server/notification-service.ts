@@ -1,5 +1,6 @@
-import { getAdminDb } from './firebaseAdmin';
+import { getAdminDb, getRealtimeDb } from './firebaseAdmin';
 import { User } from '@/lib/types/auth';
+import * as admin from 'firebase-admin';
 
 export type NotificationType = 
   | 'place_approved' 
@@ -54,9 +55,8 @@ export class NotificationService {
       // 1. Save to Firestore for persistence (as per doc Section IV.2)
       const docRef = await this.db.collection('notifications').add(notification);
       
-      // 2. Send to Firebase Realtime Database for INSTANT notifications (Section IV.1)
-      const admin = getAdminDb();
-      const realtimeDb = admin.database();
+      // 2. Send to Firebase Realtime Database for INSTANT notifications (Section IV.1)  
+      const realtimeDb = getRealtimeDb();
       
       if (realtimeDb) {
         // Following pattern from Section IV.2: `/notifications/${userId}`
@@ -101,8 +101,7 @@ export class NotificationService {
         .where('role', 'in', ['moderator', 'admin'])
         .get();
 
-      const admin = getAdminDb();
-      const realtimeDb = admin.database();
+      const realtimeDb = getRealtimeDb();
 
       // Send individual notifications
       const notificationPromises = moderatorQuery.docs.map(doc => {
@@ -315,7 +314,7 @@ export class NotificationService {
       });
 
       // Update Realtime Database
-      const realtimeDb = getAdminDb().database;
+      const realtimeDb = getRealtimeDb();
       if (realtimeDb) {
         await realtimeDb.ref(`user_notifications/${userId}/${notificationId}/read`).set(true);
       }
@@ -347,8 +346,7 @@ export class NotificationService {
    */
   static async updatePresence(userId: string, online: boolean): Promise<void> {
     try {
-      const admin = getAdminDb();
-      const realtimeDb = admin.database();
+      const realtimeDb = getRealtimeDb();
       
       if (realtimeDb) {
         const presenceRef = realtimeDb.ref(`user_presence/${userId}`);
@@ -386,8 +384,7 @@ export class NotificationService {
    */
   static async getOnlineModerators(): Promise<string[]> {
     try {
-      const admin = getAdminDb();
-      const realtimeDb = admin.database();
+      const realtimeDb = getRealtimeDb();
       
       if (!realtimeDb) {
         return [];
@@ -425,8 +422,7 @@ export class NotificationService {
    */
   static async syncUnreadCount(userId: string): Promise<void> {
     try {
-      const admin = getAdminDb();
-      const realtimeDb = admin.database();
+      const realtimeDb = getRealtimeDb();
       
       if (realtimeDb) {
         const unreadCount = await this.getUnreadCount(userId);

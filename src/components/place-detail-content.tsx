@@ -50,10 +50,13 @@ import Link from "next/link"
 import { usePlaceInteractions } from "@/hooks/use-place-interactions"
 import { usePlaceReviews } from "@/hooks/use-place-reviews"
 import { ReviewModal } from "@/components/modals/review-modal"
+import { ReportModal } from "@/components/modals/report-modal"
 import RealtimeService from "@/lib/firebase/realtime"
 import { useToast } from "@/hooks/use-toast"
 
 import { Place } from "@/lib/types/places"
+import { ReportFormData } from "@/lib/types/reports"
+import { auth } from "@/lib/firebase"
 
 interface PlaceData {
   id: string
@@ -153,10 +156,28 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [showReviewModal, setShowReviewModal] = React.useState(false)
   const [showImageModal, setShowImageModal] = React.useState(false)
   const [modalImageIndex, setModalImageIndex] = React.useState(0)
+  const [realtimeStats, setRealtimeStats] = React.useState({
+    views: place.stats.views || 0,
+    likes: place.stats.likes || 0,
+    saves: place.stats.saves || 0
+  })
   
   // Use custom hooks for real functionality
   const { interactions, toggleLike, toggleSave, error: interactionError } = usePlaceInteractions(place.id, place.stats.likes || 0, place.stats.saves || 0)
   const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError, hasUserReviewed, userReview } = usePlaceReviews(place.id, { limit: 5 })
+
+  // Subscribe to real-time stats
+  React.useEffect(() => {
+    const unsubscribe = RealtimeService.subscribeToPlaceStats(place.id, (stats) => {
+      setRealtimeStats(prev => ({
+        views: Math.max(stats.views || 0, prev.views, place.stats.views || 0),
+        likes: Math.max(stats.likes || 0, prev.likes, place.stats.likes || 0),
+        saves: Math.max(stats.saves || 0, prev.saves, place.stats.saves || 0)
+      }))
+    })
+
+    return () => unsubscribe()
+  }, [place.id, place.stats.views, place.stats.likes, place.stats.saves])
 
   // Track page views
   React.useEffect(() => {
@@ -334,7 +355,11 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
 
   const handleReport = () => {
     if (!isAuthenticated) {
-      alert("Bạn cần đăng nhập để báo cáo địa điểm")
+      toast({
+        title: "Cần đăng nhập",
+        description: "Bạn cần đăng nhập để báo cáo địa điểm",
+        variant: "destructive"
+      })
       return
     }
     setShowReportModal(true)
@@ -368,6 +393,72 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
     }
     
     setShowReviewModal(true)
+  }
+
+  const handleReportSubmit = async (reportData: ReportFormData) => {
+    try {
+      // Get Firebase user and JWT token
+      const firebaseUser = auth.currentUser
+      if (!firebaseUser) {
+        toast({
+          title: "Lỗi xác thực",
+          description: "Vui lòng đăng nhập lại để tiếp tục",
+          variant: "destructive"
+        })
+        return
+      }
+
+      const token = await firebaseUser.getIdToken()
+      
+      const response = await fetch(`/api/places/${place.id}/reports`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(reportData),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        const errorMessage = error.error || 'Không thể gửi báo cáo'
+        
+        // Handle specific error cases with appropriate toast variants
+        if (response.status === 400 && errorMessage.includes('đã báo cáo')) {
+          toast({
+            title: "Thông báo",
+            description: errorMessage,
+            variant: "default"
+          })
+          return
+        }
+        
+        if (response.status === 429) {
+          toast({
+            title: "Vượt quá giới hạn",
+            description: errorMessage,
+            variant: "destructive"
+          })
+          return
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+      
+      toast({
+        title: "Thành công",
+        description: result.message || "Đã gửi báo cáo thành công. Chúng tôi sẽ xem xét trong thời gian sớm nhất.",
+      })
+    } catch (error) {
+      console.error('Error submitting report:', error)
+      toast({
+        title: "Lỗi",
+        description: error instanceof Error ? error.message : "Không thể gửi báo cáo. Vui lòng thử lại.",
+        variant: "destructive"
+      })
+    }
   }
 
   return (
@@ -543,7 +634,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   </div>
                   <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/20 text-white">
                     <Eye className="h-5 w-5" />
-                    <span className="font-medium text-lg">{(place.stats.views || 0).toLocaleString()}</span>
+                    <span className="font-medium text-lg">{realtimeStats.views.toLocaleString()}</span>
                     <span className="text-white/80">lượt xem</span>
                   </div>
                 </div>
@@ -672,7 +763,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 border border-gray-200/50">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{(place.stats.views || 0).toLocaleString()}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 md:mb-2">{realtimeStats.views.toLocaleString()}</div>
                   <div className="text-gray-600 font-medium text-sm md:text-base">Lượt xem</div>
                 </div>
                 <div className="text-center">
@@ -1728,6 +1819,15 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
           isOpen={showReviewModal}
           onClose={() => setShowReviewModal(false)}
           onSubmit={handleReviewSubmit}
+          placeName={place.name}
+          placeId={place.id}
+        />
+        
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          onSubmit={handleReportSubmit}
           placeName={place.name}
           placeId={place.id}
         />

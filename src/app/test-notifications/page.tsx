@@ -2,9 +2,15 @@
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { useRealtimeNotifications, useUserPresence } from "@/hooks/use-realtime-notifications"
+import { useAuth } from "@/components/auth/auth-provider"
+import { Badge } from "@/components/ui/badge"
 
 export default function TestNotificationsPage() {
   const { toast, success, error, warning, info } = useToast()
+  const { user, isAuthenticated } = useAuth()
+  const { notifications, unreadCount, isConnected } = useRealtimeNotifications()
+  const { isOnline } = useUserPresence()
 
   const showDefaultToast = () => {
     toast({
@@ -115,8 +121,71 @@ export default function TestNotificationsPage() {
             </Button>
           </div>
 
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">Responsive Design Features:</h3>
+          {/* Real-time Notifications Status */}
+          <div className="mt-8 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+            <h3 className="font-medium text-gray-900 mb-4">🔔 Real-time Notifications Status</h3>
+            
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Badge variant={isAuthenticated ? "default" : "secondary"}>
+                  {isAuthenticated ? "✅ Authenticated" : "❌ Not Authenticated"}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Badge variant={isConnected ? "default" : "destructive"}>
+                  {isConnected ? "🟢 Connected" : "🔴 Disconnected"}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Badge variant={isOnline ? "default" : "secondary"}>
+                  {isOnline ? "📶 Online" : "📡 Offline"}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">
+                  🔔 Unread: {unreadCount}
+                </Badge>
+              </div>
+            </div>
+            
+            {isAuthenticated && user && (
+              <div className="text-sm text-gray-600 mb-2">
+                <strong>User:</strong> {user.fullName || user.email} ({user.role})
+              </div>
+            )}
+            
+            {notifications.length > 0 ? (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Notifications:</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {notifications.slice(0, 5).map((notification) => (
+                    <div key={notification.id} className="p-2 bg-white rounded border text-xs">
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-gray-600">{notification.message}</div>
+                      <div className="flex justify-between items-center mt-1">
+                        <Badge size="sm" variant={notification.priority === 'high' ? 'destructive' : 'outline'}>
+                          {notification.priority}
+                        </Badge>
+                        <span className="text-gray-400">
+                          {notification.read ? '✅' : '🔔'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 text-center py-4">
+                {isAuthenticated ? "No notifications yet" : "Login to see real-time notifications"}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-2">Toast System Features:</h3>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• <strong>Mobile:</strong> Full width, bottom positioning</li>
               <li>• <strong>Tablet/Desktop:</strong> Fixed width, bottom-right corner</li>

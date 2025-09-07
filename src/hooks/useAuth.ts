@@ -12,6 +12,7 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { AuthUser, LoginFormData, RegisterFormData } from '@/lib/types/auth';
+import { EmailVerificationService } from '@/lib/auth/email-verification';
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -154,6 +155,18 @@ export const useAuth = () => {
         console.log('Signing in with custom token...');
         await signInWithCustomToken(auth, result.token);
         console.log('Successfully signed in with custom token');
+
+        // Send verification email for new email/password registrations
+        if (result.shouldSendVerification && auth.currentUser) {
+          try {
+            console.log('Sending verification email...');
+            await EmailVerificationService.sendVerificationEmail(auth.currentUser);
+            console.log('Verification email sent successfully');
+          } catch (verificationError) {
+            console.error('Error sending verification email:', verificationError);
+            // Don't fail the registration if email sending fails
+          }
+        }
       }
 
       return true;

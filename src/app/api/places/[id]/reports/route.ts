@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { RealtimeService } from '@/lib/firebase/realtime';
 import { ReportFormData, PlaceReport } from '@/lib/types/reports';
 
 // POST /api/places/[placeId]/reports - Report a place
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -20,7 +21,7 @@ export async function POST(
     }
 
     const user = authResult.user;
-    const { id: placeId } = params;
+    const { id: placeId } = await params;
 
     // Check if place exists
     const placeDoc = await adminDb.collection('places').doc(placeId).get();
@@ -71,13 +72,13 @@ export async function POST(
       );
     }
 
-    // Create report
+    // Create report - exclude undefined values for Firestore
     const reportData: Omit<PlaceReport, 'id'> = {
       placeId,
       placeName: place?.name || 'Unknown',
       reportType: formData.reportType,
       reason: formData.reason,
-      description: formData.description,
+      ...(formData.description && { description: formData.description }),
       reportedBy: user.id,
       reporterInfo: {
         id: user.id,
@@ -91,6 +92,14 @@ export async function POST(
     };
 
     const docRef = await adminDb.collection('place_reports').add(reportData);
+
+    // Update realtime report stats
+    try {
+      await RealtimeService.updateReportStats(1);
+    } catch (error) {
+      console.error('Failed to update realtime report stats:', error);
+      // Don't fail the request if realtime update fails
+    }
 
     // Update place report count and check for auto-escalation
     const newReportCount = (place?.reportCount || 0) + 1;
@@ -165,7 +174,7 @@ export async function POST(
 // GET /api/places/[placeId]/reports - Get reports for a place (admin/moderator only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -186,7 +195,7 @@ export async function GET(
       );
     }
 
-    const { id: placeId } = params;
+    const { id: placeId } = await params;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 

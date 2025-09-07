@@ -18,6 +18,8 @@ import { useAdminStats } from "@/hooks/use-admin"
 import { AdminErrorState } from "@/components/admin/loading-states"
 import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { apiClient } from "@/lib/client/api"
+import { RealtimeService } from "@/lib/firebase/realtime"
+import { auth } from "@/lib/firebase"
 
 const moderationQueues = [
   {
@@ -63,6 +65,13 @@ export default function ModerationOverviewPage() {
   const { stats, loading, error } = useAdminStats()
 
   const [queueStats, setQueueStats] = React.useState<{[key: string]: any}>({})
+  const [realtimeReportStats, setRealtimeReportStats] = React.useState<any>({
+    pending: 0,
+    in_review: 0,
+    resolved: 0,
+    dismissed: 0,
+    total: 0
+  })
 
   const fetchQueueStats = React.useCallback(async () => {
     if (!user || !['moderator', 'admin'].includes(user.role)) return
@@ -79,11 +88,6 @@ export default function ModerationOverviewPage() {
         status: 'pending'
       })
       
-      const reportsResult = await apiClient.moderation.queue.list({
-        itemType: 'user_report',
-        status: 'pending'
-      })
-
       setQueueStats({
         newPlaces: {
           pending: newPlacesResult.data?.length || 0,
@@ -94,14 +98,59 @@ export default function ModerationOverviewPage() {
           total: managementResult.data?.length || 0
         },
         reports: {
-          pending: reportsResult.data?.length || 0,
-          total: reportsResult.data?.length || 0
+          pending: realtimeReportStats.pending || 0,
+          total: realtimeReportStats.total || 0
         }
       })
     } catch (error) {
       console.error('Error fetching queue stats:', error)
     }
+  }, [user, realtimeReportStats])
+
+  // Sync report stats from Firestore to Realtime Database
+  const syncReportStats = React.useCallback(async () => {
+    if (!user || !['moderator', 'admin'].includes(user.role)) return
+
+    try {
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) return;
+      
+      const token = await firebaseUser.getIdToken();
+      
+      const response = await fetch('/api/admin/sync-report-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Report stats synced successfully:', result.stats);
+      }
+    } catch (error) {
+      console.error('Error syncing report stats:', error);
+    }
   }, [user])
+
+  // Subscribe to realtime report stats
+  React.useEffect(() => {
+    if (!user || !['moderator', 'admin'].includes(user.role)) return
+
+    // First, sync existing data from Firestore
+    syncReportStats()
+
+    // Initialize report stats if they don't exist
+    RealtimeService.initializeReportStats()
+
+    // Subscribe to realtime updates
+    const unsubscribe = RealtimeService.subscribeToReportStats((stats) => {
+      setRealtimeReportStats(stats)
+    })
+
+    return unsubscribe
+  }, [user, syncReportStats])
 
   React.useEffect(() => {
     fetchQueueStats()
@@ -184,6 +233,17 @@ export default function ModerationOverviewPage() {
                   </div>
                   <div className="text-xs font-medium text-admin-neutral-600">Đã xử lý hôm nay</div>
                 </div>
+                <div className="w-px h-10 bg-admin-neutral-200"></div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={syncReportStats}
+                  className="text-xs"
+                  title="Đồng bộ thống kê báo cáo"
+                >
+                  <adminIcons.system.refresh className="h-3 w-3 mr-1" />
+                  Sync
+                </Button>
                 <div className="relative">
                   <div className={`h-3 w-3 rounded-full ${totalPending > 10 ? 'bg-admin-error-500' : 'bg-admin-success-500'}`}></div>
                   <div className={`absolute inset-0 h-3 w-3 rounded-full animate-ping opacity-20 ${totalPending > 10 ? 'bg-admin-error-500' : 'bg-admin-success-500'}`}></div>

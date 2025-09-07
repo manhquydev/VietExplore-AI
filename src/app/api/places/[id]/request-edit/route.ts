@@ -8,10 +8,10 @@ import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   console.log('=== POST /api/places/[id]/request-edit ===')
-  console.log('PlaceId:', params.id)
+  console.log('PlaceId:', (await params).id)
   
   try {
     const adminDb = getAdminDb()
@@ -27,7 +27,7 @@ export async function POST(
     }
 
     const user = tokenResult.user
-    const placeId = params.id
+    const placeId = (await params).id
     
     console.log('User authenticated:', user.id)
 

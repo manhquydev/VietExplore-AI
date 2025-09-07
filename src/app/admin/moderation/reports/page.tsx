@@ -12,13 +12,16 @@ import { MapPin, Calendar, Users, Eye, AlertTriangle, Flag, Shield, Clock } from
 import { adminIcons } from "@/lib/admin/icon-system"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
-import { useModerationQueue } from "@/hooks/use-admin"
 import { useToast } from "@/hooks/use-toast"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
-import { apiClient } from "@/lib/client/api"
+import { useAdminReports } from "@/hooks/use-admin-reports"
 import { AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
 import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog } from "@/components/admin/confirmation-dialogs"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { getAuth } from "firebase/auth"
+
+const auth = getAuth()
 
 const statusConfig = {
   pending: { 
@@ -89,83 +92,142 @@ export default function ReportsHandlingPage() {
   const [statusCounts, setStatusCounts] = React.useState<{[key: string]: number}>({})
 
   // Build filters for reports only
-  const queueFilters = React.useMemo(() => {
+  const reportFilters = React.useMemo(() => {
     const filters: any = { 
       status: selectedStatus,
-      itemType: 'user_report'
     }
     if (selectedType !== 'all') {
       filters.reportType = selectedType
     }
-    if (selectedPriority !== 'all') {
-      filters.priority = selectedPriority
-    }
     return filters
-  }, [selectedStatus, selectedType, selectedPriority])
+  }, [selectedStatus, selectedType])
 
-  const { items, loading, error, reviewItem } = useModerationQueue(queueFilters)
+  const { reports, loading, error, updateReportStatus, getStatusCounts, refetch } = useAdminReports(reportFilters)
 
   // Fetch status counts for reports only
   const fetchStatusCounts = React.useCallback(async () => {
     if (!user || !['moderator', 'admin'].includes(user.role)) return
 
     try {
-      const statuses = ['pending', 'in_review', 'resolved', 'dismissed']
-      const counts: {[key: string]: number} = {}
-
-      for (const status of statuses) {
-        const filters: any = { 
-          status,
-          itemType: 'user_report'
-        }
-        const result = await apiClient.moderation.queue.list(filters)
-        counts[status] = result.data?.length || 0
-      }
-
+      const counts = await getStatusCounts()
       setStatusCounts(counts)
     } catch (error) {
       console.error('Error fetching status counts:', error)
     }
-  }, [user])
+  }, [user, getStatusCounts])
 
   React.useEffect(() => {
     fetchStatusCounts()
   }, [fetchStatusCounts])
 
   const handleAction = async (
-    itemId: string, 
-    action: 'resolve' | 'dismiss' | 'escalate',
+    reportId: string, 
+    action: 'resolve' | 'dismiss' | 'escalate' | 'request_delete' | 'claim' | 'release',
     notes?: string
   ) => {
     try {
-      const mappedAction = action === 'resolve' ? 'approve' : action === 'dismiss' ? 'reject' : 'escalate'
-      const result = await reviewItem(itemId, mappedAction, notes)
-      
-      if (result && result.success) {
-        const actionMessages = {
-          'resolve': 'Báo cáo đã được xử lý và giải quyết',
-          'dismiss': 'Báo cáo đã được bỏ qua',
-          'escalate': 'Báo cáo đã được chuyển lên Admin xử lý'
+      // Handle special delete request action
+      if (action === 'request_delete') {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
+          toast({
+            title: "Lỗi xác thực",
+            description: "Vui lòng đăng nhập lại để tiếp tục",
+            variant: "destructive"
+          });
+          return;
         }
-        toast({ 
-          title: "Thành công",
-          description: actionMessages[action as keyof typeof actionMessages] || 'Hành động đã được thực hiện thành công',
-          variant: "success"
-        })
-        
-        await fetchStatusCounts()
-        window.dispatchEvent(new CustomEvent('moderationUpdated'))
-      } else {
-        const errorMessage = result?.error || 'Có lỗi xảy ra khi thực hiện hành động'
+
+        const token = await firebaseUser.getIdToken();
+        const response = await fetch(`/api/admin/reports/${reportId}/request-delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ notes })
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
         toast({
-          title: "Lỗi",
-          description: errorMessage,
-          variant: "destructive"
-        })
+          title: "Thành công", 
+          description: "Đã gửi yêu cầu xóa địa điểm cho Admin duyệt",
+          variant: "success"
+        });
+        
+        await fetchStatusCounts();
+        return;
       }
+
+      // Handle claim and release actions
+      if (action === 'claim' || action === 'release') {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
+          toast({
+            title: "Lỗi xác thực",
+            description: "Vui lòng đăng nhập lại để tiếp tục",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const token = await firebaseUser.getIdToken();
+        const response = await fetch(`/api/admin/reports/${reportId}/claim`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ action, notes })
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        const actionMessages = {
+          'claim': 'Đã tiếp nhận báo cáo để điều tra. Báo cáo giờ được khóa cho bạn xử lý.',
+          'release': 'Đã trả báo cáo về pool chung. Các moderator khác có thể tiếp nhận báo cáo này.'
+        }
+        
+        toast({
+          title: "Thành công",
+          description: actionMessages[action],
+          variant: "success"
+        });
+        
+        // Refresh reports list to get updated status
+        await fetchStatusCounts();
+        // Refresh the reports data to update UI immediately
+        await refetch();
+        return;
+      }
+
+      // Handle normal report actions
+      const mappedAction = action === 'resolve' ? 'resolve' : action === 'dismiss' ? 'dismiss' : 'escalate'
+      const result = await updateReportStatus(reportId, mappedAction, notes)
+      
+      const actionMessages = {
+        'resolve': 'Báo cáo đã được xử lý và giải quyết',
+        'dismiss': 'Báo cáo đã được bỏ qua',
+        'escalate': 'Báo cáo đã được chuyển lên Admin xử lý'
+      }
+      toast({ 
+        title: "Thành công",
+        description: actionMessages[action as keyof typeof actionMessages] || 'Hành động đã được thực hiện thành công',
+        variant: "success"
+      })
+      
+      await fetchStatusCounts()
+      
     } catch (error: any) {
       console.error('Error in handleAction:', error)
-      const errorMessage = error?.error || error?.message || 'Có lỗi không mong đợi xảy ra'
+      const errorMessage = error?.message || 'Có lỗi không mong đợi xảy ra'
       toast({
         title: "Lỗi",
         description: errorMessage,
@@ -174,16 +236,16 @@ export default function ReportsHandlingPage() {
     }
   }
 
-  const filteredItems = React.useMemo(() => {
-    if (!searchQuery) return items
+  const filteredReports = React.useMemo(() => {
+    if (!searchQuery) return reports
     
-    return items.filter(item =>
-      item.contentDetails?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.submitter?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.metadata?.reportReason?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.metadata?.reportDetails?.toLowerCase().includes(searchQuery.toLowerCase())
+    return reports.filter(report =>
+      report.placeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.reporterInfo?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.reason?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.description?.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  }, [items, searchQuery])
+  }, [reports, searchQuery])
 
   const formatDate = (dateString: string) => {
     try {
@@ -199,10 +261,10 @@ export default function ReportsHandlingPage() {
     }
   }
 
-  const getSLAStatus = (submittedAt: string, reportType: string) => {
+  const getSLAStatus = (createdAt: string, reportType: string) => {
     const now = new Date()
-    const submitted = new Date(submittedAt)
-    const hoursAgo = Math.floor((now.getTime() - submitted.getTime()) / (1000 * 60 * 60))
+    const created = new Date(createdAt)
+    const hoursAgo = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60))
     
     const slaHours = {
       safety_legal: 6,
@@ -339,7 +401,7 @@ export default function ReportsHandlingPage() {
                     </Button>
                   }
                 />
-              ) : filteredItems.length === 0 ? (
+              ) : filteredReports.length === 0 ? (
                 <AdminEmptyState
                   icon={config.icon}
                   title={`Không có báo cáo ${config.label.toLowerCase()}`}
@@ -362,27 +424,19 @@ export default function ReportsHandlingPage() {
                 />
               ) : (
                 <div className="space-y-4">
-                  {filteredItems.map((item) => {
-                    const statusInfo = statusConfig[item.status as keyof typeof statusConfig]
-                    const reportType = item.metadata?.reportType || 'other'
-                    const typeInfo = reportTypeConfig[reportType as keyof typeof reportTypeConfig]
-                    const slaStatus = getSLAStatus(item.submittedAt, reportType)
+                  {filteredReports.map((report) => {
+                    const statusInfo = statusConfig[report.status as keyof typeof statusConfig] || statusConfig.pending
+                    const reportType = report.reportType || 'other'
+                    const typeInfo = reportTypeConfig[reportType as keyof typeof reportTypeConfig] || reportTypeConfig.other
+                    const slaStatus = getSLAStatus(report.createdAt, reportType)
                     
                     return (
-                      <Card key={item.id} className="hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-blue-200">
+                      <Card key={report.id} className="hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-blue-200">
                         <CardContent className="p-4 md:p-6">
                           <div className="flex items-start gap-4">
                             {/* Place/Content Preview */}
                             <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center shrink-0 shadow-sm border-2 border-red-100 relative">
-                              {item.contentDetails?.images?.[0] ? (
-                                <img 
-                                  src={item.contentDetails.images[0].url} 
-                                  alt=""
-                                  className="w-full h-full object-cover rounded-xl"
-                                />
-                              ) : (
-                                <MapPin className="h-7 w-7 text-red-600" />
-                              )}
+                              <MapPin className="h-7 w-7 text-red-600" />
                               <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center">
                                 <Flag className="h-3 w-3 text-red-600" />
                               </div>
@@ -394,29 +448,29 @@ export default function ReportsHandlingPage() {
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-lg text-gray-900 mb-1 flex items-center gap-2">
                                     <Flag className="h-4 w-4 text-red-600" />
-                                    Báo cáo: {item.contentDetails?.name || 'Nội dung bị báo cáo'}
+                                    Báo cáo: {report.placeName || 'Địa điểm bị báo cáo'}
                                   </h3>
                                   <p className="text-gray-600 text-sm mb-2">
-                                    <span className="font-medium">Lý do:</span> {item.metadata?.reportReason || 'Không có lý do cụ thể'}
+                                    <span className="font-medium">Lý do:</span> {report.reason || 'Không có lý do cụ thể'}
                                   </p>
-                                  {item.metadata?.reportDetails && (
+                                  {report.description && (
                                     <div className="bg-gray-50 rounded-md p-2 mb-2">
                                       <p className="text-sm">
                                         <span className="font-medium text-gray-800">Chi tiết báo cáo:</span>
-                                        <span className="text-gray-700 ml-1">{item.metadata.reportDetails}</span>
+                                        <span className="text-gray-700 ml-1">{report.description}</span>
                                       </p>
                                     </div>
                                   )}
                                 </div>
                                 
                                 <div className="flex flex-wrap items-center gap-2 ml-4">
-                                  <Badge className={cn("text-xs font-medium shadow-sm", statusInfo?.color)}>
+                                  <Badge className={cn("text-xs font-medium shadow-sm", statusInfo.color)}>
                                     <statusInfo.icon className="w-3 h-3 mr-1" />
-                                    {statusInfo?.label}
+                                    {statusInfo.label}
                                   </Badge>
-                                  <Badge className={cn("text-xs font-medium shadow-sm", typeInfo?.color)}>
+                                  <Badge className={cn("text-xs font-medium shadow-sm", typeInfo.color)}>
                                     <typeInfo.icon className="w-3 h-3 mr-1" />
-                                    {typeInfo?.label}
+                                    {typeInfo.label}
                                   </Badge>
                                   <Badge className={cn("text-xs font-medium shadow-sm px-2 py-1 rounded-full", slaStatus.color)}>
                                     <Clock className="w-3 h-3 mr-1" />
@@ -429,15 +483,15 @@ export default function ReportsHandlingPage() {
                               <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                                 <div className="flex items-center gap-1">
                                   <Users className="h-4 w-4" />
-                                  <span>Báo cáo từ: {item.submitter?.fullName || 'Người dùng ẩn danh'}</span>
+                                  <span>Báo cáo từ: {report.reporterInfo?.name || 'Người dùng ẩn danh'}</span>
                                   <UserRoleDisplay 
-                                    role={item.submitter?.role || 'traveler'}
+                                    role={report.reporterInfo?.role || 'traveler'}
                                     variant="compact"
                                   />
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-4 w-4" />
-                                  <span>{formatDate(item.submittedAt)}</span>
+                                  <span>{formatDate(report.createdAt)}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <AlertTriangle className="h-4 w-4" />
@@ -458,7 +512,7 @@ export default function ReportsHandlingPage() {
                                       "h-4 w-4",
                                       reportType === 'safety_legal' ? "text-red-600" : "text-orange-600"
                                     )} />
-                                    <p className={cn(
+                                    <div className={cn(
                                       "text-sm font-medium",
                                       reportType === 'safety_legal' ? "text-red-800" : "text-orange-800"
                                     )}>
@@ -466,77 +520,218 @@ export default function ReportsHandlingPage() {
                                         ? 'Báo cáo ưu tiên cao - Cần xử lý ngay lập tức'
                                         : 'Cảnh báo: Báo cáo đã quá hạn SLA'
                                       }
-                                    </p>
+                                    </div>
                                   </div>
                                 </div>
                               )}
 
-                              {/* Reviewer Info */}
-                              {item.reviewer && (
+                              {/* Reviewer Info - Enhanced */}
+                              {report.reviewerInfo && (
                                 <div className="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-100">
-                                  <p className="text-sm">
-                                    <span className="font-medium text-blue-800">Đang được điều tra bởi:</span>
-                                    <span className="text-blue-700 ml-1">{item.reviewer.fullName}</span>
-                                  </p>
-                                  {item.reviewNotes && (
-                                    <p className="text-sm text-blue-600 mt-1">
-                                      <span className="font-medium">Ghi chú điều tra:</span> {item.reviewNotes}
-                                    </p>
-                                  )}
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="text-sm flex items-center flex-wrap gap-2">
+                                        <span className="font-medium text-blue-800">Đang được điều tra bởi:</span>
+                                        <span className="text-blue-700">{report.reviewerInfo.name}</span>
+                                        <UserRoleDisplay 
+                                          role={report.reviewerInfo.role}
+                                          variant="compact"
+                                        />
+                                      </div>
+                                      {report.claimedAt && (
+                                        <p className="text-xs text-blue-600 mt-1">
+                                          <span className="font-medium">Tiếp nhận lúc:</span> {formatDate(report.claimedAt)}
+                                        </p>
+                                      )}
+                                      {report.reviewNotes && (
+                                        <p className="text-sm text-blue-600 mt-1">
+                                          <span className="font-medium">Ghi chú điều tra:</span> {report.reviewNotes}
+                                        </p>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Show lock icon if claimed by someone else */}
+                                    {report.reviewerInfo.id !== user?.id && (
+                                      <div className="flex items-center text-blue-600 ml-2">
+                                        <adminIcons.status.warning className="h-4 w-4" />
+                                        <span className="text-xs ml-1">Đã khóa</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Warning for reports assigned to someone else */}
+                              {status === 'in_review' && report.reviewerInfo && report.reviewerInfo.id !== user?.id && (
+                                <div className="bg-orange-50 rounded-lg p-3 mb-4 border border-orange-200">
+                                  <div className="flex items-center gap-2">
+                                    <adminIcons.status.warning className="h-4 w-4 text-orange-600" />
+                                    <div className="text-sm text-orange-800">
+                                      <span className="font-medium">Báo cáo này đã được tiếp nhận bởi người khác.</span> 
+                                      Chỉ người tiếp nhận mới có thể xử lý hoặc trả về pool.
+                                    </div>
+                                  </div>
                                 </div>
                               )}
 
                               {/* Actions */}
                               <div className="flex flex-wrap items-center gap-2 md:gap-3">
                                 <Button size="sm" variant="outline" asChild className="hover:shadow-md transition-all duration-200">
-                                  <Link href={`/moderation/review/${item.id}`}>
+                                  <Link href={`/places/${report.placeId}`} target="_blank">
                                     <Eye className="w-4 h-4 mr-1 md:mr-2" />
-                                    <span className="hidden sm:inline">Điều tra chi tiết</span>
+                                    <span className="hidden sm:inline">Xem địa điểm</span>
                                   </Link>
                                 </Button>
 
-                                {(status === 'pending' || status === 'in_review') && (
+                                {/* Action buttons based on status and role */}
+                                {status === 'pending' && (
+                                  // Pending reports: show Claim button
+                                  <AdminApproveDialog
+                                    title="Tiếp nhận báo cáo"
+                                    description={`Bạn có muốn tiếp nhận và điều tra báo cáo này không? Báo cáo sẽ được chuyển sang trạng thái "Đang điều tra" và được khóa cho bạn xử lý.`}
+                                    itemName={`báo cáo về "${report.placeName}"`}
+                                    onConfirm={() => handleAction(report.id, 'claim')}
+                                    trigger={
+                                      <Button 
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                      >
+                                        <adminIcons.status.pending className="w-4 h-4 mr-2" />
+                                        Tiếp nhận điều tra
+                                      </Button>
+                                    }
+                                  />
+                                )}
+
+                                {status === 'in_review' && (
+                                  // In review reports: only show actions if user owns the report or is admin
                                   <>
-                                    <AdminApproveDialog
-                                      itemName={`báo cáo về "${item.contentDetails?.name}"`}
-                                      onConfirm={() => handleAction(item.id, 'resolve')}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-green-600 border-green-600 hover:bg-green-50"
-                                        >
-                                          <adminIcons.status.success className="w-4 h-4 mr-2" />
-                                          Giải quyết
-                                        </Button>
-                                      }
-                                    />
-                                    <AdminRejectDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'dismiss', reason)}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline" 
-                                          className="text-gray-600 border-gray-600 hover:bg-gray-50"
-                                        >
-                                          <adminIcons.status.error className="w-4 h-4 mr-2" />
-                                          Bỏ qua
-                                        </Button>
-                                      }
-                                    />
-                                    <AdminEscalateDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
-                                      trigger={
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                        >
-                                          <adminIcons.status.warning className="w-4 h-4 mr-2" />
-                                          Chuyển Admin
-                                        </Button>
-                                      }
-                                    />
+                                    {(report.reviewerInfo?.id === user?.id || user?.role === 'admin') && (
+                                      <>
+                                        <AdminApproveDialog
+                                          itemName={`báo cáo về "${report.placeName}"`}
+                                          onConfirm={() => handleAction(report.id, 'resolve')}
+                                          trigger={
+                                            <Button 
+                                              size="sm"
+                                              variant="outline"
+                                              className="text-green-600 border-green-600 hover:bg-green-50"
+                                            >
+                                              <adminIcons.status.success className="w-4 h-4 mr-2" />
+                                              Giải quyết
+                                            </Button>
+                                          }
+                                        />
+                                        <AdminRejectDialog
+                                          title="Bỏ qua báo cáo"
+                                          description="Bạn có chắc chắn muốn bỏ qua báo cáo này không? Báo cáo sẽ được đánh dấu là 'Đã bỏ qua' và người báo cáo sẽ nhận được thông báo."
+                                          onConfirm={(reason) => handleAction(report.id, 'dismiss', reason)}
+                                          trigger={
+                                            <Button 
+                                              size="sm"
+                                              variant="outline" 
+                                              className="text-gray-600 border-gray-600 hover:bg-gray-50"
+                                            >
+                                              <adminIcons.status.error className="w-4 h-4 mr-2" />
+                                              Bỏ qua báo cáo
+                                            </Button>
+                                          }
+                                        />
+                                        
+                                        {/* Only show Escalate for Moderator who owns the report, Admin can handle directly */}
+                                        {user?.role === 'moderator' && report.reviewerInfo?.id === user?.id && (
+                                          <AdminEscalateDialog
+                                            onConfirm={(reason) => handleAction(report.id, 'escalate', reason)}
+                                            trigger={
+                                              <Button 
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                                              >
+                                                <adminIcons.status.warning className="w-4 h-4 mr-2" />
+                                                Chuyển Admin
+                                              </Button>
+                                            }
+                                          />
+                                        )}
+
+                                        {/* Delete Place option for severe reports */}
+                                        {(reportType === 'safety_legal' || slaStatus.status === 'overdue') && (
+                                          <AdminRejectDialog
+                                            title="Xóa địa điểm"
+                                            description="Bạn có chắc chắn muốn yêu cầu xóa địa điểm này? Địa điểm sẽ được chuyển sang trạng thái 'Chờ xóa' và cần Admin duyệt."
+                                            onConfirm={(reason) => handleAction(report.id, 'request_delete', reason)}
+                                            trigger={
+                                              <Button 
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-red-600 border-red-600 hover:bg-red-50"
+                                              >
+                                                <adminIcons.actions.delete className="w-4 h-4 mr-2" />
+                                                Yêu cầu xóa
+                                              </Button>
+                                            }
+                                          />
+                                        )}
+                                      </>
+                                    )}
+
+                                    {/* Release claim - only show to report owner */}
+                                    {report.reviewerInfo?.id === user?.id && (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                                          >
+                                            <adminIcons.system.close className="w-4 h-4 mr-2" />
+                                            Trả về pool
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Trả báo cáo về pool chung</DialogTitle>
+                                            <DialogDescription>
+                                              Bạn có muốn trả báo cáo này về pool chung không?
+                                              <br/><br/>
+                                              Báo cáo sẽ chuyển về trạng thái <strong>"Chờ xử lý"</strong> để các moderator khác có thể tiếp nhận và xử lý tiếp. 
+                                              Điều này hữu ích khi bạn bận hoặc cần người khác có chuyên môn phù hợp hơn.
+                                            </DialogDescription>
+                                          </DialogHeader>
+                                          <DialogFooter>
+                                            <Button variant="outline" onClick={() => {}}>Hủy</Button>
+                                            <Button 
+                                              className="bg-orange-600 hover:bg-orange-700"
+                                              onClick={() => handleAction(report.id, 'release')}
+                                            >
+                                              Xác nhận trả về pool
+                                            </Button>
+                                          </DialogFooter>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
+
+                                    {/* Admin override - allow admin to reassign even if claimed by someone else */}
+                                    {user?.role === 'admin' && report.reviewerInfo?.id !== user?.id && (
+                                      <AdminApproveDialog
+                                        title="Tiếp quản báo cáo"
+                                        description={`Báo cáo này đang được xử lý bởi ${report.reviewerInfo?.name}. Bạn có muốn tiếp quản báo cáo này không?`}
+                                        itemName={`báo cáo từ ${report.reviewerInfo?.name}`}
+                                        onConfirm={() => handleAction(report.id, 'claim')}
+                                        trigger={
+                                          <Button 
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                                          >
+                                            <adminIcons.status.warning className="w-4 h-4 mr-2" />
+                                            Tiếp quản (Admin)
+                                          </Button>
+                                        }
+                                      />
+                                    )}
                                   </>
                                 )}
                               </div>

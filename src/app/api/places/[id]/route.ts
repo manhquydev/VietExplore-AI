@@ -58,16 +58,26 @@ export async function GET(
     }
 
     // Increment view count using the correct document ID
+    const newViewCount = (placeData.viewCount || 0) + 1;
     await adminDb.collection('places').doc(placeId).update({
-      viewCount: (placeData.viewCount || 0) + 1
+      viewCount: newViewCount
     });
+
+    // Sync with Realtime Database for real-time updates
+    try {
+      const { RealtimeService } = await import('@/lib/firebase/realtime');
+      await RealtimeService.updatePlaceStats(placeId, 'views', 1);
+    } catch (realtimeError) {
+      console.warn('Failed to sync view count with Realtime Database:', realtimeError);
+      // Don't fail the request if realtime sync fails
+    }
 
     return NextResponse.json({
       success: true,
       data: {
         id: placeId,
         ...placeData,
-        viewCount: (placeData.viewCount || 0) + 1
+        viewCount: newViewCount
       }
     });
 

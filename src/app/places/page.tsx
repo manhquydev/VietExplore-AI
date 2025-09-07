@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { usePlaces } from "@/hooks/use-places"
+import { Eye, Star } from "lucide-react"
+import RealtimeService from "@/lib/firebase/realtime"
 
 // Mock data removed - now using real API data from Firestore
 
@@ -24,6 +26,7 @@ export default function PlacesPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filters, setFilters] = React.useState<SearchFilters>({})
   const [currentPage, setCurrentPage] = React.useState(1)
+  const [realtimeStats, setRealtimeStats] = React.useState<Record<string, any>>({})
   const itemsPerPage = 12
 
   // Fetch places from API with filters
@@ -46,6 +49,48 @@ export default function PlacesPage() {
     console.log('Adding place to itinerary:', placeId)
     // Will implement add to itinerary logic later
   }
+
+  // Subscribe to real-time stats for current places
+  React.useEffect(() => {
+    if (!filteredPlaces || filteredPlaces.length === 0) return
+    
+    const placeIds = filteredPlaces.map(place => place.id)
+    const unsubscribes: (() => void)[] = []
+
+    // Initialize with current Firestore data as baseline
+    const initialStats: Record<string, any> = {}
+    filteredPlaces.forEach(place => {
+      initialStats[place.id] = {
+        views: place.viewCount || 0,
+        likes: place.likeCount || 0,
+        saves: 0, // Not tracked yet
+        lastUpdated: Date.now()
+      }
+    })
+    setRealtimeStats(initialStats)
+
+    placeIds.forEach(placeId => {
+      const unsubscribe = RealtimeService.subscribeToPlaceStats(placeId, (stats) => {
+        const currentPlace = filteredPlaces.find(place => place.id === placeId)
+        const firestoreViewCount = currentPlace?.viewCount || 0
+        
+        setRealtimeStats(prev => ({
+          ...prev,
+          [placeId]: {
+            ...stats,
+            // Always use the higher value between realtime and Firestore
+            views: Math.max(stats.views || 0, firestoreViewCount, prev[placeId]?.views || 0),
+            likes: Math.max(stats.likes || 0, currentPlace?.likeCount || 0)
+          }
+        }))
+      })
+      unsubscribes.push(unsubscribe)
+    })
+
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe())
+    }
+  }, [filteredPlaces])
 
   // Pagination
   const totalPages = Math.ceil(filteredPlaces.length / itemsPerPage)
@@ -190,6 +235,7 @@ export default function PlacesPage() {
                       key={place.id}
                       place={place}
                       onAddToItinerary={handleAddToItinerary}
+                      realtimeStats={realtimeStats[place.id]}
                     />
                   ))}
                 </div>
@@ -210,6 +256,27 @@ export default function PlacesPage() {
                         <h3 className="font-semibold text-xl mb-2 text-slate-900 ">{place.name}</h3>
                         <p className="text-slate-600  text-sm mb-2">{place.province} • {place.type}</p>
                         <p className="text-slate-600  text-sm mb-4 line-clamp-2">{place.shortDescription}</p>
+                        
+                        {/* Stats Row */}
+                        <div className="flex items-center gap-4 mb-4 text-sm text-slate-600">
+                          {place.rating && place.rating.average > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                              <span>{place.rating.average.toFixed(1)}</span>
+                              <span className="text-slate-400">({place.rating.count})</span>
+                            </div>
+                          )}
+                          {(() => {
+                            const viewCount = Math.max(realtimeStats[place.id]?.views || 0, place.viewCount || 0);
+                            return viewCount > 0 ? (
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-4 w-4" />
+                                <span>{viewCount.toLocaleString('vi-VN')}</span>
+                              </div>
+                            ) : null;
+                          })()}
+                        </div>
+                        
                         <div className="flex items-center justify-between">
                           <div className="flex gap-2">
                             {place.tags?.slice(0, 2).map((tag, i) => (

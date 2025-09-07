@@ -8,7 +8,7 @@ import { PreviewService } from '@/lib/server/preview-service';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminDb = getAdminDb();
@@ -34,8 +34,10 @@ export async function GET(
 
     const { draftId, userId } = tokenVerification;
 
+    const { id } = await params;
+    
     // Ensure the requested draft matches the token
-    if (draftId !== params.id) {
+    if (draftId !== id) {
       return NextResponse.json(
         { success: false, error: 'Token does not match requested draft' },
         { status: 403 }
@@ -44,7 +46,7 @@ export async function GET(
 
     try {
       // Get draft using PreviewService
-      const draft = await PreviewService.getDraftForPreview(params.id, userId!);
+      const draft = await PreviewService.getDraftForPreview(id, userId!);
 
       return NextResponse.json({
         success: true,

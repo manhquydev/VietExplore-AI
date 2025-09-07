@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/components/auth/auth-provider'
+import { auth } from '@/lib/firebase'
 import { 
   Flag,
   Edit,
@@ -66,11 +67,29 @@ export default function MyReportsPage() {
   const fetchUserReports = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/user/reports')
+      
+      // Get Firebase user and JWT token
+      const firebaseUser = auth.currentUser
+      if (!firebaseUser) {
+        console.error('No authenticated user found')
+        return
+      }
+
+      const token = await firebaseUser.getIdToken()
+      
+      const response = await fetch('/api/user/reports', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
       const result = await response.json()
       
       if (result.success) {
         setData(result.data)
+      } else {
+        console.error('API error:', result.error)
       }
     } catch (error) {
       console.error('Error fetching reports:', error)

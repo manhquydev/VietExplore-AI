@@ -42,6 +42,23 @@ export default function SavedPlacesPage() {
   const [filterType, setFilterType] = React.useState<string>("all")
   const [realtimeStats, setRealtimeStats] = React.useState<Record<string, any>>({})
 
+  // Refresh data when page becomes visible (user returns from place detail)
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isAuthenticated) {
+        // Refresh collections when page becomes visible
+        if (activeTab === "favorites") {
+          refreshFavorites()
+        } else {
+          refreshSaved()
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [activeTab, isAuthenticated, refreshFavorites, refreshSaved])
+
   // Subscribe to real-time updates for user interactions
   React.useEffect(() => {
     if (!user?.id) return
@@ -83,11 +100,31 @@ export default function SavedPlacesPage() {
     const placeIds = currentCollection.map(item => item.place.id)
     const unsubscribes: (() => void)[] = []
 
+    // Initialize with current Firestore data as baseline
+    const initialStats: Record<string, any> = {}
+    currentCollection.forEach(item => {
+      initialStats[item.place.id] = {
+        views: item.place.viewCount || 0,
+        likes: item.place.likeCount || 0,
+        saves: 0, // Not tracked yet
+        lastUpdated: Date.now()
+      }
+    })
+    setRealtimeStats(initialStats)
+
     placeIds.forEach(placeId => {
       const unsubscribe = RealtimeService.subscribeToPlaceStats(placeId, (stats) => {
+        const currentPlace = currentCollection.find(item => item.place.id === placeId)
+        const firestoreViewCount = currentPlace?.place.viewCount || 0
+        
         setRealtimeStats(prev => ({
           ...prev,
-          [placeId]: stats
+          [placeId]: {
+            ...stats,
+            // Always use the higher value between realtime and Firestore
+            views: Math.max(stats.views || 0, firestoreViewCount, prev[placeId]?.views || 0),
+            likes: Math.max(stats.likes || 0, currentPlace?.place.likeCount || 0)
+          }
         }))
       })
       unsubscribes.push(unsubscribe)
@@ -366,9 +403,10 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
   
   if (viewMode === "list") {
     return (
-      <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-        <CardContent className="p-0">
-          <div className="flex h-48 md:h-32">
+      <Link href={`/places/${item.place.id}`} className="block">
+        <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer">
+          <CardContent className="p-0">
+            <div className="flex h-48 md:h-32">
             <div className="relative w-48 md:w-64 shrink-0">
               <img
                 src={primaryImage?.url || '/placeholder-image.jpg'}
@@ -389,7 +427,7 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-bold text-xl text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-                      <Link href={`/places/${item.place.id}`}>{item.place.name}</Link>
+                      {item.place.name}
                     </h3>
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                       <div className="flex items-center gap-1">
@@ -403,7 +441,7 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
                       </div>
                       <div className="flex items-center gap-1">
                         <Eye className="h-4 w-4" />
-                        <span>{realtimeStats[item.place.id]?.views || item.place.viewCount || 0}</span>
+                        <span>{Math.max(realtimeStats[item.place.id]?.views || 0, item.place.viewCount || 0)}</span>
                       </div>
                     </div>
                   </div>
@@ -411,7 +449,11 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onRemove(item.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onRemove(item.id);
+                    }}
                     className="ml-4 text-gray-500 hover:text-red-500 hover:bg-red-50 border-gray-300 hover:border-red-300 transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -448,20 +490,22 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
           </div>
         </CardContent>
       </Card>
+      </Link>
     )
   }
   
   return (
-    <Card className="group bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-[1.02]">
-      <CardContent className="p-0">
-        <div className="relative">
-          <div className="aspect-[4/3] overflow-hidden">
-            <img
-              src={primaryImage?.url || '/placeholder-image.jpg'}
-              alt={item.place.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            />
-          </div>
+    <Link href={`/places/${item.place.id}`} className="block">
+      <Card className="group bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:scale-[1.02] cursor-pointer">
+        <CardContent className="p-0">
+          <div className="relative">
+            <div className="aspect-[4/3] overflow-hidden">
+              <img
+                src={primaryImage?.url || '/placeholder-image.jpg'}
+                alt={item.place.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+            </div>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           
@@ -475,7 +519,11 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onRemove(item.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove(item.id);
+              }}
               className="bg-white/90 text-gray-600 hover:text-red-500 hover:bg-red-50 border-0 backdrop-blur-sm transition-all duration-200 shadow-lg"
             >
               <Trash2 className="h-4 w-4" />
@@ -484,7 +532,7 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
           
           <div className="absolute bottom-4 left-4 right-4 text-white">
             <h3 className="font-bold text-xl mb-2 hover:text-blue-300 transition-colors">
-              <Link href={`/places/${item.place.id}`}>{item.place.name}</Link>
+              {item.place.name}
             </h3>
             
             <div className="flex items-center justify-between">
@@ -520,7 +568,7 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
               </div>
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
-                <span>{realtimeStats[item.place.id]?.views || item.place.viewCount || 0}</span>
+                <span>{Math.max(realtimeStats[item.place.id]?.views || 0, item.place.viewCount || 0)}</span>
               </div>
             </div>
           </div>
@@ -542,5 +590,6 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
         </div>
       </CardContent>
     </Card>
+    </Link>
   )
 }

@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
         email,
         password,
         displayName: fullName,
+        emailVerified: false, // Explicitly set as unverified for new users
       });
     }
 
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
       username,
       role: 'traveler',
       verified: false,
+      emailVerified: userRecord.emailVerified || false, // Track email verification status
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       stats: {
@@ -78,7 +80,9 @@ export async function POST(request: NextRequest) {
         id: userRecord.uid,
         ...userData
       },
-      token: customToken
+      token: customToken,
+      emailVerified: userRecord.emailVerified || false,
+      shouldSendVerification: !isGoogleAuth && !(userRecord.emailVerified || false)
     });
 
   } catch (error: any) {

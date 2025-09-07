@@ -5,7 +5,10 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ToastNotifications } from "@/components/ui/toast-notifications";
+import { NotificationProvider } from "@/components/ui/notification-system";
 import { NetworkStatus } from "@/components/ui/network-status";
+import { GlobalEmailVerification } from "@/components/auth/global-email-verification";
+import { NotificationConnectionStatus } from "@/components/notifications/notification-bell";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'),
@@ -55,14 +58,19 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-bg text-text antialiased">
         <ErrorBoundary>
-          <ToastProvider>
-            <AuthProvider>
-              {children}
-              <Toaster />
-              <ToastNotifications />
-              <NetworkStatus />
-            </AuthProvider>
-          </ToastProvider>
+          <NotificationProvider>
+            <ToastProvider>
+              <AuthProvider>
+                {/* Temporarily disabled to avoid conflict with settings page */}
+                {/* <GlobalEmailVerification /> */}
+                {children}
+                <Toaster />
+                <ToastNotifications />
+                <NetworkStatus />
+                <NotificationConnectionStatus />
+              </AuthProvider>
+            </ToastProvider>
+          </NotificationProvider>
         </ErrorBoundary>
       </body>
     </html>

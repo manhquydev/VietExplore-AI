@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -13,9 +14,9 @@ import { MOCK_PLACES } from "@/lib/mock-data"
 import Link from "next/link"
 
 interface TypePageProps {
-  params: {
+  params: Promise<{
     type: string
-  }
+  }>
 }
 
 const placeTypes = {
@@ -47,14 +48,41 @@ const placeTypes = {
 }
 
 export default function PlaceTypePage({ params }: TypePageProps) {
-  const typeInfo = placeTypes[params.type as keyof typeof placeTypes]
+  const [type, setType] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadParams() {
+      const resolvedParams = await params
+      setType(resolvedParams.type)
+      setIsLoading(false)
+    }
+    loadParams()
+  }, [params])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Header />
+        <div className="container mx-auto py-8 flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-muted">Đang tải...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  const typeInfo = placeTypes[type as keyof typeof placeTypes]
   
   if (!typeInfo) {
     notFound()
   }
 
   const placesOfType = MOCK_PLACES.filter(place => 
-    place.type.toLowerCase().replace(/\s+/g, '-') === params.type
+    place.type.toLowerCase().replace(/\s+/g, '-') === type
   )
 
   const handleAddToItinerary = (placeId: string) => {
@@ -153,7 +181,7 @@ export default function PlaceTypePage({ params }: TypePageProps) {
             {Object.entries(placeTypes).map(([slug, type]) => (
               <Button
                 key={slug}
-                variant={slug === params.type ? "default" : "outline"}
+                variant={slug === type ? "default" : "outline"}
                 className="h-auto p-4 flex flex-col gap-2"
                 asChild
               >
