@@ -264,7 +264,7 @@ html, body {
   
   /* Admin Cards - Professional & Clean */
   .admin-card {
-    @apply bg-admin-neutral-0 rounded-lg border border-admin-neutral-200 shadow-sm hover:shadow-md hover:border-admin-neutral-300 transition-all duration-200;
+    @apply bg-white rounded-lg border border-neutral-200 shadow-sm hover:shadow-md hover:border-neutral-300 transition-all duration-200;
   }
   
   .admin-card-content {
@@ -277,15 +277,15 @@ html, body {
   }
   
   .admin-btn-primary {
-    @apply admin-btn bg-admin-primary-600 hover:bg-admin-primary-700 text-white focus:ring-admin-primary-500;
+    @apply admin-btn bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500;
   }
   
   .admin-btn-secondary {
-    @apply admin-btn bg-white border border-admin-neutral-300 hover:bg-admin-neutral-50 text-admin-neutral-700 focus:ring-admin-primary-500;
+    @apply admin-btn bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 focus:ring-primary-500;
   }
   
   .admin-btn-ghost {
-    @apply admin-btn bg-transparent hover:bg-admin-neutral-100 text-admin-neutral-600 hover:text-admin-neutral-700 focus:ring-admin-primary-500;
+    @apply admin-btn bg-transparent hover:bg-neutral-100 text-neutral-600 hover:text-neutral-700 focus:ring-primary-500;
   }
   
   .admin-btn-sm {
@@ -302,54 +302,54 @@ html, body {
   
   /* Admin Input System */
   .admin-input {
-    @apply w-full px-3 py-2 border border-admin-neutral-300 rounded-md shadow-sm text-admin-neutral-900 placeholder-admin-neutral-400 focus:ring-2 focus:ring-admin-primary-500 focus:border-admin-primary-500 transition-colors duration-200;
+    @apply w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm text-neutral-900 placeholder-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200;
   }
   
   /* Admin Status System */
   .admin-status-success {
-    @apply bg-admin-success-50 text-admin-success-700 border border-admin-success-200;
+    @apply bg-success-50 text-success-700 border border-success-200;
   }
   
   .admin-status-warning {
-    @apply bg-admin-warning-50 text-admin-warning-700 border border-admin-warning-200;
+    @apply bg-warning-50 text-warning-700 border border-warning-200;
   }
   
   .admin-status-error {
-    @apply bg-admin-error-50 text-admin-error-700 border border-admin-error-200;
+    @apply bg-danger-50 text-danger-700 border border-danger-200;
   }
   
   .admin-status-info {
-    @apply bg-admin-info-50 text-admin-info-700 border border-admin-info-200;
+    @apply bg-info-50 text-info-700 border border-info-200;
   }
   
   /* Admin Typography */
   .admin-page-title {
-    @apply text-3xl font-bold text-admin-neutral-900 tracking-tight;
+    @apply text-3xl font-bold text-neutral-900 tracking-tight;
   }
   
   .admin-section-title {
-    @apply text-xl font-semibold text-admin-neutral-900;
+    @apply text-xl font-semibold text-neutral-900;
   }
   
   .admin-card-title {
-    @apply text-lg font-semibold text-admin-neutral-900;
+    @apply text-lg font-semibold text-neutral-900;
   }
   
   .admin-body-text {
-    @apply text-sm text-admin-neutral-600;
+    @apply text-sm text-neutral-600;
   }
   
   .admin-caption-text {
-    @apply text-xs text-admin-neutral-500;
+    @apply text-xs text-neutral-500;
   }
   
   /* Admin Layout Utilities */
   .admin-layout-sidebar {
-    @apply w-64 bg-white border-r border-admin-neutral-200 flex-shrink-0;
+    @apply w-64 bg-white border-r border-neutral-200 flex-shrink-0;
   }
   
   .admin-layout-sidebar-collapsed {
-    @apply w-16 bg-white border-r border-admin-neutral-200 flex-shrink-0;
+    @apply w-16 bg-white border-r border-neutral-200 flex-shrink-0;
   }
   
   .admin-layout-main {
@@ -357,10 +357,10 @@ html, body {
   }
   
   .admin-layout-header {
-    @apply h-16 bg-white border-b border-admin-neutral-200 px-6 flex items-center justify-between;
+    @apply h-16 bg-white border-b border-neutral-200 px-6 flex items-center justify-between;
   }
   
   .admin-layout-content {
-    @apply flex-1 p-6 overflow-auto bg-admin-neutral-50;
+    @apply flex-1 p-6 overflow-auto bg-neutral-50;
   }
 }

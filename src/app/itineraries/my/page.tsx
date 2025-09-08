@@ -26,135 +26,143 @@ import {
   Heart,
   Copy,
   Settings,
-  BarChart3
+  BarChart3,
+  Loader2,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
-
-// Mock data
-const mockItineraries = [
-  {
-    id: "itinerary_001",
-    slug: "da-nang-hoi-an-3-ngay",
-    title: "Đà Nẵng - Hội An 3 ngày 2 đêm",
-    description: "Khám phá vẻ đẹp miền Trung với bãi biển tuyệt đẹp và phố cổ Hội An",
-    duration: 3,
-    placesCount: 8,
-    estimatedCost: 3500000,
-    tripType: "couple",
-    isPublic: true,
-    createdAt: "2024-03-10T10:00:00Z",
-    updatedAt: "2024-03-12T15:30:00Z",
-    coverImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop",
-    stats: {
-      views: 1250,
-      likes: 89,
-      copies: 23
-    }
-  },
-  {
-    id: "itinerary_002", 
-    slug: "ha-noi-sa-pa-5-ngay",
-    title: "Hà Nội - Sa Pa 5 ngày khám phá miền núi",
-    description: "Trải nghiệm văn hóa Hà Nội và cảnh quan núi non Sa Pa",
-    duration: 5,
-    placesCount: 12,
-    estimatedCost: 6800000,
-    tripType: "family",
-    isPublic: false,
-    createdAt: "2024-02-15T14:20:00Z",
-    updatedAt: "2024-02-20T09:45:00Z",
-    coverImage: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=250&fit=crop",
-    stats: {
-      views: 0,
-      likes: 0,
-      copies: 0
-    }
-  },
-  {
-    id: "itinerary_003",
-    slug: "phu-quoc-nghi-duong",
-    title: "Phú Quốc nghỉ dưỡng 4 ngày",
-    description: "Thư giãn tại đảo ngọc với biển xanh và hải sản tươi ngon",
-    duration: 4,
-    placesCount: 6,
-    estimatedCost: 8500000,
-    tripType: "solo",
-    isPublic: true,
-    createdAt: "2024-01-28T16:10:00Z",
-    updatedAt: "2024-01-30T11:20:00Z",
-    coverImage: "https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=250&fit=crop",
-    stats: {
-      views: 850,
-      likes: 67,
-      copies: 15
-    }
-  }
-]
-
-const tripTypeLabels = {
-  solo: "Một mình",
-  couple: "Cặp đôi", 
-  family: "Gia đình",
-  group: "Nhóm bạn",
-  business: "Công tác"
-}
+import { useMyItineraries, useItinerary } from "@/hooks/use-itineraries"
+import { TRIP_TYPE_LABELS, PLACE_TYPE_LABELS } from "@/lib/types/itineraries"
+import type { Itinerary, ItineraryFilters } from "@/lib/types/itineraries"
 
 export default function MyItinerariesPage() {
   const { user, isAuthenticated } = useAuth()
-  const [itineraries, setItineraries] = React.useState(mockItineraries)
+  
+  // State for filters
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [filterStatus, setFilterStatus] = React.useState<"all" | "public" | "private">("all")
+  const [filterStatus, setFilterStatus] = React.useState<"all" | "draft" | "published">("all")
+  const [filterTripType, setFilterTripType] = React.useState<string>("all")
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
-  const [isLoading, setIsLoading] = React.useState(false)
-
-  // Filter itineraries
-  const filteredItineraries = React.useMemo(() => {
-    let filtered = itineraries
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(itinerary =>
-        itinerary.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        itinerary.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+  
+  // Build filters for API
+  const apiFilters: Partial<ItineraryFilters> = React.useMemo(() => {
+    const filters: Partial<ItineraryFilters> = {
+      search: searchQuery || undefined,
+      sortBy: 'updatedAt',
+      sortOrder: 'desc',
+      limit: 20
     }
-
-    // Status filter
+    
     if (filterStatus !== "all") {
-      filtered = filtered.filter(itinerary =>
-        filterStatus === "public" ? itinerary.isPublic : !itinerary.isPublic
-      )
+      filters.status = filterStatus as any
     }
-
-    return filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-  }, [itineraries, searchQuery, filterStatus])
-
+    
+    if (filterTripType !== "all") {
+      filters.tripType = filterTripType as any
+    }
+    
+    return filters
+  }, [searchQuery, filterStatus, filterTripType])
+  
+  // Use real API hook
+  const { 
+    itineraries, 
+    loading, 
+    error, 
+    stats,
+    pagination,
+    refetch,
+    loadMore 
+  } = useMyItineraries({ 
+    filters: apiFilters,
+    autoFetch: true 
+  })
+  
+  // Individual itinerary operations
+  const { deleteItinerary } = useItinerary()
+  
   const handleDelete = async (itineraryId: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa lịch trình này?")) return
     
-    setItineraries(prev => prev.filter(i => i.id !== itineraryId))
-  }
-
-  const handleDuplicate = async (itinerary: any) => {
-    const duplicated = {
-      ...itinerary,
-      id: `itinerary_${Date.now()}`,
-      slug: `${itinerary.slug}-copy`,
-      title: `${itinerary.title} (Sao chép)`,
-      isPublic: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      stats: { views: 0, likes: 0, copies: 0 }
+    try {
+      const success = await deleteItinerary()
+      if (success) {
+        refetch() // Refresh the list
+      }
+    } catch (err) {
+      console.error('Error deleting itinerary:', err)
     }
-    
-    setItineraries(prev => [duplicated, ...prev])
   }
 
-  const togglePublic = async (itineraryId: string) => {
-    setItineraries(prev => prev.map(i => 
-      i.id === itineraryId ? { ...i, isPublic: !i.isPublic } : i
-    ))
+  const handleDuplicate = async (itinerary: Itinerary) => {
+    try {
+      const response = await fetch('/api/itineraries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: `${itinerary.title} (Sao chép)`,
+          description: itinerary.description,
+          duration: itinerary.duration,
+          budget: itinerary.budget,
+          tripType: itinerary.tripType,
+          places: itinerary.places,
+          isPublic: false,
+          status: 'draft',
+          tags: itinerary.tags,
+          season: itinerary.season,
+          collaborators: []
+        }),
+      })
+      
+      if (response.ok) {
+        refetch() // Refresh the list
+      }
+    } catch (err) {
+      console.error('Error duplicating itinerary:', err)
+    }
+  }
+
+  const togglePublic = async (itinerary: Itinerary) => {
+    try {
+      const response = await fetch(`/api/itineraries/${itinerary.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isPublic: !itinerary.isPublic
+        }),
+      })
+      
+      if (response.ok) {
+        refetch() // Refresh the list
+      }
+    } catch (err) {
+      console.error('Error toggling visibility:', err)
+    }
+  }
+  
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount)
+  }
+  
+  const getItineraryCoverImage = (itinerary: Itinerary) => {
+    // Get first place image or fallback
+    if (itinerary.places && itinerary.places.length > 0) {
+      return itinerary.places[0].image
+    }
+    return itinerary.coverImage || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop"
+  }
+  
+  const getItineraryTotalCost = (itinerary: Itinerary) => {
+    return itinerary.places?.reduce((sum, place) => sum + (place.estimatedCost || 0), 0) || 0
   }
 
   // Redirect if not authenticated
@@ -228,24 +236,26 @@ export default function MyItinerariesPage() {
           {/* Stats Dashboard */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
             <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="text-3xl font-bold text-blue-600 mb-2">{itineraries.length}</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.total || 0)}
+              </div>
               <div className="text-sm text-gray-600">Tổng lịch trình</div>
             </div>
             <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
               <div className="text-3xl font-bold text-green-600 mb-2">
-                {itineraries.filter(i => i.isPublic).length}
+                {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.published || 0)}
               </div>
-              <div className="text-sm text-gray-600">Công khai</div>
+              <div className="text-sm text-gray-600">Đã xuất bản</div>
             </div>
             <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
               <div className="text-3xl font-bold text-purple-600 mb-2">
-                {itineraries.reduce((sum, i) => sum + i.stats.views, 0)}
+                {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.totalViews || 0)}
               </div>
               <div className="text-sm text-gray-600">Lượt xem</div>
             </div>
             <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
               <div className="text-3xl font-bold text-pink-600 mb-2">
-                {itineraries.reduce((sum, i) => sum + i.stats.likes, 0)}
+                {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.totalLikes || 0)}
               </div>
               <div className="text-sm text-gray-600">Lượt thích</div>
             </div>
@@ -267,7 +277,7 @@ export default function MyItinerariesPage() {
               <div className="flex gap-2">
                 <div className="flex rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
                   <Button
-                    variant={filterStatus === 'all' ? 'primary' : 'ghost'}
+                    variant={filterStatus === 'all' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setFilterStatus('all')}
                     className="rounded-none border-0"
@@ -275,26 +285,26 @@ export default function MyItinerariesPage() {
                     Tất cả
                   </Button>
                   <Button
-                    variant={filterStatus === 'public' ? 'primary' : 'ghost'}
+                    variant={filterStatus === 'published' ? 'default' : 'ghost'}
                     size="sm"
-                    onClick={() => setFilterStatus('public')}
+                    onClick={() => setFilterStatus('published')}
                     className="rounded-none border-0"
                   >
-                    Công khai
+                    Đã xuất bản
                   </Button>
                   <Button
-                    variant={filterStatus === 'private' ? 'primary' : 'ghost'}
+                    variant={filterStatus === 'draft' ? 'default' : 'ghost'}
                     size="sm"
-                    onClick={() => setFilterStatus('private')}
+                    onClick={() => setFilterStatus('draft')}
                     className="rounded-none border-0"
                   >
-                    Riêng tư
+                    Nháp
                   </Button>
                 </div>
 
                 <div className="flex rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
                   <Button
-                    variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
                     className="rounded-none border-0"
@@ -302,7 +312,7 @@ export default function MyItinerariesPage() {
                     <Grid className="w-4 h-4" />
                   </Button>
                   <Button
-                    variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
                     className="rounded-none border-0"
@@ -310,17 +320,50 @@ export default function MyItinerariesPage() {
                     <List className="w-4 h-4" />
                   </Button>
                 </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refetch}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+                  Làm mới
+                </Button>
               </div>
             </div>
           </div>
 
+          {/* Error State */}
+          {error && (
+            <div className="bg-white rounded-xl shadow-md border-0 p-16 text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Có lỗi xảy ra
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {error}
+              </p>
+              <Button 
+                onClick={refetch}
+                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Thử lại
+              </Button>
+            </div>
+          )}
+
           {/* Itineraries Grid/List */}
-          {isLoading ? (
+          {!error && loading ? (
             <div className="bg-white rounded-xl shadow-md border-0 p-16 text-center">
               <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
               <div className="text-gray-600">Đang tải...</div>
             </div>
-          ) : filteredItineraries.length === 0 ? (
+          ) : !error && itineraries.length === 0 ? (
             <div className="bg-white rounded-xl shadow-md border-0 p-16 text-center">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-8 h-8 text-blue-600" />
@@ -351,20 +394,26 @@ export default function MyItinerariesPage() {
             <>
               {viewMode === 'grid' ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredItineraries.map((itinerary) => (
+                  {itineraries.map((itinerary) => (
                     <div key={itinerary.id} className="bg-white rounded-xl shadow-md border-0 overflow-hidden group hover:shadow-lg transition-shadow">
                       <div className="relative aspect-[16/10] overflow-hidden">
                         <img
-                          src={itinerary.coverImage}
+                          src={getItineraryCoverImage(itinerary)}
                           alt={itinerary.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <div className="absolute top-3 left-3">
+                        <div className="absolute top-3 left-3 flex gap-2">
                           <Badge 
                             variant={itinerary.isPublic ? "default" : "secondary"}
                             className="bg-white/90 backdrop-blur-sm shadow-sm"
                           >
                             {itinerary.isPublic ? "Công khai" : "Riêng tư"}
+                          </Badge>
+                          <Badge 
+                            variant={itinerary.status === 'published' ? "default" : "outline"}
+                            className="bg-white/90 backdrop-blur-sm shadow-sm"
+                          >
+                            {itinerary.status === 'published' ? "Đã xuất bản" : "Nháp"}
                           </Badge>
                         </div>
                         <div className="absolute top-3 right-3">
@@ -444,29 +493,29 @@ export default function MyItinerariesPage() {
                             </span>
                             <span className="flex items-center gap-2 text-gray-600">
                               <MapPin className="w-4 h-4" />
-                              {itinerary.placesCount} địa điểm
+                              {itinerary.places?.length || 0} địa điểm
                             </span>
                           </div>
                           
                           <div className="flex items-center justify-between">
                             <Badge variant="secondary" className="text-xs bg-gray-100">
-                              {tripTypeLabels[itinerary.tripType as keyof typeof tripTypeLabels]}
+                              {TRIP_TYPE_LABELS[itinerary.tripType as keyof typeof TRIP_TYPE_LABELS]}
                             </Badge>
                             <span className="flex items-center gap-2 text-gray-600">
                               <DollarSign className="w-4 h-4" />
-                              {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
+                              {formatCurrency(getItineraryTotalCost(itinerary))}
                             </span>
                           </div>
 
-                          {itinerary.isPublic && (
+                          {itinerary.isPublic && itinerary.metadata && (
                             <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                               <span className="flex items-center gap-1 text-xs text-gray-500">
                                 <Eye className="w-3 h-3" />
-                                {itinerary.stats.views}
+                                {itinerary.metadata.views || 0}
                               </span>
                               <span className="flex items-center gap-1 text-xs text-gray-500">
                                 <Heart className="w-3 h-3" />
-                                {itinerary.stats.likes}
+                                {itinerary.metadata.likes || 0}
                               </span>
                             </div>
                           )}
@@ -477,11 +526,11 @@ export default function MyItinerariesPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {filteredItineraries.map((itinerary) => (
+                  {itineraries.map((itinerary) => (
                     <div key={itinerary.id} className="bg-white rounded-xl shadow-md border-0 p-6 hover:shadow-lg transition-shadow">
                       <div className="flex gap-4">
                         <img
-                          src={itinerary.coverImage}
+                          src={getItineraryCoverImage(itinerary)}
                           alt={itinerary.title}
                           className="w-24 h-16 rounded-lg object-cover flex-shrink-0"
                         />
@@ -512,6 +561,13 @@ export default function MyItinerariesPage() {
                               {itinerary.isPublic ? "Công khai" : "Riêng tư"}
                             </Badge>
                             
+                            <Badge 
+                              variant={itinerary.status === 'published' ? "default" : "outline"}
+                              className="bg-gray-100"
+                            >
+                              {itinerary.status === 'published' ? "Đã xuất bản" : "Nháp"}
+                            </Badge>
+                            
                             <span className="flex items-center gap-1 text-gray-600">
                               <Calendar className="w-4 h-4" />
                               {itinerary.duration} ngày
@@ -519,17 +575,17 @@ export default function MyItinerariesPage() {
                             
                             <span className="flex items-center gap-1 text-gray-600">
                               <MapPin className="w-4 h-4" />
-                              {itinerary.placesCount} địa điểm
+                              {itinerary.places?.length || 0} địa điểm
                             </span>
                             
                             <span className="flex items-center gap-1 text-gray-600">
                               <DollarSign className="w-4 h-4" />
-                              {itinerary.estimatedCost.toLocaleString('vi-VN')}đ
+                              {formatCurrency(getItineraryTotalCost(itinerary))}
                             </span>
 
-                            {itinerary.isPublic && (
+                            {itinerary.isPublic && itinerary.metadata && (
                               <span className="text-gray-500">
-                                {itinerary.stats.views} lượt xem • {itinerary.stats.likes} lượt thích
+                                {itinerary.metadata.views || 0} lượt xem • {itinerary.metadata.likes || 0} lượt thích
                               </span>
                             )}
                           </div>
@@ -540,6 +596,25 @@ export default function MyItinerariesPage() {
                 </div>
               )}
             </>
+          )}
+          
+          {/* Load More */}
+          {!error && !loading && pagination.hasMore && (
+            <div className="text-center mt-10">
+              <Button
+                onClick={loadMore}
+                variant="outline"
+                disabled={loading}
+                className="bg-white"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4 mr-2" />
+                )}
+                Tải thêm
+              </Button>
+            </div>
           )}
         </section>
       </main>

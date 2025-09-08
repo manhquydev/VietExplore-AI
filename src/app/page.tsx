@@ -8,35 +8,25 @@ import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
 import AiPlanner from '@/components/ai-planner';
 import DestinationGrid from '@/components/destination-grid';
+import { usePublicHomepageSettings } from '@/hooks/use-homepage-settings';
 
 // Real featured places are now loaded via the DestinationGrid component
 
-const regions = [
-  {
-    name: "Miền Bắc",
-    description: "Khám phá văn hóa lịch sử và cảnh quan hùng vĩ",
-    image: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=400&h=250&fit=crop",
-    href: "/places/regions/bac-bo"
-  },
-  {
-    name: "Miền Trung",
-    description: "Di sản văn hóa và bãi biển tuyệt đẹp",
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop",
-    href: "/places/regions/trung-bo"
-  },
-  {
-    name: "Miền Nam",
-    description: "Đồng bằng sông Cửu Long và thành phố năng động",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=250&fit=crop",
-    href: "/places/regions/nam-bo"
-  }
-]
-
 export default function Home() {
+  const { homepageSettings, loading: homepageLoading } = usePublicHomepageSettings()
+  
   const handleSearch = (query: string, filters: any) => {
     console.log('Searching:', query, filters)
     // Implement search logic
   }
+
+  // Convert homepage settings to regions array format
+  const regions = Object.entries(homepageSettings.regions).map(([key, region]) => ({
+    name: region.name,
+    description: region.description,
+    image: region.imageUrl,
+    href: region.href
+  }))
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -87,8 +77,23 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-10">
-            {regions.map((region) => (
-              <div key={region.name} className="glass-card overflow-hidden group motion-gentle hover:scale-105">
+            {homepageLoading ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="glass-card overflow-hidden">
+                  <div className="aspect-[4/3] relative overflow-hidden">
+                    <div className="w-full h-full bg-gray-200 animate-pulse" />
+                  </div>
+                  <div className="p-6 space-y-3">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+                    <div className="h-10 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              regions.map((region) => (
+                <div key={region.name} className="glass-card overflow-hidden group motion-gentle hover:scale-105">
                 <div className="aspect-[4/3] relative overflow-hidden">
                   <img
                     src={region.image}
@@ -105,14 +110,15 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="p-6">
-                  <Link href={region.href}>
+                  <Link href={`/places?region=${region.href.split('/').pop()}`}>
                     <button className="w-full glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40">
                       Khám phá {region.name}
                     </button>
                   </Link>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </section>
 

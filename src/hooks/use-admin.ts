@@ -4,6 +4,16 @@ import { User, UserRole } from '@/lib/types/auth';
 import { Place, PlaceFilters } from '@/lib/types/places';
 import { useAuth } from '@/components/auth/auth-provider';
 import { RealtimeService } from '@/lib/firebase/realtime';
+import { auth } from '@/lib/firebase';
+
+// Helper function to get Firebase token
+const getAuthToken = async () => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+  return await currentUser.getIdToken();
+};
 
 // Hook to fetch admin dashboard statistics
 export function useAdminStats() {
@@ -513,5 +523,182 @@ export function useAdminPlaces(filters: {
     updatePlaceStatus,
     deletePlace,
     deleteAllPlaces
+  };
+}
+
+// Hook for homepage settings management
+export function useHomepageSettings() {
+  const [homepageSettings, setHomepageSettings] = useState({
+    regions: {
+      "bac-bo": {
+        name: "Miền Bắc",
+        description: "Khám phá văn hóa lịch sử và cảnh quan hùng vĩ",
+        imageUrl: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=400&h=250&fit=crop",
+        href: "/places/regions/bac-bo"
+      },
+      "trung-bo": {
+        name: "Miền Trung", 
+        description: "Di sản văn hóa và bãi biển tuyệt đẹp",
+        imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop",
+        href: "/places/regions/trung-bo"
+      },
+      "nam-bo": {
+        name: "Miền Nam",
+        description: "Đồng bằng sông Cửu Long và thành phố năng động", 
+        imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=250&fit=crop",
+        href: "/places/regions/nam-bo"
+      }
+    }
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  // Load homepage settings from API
+  const loadHomepageSettings = useCallback(async () => {
+    if (!user || user.role !== 'admin') {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/homepage-settings', {
+        headers: {
+          'Authorization': `Bearer ${await getAuthToken()}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data.homepage) {
+          setHomepageSettings(result.data.homepage);
+        }
+      } else {
+        console.warn('Failed to load homepage settings, using defaults');
+      }
+    } catch (error) {
+      console.error('Error loading homepage settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadHomepageSettings();
+  }, [loadHomepageSettings]);
+
+  // Save homepage settings
+  const saveHomepageSettings = useCallback(async (newSettings: typeof homepageSettings) => {
+    if (!user || user.role !== 'admin') {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/homepage-settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await getAuthToken()}`
+        },
+        body: JSON.stringify({ homepage: newSettings })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setHomepageSettings(newSettings);
+        return { success: true, message: result.message };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('Error saving homepage settings:', error);
+      return { success: false, error: 'Có lỗi xảy ra khi lưu cài đặt' };
+    } finally {
+      setSaving(false);
+    }
+  }, [user]);
+
+  // Upload region image
+  const uploadRegionImage = useCallback(async (region: string, file: File) => {
+    if (!user || user.role !== 'admin') {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    setUploading(region);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('region', region);
+
+      const response = await fetch('/api/admin/homepage-settings/upload-region-image', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${await getAuthToken()}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update the settings with new image URL
+        setHomepageSettings(prev => ({
+          ...prev,
+          regions: {
+            ...prev.regions,
+            [region]: {
+              ...prev.regions[region as keyof typeof prev.regions],
+              imageUrl: result.data.imageUrl
+            }
+          }
+        }));
+
+        return { 
+          success: true, 
+          imageUrl: result.data.imageUrl, 
+          message: result.message 
+        };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('Error uploading region image:', error);
+      return { success: false, error: 'Có lỗi xảy ra khi tải ảnh lên' };
+    } finally {
+      setUploading(null);
+    }
+  }, [user]);
+
+  // Update region settings
+  const updateRegionSettings = useCallback((region: string, updates: Partial<{
+    name: string;
+    description: string;
+    imageUrl: string;
+  }>) => {
+    setHomepageSettings(prev => ({
+      ...prev,
+      regions: {
+        ...prev.regions,
+        [region]: {
+          ...prev.regions[region as keyof typeof prev.regions],
+          ...updates
+        }
+      }
+    }));
+  }, []);
+
+  return {
+    homepageSettings,
+    loading,
+    saving,
+    uploading,
+    saveHomepageSettings,
+    uploadRegionImage,
+    updateRegionSettings,
+    loadHomepageSettings
   };
 }

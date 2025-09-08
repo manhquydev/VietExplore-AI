@@ -20,7 +20,8 @@
       "Bash(cmd /c:*)",
       "Bash(npx next dev:*)",
       "Bash(find:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

@@ -6,6 +6,8 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useCommunityStats } from "@/hooks/use-community-stats"
+import { useTopContributors } from "@/hooks/use-top-contributors"
 import { 
   Users,
   MessageSquare,
@@ -20,7 +22,8 @@ import {
   MapPin,
   Sparkles,
   UserPlus,
-  Globe
+  Globe,
+  Loader2
 } from "lucide-react"
 
 const announcements = [
@@ -50,39 +53,6 @@ const announcements = [
   }
 ]
 
-const communityStats = {
-  totalMembers: 10247,
-  placesContributed: 1089,
-  itinerariesShared: 2341,
-  monthlyGrowth: 15.2
-}
-
-const topContributors = [
-  {
-    id: "user_001",
-    name: "Nguyễn Minh Anh",
-    username: "travel_explorer",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    contributions: 45,
-    verified: true
-  },
-  {
-    id: "user_002", 
-    name: "Trần Thị Lan",
-    username: "vietnam_wanderer",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b332c5cd?w=100&h=100&fit=crop&crop=face",
-    contributions: 38,
-    verified: true
-  },
-  {
-    id: "user_003",
-    name: "Lê Văn Đức",
-    username: "mountain_lover",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    contributions: 32,
-    verified: false
-  }
-]
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -93,6 +63,9 @@ const formatDate = (dateString: string) => {
 }
 
 export default function CommunityPage() {
+  const { stats: communityStats, loading: statsLoading, error: statsError } = useCommunityStats()
+  const { contributors: topContributors, loading: contributorsLoading, error: contributorsError } = useTopContributors({ limit: 3 })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
       <Header />
@@ -117,18 +90,29 @@ export default function CommunityPage() {
               </p>
               
               <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600  mb-8">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-sky-500" />
-                  <span>{communityStats.totalMembers.toLocaleString()} thành viên</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-teal-500" />
-                  <span>{communityStats.placesContributed.toLocaleString()} địa điểm</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-purple-500" />
-                  <span>{communityStats.itinerariesShared.toLocaleString()} lịch trình</span>
-                </div>
+                {statsLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang tải thống kê...</span>
+                  </div>
+                ) : statsError ? (
+                  <div className="text-red-500 text-sm">{statsError}</div>
+                ) : communityStats ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-sky-500" />
+                      <span>{communityStats.totalMembers.toLocaleString()} thành viên</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-teal-500" />
+                      <span>{communityStats.totalPlaces.toLocaleString()} địa điểm</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-purple-500" />
+                      <span>{communityStats.totalItineraries.toLocaleString()} lịch trình</span>
+                    </div>
+                  </>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-3 justify-center">
@@ -152,47 +136,58 @@ export default function CommunityPage() {
               {/* Community Stats */}
               <div className="glass-card p-6">
                 <h2 className="text-2xl font-bold text-slate-900  mb-6">Tổng quan cộng đồng</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-blue-100  rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Users className="w-6 h-6 text-blue-600 " />
-                    </div>
-                    <div className="text-2xl font-bold text-slate-900 ">
-                      {communityStats.totalMembers.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-slate-600 ">Thành viên</div>
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                    <span>Đang tải thống kê...</span>
                   </div>
-                  
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <MapPin className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                ) : statsError ? (
+                  <div className="text-center text-red-500 py-8">{statsError}</div>
+                ) : communityStats ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-blue-100  rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <Users className="w-6 h-6 text-blue-600 " />
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900 ">
+                        {communityStats.totalMembers.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-slate-600 ">Thành viên</div>
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 ">
-                      {communityStats.placesContributed.toLocaleString()}
+                    
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <MapPin className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900 ">
+                        {communityStats.totalPlaces.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-slate-600 ">Địa điểm</div>
                     </div>
-                    <div className="text-sm text-slate-600 ">Địa điểm</div>
+                    
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900 ">
+                        {communityStats.totalItineraries.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-slate-600 ">Lịch trình</div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900 ">
+                        +{communityStats.monthlyGrowth}%
+                      </div>
+                      <div className="text-sm text-slate-600 ">Tăng trưởng</div>
+                    </div>
                   </div>
-                  
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-slate-900 ">
-                      {communityStats.itinerariesShared.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-slate-600 ">Lịch trình</div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-slate-900 ">
-                      +{communityStats.monthlyGrowth}%
-                    </div>
-                    <div className="text-sm text-slate-600 ">Tăng trưởng</div>
-                  </div>
-                </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-8">Không có dữ liệu</div>
+                )}
               </div>
 
               {/* Announcements */}
@@ -277,41 +272,57 @@ export default function CommunityPage() {
                   <Award className="w-5 h-5 text-yellow-500" />
                   Người đóng góp hàng đầu
                 </h3>
-                <div className="space-y-4">
-                  {topContributors.map((contributor, index) => (
-                    <div key={contributor.id} className="flex items-center gap-3">
-                      <div className="relative">
-                        <img 
-                          src={contributor.avatar} 
-                          alt={contributor.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                        {index === 0 && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
-                            <Star className="w-3 h-3 text-white fill-current" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-slate-900  text-sm">
-                            {contributor.name}
-                          </h4>
-                          {contributor.verified && (
-                            <Badge variant="secondary" className="text-xs glass-subtle">
-                              ✓ Verified
-                            </Badge>
+                {contributorsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <span className="text-sm">Đang tải...</span>
+                  </div>
+                ) : contributorsError ? (
+                  <div className="text-center text-red-500 text-sm py-4">{contributorsError}</div>
+                ) : topContributors.length > 0 ? (
+                  <div className="space-y-4">
+                    {topContributors.map((contributor, index) => (
+                      <div key={contributor.id} className="flex items-center gap-3">
+                        <div className="relative">
+                          <img 
+                            src={contributor.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'} 
+                            alt={contributor.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          {index === 0 && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
+                              <Star className="w-3 h-3 text-white fill-current" />
+                            </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-600 ">
-                          <span>@{contributor.username}</span>
-                          <span>•</span>
-                          <span>{contributor.contributions} đóng góp</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-900  text-sm">
+                              {contributor.name}
+                            </h4>
+                            {contributor.verified && (
+                              <Badge variant="secondary" className="text-xs glass-subtle">
+                                ✓ Verified
+                              </Badge>
+                            )}
+                            {contributor.role === 'partner' && (
+                              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                                Partner
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-slate-600 ">
+                            <span>@{contributor.username}</span>
+                            <span>•</span>
+                            <span>{contributor.contributions} đóng góp</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-4">Chưa có người đóng góp</div>
+                )}
               </div>
 
               {/* Quick Actions */}
@@ -344,43 +355,71 @@ export default function CommunityPage() {
               {/* Community Highlights */}
               <div className="glass-card p-6">
                 <h3 className="text-lg font-bold text-slate-900  mb-4">Nổi bật tuần này</h3>
-                <div className="space-y-4">
-                  <div className="glass-subtle p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Heart className="w-4 h-4 text-red-500" />
-                      <span className="text-sm font-medium text-slate-900 ">
-                        Địa điểm được yêu thích nhất
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-600 ">
-                      Phố cổ Hội An với 1,234 lượt thích
-                    </p>
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <span className="text-sm">Đang tải...</span>
                   </div>
-                  
-                  <div className="glass-subtle p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm font-medium text-slate-900 ">
-                        Lịch trình hot nhất
-                      </span>
+                ) : statsError ? (
+                  <div className="text-center text-red-500 text-sm py-4">{statsError}</div>
+                ) : communityStats?.weeklyHighlights ? (
+                  <div className="space-y-4">
+                    <div className="glass-subtle p-4 rounded-xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Heart className="w-4 h-4 text-red-500" />
+                        <span className="text-sm font-medium text-slate-900 ">
+                          Địa điểm được yêu thích nhất
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-600 ">
+                        {communityStats.weeklyHighlights.topPlace ? (
+                          <Link 
+                            href={`/places/${communityStats.weeklyHighlights.topPlace.slug}`}
+                            className="hover:text-sky-600 underline"
+                          >
+                            {communityStats.weeklyHighlights.topPlace.name} với {communityStats.weeklyHighlights.topPlace.likes.toLocaleString()} lượt thích
+                          </Link>
+                        ) : (
+                          'Chưa có dữ liệu'
+                        )}
+                      </p>
                     </div>
-                    <p className="text-sm text-slate-600 ">
-                      "Miền Trung 7 ngày" bởi @travel_explorer
-                    </p>
-                  </div>
-                  
-                  <div className="glass-subtle p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Globe className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm font-medium text-slate-900 ">
-                        Xu hướng tìm kiếm
-                      </span>
+                    
+                    <div className="glass-subtle p-4 rounded-xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-4 h-4 text-yellow-500" />
+                        <span className="text-sm font-medium text-slate-900 ">
+                          Lịch trình hot nhất
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-600 ">
+                        {communityStats.weeklyHighlights.topItinerary ? (
+                          `"${communityStats.weeklyHighlights.topItinerary.title}" bởi ${communityStats.weeklyHighlights.topItinerary.author}`
+                        ) : (
+                          'Tính năng lịch trình sẽ có sớm'
+                        )}
+                      </p>
                     </div>
-                    <p className="text-sm text-slate-600 ">
-                      #DaLat #PhuQuoc #SaPa đang trending
-                    </p>
+                    
+                    <div className="glass-subtle p-4 rounded-xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Globe className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm font-medium text-slate-900 ">
+                          Xu hướng tìm kiếm
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-600 ">
+                        {communityStats.weeklyHighlights.trending.length > 0 ? (
+                          `${communityStats.weeklyHighlights.trending.join(' ')} đang trending`
+                        ) : (
+                          'Chưa có xu hướng nổi bật'
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-4">Chưa có dữ liệu</div>
+                )}
               </div>
             </div>
           </div>

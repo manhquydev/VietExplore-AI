@@ -14,7 +14,7 @@ const app = !getApps().length
   ? initializeApp({
       credential: cert(serviceAccount),
       projectId: process.env.FIREBASE_PROJECT_ID,
-      storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
     })
   : getApps()[0];
 

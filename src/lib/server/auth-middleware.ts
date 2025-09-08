@@ -1,8 +1,35 @@
 // This file is server-side only. Do not import it on the client.
 import { NextRequest } from 'next/server';
 import { getAdminAuth, getAdminDb } from '@/lib/server/firebaseAdmin';
-import { User, Permission } from '@/lib/types/auth';
-import { hasPermission } from '@/lib/auth/permissions';
+import { User, Permission, UserRole } from '@/lib/types/auth';
+
+// Server-side role permissions (duplicated to avoid client import)
+const rolePermissions: Record<UserRole, Permission[]> = {
+  guest: [],
+  traveler: ["report_content", "create_itinerary", "save_places"],
+  contributor: ["create_place", "report_content", "create_itinerary", "save_places", "manage_drafts"],
+  partner: ["create_place", "create_place_priority", "report_content", "create_itinerary", "save_places", "manage_drafts", "partner_badge", "fast_review"],
+  moderator: ["review_content", "view_moderation_queue", "report_content", "create_itinerary", "save_places"],
+  admin: ["all_permissions"],
+};
+
+// Server-side hasPermission function
+export function hasPermission(user: User | null, permission: Permission): boolean {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+
+  const userPermissions = rolePermissions[user.role] || [];
+  
+  // Grant base permissions for higher roles
+  if (user.role === 'partner') {
+    return userPermissions.concat(rolePermissions.contributor).includes(permission);
+  }
+  if (user.role === 'contributor') {
+    return userPermissions.concat(rolePermissions.traveler).includes(permission);
+  }
+
+  return userPermissions.includes(permission);
+}
 
 export interface AuthResult {
   success: boolean;

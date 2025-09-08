@@ -14,6 +14,12 @@ interface FilterBarProps {
     type?: string
     trustLabel?: string
   }) => void
+  initialFilters?: {
+    region?: string
+    province?: string
+    type?: string
+    trustLabel?: string
+  }
   className?: string
 }
 
@@ -66,6 +72,7 @@ const provinces = [
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   onFiltersChange,
+  initialFilters = {},
   className,
 }) => {
   const [filters, setFilters] = React.useState<{
@@ -73,7 +80,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     province?: string
     type?: string
     trustLabel?: string
-  }>({})
+  }>(initialFilters)
+
+  // Initialize filters from props
+  React.useEffect(() => {
+    if (initialFilters && Object.keys(initialFilters).length > 0) {
+      setFilters(initialFilters)
+    }
+  }, [initialFilters])
 
   const updateFilter = (key: string, value: string | undefined) => {
     const newFilters = { ...filters, [key]: value }

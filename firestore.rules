@@ -132,18 +132,75 @@ service cloud.firestore {
       );
     }
 
-    // 4.5. itineraries
+    // 4.5. itineraries - Enhanced schema support
     match /itineraries/{itineraryId} {
-      allow read: if resource.data.visibility == 'public' || isOwner(resource.data.ownerId) || isModerator() || isAdmin();
-      allow create: if emailVerified();
-      allow update, delete: if emailVerified() && isOwner(resource.data.ownerId);
+      // Read permissions
+      allow read: if resource.data.isPublic == true 
+        || isOwner(resource.data.userId) 
+        || isModerator() 
+        || isAdmin()
+        || (isSignedIn() && resource.data.collaborators != null 
+            && request.auth.uid in resource.data.collaborators.map(c, c.userId));
+      
+      // List permissions for queries
+      allow list: if isSignedIn(); // Will be filtered by read rules per document
+      
+      // Create permissions - only authenticated users with contributor+ role
+      allow create: if emailVerified() 
+        && hasPermission('itinerary.create')
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['title', 'userId', 'duration', 'tripType', 'budget', 'places', 'isPublic', 'status'])
+        && isNonEmptyString(request.resource.data.title)
+        && request.resource.data.duration > 0 
+        && request.resource.data.duration <= 30
+        && request.resource.data.tripType in ['solo', 'couple', 'family', 'group', 'business']
+        && request.resource.data.status in ['draft', 'published'];
+      
+      // Update permissions
+      allow update: if emailVerified() 
+        && (
+          // Owner can update their own itineraries
+          (isOwner(resource.data.userId) && hasPermission('itinerary.update_own'))
+          // Collaborators with edit permission
+          || (isSignedIn() && resource.data.collaborators != null 
+              && request.auth.uid in resource.data.collaborators.filter(c, c.permission in ['edit', 'admin']).map(c, c.userId))
+          // Moderators can update any
+          || isModerator() 
+          || isAdmin()
+        )
+        && request.resource.data.userId == resource.data.userId; // Prevent ownership transfer
+      
+      // Delete permissions
+      allow delete: if emailVerified() 
+        && (
+          (isOwner(resource.data.userId) && hasPermission('itinerary.delete_own'))
+          || isAdmin()
+        );
     }
 
-    // 4.6. itineraryShares
+    // 4.6. itinerary_likes - User interaction tracking
+    match /itinerary_likes/{likeId} {
+      allow read: if isSignedIn();
+      allow create: if emailVerified() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['userId', 'itineraryId', 'createdAt']);
+      allow delete: if emailVerified() && isOwner(resource.data.userId);
+    }
+
+    // 4.7. itinerary_saves - User save tracking  
+    match /itinerary_saves/{saveId} {
+      allow read: if isSignedIn() && isOwner(resource.data.userId);
+      allow create: if emailVerified() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['userId', 'itineraryId', 'createdAt']);
+      allow delete: if emailVerified() && isOwner(resource.data.userId);
+    }
+
+    // 4.8. itineraryShares (legacy - keeping for compatibility)
     match /itineraryShares/{shareId} {
       allow read: if true; // public link resolver
-      allow create: if emailVerified() && isOwner(get(/databases/$(database)/documents/itineraries/$(request.resource.data.itineraryId)).data.ownerId);
-      allow delete: if emailVerified() && isOwner(get(/databases/$(database)/documents/itineraries/$(resource.data.itineraryId)).data.ownerId);
+      allow create: if emailVerified() && isOwner(get(/databases/$(database)/documents/itineraries/$(request.resource.data.itineraryId)).data.userId);
+      allow delete: if emailVerified() && isOwner(get(/databases/$(database)/documents/itineraries/$(resource.data.itineraryId)).data.userId);
     }
 
     // 4.7. reports

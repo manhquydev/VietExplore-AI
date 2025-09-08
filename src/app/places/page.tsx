@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SearchBar } from "@/components/search-bar"
@@ -12,16 +13,18 @@ import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { usePlaces } from "@/hooks/use-places"
 import { Eye, Star } from "lucide-react"
 import RealtimeService from "@/lib/firebase/realtime"
+import { PlaceRegion } from "@/lib/types/places"
 
 // Mock data removed - now using real API data from Firestore
 
 interface SearchFilters {
-  region?: string
+  region?: PlaceRegion
   province?: string
   type?: string
 }
 
 export default function PlacesPage() {
+  const searchParams = useSearchParams()
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filters, setFilters] = React.useState<SearchFilters>({})
@@ -29,9 +32,30 @@ export default function PlacesPage() {
   const [realtimeStats, setRealtimeStats] = React.useState<Record<string, any>>({})
   const itemsPerPage = 12
 
+  // Initialize filters from URL params
+  React.useEffect(() => {
+    const regionParam = searchParams.get('region') as PlaceRegion
+    const provinceParam = searchParams.get('province')
+    const typeParam = searchParams.get('type')
+    const searchParam = searchParams.get('search')
+
+    if (regionParam || provinceParam || typeParam) {
+      setFilters({
+        region: regionParam || undefined,
+        province: provinceParam || undefined,
+        type: typeParam || undefined,
+      })
+    }
+
+    if (searchParam) {
+      setSearchQuery(searchParam)
+    }
+  }, [searchParams])
+
   // Fetch places from API with filters
   const { places: filteredPlaces, loading, error } = usePlaces({
     search: searchQuery.trim() || undefined,
+    region: filters.region || undefined,
     province: filters.province || undefined,
     type: filters.type as any || undefined,
     sortBy: 'newest'
@@ -132,7 +156,10 @@ export default function PlacesPage() {
         <section className="container py-8 relative">
           {/* Filter Bar with glassmorphism */}
           <div className="glass-card p-6 mb-8">
-            <FilterBar onFiltersChange={handleFiltersChange} />
+            <FilterBar 
+              onFiltersChange={handleFiltersChange}
+              initialFilters={filters}
+            />
           </div>
 
           {/* Results Header */}
@@ -148,6 +175,13 @@ export default function PlacesPage() {
                   {searchQuery && (
                     <Badge variant="outline" className="glass-subtle border-teal-200 ">
                       Tìm kiếm: "{searchQuery}"
+                    </Badge>
+                  )}
+                  {filters.region && (
+                    <Badge variant="outline" className="glass-subtle border-emerald-200 ">
+                      Miền: {filters.region === 'bac-bo' ? 'Miền Bắc' : 
+                             filters.region === 'trung-bo' ? 'Miền Trung' : 
+                             filters.region === 'nam-bo' ? 'Miền Nam' : filters.region}
                     </Badge>
                   )}
                   {filters.type && (

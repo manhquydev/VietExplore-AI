@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     let query: FirebaseFirestore.Query = adminDb.collection('places')
       .where('status', '==', 'published');
 
-    // Apply filters
+    // Apply filters without orderBy to avoid composite index requirement
     if (filters.region) {
       query = query.where('region', '==', filters.region);
     }
@@ -41,15 +41,8 @@ export async function GET(request: NextRequest) {
       query = query.where('trustLabel', '==', filters.trustLabel);
     }
 
-    // For now, just use basic ordering to avoid complex indexes
-    // We'll sort in memory for better performance without needing Firebase composite indexes
-    query = query.orderBy('createdAt', 'desc');
-    
-    if (filters.limit) {
-      // Get more data for in-memory sorting
-      query = query.limit(Math.min(filters.limit * 2, 100));
-    }
-
+    // Get all matching documents without ordering to avoid index requirements
+    // We'll sort in memory for better compatibility
     const snapshot = await query.get();
     let places: Place[] = [];
 
