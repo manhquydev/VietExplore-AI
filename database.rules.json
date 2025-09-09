@@ -122,6 +122,112 @@
     "audit_stats": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'"
+    },
+    
+    // ====================================================================
+    // PHASE 2: ADMIN/MODERATOR NOTIFICATION SYSTEM RULES
+    // ====================================================================
+    
+    // Admin dashboard real-time updates - admins only
+    "admin_dashboard": {
+      ".read": "auth != null && auth.token.role === 'admin'",
+      ".write": "auth != null && auth.token.role === 'admin'",
+      "system_health": {
+        ".read": "auth != null && auth.token.role === 'admin'",
+        ".write": "auth != null && auth.token.role === 'admin'"
+      },
+      "notifications": {
+        ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+        ".write": "auth != null && auth.token.role === 'admin'"
+      }
+    },
+    
+    // System health monitoring data - admins only
+    "system_health": {
+      ".read": "auth != null && auth.token.role === 'admin'",
+      ".write": "auth != null && auth.token.role === 'admin'"
+    },
+    
+    // Moderation handoff tracking - moderators and admins
+    "moderation_handoffs": {
+      ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+      ".write": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')"
+    },
+    
+    // Health check trigger - admins only
+    "health_check": {
+      ".read": "auth != null && auth.token.role === 'admin'",
+      ".write": "auth != null && auth.token.role === 'admin'"
+    },
+    
+    // Security monitoring data - admins only
+    "security_monitoring": {
+      ".read": "auth != null && auth.token.role === 'admin'",
+      ".write": "auth != null && auth.token.role === 'admin'"
+    },
+    
+    // System metrics collection - admins only
+    "system_metrics": {
+      ".read": "auth != null && auth.token.role === 'admin'",
+      ".write": "auth != null && auth.token.role === 'admin'"
+    },
+    
+    // ====================================================================
+    // AUTO-SYNC ARCHITECTURE RULES - OPTIMIZED FOR CLOUD FUNCTIONS
+    // ====================================================================
+    
+    // Auto-synced admin dashboard stats - Cloud Functions write, admins read
+    "admin": {
+      "dashboard": {
+        "stats": {
+          ".read": "auth != null && auth.token.role === 'admin'",
+          ".write": false // Only Cloud Functions can write
+        }
+      },
+      "moderation": {
+        "stats": {
+          ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+          ".write": false // Only Cloud Functions can write
+        }
+      }
+    },
+    
+    // Auto-synced place stats - optimized structure for real-time reads
+    "places": {
+      "$placeId": {
+        "stats": {
+          ".read": true, // Public stats for all users
+          ".write": false, // Only Cloud Functions can write
+          ".indexOn": ["status", "region", "type"] // Optimize queries
+        }
+      }
+    },
+    
+    // Auto-synced user stats - privacy compliant
+    "users": {
+      "$userId": {
+        "stats": {
+          ".read": "$userId === auth.uid || auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+          ".write": false // Only Cloud Functions can write
+        }
+      }
+    },
+    
+    // Real-time moderation queue updates - instant notifications
+    "moderation_queue_updates": {
+      "$itemId": {
+        ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+        ".write": false, // Only Cloud Functions can write
+        ".indexOn": ["status", "priority", "createdAt"]
+      }
+    },
+    
+    // Connection optimization - track active admin connections
+    "admin_connections": {
+      "$adminId": {
+        ".read": "auth != null && auth.token.role === 'admin'",
+        ".write": "$adminId === auth.uid && auth != null && auth.token.role === 'admin'"
+      }
     }
   }
 }

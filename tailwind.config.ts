@@ -1,5 +1,7 @@
 import type {Config} from 'tailwindcss';
 import { tailwindExtension } from './src/lib/design-system';
+import colors2025 from './src/lib/design-system/tokens/colors-2025';
+import animations from './src/lib/design-system/tokens/animations';
 
 export default {
   darkMode: ['class', '[data-theme="dark"]'],
@@ -30,40 +32,27 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Be Vietnam Pro', 'Inter', 'ui-sans-serif', 'system-ui'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+        serif: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],
       },
       colors: {
-        // Legacy support - keep existing vars
+        // Legacy support - keep existing vars for backward compatibility
         bg: 'var(--bg)',
         surface: 'var(--surface)',
-        text: 'var(--text)',
+        text: 'var(--text)', 
         muted: 'var(--muted)',
-        border: 'var(--border)',
-        primary: {
-          DEFAULT: 'var(--primary)',
-          700: 'var(--primary-700)',
-          50: 'var(--primary-50)',
-        },
+        primary: 'var(--primary)',
         secondary: 'var(--secondary)',
-        success: 'var(--success)',
-        warn: 'var(--warn)',
-        danger: 'var(--danger)',
+        'primary-700': 'var(--primary-700)',
         overlay: 'var(--overlay)',
         
-        // Modern design system colors (spread cautiously)
-        neutral: tailwindExtension.colors.neutral,
-        primary: {
-          ...tailwindExtension.colors.primary,
-          // Keep existing primary overrides
-          DEFAULT: 'var(--primary)',
-          700: 'var(--primary-700)',
-          50: 'var(--primary-50)',
-        },
-        success: tailwindExtension.colors.success,
-        warning: tailwindExtension.colors.warning,
-        danger: tailwindExtension.colors.danger,
-        info: tailwindExtension.colors.info,
-        white: tailwindExtension.colors.white,
+        // Enhanced 2025 Color System - Base tokens (override duplicates)
+        ...colors2025.colorTokens,
+        
+        // Legacy Tailwind Extension Support (if available)
+        ...(tailwindExtension?.colors || {}),
+        
         // Keep existing shadcn colors for compatibility
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -102,6 +91,18 @@ export default {
       },
       transitionTimingFunction: {
         elegant: 'cubic-bezier(.2,.6,.2,1)',
+        ...Object.fromEntries(
+          Object.entries(animations.easingFunctions).map(([key, value]) => [key, value])
+        ),
+      },
+      transitionDuration: {
+        ...Object.fromEntries(
+          Object.entries(animations.durations).map(([key, value]) => [key, value])
+        ),
+      },
+      spacing: {
+        '18': '4.5rem', // 72px
+        '88': '22rem',   // 352px
       },
       keyframes: {
         shimmer: { 
@@ -115,11 +116,57 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        // Enhanced 2025 Animation Keyframes
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'slide-in-down': {
+          from: { 
+            transform: 'translateY(-20px)',
+            opacity: '0',
+          },
+          to: { 
+            transform: 'translateY(0)',
+            opacity: '1',
+          },
+        },
+        'slide-in-up': {
+          from: { 
+            transform: 'translateY(20px)',
+            opacity: '0',
+          },
+          to: { 
+            transform: 'translateY(0)',
+            opacity: '1',
+          },
+        },
+        'scale-in': {
+          from: { 
+            transform: 'scale(0.95)',
+            opacity: '0',
+          },
+          to: { 
+            transform: 'scale(1)',
+            opacity: '1',
+          },
+        },
+        'skeleton-pulse': {
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.8' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1200ms ease-in-out infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        // Enhanced 2025 Animations
+        'fade-in': 'fade-in 250ms cubic-bezier(0, 0, 0.2, 1)',
+        'slide-in-down': 'slide-in-down 250ms cubic-bezier(0, 0, 0.2, 1)',
+        'slide-in-up': 'slide-in-up 250ms cubic-bezier(0, 0, 0.2, 1)',
+        'scale-in': 'scale-in 300ms cubic-bezier(0, 0, 0.2, 1)',
+        'skeleton-pulse': 'skeleton-pulse 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        'spin': 'spin 1s linear infinite',
       },
     },
   },

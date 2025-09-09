@@ -9,7 +9,7 @@ import { NotificationProvider } from "@/components/ui/notification-system";
 import { NetworkStatus } from "@/components/ui/network-status";
 import { GlobalEmailVerification } from "@/components/auth/global-email-verification";
 import { NotificationConnectionStatus } from "@/components/notifications/notification-bell";
-import { ThemeProvider } from "@/providers/theme-provider";
+import { EnhancedThemeProvider } from "@/providers/enhanced-theme-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 
@@ -59,7 +59,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-text antialiased">
-        <ThemeProvider>
+        <EnhancedThemeProvider>
           <ErrorBoundary>
             <NotificationProvider>
               <ToastProvider>
@@ -75,7 +75,7 @@ export default function RootLayout({
               </ToastProvider>
             </NotificationProvider>
           </ErrorBoundary>
-        </ThemeProvider>
+        </EnhancedThemeProvider>
       </body>
     </html>
   );

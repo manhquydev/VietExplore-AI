@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { ModernCard } from "@/components/ui/modern/card"
+import { EnhancedCard, CardHeader, CardContent } from "@/components/ui/modern/enhanced-card"
+import { EnhancedButton } from "@/components/ui/modern/enhanced-button"
 import { ModernMetricCard, QuickActionCard, ModernMetricCardSkeleton } from "@/components/admin/modern-metric-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useAdminTheme } from "@/providers/admin-theme-provider"
 import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminStats, useModerationQueue, useAdminUsers, useAdminPlaces } from "@/hooks/use-admin"
@@ -20,6 +22,7 @@ import {
 export default function AdminOverviewPage() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const { colors, spacing, animations } = useAdminTheme()
   
   // Real data hooks
   const { stats, loading: statsLoading } = useAdminStats()
@@ -83,7 +86,7 @@ export default function AdminOverviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-white">
       {/* Modern Header Section */}
       <div className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
         <div className="max-w-7xl mx-auto">
@@ -228,7 +231,7 @@ export default function AdminOverviewPage() {
           
           {/* Recent Activity Feed */}
           <div className="xl:col-span-2 space-y-6">
-            <ModernCard className="p-6">
+            <EnhancedCard className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center">
@@ -324,14 +327,14 @@ export default function AdminOverviewPage() {
                   </>
                 )}
               </div>
-            </ModernCard>
+            </EnhancedCard>
           </div>
 
           {/* Quick Actions & System Status */}
           <div className="space-y-6">
             
             {/* Quick Actions Card */}
-            <ModernCard className="p-6">
+            <EnhancedCard className="p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center">
                   <Shield className="h-5 w-5 text-white" />
@@ -353,10 +356,10 @@ export default function AdminOverviewPage() {
                   />
                 ))}
               </div>
-            </ModernCard>
+            </EnhancedCard>
 
             {/* System Health Card */}
-            <ModernCard className="p-6">
+            <EnhancedCard className="p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-10 w-10 bg-success-600 rounded-xl flex items-center justify-center">
                   <Activity className="h-5 w-5 text-white" />
@@ -404,7 +407,7 @@ export default function AdminOverviewPage() {
                   </div>
                 </div>
               </div>
-            </ModernCard>
+            </EnhancedCard>
           </div>
         </div>
       </div>

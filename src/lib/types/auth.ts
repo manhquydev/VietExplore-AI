@@ -82,4 +82,11 @@ export type Permission =
   | 'reject_content'
   | 'hide_content'
   | 'claim_moderation_item'
-  | 'manage_partial_admin';
+  | 'manage_partial_admin'
+  | 'manage_settings'
+  | 'manage_security'
+  | 'manage_notifications' 
+  | 'manage_maintenance'
+  | 'view_audit_logs'
+  | 'manage_users_advanced'
+  | 'system_override';

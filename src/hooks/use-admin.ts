@@ -158,7 +158,7 @@ export function useSystemSettings() {
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
 
-  // Load settings from API/localStorage
+  // Load settings from API
   useEffect(() => {
     if (!user || !['admin', 'moderator'].includes(user.role)) {
       setLoading(false);
@@ -168,12 +168,20 @@ export function useSystemSettings() {
     async function loadSettings() {
       setLoading(true);
       try {
-        // Try to load from API first, fallback to localStorage
-        // TODO: Implement settings API endpoint
-        const savedSettings = localStorage.getItem('admin-settings');
-        if (savedSettings) {
-          const parsed = JSON.parse(savedSettings);
-          setSettings(prev => ({ ...prev, ...parsed }));
+        const token = await getAuthToken();
+        const response = await fetch('/api/admin/settings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setSettings(result.data);
+          }
+        } else {
+          console.warn('Failed to load settings from API, using defaults');
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
@@ -186,30 +194,74 @@ export function useSystemSettings() {
   }, [user]);
 
   const updateSettings = useCallback(async (newSettings: typeof settings) => {
+    if (!user || !['admin', 'moderator'].includes(user.role)) {
+      return { success: false, error: 'Không có quyền cập nhật' };
+    }
+
     setSaving(true);
     try {
-      // TODO: Save to API endpoint
-      // For now, save to localStorage
-      localStorage.setItem('admin-settings', JSON.stringify(newSettings));
-      setSettings(newSettings);
-      return { success: true };
+      const token = await getAuthToken();
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ settings: newSettings })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSettings(result.data);
+        return { success: true, message: result.message };
+      } else {
+        return { success: false, error: result.error };
+      }
     } catch (error) {
       console.error('Failed to save settings:', error);
       return { success: false, error: 'Không thể lưu cài đặt' };
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [user]);
 
-  const updateSetting = useCallback((section: string, key: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [key]: value
+  const updateSetting = useCallback(async (section: string, key: string, value: any) => {
+    if (!user || !['admin', 'moderator'].includes(user.role)) {
+      return { success: false, error: 'Không có quyền cập nhật' };
+    }
+
+    try {
+      const token = await getAuthToken();
+      const response = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ section, key, value })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update local state
+        setSettings(prev => ({
+          ...prev,
+          [section]: {
+            ...prev[section as keyof typeof prev],
+            [key]: value
+          }
+        }));
+        return { success: true, message: result.message };
+      } else {
+        return { success: false, error: result.error };
       }
-    }));
-  }, []);
+    } catch (error) {
+      console.error('Failed to update setting:', error);
+      return { success: false, error: 'Không thể cập nhật cài đặt' };
+    }
+  }, [user]);
 
   return {
     settings,
@@ -700,5 +752,63 @@ export function useHomepageSettings() {
     uploadRegionImage,
     updateRegionSettings,
     loadHomepageSettings
+  };
+}
+
+export function useAdminAudit(filters: {
+  startDate?: string;
+  endDate?: string;
+  action?: string;
+  actor?: string;
+  targetType?: string;
+  severity?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+} = {}) {
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const fetchAuditLogs = useCallback(async () => {
+    if (!user || user.role !== 'admin') {
+      setLoading(false);
+      setAuditLogs([]); // Set empty array for non-admin users
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('Fetching audit logs for user role:', user.role);
+      const result = await apiClient.admin.audit.list(filters);
+      console.log('Audit logs API result:', result);
+      
+      if (result.success && result.data) {
+        setAuditLogs(Array.isArray(result.data) ? result.data : []);
+      } else {
+        console.warn('Audit API failed or no data:', result);
+        setError(result.error || 'Không thể tải audit logs');
+        setAuditLogs([]);
+      }
+    } catch (err) {
+      console.error('Error fetching audit logs:', err);
+      setError('Có lỗi xảy ra khi tải dữ liệu audit');
+      setAuditLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [JSON.stringify(filters), user]);
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, [fetchAuditLogs]);
+
+  return {
+    auditLogs,
+    loading,
+    error
   };
 }

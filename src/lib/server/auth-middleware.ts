@@ -9,8 +9,8 @@ const rolePermissions: Record<UserRole, Permission[]> = {
   traveler: ["report_content", "create_itinerary", "save_places"],
   contributor: ["create_place", "report_content", "create_itinerary", "save_places", "manage_drafts"],
   partner: ["create_place", "create_place_priority", "report_content", "create_itinerary", "save_places", "manage_drafts", "partner_badge", "fast_review"],
-  moderator: ["review_content", "view_moderation_queue", "report_content", "create_itinerary", "save_places"],
-  admin: ["all_permissions"],
+  moderator: ["review_content", "approve_content", "reject_content", "hide_content", "view_moderation_queue", "claim_moderation_item", "manage_partial_admin", "manage_settings", "report_content", "create_itinerary", "save_places"],
+  admin: ["all_permissions", "manage_settings", "manage_security", "manage_notifications", "manage_maintenance", "view_audit_logs", "manage_users_advanced", "system_override"],
 };
 
 // Server-side hasPermission function

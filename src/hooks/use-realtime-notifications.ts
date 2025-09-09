@@ -10,7 +10,9 @@ import { app } from '@/lib/firebase';
 
 export interface RealtimeNotification {
   id: string;
-  type: 'place_approved' | 'place_rejected' | 'place_needs_edit' | 'edit_request_approved' | 'edit_request_rejected' | 'new_moderation_item' | 'moderation_claimed' | 'moderation_escalated' | 'reports_threshold_reached';
+  type: 'place_approved' | 'place_rejected' | 'place_needs_edit' | 'edit_request_approved' | 'edit_request_rejected' | 'new_moderation_item' | 'moderation_claimed' | 'moderation_escalated' | 'reports_threshold_reached' | 'place_liked' | 'place_saved' | 'place_review_posted' | 'place_comment_reply' | 'place_published' | 'place_featured' | 'place_milestone' | 'system_maintenance' | 'security_alert' | 'feature_update' | 'weekly_summary' | 
+  // Phase 2: Admin/Moderator notifications
+  'system_performance_degraded' | 'database_connection_issues' | 'api_rate_limit_exceeded' | 'storage_quota_warning' | 'cdn_failure_detected' | 'suspicious_login_patterns' | 'multiple_failed_login_attempts' | 'data_export_request' | 'gdpr_deletion_request' | 'admin_privilege_escalation' | 'moderation_queue_overload' | 'content_volume_spike' | 'user_registration_anomaly' | 'spam_detection_threshold' | 'server_memory_critical' | 'disk_space_warning' | 'backup_failure' | 'ssl_certificate_expiring' | 'third_party_service_down' | 'moderation_handoff_received' | 'moderation_sla_warning' | 'moderation_queue_stuck' | 'content_pattern_detected';
   title: string;
   message: string;
   data?: Record<string, any>;

@@ -20,6 +20,41 @@ html, body {
   color: #1A2332 !important;
 }
 
+/* Ensure text classes have strong contrast - Fix for faded text issue */
+.text-text {
+  color: #1A2332 !important;
+}
+
+.text-muted {
+  color: #6B7280 !important;
+}
+
+/* Additional text color fixes */
+h1, h2, h3, h4, h5, h6 {
+  color: #1A2332 !important;
+}
+
+.text-neutral-900 {
+  color: #171717 !important;
+}
+
+.text-neutral-800 {
+  color: #262626 !important;
+}
+
+.text-neutral-700 {
+  color: #404040 !important;
+}
+
+/* Ensure all dark text classes are fully opaque */
+.text-text,
+.text-neutral-900,
+.text-neutral-800, 
+.text-neutral-700,
+.text-black {
+  opacity: 1 !important;
+}
+
 /* Disable all dark mode styles */
 .dark {
   --bg: #FFFFFF !important;
@@ -32,21 +67,21 @@ html, body {
 /* "A Window to Vietnam" Design System - Clear & Refined */
 :root {
   /* Color Palette - Inspired by clear morning in Ha Long Bay */
-  --bg: #FFFFFF;                    /* Pure white - clouds and sand */
-  --surface: #FAFBFC;               /* Subtle off-white - morning mist */
-  --text: #1A2332;                  /* Deep navy - ocean depths */
-  --muted: #6B7280;                 /* Soft gray - distant mountains */
-  --border: #E5E7EB;                /* Light gray - gentle waves */
-  --primary: #0891B2;               /* Ocean teal - where sun hits waves */
-  --primary-rgb: 8, 145, 178;       /* For gradients */
-  --primary-700: #0E7490;           /* Deeper teal */
-  --primary-50: rgba(8, 145, 178, 0.05); /* Teal whisper */
-  --secondary: #0EA5E9;             /* Sky blue - clear morning sky */
-  --secondary-rgb: 14, 165, 233;    /* For gradients */
-  --success: #10B981;               /* Emerald - lush greenery */
-  --warn: #F59E0B;                  /* Amber - golden hour */
-  --danger: #EF4444;                /* Coral red */
-  --overlay: rgba(26, 35, 50, 0.6); /* Gentle dark overlay */
+  --bg: #FFFFFF !important;                    /* Pure white - clouds and sand */
+  --surface: #FAFBFC !important;               /* Subtle off-white - morning mist */
+  --text: #1A2332 !important;                  /* Deep navy - ocean depths */
+  --muted: #6B7280 !important;                 /* Soft gray - distant mountains */
+  --border: #E5E7EB !important;                /* Light gray - gentle waves */
+  --primary: #0891B2 !important;               /* Ocean teal - where sun hits waves */
+  --primary-rgb: 8, 145, 178 !important;       /* For gradients */
+  --primary-700: #0E7490 !important;           /* Deeper teal */
+  --primary-50: rgba(8, 145, 178, 0.05) !important; /* Teal whisper */
+  --secondary: #0EA5E9 !important;             /* Sky blue - clear morning sky */
+  --secondary-rgb: 14, 165, 233 !important;    /* For gradients */
+  --success: #10B981 !important;               /* Emerald - lush greenery */
+  --warn: #F59E0B !important;                  /* Amber - golden hour */
+  --danger: #EF4444 !important;                /* Coral red */
+  --overlay: rgba(26, 35, 50, 0.6) !important; /* Gentle dark overlay */
   
   /* Glassmorphism Core Values */
   --glass-bg: rgba(255, 255, 255, 0.7);

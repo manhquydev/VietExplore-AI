@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { NotificationService } from '@/lib/server/notification-service';
+import { NotificationPreferenceService } from '@/lib/server/notification-preference-service';
+import { MilestoneService } from '@/lib/server/milestone-service';
 
 // POST /api/places/[id]/favorite - Add place to favorites
 export async function POST(
@@ -66,9 +69,50 @@ export async function POST(
     console.log('Created favorite:', favoriteRef.id);
 
     // Update place like count
+    const previousLikeCount = placeData.likeCount || 0;
+    const newLikeCount = previousLikeCount + 1;
+    
     await adminDb.collection('places').doc(id).update({
-      likeCount: (placeData.likeCount || 0) + 1
+      likeCount: newLikeCount
     });
+
+    // Check for milestone achievements
+    try {
+      await MilestoneService.checkMilestones(id, 'likes', newLikeCount, previousLikeCount);
+    } catch (milestoneError) {
+      console.error('Error checking milestones:', milestoneError);
+      // Don't fail the request if milestone check fails
+    }
+
+    // Send notification to place owner (if different user)
+    try {
+      if (placeData.createdBy && placeData.createdBy !== userId) {
+        // Get liker's name
+        const likerDoc = await adminDb.collection('users').doc(userId).get();
+        const likerData = likerDoc.data();
+        const likerName = likerData?.fullName || likerData?.email || 'Người dùng';
+
+        // Check if place owner wants this notification
+        const shouldSend = await NotificationPreferenceService.shouldSendNotification(
+          placeData.createdBy,
+          'place_liked',
+          'low'
+        );
+
+        if (shouldSend) {
+          await NotificationService.notifyPlaceLiked(
+            placeData.createdBy,
+            userId,
+            likerName,
+            id,
+            placeData.name || 'Địa điểm'
+          );
+        }
+      }
+    } catch (notifError) {
+      console.error('Error sending place liked notification:', notifError);
+      // Don't fail the request if notification fails
+    }
 
     return NextResponse.json({
       success: true,

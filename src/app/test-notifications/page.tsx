@@ -53,6 +53,172 @@ export default function TestNotificationsPage() {
     setTimeout(() => warning({ title: "Toast 3", description: "Thông báo thứ ba" }), 1000)
   }
 
+  // Admin notification testing functions
+  const testAdminNotification = async (testType: string) => {
+    try {
+      const response = await fetch('/api/admin/system/health', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'test_notification',
+          testType
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        success({
+          title: "Admin notification sent",
+          description: `Test notification '${testType}' sent successfully`
+        })
+      } else {
+        error({
+          title: "Failed to send notification",
+          description: result.error || "Unknown error occurred"
+        })
+      }
+    } catch (error) {
+      console.error('Error testing admin notification:', error)
+      error({
+        title: "Network error",
+        description: "Failed to send admin notification test"
+      })
+    }
+  }
+
+  const triggerHealthCheck = async () => {
+    try {
+      const response = await fetch('/api/admin/system/health', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'health_check'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        success({
+          title: "Health check completed",
+          description: "System health check triggered successfully"
+        })
+      } else {
+        error({
+          title: "Health check failed",
+          description: result.error || "Unknown error occurred"
+        })
+      }
+    } catch (error) {
+      console.error('Error triggering health check:', error)
+      error({
+        title: "Network error",
+        description: "Failed to trigger health check"
+      })
+    }
+  }
+
+  // Debug functions
+  const debugNotifications = async () => {
+    try {
+      const response = await fetch('/api/debug/notifications')
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log('🔍 Debug Info:', result.debug)
+        success({
+          title: "Debug info logged",
+          description: "Check browser console for detailed debug information"
+        })
+      } else {
+        error({
+          title: "Debug failed",
+          description: result.error || "Unknown error occurred"
+        })
+      }
+    } catch (error) {
+      console.error('Error debugging notifications:', error)
+      error({
+        title: "Debug error",
+        description: "Failed to get debug information"
+      })
+    }
+  }
+
+  const clearNotifications = async () => {
+    try {
+      const response = await fetch('/api/debug/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'clear_notifications'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        success({
+          title: "Notifications cleared",
+          description: "All notifications have been cleared"
+        })
+      } else {
+        error({
+          title: "Clear failed",
+          description: result.error || "Unknown error occurred"
+        })
+      }
+    } catch (error) {
+      console.error('Error clearing notifications:', error)
+      error({
+        title: "Clear error",
+        description: "Failed to clear notifications"
+      })
+    }
+  }
+
+  const createTestNotifications = async () => {
+    try {
+      const response = await fetch('/api/debug/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'create_test_notifications',
+          count: 3
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        success({
+          title: "Test notifications created",
+          description: `Created ${result.notifications.length} test notifications`
+        })
+      } else {
+        error({
+          title: "Creation failed",
+          description: result.error || "Unknown error occurred"
+        })
+      }
+    } catch (error) {
+      console.error('Error creating test notifications:', error)
+      error({
+        title: "Creation error",
+        description: "Failed to create test notifications"
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-2xl mx-auto">
@@ -184,14 +350,162 @@ export default function TestNotificationsPage() {
             )}
           </div>
 
+          {/* Enhanced Testing Section */}
+          <div className="mt-6 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+            <h3 className="font-medium text-gray-900 mb-4">📊 Notification System Analytics</h3>
+            
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-green-600">{notifications.length}</div>
+                <div className="text-xs text-gray-500">Total Notifications</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-blue-600">{unreadCount}</div>
+                <div className="text-xs text-gray-500">Unread Count</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-purple-600">
+                  {notifications.filter(n => n.priority === 'high').length}
+                </div>
+                <div className="text-xs text-gray-500">High Priority</div>
+              </div>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              <p className="mb-2">
+                <strong>Connection Status:</strong> {isConnected ? '🟢 Real-time active' : '🔴 Disconnected'}
+              </p>
+              <p className="mb-2">
+                <strong>User Status:</strong> {isOnline ? '📶 Online' : '📡 Offline'}
+              </p>
+              <p>
+                <strong>Last Update:</strong> {new Date().toLocaleTimeString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Admin Notification Testing - Only for admin users */}
+          {user?.role === 'admin' && (
+            <div className="mt-8 p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg border border-red-200">
+              <h3 className="font-medium text-gray-900 mb-4">🔐 Admin Notification Testing (Phase 2)</h3>
+              
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <Button 
+                  onClick={() => testAdminNotification('system_performance')}
+                  className="w-full justify-start bg-red-500 hover:bg-red-600 text-sm"
+                >
+                  🚨 System Performance
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('database_connection')}
+                  className="w-full justify-start bg-red-600 hover:bg-red-700 text-sm"
+                >
+                  🔴 Database Issues
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('moderation_queue')}
+                  className="w-full justify-start bg-orange-500 hover:bg-orange-600 text-sm"
+                >
+                  📊 Queue Overload
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('security_alert')}
+                  className="w-full justify-start bg-yellow-500 hover:bg-yellow-600 text-sm"
+                >
+                  ⚠️ Security Alert
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('storage_warning')}
+                  className="w-full justify-start bg-blue-500 hover:bg-blue-600 text-sm"
+                >
+                  📦 Storage Warning
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('ssl_certificate')}
+                  className="w-full justify-start bg-green-500 hover:bg-green-600 text-sm"
+                >
+                  🔒 SSL Expiring
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('gdpr_request')}
+                  className="w-full justify-start bg-purple-500 hover:bg-purple-600 text-sm"
+                >
+                  📋 GDPR Request
+                </Button>
+                
+                <Button 
+                  onClick={() => testAdminNotification('spam_detection')}
+                  className="w-full justify-start bg-gray-500 hover:bg-gray-600 text-sm"
+                >
+                  🛡️ Spam Detection
+                </Button>
+              </div>
+              
+              <div className="p-3 bg-white rounded border">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">System Health Monitoring</h4>
+                <div className="space-y-2">
+                  <Button 
+                    onClick={triggerHealthCheck}
+                    className="w-full bg-indigo-500 hover:bg-indigo-600"
+                  >
+                    🔍 Trigger System Health Check
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Debug Section */}
+              <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">🐛 Debug & Testing Tools</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    onClick={debugNotifications}
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-sm"
+                  >
+                    🔍 Debug Info
+                  </Button>
+                  
+                  <Button 
+                    onClick={clearNotifications}
+                    className="w-full bg-red-500 hover:bg-red-600 text-sm"
+                  >
+                    🗑️ Clear All
+                  </Button>
+                  
+                  <Button 
+                    onClick={createTestNotifications}
+                    className="w-full bg-green-500 hover:bg-green-600 text-sm col-span-2"
+                  >
+                    ➕ Create 3 Test Notifications
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">Toast System Features:</h3>
+            <h3 className="font-medium text-gray-900 mb-2">🎯 Notification System Features:</h3>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• <strong>Mobile:</strong> Full width, bottom positioning</li>
               <li>• <strong>Tablet/Desktop:</strong> Fixed width, bottom-right corner</li>
               <li>• <strong>Stack limit:</strong> Maximum 3 notifications</li>
               <li>• <strong>Auto dismiss:</strong> 5 seconds timeout</li>
               <li>• <strong>Modern UI:</strong> Glass morphism effect with backdrop blur</li>
+              <li>• <strong>Real-time Sync:</strong> Firebase integration for instant updates</li>
+              <li>• <strong>Smart Batching:</strong> Groups similar notifications automatically</li>
+              <li>• <strong>Milestone Tracking:</strong> Achievement notifications for user engagement</li>
+              {user?.role === 'admin' && (
+                <>
+                  <li>• <strong>Admin Notifications:</strong> System health and security monitoring</li>
+                  <li>• <strong>Smart Escalation:</strong> Role-based notification routing with SLA tracking</li>
+                  <li>• <strong>Health Monitoring:</strong> Proactive system performance alerts</li>
+                </>
+              )}
             </ul>
           </div>
         </div>

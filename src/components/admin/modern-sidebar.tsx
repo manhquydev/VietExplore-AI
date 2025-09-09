@@ -132,7 +132,7 @@ export function ModernSidebar({
       <aside 
         className={cn(
           // Base styles - fixed position để không cuộn theo trang
-          'fixed left-0 top-0 z-50 h-screen bg-white border-r transition-all duration-300 ease-out',
+          'fixed left-0 top-0 z-50 h-screen bg-white  border-r  transition-all duration-300 ease-out',
           // Width variations
           collapsed ? 'w-16' : 'w-64',
           // Mobile styles
@@ -145,7 +145,7 @@ export function ModernSidebar({
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-200">
           {!collapsed && (
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden">
@@ -159,7 +159,7 @@ export function ModernSidebar({
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-neutral-900">Du Lịch Việt</h2>
-                <p className="text-xs text-neutral-500">Admin Panel</p>
+                <p className="text-xs text-neutral-600">Admin Panel</p>
               </div>
             </div>
           )}
@@ -270,7 +270,7 @@ export function ModernSidebar({
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t">
+        <div className="p-3 border-t border-neutral-200">
           {!collapsed && user && (
             <div className="mb-3 flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-white">
@@ -282,7 +282,7 @@ export function ModernSidebar({
                 <p className="text-sm font-medium text-neutral-900 truncate">
                   {user.fullName || user.email}
                 </p>
-                <p className="text-xs text-neutral-500 capitalize">
+                <p className="text-xs text-neutral-600 capitalize">
                   {user.role}
                 </p>
               </div>

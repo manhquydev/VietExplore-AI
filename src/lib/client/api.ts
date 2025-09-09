@@ -226,6 +226,27 @@ export const apiClient = {
         method: 'DELETE',
       }),
     },
+    audit: {
+      list: (filters: { 
+        startDate?: string;
+        endDate?: string;
+        action?: string;
+        actor?: string;
+        targetType?: string;
+        severity?: string;
+        search?: string;
+        limit?: number;
+        offset?: number;
+      } = {}) => {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, value.toString());
+          }
+        });
+        return callApi(`/admin/audit?${params.toString()}`);
+      },
+    },
   },
   moderation: {
     queue: {

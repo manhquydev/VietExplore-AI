@@ -1,4 +1,3 @@
-"use client"
 import { User, UserRole, Permission } from '@/lib/types/auth';
 
 // Role-to-permission mapping based on document matrix
@@ -34,12 +33,22 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     "view_moderation_queue",
     "claim_moderation_item",
     "manage_partial_admin",
+    "manage_settings", // Basic settings access
     // Inherits traveler permissions
     "report_content",
     "create_itinerary", 
     "save_places"
   ],
-  admin: ["all_permissions"], // Auto-approve places, full moderation access
+  admin: [
+    "all_permissions", // Auto-approve places, full moderation access
+    "manage_settings", // Full system settings
+    "manage_security", // Security settings
+    "manage_notifications", // Notification settings
+    "manage_maintenance", // Maintenance mode
+    "view_audit_logs", // Security audit logs
+    "manage_users_advanced", // Advanced user management
+    "system_override" // Override any restriction
+  ]
 };
 
 export function hasPermission(user: User | null, permission: Permission): boolean {

@@ -342,7 +342,7 @@ export default function AuditDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-admin-neutral-50 via-white to-admin-primary-50/20">
+    <div className="min-h-screen bg-white">
       
       {/* Header */}
       <div className="relative px-4 md:px-6 lg:px-8 pt-6 pb-8">

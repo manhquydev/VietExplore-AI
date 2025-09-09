@@ -257,7 +257,7 @@ export default function ForceEditPlacePage() {
   const currentStatusInfo = getStatusInfo(formData.status)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b border-purple-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">

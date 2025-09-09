@@ -19,6 +19,61 @@ export interface UserInteraction {
 }
 
 export class RealtimeService {
+  // ========================================
+  // AUTO-SYNC SERVICE METHODS
+  // ========================================
+
+  /**
+   * Subscribe to single path với callback
+   */
+  static subscribe(path: string, callback: (snapshot: any) => void): () => void {
+    const dataRef = ref(db, path);
+    const listener = onValue(dataRef, callback);
+    
+    // Return unsubscribe function
+    return () => off(dataRef, 'value', listener);
+  }
+
+  /**
+   * Subscribe to multiple paths efficiently (for place stats, user stats)
+   */
+  static subscribeToMultiplePaths(basePath: string, callback: (data: any) => void): () => void {
+    const baseRef = ref(db, basePath);
+    const listener = onValue(baseRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      callback(data);
+    });
+    
+    return () => off(baseRef, 'value', listener);
+  }
+
+  /**
+   * Update data at path
+   */
+  static async updateData(path: string, data: any): Promise<void> {
+    const dataRef = ref(db, path);
+    await update(dataRef, data);
+  }
+
+  /**
+   * Remove data at path
+   */
+  static async removeData(path: string): Promise<void> {
+    const dataRef = ref(db, path);
+    await set(dataRef, null);
+  }
+
+  /**
+   * Set data at path
+   */
+  static async setData(path: string, data: any): Promise<void> {
+    const dataRef = ref(db, path);
+    await set(dataRef, data);
+  }
+
+  // ========================================
+  // EXISTING METHODS (unchanged)
+  // ========================================
   static async updatePlaceStats(placeId: string, field: keyof PlaceStats, increment: number = 1) {
     const statsRef = ref(db, `places/${placeId}/stats`);
     

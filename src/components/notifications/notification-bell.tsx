@@ -25,6 +25,7 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
 const notificationIcons = {
+  // Place moderation
   place_approved: "✅",
   place_rejected: "❌", 
   place_needs_edit: "✏️",
@@ -33,7 +34,49 @@ const notificationIcons = {
   new_moderation_item: "📋",
   moderation_claimed: "👤",
   moderation_escalated: "⚠️",
-  reports_threshold_reached: "🚨"
+  reports_threshold_reached: "🚨",
+  // User interactions
+  place_liked: "❤️",
+  place_saved: "💾",
+  place_review_posted: "⭐",
+  place_comment_reply: "💬",
+  place_published: "🎉",
+  place_featured: "⭐",
+  place_milestone: "🏆",
+  // System notifications
+  system_maintenance: "🔧",
+  security_alert: "🔐",
+  feature_update: "🚀",
+  weekly_summary: "📊",
+  // Admin/Moderator notifications (Phase 2)
+  // System Health & Performance
+  system_performance_degraded: "🚨",
+  database_connection_issues: "🔴",
+  api_rate_limit_exceeded: "⚡",
+  storage_quota_warning: "📦",
+  cdn_failure_detected: "🌐",
+  // Security & Compliance
+  suspicious_login_patterns: "⚠️",
+  multiple_failed_login_attempts: "🔐",
+  data_export_request: "📋",
+  gdpr_deletion_request: "🗂️",
+  admin_privilege_escalation: "🔑",
+  // Business Operations
+  moderation_queue_overload: "📊",
+  content_volume_spike: "📈",
+  user_registration_anomaly: "👥",
+  spam_detection_threshold: "🛡️",
+  // Infrastructure Monitoring
+  server_memory_critical: "🖥️",
+  disk_space_warning: "💾",
+  backup_failure: "💿",
+  ssl_certificate_expiring: "🔒",
+  third_party_service_down: "🔗",
+  // Moderation Workflow
+  moderation_handoff_received: "👥",
+  moderation_sla_warning: "⏰",
+  moderation_queue_stuck: "🔄",
+  content_pattern_detected: "🔍"
 };
 
 const notificationColors = {

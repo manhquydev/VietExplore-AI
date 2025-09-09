@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { getDatabase, ref, set, get, serverTimestamp } from 'firebase-admin/database';
+import { NotificationService } from '@/lib/server/notification-service';
+import { NotificationPreferenceService } from '@/lib/server/notification-preference-service';
+import { MilestoneService } from '@/lib/server/milestone-service';
 
 // POST /api/places/[id]/saved - Save place for later
 export async function POST(
@@ -72,6 +75,36 @@ export async function POST(
 
     // Update place stats
     await updatePlaceSaveCount(adminDb, id, 1);
+
+    // Send notification to place owner (if different user)
+    try {
+      if (placeData.createdBy && placeData.createdBy !== userId) {
+        // Get saver's name
+        const saverDoc = await adminDb.collection('users').doc(userId).get();
+        const saverData = saverDoc.data();
+        const saverName = saverData?.fullName || saverData?.email || 'Người dùng';
+
+        // Check if place owner wants this notification
+        const shouldSend = await NotificationPreferenceService.shouldSendNotification(
+          placeData.createdBy,
+          'place_saved',
+          'low'
+        );
+
+        if (shouldSend) {
+          await NotificationService.notifyPlaceSaved(
+            placeData.createdBy,
+            userId,
+            saverName,
+            id,
+            placeData.name || 'Địa điểm'
+          );
+        }
+      }
+    } catch (notifError) {
+      console.error('Error sending place saved notification:', notifError);
+      // Don't fail the request if notification fails
+    }
 
     return NextResponse.json({
       success: true,
@@ -201,6 +234,15 @@ async function updatePlaceSaveCount(adminDb: FirebaseFirestore.Firestore, placeI
       });
       
       console.log(`Updated place ${placeId} saves: ${currentSaves} -> ${newSaves}`);
+
+      // Check for milestone achievements (only when incrementing)
+      if (increment > 0) {
+        try {
+          await MilestoneService.checkMilestones(placeId, 'saves', newSaves, currentSaves);
+        } catch (milestoneError) {
+          console.error('Error checking saves milestones:', milestoneError);
+        }
+      }
 
       // Also update real-time database for immediate UI updates
       try {
