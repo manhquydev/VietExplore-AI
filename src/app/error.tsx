@@ -73,7 +73,7 @@ export default function Error({
                 {/* Logo showcase */}
                 <Card className="bg-white/80 backdrop-blur-sm shadow-card border-border/50">
                   <CardContent className="p-8 text-center">
-                    <Logo variant="stacked" size="lg" className="mx-auto mb-4" />
+                    <Logo variant="horizontal" size="xl" className="mx-auto mb-4" />
                     <p className="text-muted text-sm">
                       Chúng tôi sẽ sớm khắc phục để mang đến trải nghiệm tốt nhất
                     </p>

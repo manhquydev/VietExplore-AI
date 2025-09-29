@@ -144,7 +144,7 @@ export default function RegisterPage() {
               <div className="space-y-4">
                 {/* Project Logo */}
                 <div className="flex justify-center">
-                  <Logo variant="stacked" size="lg" className="h-20" />
+                  <Logo variant="horizontal" size="xl" className="h-24" />
                 </div>
                 
                 <div className="space-y-2">

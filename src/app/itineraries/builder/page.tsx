@@ -62,38 +62,38 @@ export default function EnhancedItineraryBuilderPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isAuthenticated, user } = useAuth()
-  
+
   // Get edit ID from URL if editing existing itinerary
   const editId = searchParams.get('edit')
   const isEditing = Boolean(editId)
-  
+
   // Hooks for API integration
-  const { 
-    itinerary: existingItinerary, 
-    loading: loadingItinerary, 
-    createItinerary, 
+  const {
+    itinerary: existingItinerary,
+    loading: loadingItinerary,
+    createItinerary,
     updateItinerary,
     saving: apiSaving,
     error: apiError
   } = useItinerary(editId || undefined)
-  
+
   // AI suggestions
-  const { 
-    suggestions, 
-    loading: aiLoading, 
-    error: aiError, 
-    generateSuggestions, 
+  const {
+    suggestions,
+    loading: aiLoading,
+    error: aiError,
+    generateSuggestions,
     available: aiAvailable,
     options: aiOptions
   } = useAiSuggestions()
-  
-  const { 
-    preferences, 
-    updatePreferences, 
-    toggleInterest, 
-    validatePreferences 
+
+  const {
+    preferences,
+    updatePreferences,
+    toggleInterest,
+    validatePreferences
   } = useAiPreferences()
-  
+
   // Form state
   const [formData, setFormData] = React.useState<CreateItineraryInput>({
     title: "",
@@ -113,12 +113,22 @@ export default function EnhancedItineraryBuilderPage() {
     season: [],
     collaborators: []
   })
-  
+
   // UI state
   const [showAiModal, setShowAiModal] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [success, setSuccess] = React.useState<string | null>(null)
-  
+
+  // Group places by day for display - MOVED BEFORE CONDITIONAL RETURNS
+  const placesByDay = React.useMemo(() => {
+    return getPlacesByDay(formData.places, formData.duration)
+  }, [formData.places, formData.duration])
+
+  // Calculate costs - MOVED BEFORE CONDITIONAL RETURNS
+  const totalCost = React.useMemo(() => {
+    return calculateTotalCost(formData.places)
+  }, [formData.places])
+
   // Load existing itinerary data when editing
   React.useEffect(() => {
     if (isEditing && existingItinerary && !loadingItinerary) {
@@ -138,7 +148,7 @@ export default function EnhancedItineraryBuilderPage() {
       })
     }
   }, [isEditing, existingItinerary, loadingItinerary])
-  
+
   // Redirect if not authenticated
   if (!isAuthenticated) {
     return (
@@ -147,7 +157,7 @@ export default function EnhancedItineraryBuilderPage() {
         <main className="min-h-screen pt-16">
           <section className="relative py-20 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60"></div>
-            
+
             <div className="relative container">
               <div className="glass-card max-w-md mx-auto text-center p-8">
                 <div className="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -168,16 +178,6 @@ export default function EnhancedItineraryBuilderPage() {
       </div>
     )
   }
-  
-  // Group places by day for display
-  const placesByDay = React.useMemo(() => {
-    return getPlacesByDay(formData.places, formData.duration)
-  }, [formData.places, formData.duration])
-  
-  // Calculate costs
-  const totalCost = React.useMemo(() => {
-    return calculateTotalCost(formData.places)
-  }, [formData.places])
   
   // Handle form updates
   const updateFormData = (updates: Partial<CreateItineraryInput>) => {

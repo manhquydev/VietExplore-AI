@@ -126,27 +126,43 @@ export default function PlacesPage() {
       <Header />
       
       <main className="min-h-screen pt-16">
-        {/* Hero Section - Glassmorphism */}
-        <section className="relative py-20 sm:py-24 overflow-hidden">
+        {/* Compact Hero Section */}
+        <section className="relative py-8 sm:py-12 overflow-hidden">
           {/* Background with subtle gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 "></div>
-          
-          {/* Glass morphism container */}
+
+          {/* Compact glass morphism container */}
           <div className="relative container">
-            <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
-              <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8">
+              <h1 className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
                 Khám Phá Việt Nam
               </h1>
-              <p className="text-lg sm:text-xl text-slate-600  mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
                 Hành trình qua hàng nghìn địa điểm tuyệt vời được cộng đồng tin tưởng và xác minh
               </p>
-              
-              {/* Enhanced Search Bar */}
-              <div className="glass-subtle p-6 rounded-2xl backdrop-blur-sm">
-                <SearchBar 
+
+              {/* Enhanced Search Bar - More compact */}
+              <div className="glass-subtle p-4 rounded-2xl backdrop-blur-sm">
+                <SearchBar
                   onSearch={handleSearch}
                   placeholder="Tìm kiếm địa điểm, tỉnh thành, trải nghiệm..."
                 />
+              </div>
+
+              {/* Quick access stats - New addition */}
+              <div className="flex items-center justify-center gap-6 mt-4 text-sm text-slate-600">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
+                  <span>1000+ địa điểm</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                  <span>Cộng đồng tin tưởng</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span>Cập nhật thường xuyên</span>
+                </div>
               </div>
             </div>
           </div>

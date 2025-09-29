@@ -69,7 +69,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <DialogHeader className="space-y-4">
             {/* Logo */}
             <div className="flex justify-center">
-              <Logo variant="horizontal" size="lg" className="h-12" />
+              <Logo variant="horizontal" size="xl" className="h-16" />
             </div>
             
             <div className="space-y-2">
@@ -163,14 +163,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <label className="flex items-center space-x-2">
                   <input 
                     type="checkbox" 
-                    className="rounded border-slate-300 text-blue-600" 
+                    className="rounded border-slate-300 text-primary" 
                   />
                   <span className="text-slate-600">Ghi nhớ</span>
                 </label>
                 <button 
                   type="button"
                   onClick={() => setShowForgotPassword(true)}
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-primary hover:text-primary/80"
                 >
                   Quên mật khẩu?
                 </button>
@@ -194,7 +194,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   Chưa có tài khoản?{" "}
                   <button 
                     onClick={onSwitchToRegister}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-primary hover:text-primary/80 font-medium"
                   >
                     Đăng ký ngay
                   </button>

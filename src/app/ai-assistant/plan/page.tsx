@@ -217,29 +217,29 @@ export default function AITravelPlannerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
       <Header />
 
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-20 sm:py-24 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 dark:from-slate-900/80 dark:via-slate-800/40 dark:to-slate-900/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60"></div>
           
           <div className="relative container">
             <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
               <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-sky-600" />
                 </div>
                 <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                   AI Travel Planner
                 </h1>
               </div>
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
                 Để trí tuệ nhân tạo thiết kế chuyến đi hoàn hảo cho bạn với những gợi ý thông minh và được cá nhân hóa
               </p>
               
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-sky-500" />
                   <span>AI thông minh</span>
@@ -261,7 +261,7 @@ export default function AITravelPlannerPage() {
           {step === 'preferences' && (
             <div className="max-w-4xl mx-auto">
               <div className="glass-card p-8 sm:p-12">
-                <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-slate-900 dark:text-white text-center">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-slate-900 text-center">
                   Chia sẻ sở thích của bạn
                 </h2>
                 
@@ -270,14 +270,14 @@ export default function AITravelPlannerPage() {
                   <div className="grid sm:grid-cols-2 gap-6">
                     {/* Destination */}
                     <div>
-                      <Label htmlFor="destination" className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label htmlFor="destination" className="text-base font-medium text-slate-900 mb-3 block">
                         <MapPin className="w-4 h-4 inline mr-2" />
                         Điểm đến
                       </Label>
                       <Select value={preferences.destination} onValueChange={(value) => 
                         setPreferences(prev => ({ ...prev, destination: value }))
                       }>
-                        <SelectTrigger className="glass-subtle border-white/20 dark:border-slate-700/50">
+                        <SelectTrigger className="glass-subtle border-white/20">
                           <SelectValue placeholder="Chọn điểm đến..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -290,7 +290,7 @@ export default function AITravelPlannerPage() {
 
                     {/* Duration */}
                     <div>
-                      <Label htmlFor="duration" className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label htmlFor="duration" className="text-base font-medium text-slate-900 mb-3 block">
                         <Calendar className="w-4 h-4 inline mr-2" />
                         Số ngày
                       </Label>
@@ -314,7 +314,7 @@ export default function AITravelPlannerPage() {
 
                     {/* Travelers */}
                     <div>
-                      <Label className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label className="text-base font-medium text-slate-900 mb-3 block">
                         <Users className="w-4 h-4 inline mr-2" />
                         Số người
                       </Label>
@@ -327,19 +327,19 @@ export default function AITravelPlannerPage() {
                           ...prev, 
                           travelers: parseInt(e.target.value) || 1 
                         }))}
-                        className="glass-subtle border-white/20 dark:border-slate-700/50"
+                        className="glass-subtle border-white/20"
                       />
                     </div>
 
                     {/* Trip Type */}
                     <div>
-                      <Label className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label className="text-base font-medium text-slate-900 mb-3 block">
                         Loại chuyến đi
                       </Label>
                       <Select value={preferences.tripType} onValueChange={(value) => 
                         setPreferences(prev => ({ ...prev, tripType: value }))
                       }>
-                        <SelectTrigger className="glass-subtle border-white/20 dark:border-slate-700/50">
+                        <SelectTrigger className="glass-subtle border-white/20">
                           <SelectValue placeholder="Chọn loại chuyến đi..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -355,13 +355,13 @@ export default function AITravelPlannerPage() {
                   <div className="space-y-6">
                     {/* Budget */}
                     <div>
-                      <Label className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label className="text-base font-medium text-slate-900 mb-3 block">
                         <DollarSign className="w-4 h-4 inline mr-2" />
                         Ngân sách (VND)
                       </Label>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-sm text-slate-600 dark:text-slate-300">Từ</Label>
+                          <Label className="text-sm text-slate-600">Từ</Label>
                           <Input
                             type="number"
                             value={preferences.budget.min}
@@ -369,11 +369,11 @@ export default function AITravelPlannerPage() {
                               ...prev, 
                               budget: { ...prev.budget, min: parseInt(e.target.value) || 0 }
                             }))}
-                            className="glass-subtle border-white/20 dark:border-slate-700/50"
+                            className="glass-subtle border-white/20"
                           />
                         </div>
                         <div>
-                          <Label className="text-sm text-slate-600 dark:text-slate-300">Đến</Label>
+                          <Label className="text-sm text-slate-600">Đến</Label>
                           <Input
                             type="number"
                             value={preferences.budget.max}
@@ -381,7 +381,7 @@ export default function AITravelPlannerPage() {
                               ...prev, 
                               budget: { ...prev.budget, max: parseInt(e.target.value) || 0 }
                             }))}
-                            className="glass-subtle border-white/20 dark:border-slate-700/50"
+                            className="glass-subtle border-white/20"
                           />
                         </div>
                       </div>
@@ -389,7 +389,7 @@ export default function AITravelPlannerPage() {
 
                     {/* Start Date */}
                     <div>
-                      <Label className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label className="text-base font-medium text-slate-900 mb-3 block">
                         <Calendar className="w-4 h-4 inline mr-2" />
                         Ngày khởi hành (tùy chọn)
                       </Label>
@@ -400,13 +400,13 @@ export default function AITravelPlannerPage() {
                           ...prev, 
                           startDate: e.target.value 
                         }))}
-                        className="glass-subtle border-white/20 dark:border-slate-700/50"
+                        className="glass-subtle border-white/20"
                       />
                     </div>
 
                     {/* Interests */}
                     <div>
-                      <Label className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label className="text-base font-medium text-slate-900 mb-3 block">
                         Sở thích
                       </Label>
                       <div className="flex flex-wrap gap-2">
@@ -429,7 +429,7 @@ export default function AITravelPlannerPage() {
 
                     {/* Additional Requests */}
                     <div>
-                      <Label className="text-base font-medium text-slate-900 dark:text-white mb-3 block">
+                      <Label className="text-base font-medium text-slate-900 mb-3 block">
                         Yêu cầu thêm (tùy chọn)
                       </Label>
                       <Textarea
@@ -439,7 +439,7 @@ export default function AITravelPlannerPage() {
                           additionalRequests: e.target.value 
                         }))}
                         placeholder="Mô tả thêm về chuyến đi mong muốn..."
-                        className="glass-subtle border-white/20 dark:border-slate-700/50"
+                        className="glass-subtle border-white/20"
                         rows={3}
                       />
                     </div>
@@ -463,16 +463,16 @@ export default function AITravelPlannerPage() {
           {step === 'generating' && (
             <div className="max-w-2xl mx-auto">
               <div className="glass-card p-12 text-center">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Loader2 className="w-8 h-8 text-sky-600 dark:text-sky-400 animate-spin" />
+                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Loader2 className="w-8 h-8 text-sky-600 animate-spin" />
                 </div>
-                <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-bold mb-4 text-slate-900">
                   AI đang thiết kế chuyến đi...
                 </h2>
-                <p className="text-slate-600 dark:text-slate-300 mb-6">
+                <p className="text-slate-600 mb-6">
                   Đang phân tích sở thích và tạo lịch trình tối ưu cho bạn
                 </p>
-                <div className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+                <div className="space-y-2 text-sm text-slate-500">
                   <p>🔍 Phân tích điểm đến và sở thích</p>
                   <p>🏨 Tìm kiếm khách sạn phù hợp</p>
                   <p>🍽️ Gợi ý nhà hàng và món ăn địa phương</p>
@@ -487,10 +487,10 @@ export default function AITravelPlannerPage() {
               <div className="glass-card p-8 sm:p-12">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <h2 className="text-3xl font-bold text-slate-900 mb-2">
                       {generatedItinerary.title}
                     </h2>
-                    <p className="text-slate-600 dark:text-slate-300">
+                    <p className="text-slate-600">
                       {generatedItinerary.description}
                     </p>
                   </div>
@@ -514,61 +514,61 @@ export default function AITravelPlannerPage() {
 
                 {/* Budget Overview */}
                 <div className="glass-subtle p-6 rounded-2xl mb-8">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">
                     Tổng quan ngân sách
                   </h3>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                      <div className="text-2xl font-bold text-slate-900">
                         {formatCurrency(generatedItinerary.estimatedBudget.total)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">Tổng cộng</div>
+                      <div className="text-sm text-slate-600">Tổng cộng</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-blue-600">
                         {formatCurrency(generatedItinerary.estimatedBudget.breakdown.accommodation)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">Lưu trú</div>
+                      <div className="text-sm text-slate-600">Lưu trú</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-green-600">
                         {formatCurrency(generatedItinerary.estimatedBudget.breakdown.food)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">Ăn uống</div>
+                      <div className="text-sm text-slate-600">Ăn uống</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-purple-600">
                         {formatCurrency(generatedItinerary.estimatedBudget.breakdown.transport)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">Di chuyển</div>
+                      <div className="text-sm text-slate-600">Di chuyển</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-orange-600">
                         {formatCurrency(generatedItinerary.estimatedBudget.breakdown.activities)}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">Hoạt động</div>
+                      <div className="text-sm text-slate-600">Hoạt động</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Daily Itinerary */}
                 <div className="space-y-6">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-xl font-bold text-slate-900">
                     Lịch trình chi tiết
                   </h3>
                   {generatedItinerary.days.map((day) => (
                     <div key={day.day} className="glass-subtle p-6 rounded-2xl">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold">
+                        <div className="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center text-sky-600 font-bold">
                           {day.day}
                         </div>
-                        <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+                        <h4 className="text-lg font-bold text-slate-900">
                           Ngày {day.day}: {day.title}
                         </h4>
                       </div>
                       <div className="space-y-4">
                         {day.places.map((place, placeIndex) => (
-                          <div key={placeIndex} className="flex items-start gap-4 p-4 rounded-xl bg-white/50 dark:bg-slate-800/50">
+                          <div key={placeIndex} className="flex items-start gap-4 p-4 rounded-xl bg-white/50">
                             <div className="flex-shrink-0">
                               <Badge variant="outline" className="glass-subtle">
                                 <Clock className="w-3 h-3 mr-1" />
@@ -576,13 +576,13 @@ export default function AITravelPlannerPage() {
                               </Badge>
                             </div>
                             <div className="flex-1">
-                              <h5 className="font-semibold text-slate-900 dark:text-white mb-1">
+                              <h5 className="font-semibold text-slate-900 mb-1">
                                 {place.name}
                               </h5>
-                              <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                              <p className="text-sm text-slate-600 mb-2">
                                 {place.notes}
                               </p>
-                              <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                              <div className="flex items-center gap-4 text-xs text-slate-500">
                                 <span>{place.duration} phút</span>
                                 {place.estimatedCost > 0 && (
                                   <span>{formatCurrency(place.estimatedCost)}</span>

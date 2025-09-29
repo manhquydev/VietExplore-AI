@@ -211,15 +211,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary/5 to-secondary/5">
       <Header />
       
       <main className="container py-8 max-w-4xl">
         {/* Header */}
         <div className="glass-card p-8 mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center">
-              <Settings className="w-6 h-6 text-sky-600" />
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <Settings className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900">Cài đặt tài khoản</h1>
@@ -234,8 +234,8 @@ export default function SettingsPage() {
           {/* Profile Settings */}
           <div className="glass-card p-8">
             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center">
-                <User className="w-4 h-4 text-sky-600" />
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <User className="w-4 h-4 text-primary" />
               </div>
               Thông tin cá nhân
             </h2>
@@ -676,15 +676,15 @@ export default function SettingsPage() {
                       onClick={() => setTheme(value)}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         theme === value
-                          ? 'border-sky-500 bg-sky-50'
-                          : 'border-white/20 glass-subtle hover:border-sky-300'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-white/20 glass-subtle hover:border-primary/50'
                       }`}
                     >
                       <Icon className={`w-6 h-6 mx-auto mb-2 ${
-                        theme === value ? 'text-sky-600' : 'text-slate-600'
+                        theme === value ? 'text-primary' : 'text-slate-600'
                       }`} />
                       <div className={`text-sm font-medium ${
-                        theme === value ? 'text-sky-900' : 'text-slate-700'
+                        theme === value ? 'text-primary-900' : 'text-slate-700'
                       }`}>
                         {label}
                       </div>

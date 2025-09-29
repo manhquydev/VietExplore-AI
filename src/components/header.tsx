@@ -81,14 +81,14 @@ export const Header: React.FC = () => {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95 border-b border-slate-200 shadow-soft">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95  border-b border-slate-200  shadow-soft">
       <div className="container mx-auto">
         <div className="flex h-16 sm:h-20 items-center justify-between">
-          {/* Enhanced Logo */}
+          {/* New Bánh Chưng Logo */}
           <Link href="/" className="flex items-center hover:scale-105 transition-all duration-200 group">
             <div className="relative p-1 sm:p-2">
               <Logo variant="horizontal" size="md" className="h-10 sm:h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" priority />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-green/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10"></div>
             </div>
           </Link>
 
@@ -99,10 +99,10 @@ export const Header: React.FC = () => {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-[15px] font-medium transition-colors hover:text-slate-900",
-                  pathname === item.href 
-                    ? "text-slate-900 font-semibold" 
-                    : "text-slate-600"
+                  "text-[15px] font-medium transition-colors hover:text-slate-900 ",
+                  pathname === item.href
+                    ? "text-slate-900  font-semibold"
+                    : "text-slate-600 "
                 )}
               >
                 {item.name}
@@ -121,9 +121,9 @@ export const Header: React.FC = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 hover:scale-105 transition-all duration-200">
                     <div className="relative">
-                      <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-sky-200/50 transition-all duration-200">
+                      <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200">
                         <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                        <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold">
                           {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
@@ -139,11 +139,11 @@ export const Header: React.FC = () => {
                   sideOffset={8}
                 >
                   {/* Enhanced User Profile Header */}
-                  <div className="p-4 bg-gradient-to-br from-sky-500/10 to-teal-500/10">
+                  <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12 ring-2 ring-sky-200/50 ring-sky-200/50">
+                      <Avatar className="h-12 w-12 ring-2 ring-primary/20 ring-primary/20">
                         <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                        <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold text-lg">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold text-lg">
                           {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
@@ -164,7 +164,7 @@ export const Header: React.FC = () => {
                     <div className="mb-1">
                       <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 transition-colors">
                         <Link href="/profile/me" className="flex items-center gap-3 px-3">
-                          <User className="w-5 h-5 text-sky-600" />
+                          <User className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <div className="font-medium text-slate-900">Hồ sơ cá nhân</div>
                             <div className="text-xs text-slate-500">Quản lý thông tin cá nhân</div>
@@ -245,7 +245,7 @@ export const Header: React.FC = () => {
                         <div className="mb-1">
                           <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 transition-colors">
                             <Link href="/admin/moderation" className="flex items-center gap-3 px-3">
-                              <Shield className="w-5 h-5 text-blue-600" />
+                              <Shield className="w-5 h-5 text-primary" />
                               <div className="flex-1">
                                 <div className="font-medium text-slate-900">Kiểm duyệt</div>
                                 <div className="text-xs text-slate-500">Quản lý nội dung</div>
@@ -291,7 +291,7 @@ export const Header: React.FC = () => {
             ) : (
               <>
                 {/* CTA Button - Desktop */}
-                <Button className="hidden md:inline-flex bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white" onClick={openLoginModal}>
+                <Button className="hidden md:inline-flex bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white shadow-lg" onClick={openLoginModal}>
                   Bắt đầu với AI
                 </Button>
                 
@@ -311,11 +311,11 @@ export const Header: React.FC = () => {
                     icon="menu"
                     label="Menu"
                     variant="ghost"
-                    className="text-slate-700 hover:bg-slate-100"
+                    className="text-slate-700  hover:bg-slate-100 "
                   />
                 </div>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-white/95 backdrop-blur-md border-slate-200/50">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-white/95  backdrop-blur-md border-slate-200/50 /50">
                 <div className="flex flex-col gap-4 mt-8">
                   {/* Mobile Navigation */}
                   <nav className="flex flex-col gap-4">
@@ -325,10 +325,10 @@ export const Header: React.FC = () => {
                         href={item.href}
                         onClick={() => setIsOpen(false)}
                         className={cn(
-                          "text-base font-medium transition-colors hover:text-slate-900 py-2",
-                          pathname === item.href 
-                            ? "text-slate-900 font-semibold" 
-                            : "text-slate-600"
+                          "text-base font-medium transition-colors hover:text-slate-900  py-2",
+                          pathname === item.href
+                            ? "text-slate-900  font-semibold"
+                            : "text-slate-600 "
                         )}
                       >
                         {item.name}
@@ -341,9 +341,9 @@ export const Header: React.FC = () => {
                     {isAuthenticated && user ? (
                       <>
                         <div className="flex items-center gap-3 p-3 glass-subtle rounded-xl">
-                          <Avatar className="h-10 w-10 ring-2 ring-sky-200/50 ring-sky-200/50">
+                          <Avatar className="h-10 w-10 ring-2 ring-primary/20 ring-primary/20">
                             <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                            <AvatarFallback className="bg-gradient-to-br from-sky-500 to-teal-500 text-white font-semibold">
+                            <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold">
                               {getInitials(user.fullName, user.email)}
                             </AvatarFallback>
                           </Avatar>
@@ -368,7 +368,7 @@ export const Header: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Button className="w-full bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white" onClick={openLoginModal}>
+                        <Button className="w-full bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white shadow-lg" onClick={openLoginModal}>
                           Bắt đầu với AI
                         </Button>
                         <Button variant="outline" className="w-full glass-subtle" onClick={openRegisterModal}>

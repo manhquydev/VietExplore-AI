@@ -9,14 +9,14 @@ import { NotificationProvider } from "@/components/ui/notification-system";
 import { NetworkStatus } from "@/components/ui/network-status";
 import { GlobalEmailVerification } from "@/components/auth/global-email-verification";
 import { NotificationConnectionStatus } from "@/components/notifications/notification-bell";
-import { EnhancedThemeProvider } from "@/providers/enhanced-theme-provider";
+import { LightOnlyThemeProvider } from "@/providers/light-only-theme-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 
     (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002')),
-  title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
-  description: 'Khám phá địa điểm du lịch Việt Nam đáng tin cậy và tạo lịch trình với AI trợ lý thông minh',
-  keywords: 'du lịch việt nam, lịch trình du lịch, AI trợ lý, địa điểm du lịch',
+  title: 'Du Lịch Việt - Khám phá Việt Nam với trí tuệ nhân tạo',
+  description: 'Nền tảng du lịch thông minh, khám phá văn hóa Việt Nam với công nghệ AI tiên tiến',
+  keywords: 'du lịch việt, du lịch việt nam, AI trợ lý, khám phá văn hóa, bánh chưng, địa điểm du lịch',
   authors: [{ name: 'Du Lịch Việt Team' }],
   icons: {
     icon: [
@@ -28,16 +28,16 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: 'Du Lịch Việt - Nền tảng du lịch đáng tin cậy',
-    description: 'Khám phá địa điểm du lịch Việt Nam đáng tin cậy và tạo lịch trình với AI trợ lý thông minh',
+    title: 'Du Lịch Việt - Khám phá Việt Nam với trí tuệ nhân tạo',
+    description: 'Nền tảng du lịch thông minh, khám phá văn hóa Việt Nam với công nghệ AI tiên tiến',
     type: 'website',
     locale: 'vi_VN',
     images: [
       {
         url: '/logo-horizontal.svg',
-        width: 680,
-        height: 200,
-        alt: 'Du Lịch Việt Logo',
+        width: 320,
+        height: 80,
+        alt: 'Du Lịch Việt Logo - Bánh Chưng Minimalist',
       },
     ],
   }
@@ -58,8 +58,8 @@ export default function RootLayout({
           rel="stylesheet" 
         />
       </head>
-      <body className="min-h-screen bg-bg text-text antialiased">
-        <EnhancedThemeProvider>
+      <body className="min-h-screen bg-white text-slate-900 antialiased light">
+        <LightOnlyThemeProvider>
           <ErrorBoundary>
             <NotificationProvider>
               <ToastProvider>
@@ -75,7 +75,7 @@ export default function RootLayout({
               </ToastProvider>
             </NotificationProvider>
           </ErrorBoundary>
-        </EnhancedThemeProvider>
+        </LightOnlyThemeProvider>
       </body>
     </html>
   );

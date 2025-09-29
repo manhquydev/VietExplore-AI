@@ -207,11 +207,20 @@ export function EnhancedThemeProvider({
     const colors = getCurrentColors()
     const spacing = getSpacing()
 
-    // Set theme attributes
+    // Set theme attributes and classes
     root.setAttribute(attribute, resolvedTheme)
     root.setAttribute('data-color-scheme', colorScheme)
     root.setAttribute('data-density', density)
     root.setAttribute('data-reduced-motion', prefersReducedMotion.toString())
+
+    // Apply Tailwind dark class for compatibility
+    if (resolvedTheme === 'dark') {
+      root.classList.add('dark')
+      root.classList.remove('light')
+    } else {
+      root.classList.add('light')
+      root.classList.remove('dark')
+    }
 
     // Apply color tokens as CSS variables
     Object.entries(colors2025.colorTokens).forEach(([colorName, shades]) => {

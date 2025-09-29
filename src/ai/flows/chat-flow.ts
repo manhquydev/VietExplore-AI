@@ -34,18 +34,18 @@ export const chatFlow = ai.defineFlow(
         : input.message;
       
       const result = await ai.generate({
-        model: 'googleai/gemini-1.5-flash',
+        model: 'googleai/gemini-2.5-flash',
         prompt: fullPrompt,
         config: {
           temperature: 0.7,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192,
           topK: 40,
           topP: 0.9,
         }
       });
       
       const responseText = typeof result.text === 'function' ? result.text() : result.text || result.output?.text || 'No response received';
-      console.log('✅ Success with Google AI model: gemini-1.5-flash');
+      console.log('✅ Success with Google AI model: gemini-2.5-flash');
       return responseText;
       
     } catch (error) {

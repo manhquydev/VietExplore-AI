@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Du Lịch Việt - Favicon">
+  <title>DLV Favicon</title>
+  <defs>
+    <!-- Simplified gradients for small size -->
+    <radialGradient id="faviconBg" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+
+    <linearGradient id="faviconRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#BE123C"/>
+    </linearGradient>
+
+    <linearGradient id="faviconGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#faviconBg)" stroke="url(#faviconGold)" stroke-width="2"/>
+
+  <!-- Simplified temple icon -->
+  <g transform="translate(32,32)">
+    <!-- Temple roof -->
+    <path d="M-12 -5 Q0 -15 12 -5" fill="url(#faviconRed)"/>
+
+    <!-- Temple body -->
+    <rect x="-10" y="-5" width="20" height="12" fill="url(#faviconRed)"/>
+
+    <!-- Temple pillars -->
+    <rect x="-8" y="-5" width="2" height="12" fill="url(#faviconGold)"/>
+    <rect x="-2" y="-5" width="2" height="12" fill="url(#faviconGold)"/>
+    <rect x="6" y="-5" width="2" height="12" fill="url(#faviconGold)"/>
+
+    <!-- Central entrance -->
+    <rect x="-4" y="0" width="8" height="7" fill="#BE123C"/>
+    <circle cx="0" cy="4" r="1.5" fill="url(#faviconGold)"/>
+
+    <!-- Simple lotus -->
+    <g transform="translate(0,12) scale(0.6)">
+      <path d="M0 -4 C2 -1, 2 1, 0 4 C-2 1, -2 -1, 0 -4Z" fill="url(#faviconRed)"/>
+      <circle cx="0" cy="1" r="1" fill="#FEF3C7"/>
+    </g>
+  </g>
+
+  <!-- Border decoration -->
+  <circle cx="32" cy="32" r="28" fill="none" stroke="url(#faviconRed)" stroke-width="1" opacity="0.5"/>
+</svg>

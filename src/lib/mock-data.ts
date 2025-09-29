@@ -427,3 +427,12 @@ export function hasPermission(user: MockUser | null, permission: string): boolea
   return rolePermissions.includes(permission as any)
 }
 
+
+
+
+
+
+
+
+
+

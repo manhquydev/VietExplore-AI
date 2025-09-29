@@ -138,7 +138,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
           <DialogHeader className="space-y-4">
             {/* Logo */}
             <div className="flex justify-center">
-              <Logo variant="horizontal" size="lg" className="h-12" />
+              <Logo variant="horizontal" size="xl" className="h-16" />
             </div>
             
             <div className="space-y-2">
@@ -285,15 +285,15 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                     type="checkbox"
                     checked={formData.agreeToTerms}
                     onChange={(e) => updateFormData("agreeToTerms", e.target.checked)}
-                    className="rounded border-slate-300 text-blue-600 mt-0.5"
+                    className="rounded border-slate-300 text-primary mt-0.5"
                   />
                   <span className="text-slate-600">
                     Tôi đồng ý với{" "}
-                    <a href="#" className="text-blue-600 hover:text-blue-700 underline">
+                    <a href="#" className="text-primary hover:text-primary/80 underline">
                       điều khoản sử dụng
                     </a>{" "}
                     và{" "}
-                    <a href="#" className="text-blue-600 hover:text-blue-700 underline">
+                    <a href="#" className="text-primary hover:text-primary/80 underline">
                       chính sách bảo mật
                     </a>
                   </span>
@@ -305,7 +305,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
               <Button 
                 type="submit" 
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -326,7 +326,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                   Đã có tài khoản?{" "}
                   <button 
                     onClick={onSwitchToLogin}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-primary hover:text-primary/80 font-medium"
                   >
                     Đăng nhập ngay
                   </button>

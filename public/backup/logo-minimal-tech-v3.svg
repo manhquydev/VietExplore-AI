@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 140" role="img" aria-label="VietExplore.AI - Minimal Tech Logo">
+  <title>VietExplore.AI</title>
+  <defs>
+    <!-- Tech-inspired gradient -->
+    <linearGradient id="techGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+
+    <!-- Neural network gradient -->
+    <linearGradient id="neuralGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+
+    <!-- Minimalist accent -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Minimal geometric icon -->
+  <g transform="translate(60,70)">
+    <!-- Stylized V for Vietnam/VietExplore -->
+    <path d="M-20 -30 L0 10 L20 -30"
+          fill="none"
+          stroke="url(#techGradient)"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+
+    <!-- AI neural network visualization - minimal dots and connections -->
+    <g opacity="0.8">
+      <!-- Layer 1 -->
+      <circle cx="-25" cy="-20" r="2" fill="url(#neuralGradient)"/>
+      <circle cx="-25" cy="0" r="2" fill="url(#neuralGradient)"/>
+
+      <!-- Layer 2 -->
+      <circle cx="0" cy="-10" r="2.5" fill="url(#techGradient)"/>
+      <circle cx="0" cy="10" r="2.5" fill="url(#techGradient)"/>
+
+      <!-- Layer 3 -->
+      <circle cx="25" cy="-20" r="2" fill="url(#accentGradient)"/>
+      <circle cx="25" cy="0" r="2" fill="url(#accentGradient)"/>
+
+      <!-- Connections -->
+      <g stroke="#3B82F6" stroke-width="1" opacity="0.4">
+        <line x1="-25" y1="-20" x2="0" y2="-10"/>
+        <line x1="-25" y1="0" x2="0" y2="10"/>
+        <line x1="0" y1="-10" x2="25" y2="-20"/>
+        <line x1="0" y1="10" x2="25" y2="0"/>
+        <line x1="-25" y1="-20" x2="0" y2="10"/>
+        <line x1="-25" y1="0" x2="0" y2="-10"/>
+      </g>
+    </g>
+
+    <!-- Central focus point -->
+    <circle cx="0" cy="-5" r="1.5" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Clean, modern typography -->
+  <g transform="translate(120,85)">
+    <!-- VietExplore -->
+    <text x="0" y="0"
+          font-family="Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+          font-size="36"
+          font-weight="600"
+          letter-spacing="-0.01em"
+          fill="#1F2937">
+      VietExplore
+    </text>
+
+    <!-- .AI with special styling -->
+    <text x="240" y="0"
+          font-family="Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+          font-size="36"
+          font-weight="300"
+          letter-spacing="0.1em"
+          fill="url(#techGradient)">
+      .AI
+    </text>
+
+    <!-- Minimal tagline -->
+    <text x="0" y="20"
+          font-family="Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+          font-size="12"
+          font-weight="400"
+          letter-spacing="0.08em"
+          fill="#6B7280"
+          text-transform="uppercase">
+      Smart Vietnam Travel
+    </text>
+  </g>
+
+  <!-- Minimal accent elements -->
+  <g opacity="0.3">
+    <!-- Top accent line -->
+    <line x1="120" y1="40" x2="420" y2="40"
+          stroke="url(#techGradient)"
+          stroke-width="1"/>
+
+    <!-- Bottom accent dots -->
+    <circle cx="120" cy="115" r="1.5" fill="url(#techGradient)"/>
+    <circle cx="135" cy="115" r="1" fill="url(#neuralGradient)"/>
+    <circle cx="147" cy="115" r="0.75" fill="url(#accentGradient)"/>
+  </g>
+
+  <!-- Tech grid pattern (very subtle) -->
+  <g opacity="0.05">
+    <defs>
+      <pattern id="techGrid" patternUnits="userSpaceOnUse" width="20" height="20">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#3B82F6" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    <rect x="0" y="0" width="580" height="140" fill="url(#techGrid)"/>
+  </g>
+</svg>

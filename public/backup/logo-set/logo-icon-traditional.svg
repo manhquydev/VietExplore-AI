@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Du Lịch Việt - Icon Truyền Thống">
+  <title>Du Lịch Việt Icon</title>
+  <defs>
+    <!-- Traditional Vietnamese color gradients -->
+    <radialGradient id="backgroundGrad" cx="50%" cy="40%" r="80%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="70%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+
+    <linearGradient id="dragonGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="50%" stop-color="#EAB308"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+
+    <linearGradient id="lotusRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="50%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#BE123C"/>
+    </linearGradient>
+
+    <linearGradient id="oceanTeal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891B2"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+
+    <!-- Traditional shadow filter -->
+    <filter id="iconShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="#B45309" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- Traditional border pattern -->
+    <pattern id="traditionBorder" patternUnits="userSpaceOnUse" width="20" height="20">
+      <rect width="20" height="20" fill="#F59E0B" opacity="0.1"/>
+      <circle cx="10" cy="10" r="3" fill="#DC2626" opacity="0.2"/>
+    </pattern>
+  </defs>
+
+  <!-- Circular background with traditional pattern -->
+  <circle cx="150" cy="150" r="140" fill="url(#backgroundGrad)" stroke="url(#dragonGold)" stroke-width="6"/>
+  <circle cx="150" cy="150" r="125" fill="none" stroke="url(#lotusRed)" stroke-width="2" opacity="0.5"/>
+
+  <!-- Central temple complex -->
+  <g transform="translate(150,150)" filter="url(#iconShadow)">
+    <!-- Main temple -->
+    <g>
+      <!-- Temple body -->
+      <rect x="-25" y="10" width="50" height="30" fill="url(#lotusRed)" rx="3"/>
+
+      <!-- Traditional curved roof -->
+      <path d="M-35 10 Q0 -30 35 10" fill="url(#dragonGold)"/>
+      <path d="M-30 7 Q0 -25 30 7" fill="none" stroke="url(#dragonGold)" stroke-width="2"/>
+
+      <!-- Roof peak decoration -->
+      <circle cx="0" cy="-20" r="4" fill="#FFFFFF"/>
+      <path d="M-6 -16 L0 -25 L6 -16" fill="url(#dragonGold)"/>
+
+      <!-- Temple pillars -->
+      <rect x="-20" y="10" width="3" height="30" fill="url(#dragonGold)"/>
+      <rect x="-8" y="10" width="3" height="30" fill="url(#dragonGold)"/>
+      <rect x="5" y="10" width="3" height="30" fill="url(#dragonGold)"/>
+      <rect x="17" y="10" width="3" height="30" fill="url(#dragonGold)"/>
+
+      <!-- Temple entrance -->
+      <rect x="-10" y="20" width="20" height="20" fill="#BE123C" rx="2"/>
+      <circle cx="0" cy="30" r="3" fill="url(#dragonGold)"/>
+    </g>
+
+    <!-- Side lanterns -->
+    <g transform="translate(-45,0)">
+      <ellipse cx="0" cy="0" rx="8" ry="12" fill="url(#lotusRed)" opacity="0.9"/>
+      <rect x="-6" y="-8" width="12" height="16" fill="url(#dragonGold)" opacity="0.7" rx="2"/>
+      <circle cx="0" cy="0" r="3" fill="#FFFFFF"/>
+      <path d="M0 -15 Q-2 -18 0 -20 Q2 -18 0 -15" fill="url(#dragonGold)"/>
+    </g>
+
+    <g transform="translate(45,0)">
+      <ellipse cx="0" cy="0" rx="8" ry="12" fill="url(#lotusRed)" opacity="0.9"/>
+      <rect x="-6" y="-8" width="12" height="16" fill="url(#dragonGold)" opacity="0.7" rx="2"/>
+      <circle cx="0" cy="0" r="3" fill="#FFFFFF"/>
+      <path d="M0 -15 Q-2 -18 0 -20 Q2 -18 0 -15" fill="url(#dragonGold)"/>
+    </g>
+
+    <!-- Sacred lotus pond -->
+    <g transform="translate(0,30)">
+      <ellipse cx="0" cy="8" rx="50" ry="8" fill="url(#oceanTeal)" opacity="0.4"/>
+
+      <!-- Central lotus -->
+      <g transform="translate(0,-5) scale(1.1)">
+        <path d="M0 -8 C3 -2, 3 2, 0 8 C-3 2, -3 -2, 0 -8Z" fill="url(#lotusRed)"/>
+        <path d="M-6 -2 C-8 0, -6 4, -2 6 C-3 3, -4 1, -6 -2Z" fill="url(#lotusRed)"/>
+        <path d="M6 -2 C8 0, 6 4, 2 6 C3 3, 4 1, 6 -2Z" fill="url(#lotusRed)"/>
+        <circle cx="0" cy="2" r="2.5" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Side lotus flowers -->
+      <g transform="translate(-20,-2) scale(0.7)">
+        <path d="M0 -8 C3 -2, 3 2, 0 8 C-3 2, -3 -2, 0 -8Z" fill="url(#lotusRed)"/>
+        <path d="M-6 -2 C-8 0, -6 4, -2 6 C-3 3, -4 1, -6 -2Z" fill="url(#lotusRed)"/>
+        <path d="M6 -2 C8 0, 6 4, 2 6 C3 3, 4 1, 6 -2Z" fill="url(#lotusRed)"/>
+        <circle cx="0" cy="2" r="2" fill="#FFFFFF"/>
+      </g>
+
+      <g transform="translate(20,-2) scale(0.7)">
+        <path d="M0 -8 C3 -2, 3 2, 0 8 C-3 2, -3 -2, 0 -8Z" fill="url(#lotusRed)"/>
+        <path d="M-6 -2 C-8 0, -6 4, -2 6 C-3 3, -4 1, -6 -2Z" fill="url(#lotusRed)"/>
+        <path d="M6 -2 C8 0, 6 4, 2 6 C3 3, 4 1, 6 -2Z" fill="url(#lotusRed)"/>
+        <circle cx="0" cy="2" r="2" fill="#FFFFFF"/>
+      </g>
+    </g>
+
+    <!-- Traditional Vietnamese characters "DLV" subtly integrated -->
+    <g transform="translate(0,65)" opacity="0.3">
+      <text x="0" y="0"
+            font-family="'Times New Roman', serif"
+            font-size="16"
+            font-weight="600"
+            text-anchor="middle"
+            fill="url(#dragonGold)">
+        DLV
+      </text>
+    </g>
+  </g>
+
+  <!-- Decorative border elements -->
+  <g stroke="url(#dragonGold)" stroke-width="1.5" fill="none" opacity="0.6">
+    <!-- Traditional corner decorations -->
+    <path d="M30 50 Q30 30 50 30"/>
+    <path d="M250 30 Q270 30 270 50"/>
+    <path d="M270 250 Q270 270 250 270"/>
+    <path d="M50 270 Q30 270 30 250"/>
+
+    <!-- Inner decorative ring -->
+    <circle cx="150" cy="150" r="110" stroke-dasharray="5,5" opacity="0.4"/>
+  </g>
+
+  <!-- Traditional cloud motifs around the border -->
+  <g fill="url(#dragonGold)" opacity="0.3">
+    <g transform="translate(70,70)">
+      <path d="M0 0 C5 -3 10 -3 15 0 C20 -2 25 2 20 5 C15 3 10 3 5 5 C0 3 -5 -2 0 0Z"/>
+    </g>
+    <g transform="translate(230,70)">
+      <path d="M0 0 C5 -3 10 -3 15 0 C20 -2 25 2 20 5 C15 3 10 3 5 5 C0 3 -5 -2 0 0Z"/>
+    </g>
+    <g transform="translate(230,230)">
+      <path d="M0 0 C5 -3 10 -3 15 0 C20 -2 25 2 20 5 C15 3 10 3 5 5 C0 3 -5 -2 0 0Z"/>
+    </g>
+    <g transform="translate(70,230)">
+      <path d="M0 0 C5 -3 10 -3 15 0 C20 -2 25 2 20 5 C15 3 10 3 5 5 C0 3 -5 -2 0 0Z"/>
+    </g>
+  </g>
+</svg>

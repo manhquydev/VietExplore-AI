@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" role="img" aria-label="Du Lịch Việt - Logo Ngang Truyền Thống">
+  <title>Du Lịch Việt</title>
+  <defs>
+    <!-- Traditional Vietnamese color gradients -->
+    <linearGradient id="dragonGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="50%" stop-color="#EAB308"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+
+    <linearGradient id="lotusRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="50%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#BE123C"/>
+    </linearGradient>
+
+    <linearGradient id="oceanTeal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891B2"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+
+    <linearGradient id="skyBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+
+    <!-- Traditional shadow filter -->
+    <filter id="traditionalShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#B45309" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background decorative pattern -->
+  <rect x="0" y="0" width="800" height="220" fill="#FEF3C7" opacity="0.1"/>
+
+  <!-- Main logo composition -->
+  <g transform="translate(110,110)">
+    <!-- Traditional Vietnamese temple complex -->
+
+    <!-- Central Temple -->
+    <g filter="url(#traditionalShadow)">
+      <!-- Main temple body -->
+      <rect x="-30" y="15" width="60" height="35" fill="url(#lotusRed)" rx="3"/>
+
+      <!-- Traditional curved roof -->
+      <path d="M-40 15 Q0 -25 40 15" fill="url(#dragonGold)"/>
+      <path d="M-35 12 Q0 -20 35 12" fill="none" stroke="url(#dragonGold)" stroke-width="2"/>
+
+      <!-- Roof decorations -->
+      <circle cx="0" cy="-15" r="4" fill="#FFFFFF"/>
+      <path d="M-8 -12 L0 -20 L8 -12" fill="url(#dragonGold)"/>
+
+      <!-- Temple pillars -->
+      <rect x="-25" y="15" width="4" height="35" fill="url(#dragonGold)"/>
+      <rect x="-10" y="15" width="4" height="35" fill="url(#dragonGold)"/>
+      <rect x="6" y="15" width="4" height="35" fill="url(#dragonGold)"/>
+      <rect x="21" y="15" width="4" height="35" fill="url(#dragonGold)"/>
+
+      <!-- Temple entrance -->
+      <rect x="-12" y="25" width="24" height="25" fill="#BE123C" rx="2"/>
+      <circle cx="0" cy="37" r="3" fill="url(#dragonGold)"/>
+    </g>
+
+    <!-- Side lanterns -->
+    <g transform="translate(-55,10)">
+      <ellipse cx="0" cy="0" rx="10" ry="15" fill="url(#lotusRed)" opacity="0.9"/>
+      <rect x="-8" y="-10" width="16" height="20" fill="url(#dragonGold)" opacity="0.7" rx="2"/>
+      <circle cx="0" cy="0" r="4" fill="#FFFFFF"/>
+      <path d="M0 -18 Q-3 -22 0 -25 Q3 -22 0 -18" fill="url(#dragonGold)"/>
+    </g>
+
+    <g transform="translate(55,10)">
+      <ellipse cx="0" cy="0" rx="10" ry="15" fill="url(#lotusRed)" opacity="0.9"/>
+      <rect x="-8" y="-10" width="16" height="20" fill="url(#dragonGold)" opacity="0.7" rx="2"/>
+      <circle cx="0" cy="0" r="4" fill="#FFFFFF"/>
+      <path d="M0 -18 Q-3 -22 0 -25 Q3 -22 0 -18" fill="url(#dragonGold)"/>
+    </g>
+
+    <!-- Sacred lotus pond -->
+    <g transform="translate(0,35)">
+      <ellipse cx="0" cy="12" rx="60" ry="12" fill="url(#oceanTeal)" opacity="0.4"/>
+
+      <!-- Multiple lotus flowers -->
+      <g transform="translate(-25,0)">
+        <path d="M0 -10 C4 -3, 4 3, 0 10 C-4 3, -4 -3, 0 -10Z" fill="url(#lotusRed)"/>
+        <path d="M-8 -3 C-10 0, -8 5, -3 8 C-4 4, -5 1, -8 -3Z" fill="url(#lotusRed)"/>
+        <path d="M8 -3 C10 0, 8 5, 3 8 C4 4, 5 1, 8 -3Z" fill="url(#lotusRed)"/>
+        <circle cx="0" cy="2" r="3" fill="#FFFFFF"/>
+      </g>
+
+      <g transform="translate(0,-2) scale(1.2)">
+        <path d="M0 -10 C4 -3, 4 3, 0 10 C-4 3, -4 -3, 0 -10Z" fill="url(#lotusRed)"/>
+        <path d="M-8 -3 C-10 0, -8 5, -3 8 C-4 4, -5 1, -8 -3Z" fill="url(#lotusRed)"/>
+        <path d="M8 -3 C10 0, 8 5, 3 8 C4 4, 5 1, 8 -3Z" fill="url(#lotusRed)"/>
+        <circle cx="0" cy="2" r="3" fill="#FFFFFF"/>
+      </g>
+
+      <g transform="translate(25,0) scale(0.9)">
+        <path d="M0 -10 C4 -3, 4 3, 0 10 C-4 3, -4 -3, 0 -10Z" fill="url(#lotusRed)"/>
+        <path d="M-8 -3 C-10 0, -8 5, -3 8 C-4 4, -5 1, -8 -3Z" fill="url(#lotusRed)"/>
+        <path d="M8 -3 C10 0, 8 5, 3 8 C4 4, 5 1, 8 -3Z" fill="url(#lotusRed)"/>
+        <circle cx="0" cy="2" r="3" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Water ripples -->
+      <ellipse cx="-15" cy="8" rx="8" ry="2" fill="none" stroke="url(#oceanTeal)" stroke-width="1" opacity="0.5"/>
+      <ellipse cx="20" cy="10" rx="6" ry="1.5" fill="none" stroke="url(#oceanTeal)" stroke-width="1" opacity="0.5"/>
+    </g>
+
+    <!-- Background mountains -->
+    <g transform="translate(0,-30)" opacity="0.3">
+      <path d="M-80 30 Q-60 10 -40 30 Q-20 15 0 30 Q20 15 40 30 Q60 10 80 30 L80 50 L-80 50 Z" fill="url(#skyBlue)"/>
+    </g>
+  </g>
+
+  <!-- Traditional Vietnamese typography -->
+  <g transform="translate(260,130)">
+    <!-- "Du Lịch Việt" in traditional calligraphy style -->
+    <text x="0" y="0"
+          font-family="'Times New Roman', 'Noto Serif Vietnamese', serif"
+          font-size="58"
+          font-weight="700"
+          font-style="italic"
+          letter-spacing="0.02em"
+          fill="url(#lotusRed)"
+          filter="url(#traditionalShadow)">
+      Du Lịch Việt
+    </text>
+
+    <!-- Traditional subtitle with cultural meaning -->
+    <text x="0" y="35"
+          font-family="'Times New Roman', 'Noto Serif Vietnamese', serif"
+          font-size="18"
+          font-weight="400"
+          letter-spacing="0.1em"
+          fill="url(#dragonGold)"
+          opacity="0.95">
+      Khám Phá Đất Nước Hình Chữ S
+    </text>
+
+    <!-- Secondary tagline -->
+    <text x="0" y="55"
+          font-family="'Times New Roman', 'Noto Serif Vietnamese', serif"
+          font-size="14"
+          font-weight="300"
+          letter-spacing="0.05em"
+          fill="url(#oceanTeal)"
+          opacity="0.8">
+      Nền tảng du lịch đáng tin cậy
+    </text>
+  </g>
+
+  <!-- Traditional decorative border and elements -->
+  <g stroke="url(#dragonGold)" stroke-width="2" fill="none" opacity="0.6">
+    <!-- Corner decorations -->
+    <path d="M20 20 L50 20 M20 20 L20 50"/>
+    <path d="M750 20 L780 20 M780 20 L780 50"/>
+    <path d="M20 200 L50 200 M20 200 L20 170"/>
+    <path d="M750 200 L780 200 M780 200 L780 170"/>
+
+    <!-- Traditional cloud patterns -->
+    <g transform="translate(260,180)">
+      <path d="M0 0 C8 -5 16 -5 24 0 C32 -3 40 3 32 8 C24 5 16 5 8 8 C0 5 -8 -3 0 0Z" fill="url(#dragonGold)" opacity="0.4"/>
+    </g>
+
+    <g transform="translate(380,180)">
+      <path d="M0 0 C8 -5 16 -5 24 0 C32 -3 40 3 32 8 C24 5 16 5 8 8 C0 5 -8 -3 0 0Z" fill="url(#dragonGold)" opacity="0.4"/>
+    </g>
+
+    <g transform="translate(500,180)">
+      <path d="M0 0 C8 -5 16 -5 24 0 C32 -3 40 3 32 8 C24 5 16 5 8 8 C0 5 -8 -3 0 0Z" fill="url(#dragonGold)" opacity="0.4"/>
+    </g>
+  </g>
+
+  <!-- Decorative Vietnamese pattern line -->
+  <path d="M260 160 Q320 155 380 160 Q440 165 500 160 Q560 155 620 160"
+        fill="none"
+        stroke="url(#dragonGold)"
+        stroke-width="3"
+        opacity="0.7"/>
+</svg>

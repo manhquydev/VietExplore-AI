@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" role="img" aria-label="Du Lịch Việt - Vietnamese Travel Platform">
+  <!-- Bánh Chưng Icon - Minimalist Square Design -->
+  <g id="banhchung-icon">
+    <!-- Main Square (Bánh Chưng) -->
+    <rect x="8" y="8" width="44" height="44" rx="6" fill="#16A34A" stroke="none"/>
+
+    <!-- Lá Dong Pattern (Subtle Cultural Detail) -->
+    <g opacity="0.3">
+      <!-- Top leaf line -->
+      <path d="M16 16 L44 16" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Bottom leaf line -->
+      <path d="M16 44 L44 44" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Left leaf line -->
+      <path d="M16 16 L16 44" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Right leaf line -->
+      <path d="M44 16 L44 44" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Center Dot (Đậu xanh - Golden accent) -->
+    <circle cx="30" cy="30" r="4" fill="#F59E0B"/>
+  </g>
+
+  <!-- Text Logo -->
+  <g id="text-logo">
+    <!-- "Du Lịch Việt" Text -->
+    <text x="68" y="24" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="#1F2937">
+      Du Lịch Việt
+    </text>
+
+    <!-- "AI" Text with accent color -->
+    <text x="68" y="44" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#16A34A">
+      AI Travel Platform
+    </text>
+  </g>
+</svg>

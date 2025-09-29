@@ -88,16 +88,16 @@ export default function ProfilePage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary/5 to-secondary/5">
         <Header />
         <main className="container py-16">
           <div className="glass-card max-w-md mx-auto text-center p-8">
             <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <User className="w-8 h-8 text-sky-600" />
+              <User className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-2xl font-bold mb-4 text-slate-900">Đăng nhập để xem hồ sơ</h1>
             <p className="text-slate-600 mb-6">Bạn cần đăng nhập để truy cập trang hồ sơ cá nhân</p>
-            <Button className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white">
+            <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white">
               Đăng nhập ngay
             </Button>
           </div>
@@ -108,7 +108,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary/5 to-secondary/5">
       <Header />
       
       <main className="container py-8">
@@ -119,7 +119,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <Avatar className="w-24 h-24 ring-4 ring-white/20">
                   <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                  <AvatarFallback className="text-2xl bg-gradient-to-r from-sky-500 to-teal-500 text-white">
+                  <AvatarFallback className="text-2xl bg-gradient-to-r from-primary to-secondary text-white">
                     {getInitials(user.fullName, user.email)}
                   </AvatarFallback>
                 </Avatar>
@@ -181,7 +181,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={handleSave} 
                         loading={isSaving}
-                        className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+                        className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
                       >
                         <Save className="w-4 h-4 mr-2" />
                         Lưu thay đổi
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                       {user.profile?.website && (
                         <div className="flex items-center gap-1">
                           <Globe className="w-4 h-4" />
-                          <a href={user.profile.website} target="_blank" rel="noopener noreferrer" className="hover:text-sky-600 transition-colors">
+                          <a href={user.profile.website} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                             Website
                           </a>
                         </div>
@@ -276,8 +276,8 @@ export default function ProfilePage() {
                 {/* Stats Cards */}
                 <div className="grid sm:grid-cols-3 gap-6">
                   <div className="glass-subtle p-6 rounded-2xl text-center">
-                    <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <MapPin className="w-6 h-6 text-sky-600" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <MapPin className="w-6 h-6 text-primary" />
                     </div>
                     <div className="text-3xl font-bold text-slate-900 mb-2">
                       {user.stats?.placesContributed || 0}
@@ -309,7 +309,7 @@ export default function ProfilePage() {
                 {/* Badges/Achievements */}
                 <div className="glass-subtle p-6 rounded-2xl">
                   <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-sky-600" />
+                    <Award className="w-5 h-5 text-primary" />
                     Huy hiệu & Thành tích
                   </h3>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -340,13 +340,13 @@ export default function ProfilePage() {
 
               <TabsContent value="contributions" className="p-6">
                 <div className="glass-subtle p-8 rounded-2xl text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-sky-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
+                  <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-50">
                     <MapPin className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">Chưa có đóng góp nào</h3>
                   <p className="text-slate-600 mb-6">Bắt đầu chia sẻ những địa điểm tuyệt vời bạn đã khám phá!</p>
                   <Button 
-                    className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
                     asChild
                   >
                     <Link href="/contribute/new-place">

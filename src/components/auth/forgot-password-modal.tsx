@@ -80,7 +80,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           <DialogHeader className="space-y-4">
             {/* Logo */}
             <div className="flex justify-center">
-              <Logo variant="horizontal" size="lg" className="h-12" />
+              <Logo variant="horizontal" size="xl" className="h-16" />
             </div>
             
             <div className="space-y-2">
@@ -116,9 +116,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </div>
 
               <div className="space-y-3">
-                <Button 
+                <Button
                   onClick={handleClose}
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium"
                 >
                   Đóng
                 </Button>
@@ -127,7 +127,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   <Button 
                     onClick={handleBackToLogin}
                     variant="ghost"
-                    className="w-full h-11 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    className="w-full h-11 text-primary hover:text-primary/80 hover:bg-primary/5"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Quay lại đăng nhập
@@ -161,9 +161,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                <Button
+                  type="submit"
+                  className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -183,7 +183,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   <Button 
                     onClick={handleBackToLogin}
                     variant="ghost"
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-primary hover:text-primary/80 font-medium"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Quay lại đăng nhập

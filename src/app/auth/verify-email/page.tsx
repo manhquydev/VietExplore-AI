@@ -174,7 +174,7 @@ export default function VerifyEmailPage() {
       case 'invalid':
         return 'border-red-200 bg-red-50';
       default:
-        return 'border-blue-200 bg-blue-50';
+        return 'border-primary/20 bg-primary/5';
     }
   };
 
@@ -187,7 +187,7 @@ export default function VerifyEmailPage() {
           <div className="max-w-lg mx-auto">
             {/* Logo */}
             <div className="flex justify-center mb-8">
-              <Logo variant="stacked" size="lg" className="h-20" />
+              <Logo variant="horizontal" size="xl" className="h-24" />
             </div>
 
             {/* Verification Status Card */}

@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
-export type LogoVariant = "horizontal" | "stacked" | "icon" | "mono"
+export type LogoVariant = "horizontal" | "icon"
 export type LogoSize = "sm" | "md" | "lg" | "xl"
 
 interface LogoProps {
@@ -26,21 +26,22 @@ const iconSizeConfig = {
   xl: { width: 80, height: 80 }
 }
 
-export const Logo: React.FC<LogoProps> = ({ 
-  variant = "horizontal", 
-  size = "md", 
+export const Logo: React.FC<LogoProps> = ({
+  variant = "horizontal", // DEFAULT TO HORIZONTAL LOGO
+  size = "md",
   className,
   priority = false
 }) => {
   const isIcon = variant === "icon"
   const dimensions = isIcon ? iconSizeConfig[size] : sizeConfig[size]
 
+  // Current logo icon
   if (variant === "icon") {
     return (
       <div className={cn("inline-block", className)} style={dimensions}>
         <Image
           src="/logo-icon.svg"
-          alt="VietExplore"
+          alt="Du Lịch Việt Icon"
           width={dimensions.width}
           height={dimensions.height}
           className="w-full h-full"
@@ -50,42 +51,12 @@ export const Logo: React.FC<LogoProps> = ({
     )
   }
 
-  if (variant === "stacked") {
-    return (
-      <div className={cn("inline-block", className)} style={dimensions}>
-        <Image
-          src="/logo-stacked.svg"
-          alt="VietExplore"
-          width={dimensions.width}
-          height={dimensions.height}
-          className="w-full h-full"
-          priority={priority}
-        />
-      </div>
-    )
-  }
-
-  if (variant === "mono") {
-    return (
-      <div className={cn("inline-block", className)} style={dimensions}>
-        <Image
-          src="/logo-mono.svg"
-          alt="VietExplore"
-          width={dimensions.width}
-          height={dimensions.height}
-          className="w-full h-full"
-          priority={priority}
-        />
-      </div>
-    )
-  }
-
-  // Default to horizontal
+  // Default to horizontal logo
   return (
     <div className={cn("inline-block", className)} style={dimensions}>
       <Image
         src="/logo-horizontal.svg"
-        alt="VietExplore"
+        alt="Du Lịch Việt - Khám phá Việt Nam với trí tuệ nhân tạo"
         width={dimensions.width}
         height={dimensions.height}
         className="w-full h-full"

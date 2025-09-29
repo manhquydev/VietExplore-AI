@@ -2,9 +2,11 @@ import type {Config} from 'tailwindcss';
 import { tailwindExtension } from './src/lib/design-system';
 import colors2025 from './src/lib/design-system/tokens/colors-2025';
 import animations from './src/lib/design-system/tokens/animations';
+import { unifiedBrandColors } from './src/lib/design-system/brand-colors';
 
 export default {
-  darkMode: ['class', '[data-theme="dark"]'],
+  // Dark mode disabled - force light mode only
+  // darkMode: ['class', '[data-theme="dark"]'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -49,7 +51,23 @@ export default {
         
         // Enhanced 2025 Color System - Base tokens (override duplicates)
         ...colors2025.colorTokens,
-        
+
+        // BRAND COLORS - BÁNH CHƯNG UNIFIED SYSTEM (NEW)
+        'brand-primary': unifiedBrandColors.primary,        // Green spectrum (Lá dong)
+        'brand-secondary': unifiedBrandColors.secondary,    // Gold spectrum (Đậu xanh)
+        'brand-traditional': unifiedBrandColors.traditional, // Vietnamese heritage
+        'brand-neutral': unifiedBrandColors.neutral,        // Grays
+        'brand-success': unifiedBrandColors.semantic.success,
+        'brand-warning': unifiedBrandColors.semantic.warning,
+        'brand-error': unifiedBrandColors.semantic.error,
+        'brand-info': unifiedBrandColors.semantic.info,
+
+        // SHORTCUTS FOR COMMON BRAND COLORS
+        'brand-green': '#16A34A',       // Primary brand green (Lá dong)
+        'brand-gold': '#F59E0B',        // Secondary brand gold (Đậu xanh)
+        'brand-forest': '#15803D',      // Deep brand green
+        'brand-cream': '#FEF3C7',       // Light brand background
+
         // Legacy Tailwind Extension Support (if available)
         ...(tailwindExtension?.colors || {}),
         
