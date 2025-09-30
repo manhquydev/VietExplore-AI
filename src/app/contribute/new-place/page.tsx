@@ -924,8 +924,8 @@ export default function NewPlacePage() {
         <Header />
         <main className="container py-16 max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="w-10 h-10 text-blue-600" />
+            <div className="w-20 h-20 bg-brand-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-brand-green" />
             </div>
             <h1 className="text-3xl font-bold mb-4 text-gray-900">Vai trò Moderator</h1>
             <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
@@ -934,33 +934,33 @@ export default function NewPlacePage() {
             </p>
           </div>
 
-          <Card className="border-2 border-blue-200 bg-blue-50 mb-8">
+          <Card className="border-2 border-brand-primary-200 bg-brand-primary-50 mb-8">
             <CardContent className="p-8">
               <div className="flex items-center gap-3 mb-6">
-                <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                <span className="bg-brand-green text-white text-sm font-bold px-3 py-1 rounded-full">
                   MODERATOR
                 </span>
-                <h3 className="text-xl font-bold text-blue-800">Quyền hạn và trách nhiệm</h3>
+                <h3 className="text-xl font-bold text-brand-forest">Quyền hạn và trách nhiệm</h3>
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-blue-800 mb-3">✅ Được phép:</h4>
+                  <h4 className="font-semibold text-brand-forest mb-3">✅ Được phép:</h4>
                   <div className="space-y-2 text-sm text-gray-700">
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-blue-600" />
+                      <Check className="w-4 h-4 text-brand-green" />
                       <span>Kiểm duyệt nội dung địa điểm</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-blue-600" />
+                      <Check className="w-4 h-4 text-brand-green" />
                       <span>Phê duyệt/từ chối đề xuất</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-blue-600" />
+                      <Check className="w-4 h-4 text-brand-green" />
                       <span>Quản lý báo cáo vi phạm</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-blue-600" />
+                      <Check className="w-4 h-4 text-brand-green" />
                       <span>Chỉnh sửa nội dung có sẵn</span>
                     </div>
                   </div>
@@ -987,25 +987,25 @@ export default function NewPlacePage() {
             </CardContent>
           </Card>
 
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-8 text-center mb-8">
+          <div className="bg-gradient-to-r from-brand-green to-brand-forest text-white rounded-xl p-8 text-center mb-8 shadow-lg">
             <h3 className="text-2xl font-bold mb-4">Tại sao Moderator không thể đăng địa điểm?</h3>
-            <p className="text-blue-100 mb-6 leading-relaxed max-w-3xl mx-auto text-justify">
-              Để đảm bảo tính khách quan và công bằng trong quá trình kiểm duyệt, Moderator không được phép 
-              tạo nội dung mới. Điều này tránh xung đột lợi ích và đảm bảo mọi nội dung đều được đánh giá 
+            <p className="text-brand-primary-100 mb-6 leading-relaxed max-w-3xl mx-auto text-justify">
+              Để đảm bảo tính khách quan và công bằng trong quá trình kiểm duyệt, Moderator không được phép
+              tạo nội dung mới. Điều này tránh xung đột lợi ích và đảm bảo mọi nội dung đều được đánh giá
               một cách khách quan theo cùng một tiêu chuẩn.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8"
+              <Button
+                size="lg"
+                className="bg-white text-brand-green hover:bg-gray-100 font-semibold px-8 hover:scale-105 transition-all"
                 onClick={() => router.push('/moderation/dashboard')}
               >
                 Đi đến Dashboard Moderator →
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="lg"
-                className="border-white text-white hover:bg-white hover:text-blue-600 font-semibold px-8"
+                className="border-white text-white hover:bg-white hover:text-brand-green font-semibold px-8 hover:scale-105 transition-all"
                 onClick={() => router.push('/')}
               >
                 Về trang chủ
@@ -1074,29 +1074,29 @@ export default function NewPlacePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-blue-200 bg-blue-50">
+            <Card className="border-2 border-brand-secondary-300 bg-brand-cream">
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                  <span className="bg-brand-gold text-white text-sm font-bold px-3 py-1 rounded-full">
                     PARTNER
                   </span>
-                  <h3 className="text-xl font-bold text-blue-800">Đối tác cộng đồng</h3>
+                  <h3 className="text-xl font-bold text-brand-secondary-700">Đối tác cộng đồng</h3>
                 </div>
                 <p className="text-gray-700 mb-6 leading-relaxed text-justify">
-                  Dành cho tổ chức du lịch, sở văn hóa, doanh nghiệp có uy tín. 
+                  Dành cho tổ chức du lịch, sở văn hóa, doanh nghiệp có uy tín.
                   Có quyền đăng nội dung với cơ chế kiểm duyệt nhanh và ưu tiên hiển thị.
                 </p>
                 <div className="space-y-2 text-sm text-gray-600 mb-6">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-600" />
+                    <Check className="w-4 h-4 text-brand-gold" />
                     <span>Tất cả quyền của Contributor</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-600" />
+                    <Check className="w-4 h-4 text-brand-gold" />
                     <span>Huy hiệu Official Partner</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-600" />
+                    <Check className="w-4 h-4 text-brand-gold" />
                     <span>Ưu tiên hiển thị nội dung</span>
                   </div>
                 </div>
@@ -1104,16 +1104,16 @@ export default function NewPlacePage() {
             </Card>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-8 text-center">
+          <div className="bg-gradient-to-r from-brand-green to-brand-forest text-white rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold mb-4">Sẵn sàng tham gia đóng góp?</h3>
-            <p className="text-blue-100 mb-6 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-brand-primary-100 mb-6 leading-relaxed max-w-2xl mx-auto">
               Liên hệ với chúng tôi để được xem xét nâng cấp quyền hạn. 
               Chúng tôi sẽ đánh giá hồ sơ và phản hồi trong vòng 3-5 ngày làm việc.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8"
+                className="bg-white text-brand-green hover:bg-gray-100 font-semibold px-8"
                 onClick={() => router.push('/about/contact?type=role-upgrade')}
               >
                 Đăng ký nâng cấp quyền →
@@ -1121,7 +1121,7 @@ export default function NewPlacePage() {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-white text-white hover:bg-white hover:text-blue-600 font-semibold px-8"
+                className="border-white text-white hover:bg-white hover:text-brand-green font-semibold px-8"
                 onClick={() => router.push('/')}
               >
                 Về trang chủ
@@ -1204,59 +1204,67 @@ export default function NewPlacePage() {
         <PageLoadingOverlay isLoading={isSubmitting} loadingText="Đang gửi địa điểm để kiểm duyệt...">
           <div className="max-w-4xl mx-auto">
           {/* Header with workflow info */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">
+          <div className="mb-8 relative">
+            {/* Decorative Vietnamese pattern background */}
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none">
+              <svg viewBox="0 0 60 60" className="w-full h-full">
+                <rect x="8" y="8" width="44" height="44" rx="8" fill="#16A34A"/>
+                <circle cx="30" cy="30" r="5" fill="#F59E0B"/>
+              </svg>
+            </div>
+
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
               {isAdmin ? '⚡ Đăng địa điểm mới (Admin)' : 'Đóng góp địa điểm mới'}
             </h1>
             <p className="text-muted mb-4">
               Chia sẻ những địa điểm tuyệt vời mà bạn đã khám phá với cộng đồng
             </p>
-            
+
             {/* Ba hành động khả dụng theo tài liệu 2.1.1 */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+            <div className="bg-gradient-to-r from-brand-primary-50 to-brand-cream border-l-4 border-brand-green rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-blue-800">Ba hành động khả dụng</span>
+                    <div className="w-2 h-2 bg-brand-green rounded-full animate-pulse"></div>
+                    <span className="text-sm font-semibold text-brand-forest">Ba hành động khả dụng</span>
                   </div>
-                  <div className="text-xs text-blue-600 italic">
+                  <div className="text-xs text-brand-primary-700 italic">
                     Theo tài liệu 2.1.1 - Luôn accessible trong quá trình tạo địa điểm
                   </div>
                 </div>
-                
+
                 {/* Ba nút hành động chính - Luôn hiển thị */}
                 <div className="flex gap-2">
                   {/* 1. Lưu nháp - Luôn khả dụng */}
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={saveDraft}
                     disabled={isSubmitting}
                     size="sm"
-                    className="text-blue-700 border-blue-300 bg-blue-50 hover:bg-blue-100"
+                    className="text-brand-primary-700 border-brand-primary-300 bg-brand-primary-50 hover:bg-brand-primary-100 transition-all hover:scale-105"
                   >
                     <Save className="w-4 h-4 mr-1" />
                     Lưu nháp
                   </Button>
-                  
+
                   {/* 2. Hủy bỏ - Luôn khả dụng */}
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={cancelDraft}
                     disabled={isSubmitting}
                     size="sm"
-                    className="text-red-700 border-red-300 bg-red-50 hover:bg-red-100"
+                    className="text-neutral-700 border-neutral-300 bg-neutral-50 hover:bg-neutral-100 transition-all hover:scale-105"
                   >
                     <X className="w-4 h-4 mr-1" />
                     Hủy bỏ
                   </Button>
-                  
+
                   {/* 3. Gửi kiểm duyệt - Luôn khả dụng nhưng có thể disabled */}
-                  <Button 
+                  <Button
                     onClick={submitForm}
                     disabled={isSubmitting || !canSubmit()}
                     size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+                    className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white disabled:bg-gray-400 transition-all hover:scale-105 shadow-md hover:shadow-lg"
                     title={!canSubmit() ? "Vui lòng điền đầy đủ thông tin bắt buộc" : ""}
                   >
                     <Check className="w-4 h-4 mr-1" />
@@ -1267,41 +1275,56 @@ export default function NewPlacePage() {
             </div>
           </div>
 
-          {/* Progress Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+          {/* Progress Steps - Vietnamese Green & Gold Theme */}
+          <div className="mb-8 bg-gradient-to-br from-white to-brand-cream rounded-2xl p-6 border border-brand-primary-200 shadow-soft">
+            <div className="flex items-center justify-between mb-6">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors",
-                    currentStep >= step.id 
-                      ? "bg-primary text-white" 
-                      : "bg-surface text-muted border border-border"
+                    "relative w-12 h-12 rounded-xl flex items-center justify-center text-sm font-semibold transition-all duration-300",
+                    currentStep >= step.id
+                      ? "bg-gradient-to-br from-brand-green to-brand-forest text-white shadow-lg scale-110"
+                      : "bg-white text-muted border-2 border-brand-primary-200 hover:border-brand-primary-300"
                   )}>
                     <step.icon className="w-5 h-5" />
+                    {currentStep >= step.id && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand-gold rounded-full border-2 border-white"></div>
+                    )}
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={cn(
-                      "h-0.5 w-24 ml-2 transition-colors",
-                      currentStep > step.id ? "bg-primary" : "bg-border"
-                    )} />
+                    <div className="relative h-1 w-24 ml-3 mr-3 bg-brand-primary-100 rounded-full overflow-hidden">
+                      <div className={cn(
+                        "absolute inset-0 bg-gradient-to-r from-brand-green to-brand-gold transition-all duration-500",
+                        currentStep > step.id ? "w-full" : "w-0"
+                      )} />
+                    </div>
                   )}
                 </div>
               ))}
             </div>
-            
-            <div className="flex justify-between text-sm">
+
+            <div className="flex justify-between text-sm mb-4">
               {steps.map((step) => (
                 <span key={step.id} className={cn(
-                  "transition-colors",
-                  currentStep >= step.id ? "text-text font-medium" : "text-muted"
+                  "transition-all duration-300 font-medium",
+                  currentStep >= step.id
+                    ? "text-brand-forest font-semibold"
+                    : "text-muted"
                 )}>
                   {step.title}
                 </span>
               ))}
             </div>
-            
-            <Progress value={(currentStep / 3) * 100} className="mt-4" />
+
+            <div className="relative">
+              <Progress
+                value={(currentStep / 3) * 100}
+                className="h-2 bg-brand-primary-100"
+              />
+              <div className="absolute top-0 left-0 h-2 bg-gradient-to-r from-brand-green via-brand-primary-500 to-brand-gold rounded-full transition-all duration-500"
+                   style={{ width: `${(currentStep / 3) * 100}%` }}>
+              </div>
+            </div>
           </div>
 
           {/* Form Content */}
@@ -1402,9 +1425,9 @@ export default function NewPlacePage() {
                         {formData.description.length} ký tự (tối thiểu 150)
                       </p>
                     </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-                      <p className="text-sm text-blue-800 font-medium mb-1">💡 Gợi ý cấu trúc mô tả:</p>
-                      <p className="text-xs text-blue-700 leading-relaxed">
+                    <div className="bg-brand-primary-50 border border-brand-primary-200 rounded-lg p-3 mt-2">
+                      <p className="text-sm text-brand-forest font-medium mb-1">💡 Gợi ý cấu trúc mô tả:</p>
+                      <p className="text-xs text-brand-primary-700 leading-relaxed">
                         <strong>Lịch sử:</strong> Nguồn gốc, tên gọi → <strong>Cảnh đẹp:</strong> Điểm nổi bật → <strong>Đặc sản:</strong> Ẩm thực, sản vật → <strong>Trải nghiệm:</strong> Hoạt động có thể làm
                       </p>
                     </div>
@@ -1509,9 +1532,9 @@ export default function NewPlacePage() {
                     </div>
 
                     {/* Region Selection */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                      <Label htmlFor="region" className="text-base font-medium text-blue-900">Vùng miền *</Label>
-                      <p className="text-sm text-blue-700 mb-3">Chọn vùng địa lý chính của địa điểm</p>
+                    <div className="bg-gradient-to-r from-brand-primary-50 to-brand-cream rounded-xl p-6 border border-brand-primary-200">
+                      <Label htmlFor="region" className="text-base font-medium text-brand-forest">Vùng miền *</Label>
+                      <p className="text-sm text-brand-primary-700 mb-3">Chọn vùng địa lý chính của địa điểm</p>
                       <Select
                         value={formData.region}
                         onValueChange={(value) => {
@@ -1723,11 +1746,11 @@ export default function NewPlacePage() {
                     {formData.vietnamAddress.fullAddress && (
                       <div className="space-y-3">
                         {/* Old address */}
-                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="p-4 bg-brand-primary-50 border border-brand-primary-200 rounded-lg">
                           <div>
-                            <Label className="text-sm font-medium text-blue-800">Địa chỉ hành chính được chọn:</Label>
-                            <p className="text-sm text-blue-700 mt-1 font-medium">{formData.vietnamAddress.fullAddress}</p>
-                            <p className="text-xs text-blue-600 mt-1">Địa chỉ theo đơn vị hành chính hiện tại</p>
+                            <Label className="text-sm font-medium text-brand-forest">Địa chỉ hành chính được chọn:</Label>
+                            <p className="text-sm text-brand-primary-700 mt-1 font-medium">{formData.vietnamAddress.fullAddress}</p>
+                            <p className="text-xs text-brand-green mt-1">Địa chỉ theo đơn vị hành chính hiện tại</p>
                           </div>
                         </div>
                         
@@ -1784,8 +1807,8 @@ export default function NewPlacePage() {
                       />
                       {errors.address && <p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-200">{errors.address}</p>}
                       
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                        <p className="text-sm text-blue-800 flex items-center gap-2">
+                      <div className="bg-brand-primary-50 border border-brand-primary-200 rounded-lg p-3 mt-3">
+                        <p className="text-sm text-brand-forest flex items-center gap-2">
                           🗺️ <strong>Mẹo:</strong> Bạn có thể tra cứu địa chỉ chính xác trên Google Maps hoặc các ứng dụng bản đồ khác
                         </p>
                       </div>
@@ -2043,17 +2066,17 @@ export default function NewPlacePage() {
                   </div>
                   
                   {/* Three Actions Info Panel */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mt-6">
-                    <h4 className="text-base font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <div className="bg-gradient-to-r from-brand-primary-50 to-brand-cream border border-brand-primary-200 rounded-xl p-6 mt-6">
+                    <h4 className="text-base font-semibold text-brand-forest mb-3 flex items-center gap-2">
                       🎯 Ba hành động có thể thực hiện:
                     </h4>
                     <div className="grid sm:grid-cols-3 gap-4">
-                      <div className="bg-white border border-blue-200 rounded-lg p-4">
+                      <div className="bg-white border border-brand-primary-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <Save className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-blue-900">Lưu nháp</span>
+                          <Save className="w-4 h-4 text-brand-green" />
+                          <span className="font-medium text-brand-forest">Lưu nháp</span>
                         </div>
-                        <p className="text-xs text-blue-700 leading-relaxed">
+                        <p className="text-xs text-brand-primary-700 leading-relaxed">
                           Giữ lại để tiếp tục chỉnh sửa sau. Bản nháp sẽ được lưu với trạng thái "draft".
                         </p>
                       </div>

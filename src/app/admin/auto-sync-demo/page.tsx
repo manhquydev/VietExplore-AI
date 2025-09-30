@@ -202,7 +202,7 @@ export default function AutoSyncDemoPage() {
                     {pendingItems.slice(0, 3).map((item) => (
                       <div key={item.id} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
                         <span className="truncate">{item.type}</span>
-                        <Badge size="sm" variant="outline">
+                        <Badge variant="outline" className="text-xs">
                           {item.priority}
                         </Badge>
                       </div>

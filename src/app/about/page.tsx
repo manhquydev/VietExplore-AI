@@ -80,7 +80,7 @@ const coreValues = [
     title: "Minh bạch",
     description: "Thông tin rõ ràng, không thiên vị, dựa trên trải nghiệm thực tế",
     icon: Shield,
-    color: "from-blue-500 to-indigo-500"
+    color: "from-brand-gold to-amber-600"
   },
   {
     title: "Cộng đồng",

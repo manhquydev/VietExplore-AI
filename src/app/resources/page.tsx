@@ -33,14 +33,14 @@ export const metadata: Metadata = {
 
 export default function ResourcesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
       <Header />
       
       <main className="container py-16 max-w-7xl">
         {/* Hero Section */}
         <div className="glass-card text-center p-8 sm:p-12 mb-12">
           <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="w-8 h-8 text-sky-600" />
+            <BookOpen className="w-8 h-8 text-brand-green" />
           </div>
           <h1 className="gradient-text text-4xl sm:text-5xl font-bold mb-6 leading-tight">
             Tài nguyên du lịch
@@ -56,8 +56,8 @@ export default function ResourcesPage() {
           {/* Travel Planning */}
           <div className="glass-card p-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-purple-600" />
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-brand-gold" />
               </div>
               Lập kế hoạch
             </h2>
@@ -94,18 +94,18 @@ export default function ResourcesPage() {
                   href={item.href}
                   className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-brand-gold" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-slate-900 group-hover:text-purple-600 transition-colors">
+                    <div className="font-medium text-slate-900 group-hover:text-brand-gold transition-colors">
                       {item.title}
                     </div>
                     <div className="text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-purple-500 transition-colors" />
+                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-brand-gold transition-colors" />
                 </Link>
               ))}
             </div>
@@ -236,8 +236,8 @@ export default function ResourcesPage() {
         {/* Essential Apps Section */}
         <div className="glass-card p-8 mb-12">
           <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center flex items-center justify-center gap-3">
-            <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-sky-600" />
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <Smartphone className="w-4 h-4 text-brand-green" />
             </div>
             Ứng dụng thiết yếu
           </h2>
@@ -249,7 +249,7 @@ export default function ResourcesPage() {
                 description: "Dịch tiếng Việt offline",
                 category: "Ngôn ngữ",
                 colorBg: "bg-blue-100",
-                colorIcon: "text-blue-600",
+                colorIcon: "text-brand-green",
                 icon: Globe
               },
               {
@@ -264,8 +264,8 @@ export default function ResourcesPage() {
                 name: "Zalo Pay/MoMo",
                 description: "Thanh toán không tiền mặt",
                 category: "Thanh toán",
-                colorBg: "bg-purple-100",
-                colorIcon: "text-purple-600",
+                colorBg: "bg-amber-100",
+                colorIcon: "text-brand-gold",
                 icon: CreditCard
               },
               {
@@ -283,7 +283,7 @@ export default function ResourcesPage() {
                 </div>
                 <h3 className="font-semibold text-slate-900 mb-2">{app.name}</h3>
                 <p className="text-sm text-slate-600 mb-3">{app.description}</p>
-                <Badge className="bg-sky-100 text-sky-700">
+                <Badge className="bg-green-100 text-brand-green">
                   {app.category}
                 </Badge>
               </div>
@@ -307,7 +307,7 @@ export default function ResourcesPage() {
                 number: "113",
                 description: "Báo cáo tội phạm, mất trộm",
                 colorBg: "bg-blue-100",
-                colorIcon: "text-blue-600"
+                colorIcon: "text-brand-green"
               },
               {
                 service: "Cứu hỏa",
@@ -350,7 +350,7 @@ export default function ResourcesPage() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white"
               asChild
             >
               <Link href="#guide-download">

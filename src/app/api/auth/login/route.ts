@@ -32,24 +32,38 @@ export async function POST(request: NextRequest) {
       firebaseUser = userCredential.user;
     } catch (authError: any) {
       console.error('Firebase auth error:', authError);
-      
+
       let errorMessage = 'Email hoặc mật khẩu không đúng';
-      
+      let statusCode = 401;
+
       if (authError.code === 'auth/user-not-found') {
-        errorMessage = 'Người dùng không tồn tại';
+        errorMessage = 'Không tìm thấy tài khoản với email này';
+        statusCode = 404;
       } else if (authError.code === 'auth/wrong-password') {
-        errorMessage = 'Mật khẩu không đúng';
+        errorMessage = 'Mật khẩu không chính xác';
       } else if (authError.code === 'auth/invalid-email') {
-        errorMessage = 'Email không hợp lệ';
+        errorMessage = 'Định dạng email không hợp lệ';
+        statusCode = 400;
       } else if (authError.code === 'auth/user-disabled') {
-        errorMessage = 'Tài khoản đã bị vô hiệu hóa';
+        errorMessage = 'Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ';
+        statusCode = 403;
       } else if (authError.code === 'auth/too-many-requests') {
-        errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau';
+        errorMessage = 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau 15 phút';
+        statusCode = 429;
+      } else if (authError.code === 'auth/network-request-failed') {
+        errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet';
+        statusCode = 503;
+      } else if (authError.code === 'auth/invalid-credential') {
+        errorMessage = 'Thông tin đăng nhập không chính xác';
       }
 
       return NextResponse.json(
-        { error: errorMessage },
-        { status: 401 }
+        {
+          error: errorMessage,
+          code: authError.code || 'auth/unknown',
+          retryable: ['auth/network-request-failed', 'auth/too-many-requests'].includes(authError.code)
+        },
+        { status: statusCode }
       );
     }
     

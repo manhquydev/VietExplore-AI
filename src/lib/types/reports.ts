@@ -23,6 +23,14 @@ export interface PlaceReport {
   reviewedAt?: string;
   reviewNotes?: string;
   resolution?: string;
+  // Optional fields for claimed reports
+  claimedAt?: string;
+  reviewerInfo?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 export interface EditSuggestion {

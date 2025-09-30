@@ -29,7 +29,7 @@ const coreValues = [
     title: "Minh bạch",
     description: "Mọi thông tin đều có nguồn rõ ràng và được xác minh bởi cộng đồng",
     icon: Shield,
-    iconColor: "text-blue-600 "
+    iconColor: "text-brand-green "
   },
   {
     title: "Cộng đồng", 
@@ -68,25 +68,25 @@ const principles = [
     title: "Hỗ trợ địa phương",
     description: "Ưu tiên các doanh nghiệp nhỏ, cộng đồng địa phương và du lịch bền vững",
     icon: Users,
-    iconColor: "text-blue-600 "
+    iconColor: "text-brand-green "
   },
   {
     title: "Công nghệ thông minh",
     description: "Tích hợp AI để cung cấp gợi ý cá nhân hóa và trải nghiệm tốt nhất",
     icon: Zap,
-    iconColor: "text-purple-600 "
+    iconColor: "text-brand-gold "
   }
 ]
 
 export default function MissionPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50 ">
       <Header />
       
       <main className="container py-16 max-w-6xl">
         {/* Hero Section */}
         <div className="glass-card text-center p-8 sm:p-12 mb-16">
-          <Badge className="mb-6 bg-gradient-to-r from-sky-500 to-teal-500 text-white border-none">
+          <Badge className="mb-6 bg-gradient-to-r from-brand-green to-brand-forest text-white border-none">
             🎯 Sứ mệnh & Tầm nhìn
           </Badge>
           
@@ -102,7 +102,7 @@ export default function MissionPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
-              className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white"
               asChild
             >
               <Link href="/contribute/new-place">
@@ -123,7 +123,7 @@ export default function MissionPage() {
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           <div className="glass-card p-8">
             <h2 className="text-3xl font-bold text-slate-900  mb-6 flex items-center gap-3">
-              <Target className="w-8 h-8 text-sky-600 " />
+              <Target className="w-8 h-8 text-brand-green " />
               Sứ mệnh
             </h2>
             <div className="space-y-4 text-slate-600  leading-relaxed">
@@ -140,7 +140,7 @@ export default function MissionPage() {
 
           <div className="glass-card p-8">
             <h2 className="text-3xl font-bold text-slate-900  mb-6 flex items-center gap-3">
-              <Lightbulb className="w-8 h-8 text-purple-600 " />
+              <Lightbulb className="w-8 h-8 text-brand-gold " />
               Tầm nhìn
             </h2>
             <div className="space-y-4 text-slate-600  leading-relaxed">
@@ -207,8 +207,8 @@ export default function MissionPage() {
         {/* Impact Statement */}
         <div className="glass-card p-8 sm:p-12 mb-16 bg-gradient-to-br from-sky-500/10 to-teal-500/10 dark:from-sky-400/10 dark:to-teal-400/10">
           <div className="text-center">
-            <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Award className="w-8 h-8 text-sky-600 " />
+            <div className="w-16 h-16 bg-green-100 dark:bg-sky-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Award className="w-8 h-8 text-brand-green " />
             </div>
             <h2 className="text-3xl font-bold text-slate-900  mb-6">
               Tác động mong muốn
@@ -240,7 +240,7 @@ export default function MissionPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
-              className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white"
               asChild
             >
               <Link href="/contribute/new-place">

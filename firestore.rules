@@ -83,8 +83,26 @@ service cloud.firestore {
       return f is string && f.size() > 0 && f.size() <= 20000; 
     }
     
-    function isSlug(s) { 
-      return s is string && s.size() > 0 && s.size() <= 120 && s.matches("^[a-z0-9-]+$"); 
+    function isSlug(s) {
+      return s is string && s.size() > 0 && s.size() <= 120 && s.matches("^[a-z0-9-]+$");
+    }
+
+    // Helper function to validate URL format
+    function isValidUrl(url) {
+      return url is string && url.matches('^https?://[a-zA-Z0-9\\-._~:/?#\\[\\]@!$&\'()*+,;=%]+$');
+    }
+
+    // Helper function to validate profile object
+    function isValidProfile(profile) {
+      return profile.keys().hasOnly(['bio', 'location', 'website', 'socialLinks']) &&
+        (!('bio' in profile) || (profile.bio is string && profile.bio.size() <= 500)) &&
+        (!('location' in profile) || (profile.location is string && profile.location.size() <= 100)) &&
+        (!('website' in profile) || (profile.website is string && (profile.website == '' || isValidUrl(profile.website))));
+    }
+
+    // Helper function to validate fullName
+    function isValidFullName(name) {
+      return name is string && name.size() >= 2 && name.size() <= 100;
     }
 
     // 4.1. users (theo Tài liệu 2)
@@ -92,7 +110,11 @@ service cloud.firestore {
       allow read: if isOwner(uid) || isModerator() || isAdmin();
       allow list: if isAdmin(); // Allow admin to list all users
       allow update: if (isOwner(uid) && emailVerified() &&
-        request.resource.data.diff(resource.data).changedKeys().hasOnly(['displayName','photoURL','updatedAt']))
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['displayName','photoURL','fullName','avatar','profile','updatedAt']) &&
+        // Validate fullName if it's being updated
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['fullName']) || isValidFullName(request.resource.data.fullName)) &&
+        // Validate profile object if it's being updated
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['profile']) || isValidProfile(request.resource.data.profile)))
         || (isAdmin() && canManageUser(uid)); // Allow admin to update user roles
       allow create, delete: if false; // chỉ qua Functions (beforeCreate trigger)
     }

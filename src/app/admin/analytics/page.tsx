@@ -42,7 +42,7 @@ import {
   BarChart3
 } from "lucide-react"
 import { useAdminStats, useAdminUsers, useAdminPlaces, useModerationQueue, useAdminAudit } from "@/hooks/use-admin"
-import { useToast } from "@/components/providers/toast-provider"
+import { toastService } from "@/lib/ui/toast-service"
 import RealtimeService from "@/lib/firebase/realtime"
 import { cn } from "@/lib/utils"
 
@@ -146,7 +146,6 @@ function calculateSystemHealth(hasError: boolean, ...errors: any[]) {
 }
 
 export default function AdminAnalyticsPage() {
-  const { toast } = useToast()
   const [timeRange, setTimeRange] = React.useState('30d')
   const [realtimeStats, setRealtimeStats] = React.useState<Record<string, any>>({})
   const [liveAnalytics, setLiveAnalytics] = React.useState<any>({})
@@ -240,9 +239,9 @@ export default function AdminAnalyticsPage() {
     if (hasError) {
       const errorMsg = usersError || placesError || moderationError || auditError
       console.error('Analytics data error:', errorMsg)
-      toast.error(`Lỗi tải dữ liệu: ${errorMsg}`)
+      toastService.error('Lỗi', `Lỗi tải dữ liệu: ${errorMsg}`)
     }
-  }, [hasError, usersError, placesError, moderationError, auditError, toast])
+  }, [hasError, usersError, placesError, moderationError, auditError])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -263,9 +262,9 @@ export default function AdminAnalyticsPage() {
     setRefreshing(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success('Dữ liệu đã được cập nhật')
+      toastService.success('Thành công', 'Dữ liệu đã được cập nhật')
     } catch (error) {
-      toast.error('Không thể cập nhật dữ liệu')
+      toastService.error('Lỗi', 'Không thể cập nhật dữ liệu')
     } finally {
       setRefreshing(false)
     }

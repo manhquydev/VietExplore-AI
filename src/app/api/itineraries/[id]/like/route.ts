@@ -5,13 +5,13 @@ import { adminDb as db } from '@/lib/firebase-admin'
 import { COLLECTIONS } from '@/lib/types/itineraries'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 // POST /api/itineraries/[id]/like - Like an itinerary
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
     
     const authResult = await verifyAuthToken(request)
     
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 // DELETE /api/itineraries/[id]/like - Unlike an itinerary
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
     
     const authResult = await verifyAuthToken(request)
     

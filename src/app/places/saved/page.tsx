@@ -200,13 +200,13 @@ export default function SavedPlacesPage() {
     <>
       <Header />
       
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
         <div className="container mx-auto px-4 py-8">
           {/* Hero Section */}
           <div className="text-center mb-12">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 blur-3xl opacity-10 rounded-full"></div>
-              <h1 className="relative text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-green to-brand-gold blur-3xl opacity-10 rounded-full"></div>
+              <h1 className="relative text-4xl md:text-5xl font-bold bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent mb-4">
                 Bộ Sưu Tập Của Bạn
               </h1>
             </div>
@@ -220,16 +220,16 @@ export default function SavedPlacesPage() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
                 <TabsList className="grid w-full lg:w-auto grid-cols-2 bg-white shadow-lg border-0 p-1 rounded-2xl h-auto min-h-14">
-                  <TabsTrigger 
-                    value="favorites" 
-                    className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-xl"
+                  <TabsTrigger
+                    value="favorites"
+                    className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-rose-600 data-[state=active]:text-white data-[state=active]:shadow-xl"
                   >
                     <Heart className="h-5 w-5" />
                     Yêu Thích ({favorites.length})
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="saved" 
-                    className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-xl"
+                  <TabsTrigger
+                    value="saved"
+                    className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-gold data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-xl"
                   >
                     <Bookmark className="h-5 w-5" />
                     Đã Lưu ({savedPlaces.length})
@@ -309,7 +309,7 @@ export default function SavedPlacesPage() {
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">Chưa có địa điểm yêu thích</h3>
                     <p className="text-gray-600 mb-8 text-lg">Hãy khám phá và thêm các địa điểm yêu thích vào bộ sưu tập!</p>
-                    <Button asChild className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Button asChild className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                       <Link href="/places">Khám phá địa điểm</Link>
                     </Button>
                   </div>
@@ -330,7 +330,7 @@ export default function SavedPlacesPage() {
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">Chưa có địa điểm đã lưu</h3>
                     <p className="text-gray-600 mb-8 text-lg">Lưu các địa điểm để lên kế hoạch cho chuyến du lịch tiếp theo!</p>
-                    <Button asChild className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Button asChild className="bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                       <Link href="/places">Khám phá địa điểm</Link>
                     </Button>
                   </div>

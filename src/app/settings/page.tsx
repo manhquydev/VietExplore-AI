@@ -32,7 +32,7 @@ import {
 import { EmailVerificationService } from "@/lib/auth/email-verification"
 import { auth } from "@/lib/firebase"
 import { User as FirebaseUser, sendEmailVerification } from "firebase/auth"
-import { useToast } from "@/components/providers/toast-provider"
+import { toastService } from "@/lib/ui/toast-service"
 
 interface EmailVerificationResult {
   success: boolean
@@ -42,7 +42,6 @@ interface EmailVerificationResult {
 
 export default function SettingsPage() {
   const { user, isAuthenticated } = useAuth()
-  const { toast } = useToast()
   const [isSaving, setIsSaving] = React.useState(false)
   const [notifications, setNotifications] = React.useState({
     email: true,
@@ -397,18 +396,17 @@ export default function SettingsPage() {
                               // Safety checks
                               if (!result || typeof result !== 'object') {
                                 console.error("❌ Invalid result:", result);
-                                toast?.error?.("Lỗi hệ thống. Vui lòng thử lại sau.");
+                                toastService.error("Lỗi", "Lỗi hệ thống. Vui lòng thử lại sau.");
                                 return;
                               }
-                              
+
                               // Handle result with professional UX
                               if (result.success) {
                                 console.log("✅ Email sent successfully");
-                                
+
                                 // Success toast with custom styling
-                                toast?.success?.(result.message || "Email xác minh đã được gửi thành công!", {
-                                  duration: 8000,
-                                  persistent: false
+                                toastService.success("Thành công", result.message || "Email xác minh đã được gửi thành công!", {
+                                  duration: 8000
                                 });
                                 
                                 // Optional: Show additional success message in UI
@@ -427,18 +425,17 @@ export default function SettingsPage() {
                                 
                                 if (errorMsg.includes('quá nhiều') || errorMsg.includes('too-many')) {
                                   // Rate limit error - show warning toast
-                                  toast?.warning?.(errorMsg, {
-                                    duration: 10000,
-                                    persistent: true
+                                  toastService.warning("Cảnh báo", errorMsg, {
+                                    duration: 10000
                                   });
                                 } else if (errorMsg.includes('mạng') || errorMsg.includes('network')) {
                                   // Network error
-                                  toast?.warning?.("Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.", {
+                                  toastService.warning("Cảnh báo", "Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.", {
                                     duration: 5000
                                   });
                                 } else {
                                   // General error
-                                  toast?.error?.(errorMsg, {
+                                  toastService.error("Lỗi", errorMsg, {
                                     duration: 6000
                                   });
                                 }
@@ -454,10 +451,10 @@ export default function SettingsPage() {
                               
                             } catch (clickError) {
                               console.error("💥 Critical error:", clickError);
-                              
+
                               // Professional error handling
                               const errorMsg = "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.";
-                              toast?.error?.(errorMsg, {
+                              toastService.error("Lỗi", errorMsg, {
                                 duration: 5000
                               });
                               
@@ -581,8 +578,8 @@ export default function SettingsPage() {
           {/* Notification Settings */}
           <div className="glass-card p-8">
             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Bell className="w-4 h-4 text-purple-600" />
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Bell className="w-4 h-4 text-brand-gold" />
               </div>
               Thông báo
             </h2>
@@ -773,7 +770,7 @@ export default function SettingsPage() {
               <Button 
                 onClick={handleSaveSettings}
                 loading={isSaving}
-                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+                className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Lưu thay đổi

@@ -23,13 +23,28 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onSwitchToRegister,
 }) => {
-  const { loginWithEmail, loginWithGoogle } = useAuth()
+  const { loginWithEmail, loginWithGoogle, error: authError, setError: setAuthError } = useAuth()
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [showPassword, setShowPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState("")
   const [showForgotPassword, setShowForgotPassword] = React.useState(false)
+
+  // Sync auth hook error with local error state
+  React.useEffect(() => {
+    if (authError) {
+      setError(authError)
+    }
+  }, [authError])
+
+  // Clear errors when modal opens/closes
+  React.useEffect(() => {
+    if (isOpen) {
+      setError("")
+      setAuthError("")
+    }
+  }, [isOpen, setAuthError])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +54,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     try {
       const success = await loginWithEmail({ email, password })
       if (success) {
-        onClose()
+        // Small delay to show success state before closing
+        setTimeout(() => {
+          onClose()
+        }, 300)
       }
     } catch (error: any) {
       console.error('Login error:', error)
@@ -50,10 +68,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   }
 
   const handleGoogleLogin = async () => {
+    setError("") // Clear any previous errors
     try {
       const success = await loginWithGoogle()
       if (success) {
-        onClose()
+        // Small delay to show success state before closing
+        setTimeout(() => {
+          onClose()
+        }, 300)
       }
     } catch (error: any) {
       console.error('Google login error:', error)

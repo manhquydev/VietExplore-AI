@@ -29,7 +29,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { useNotificationPreferences } from "@/hooks/use-notification-preferences";
-import { useToast } from "@/hooks/use-toast";
+import { toastService } from "@/lib/ui/toast-service";
 import { cn } from "@/lib/utils";
 
 const channelIcons = {
@@ -68,7 +68,6 @@ const frequencyOptions = [
 ];
 
 export function NotificationPreferences() {
-  const { toast } = useToast();
   const {
     preferences,
     loading,
@@ -105,36 +104,36 @@ export function NotificationPreferences() {
   const handleChannelToggle = async (channel: keyof typeof channelIcons) => {
     const result = await toggleChannel(channel);
     if (result.success) {
-      toast.success(`Đã ${isChannelEnabled(channel) ? 'tắt' : 'bật'} thông báo ${channelLabels[channel].toLowerCase()}`);
+      toastService.success('Thành công', `Đã ${isChannelEnabled(channel) ? 'tắt' : 'bật'} thông báo ${channelLabels[channel].toLowerCase()}`);
     } else {
-      toast.error(result.error || 'Có lỗi xảy ra');
+      toastService.error('Lỗi', result.error || 'Có lỗi xảy ra');
     }
   };
 
   const handleCategoryToggle = async (category: keyof typeof categoryIcons) => {
     const result = await toggleCategory(category);
     if (result.success) {
-      toast.success(`Đã ${isCategoryEnabled(category) ? 'tắt' : 'bật'} thông báo ${categoryLabels[category].toLowerCase()}`);
+      toastService.success('Thành công', `Đã ${isCategoryEnabled(category) ? 'tắt' : 'bật'} thông báo ${categoryLabels[category].toLowerCase()}`);
     } else {
-      toast.error(result.error || 'Có lỗi xảy ra');
+      toastService.error('Lỗi', result.error || 'Có lỗi xảy ra');
     }
   };
 
   const handleFrequencyChange = async (frequency: string) => {
     const result = await updateFrequency(frequency as any);
     if (result.success) {
-      toast.success('Đã cập nhật tần suất thông báo');
+      toastService.success('Thành công', 'Đã cập nhật tần suất thông báo');
     } else {
-      toast.error(result.error || 'Có lỗi xảy ra');
+      toastService.error('Lỗi', result.error || 'Có lỗi xảy ra');
     }
   };
 
   const handleQuietHoursUpdate = async () => {
     const result = await updateQuietHours(localQuietHours);
     if (result.success) {
-      toast.success('Đã cập nhật giờ im lặng');
+      toastService.success('Thành công', 'Đã cập nhật giờ im lặng');
     } else {
-      toast.error(result.error || 'Có lỗi xảy ra');
+      toastService.error('Lỗi', result.error || 'Có lỗi xảy ra');
     }
   };
 

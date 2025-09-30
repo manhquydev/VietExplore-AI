@@ -1,41 +1,79 @@
-   ▲ Next.js 15.5.4
-   - Local:        http://localhost:9005
-   - Network:      http://172.25.32.1:9005
-   - Environments: .env.local, .env
-   - Experiments (use with caution):
-     · optimizePackageImports
+main-app.js?v=1759238687571:2282 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\ui\toast-service.ts:238 [ToastService] Initialized and ready
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\ui\toast-provider-bridge.tsx:34 [ToastProviderBridge] Subscribed to toast service
+hot-reloader-client.js:197 [Fast Refresh] rebuilding
+report-hmr-latency.js:14 [Fast Refresh] done in 11685ms
+hot-reloader-client.js:197 [Fast Refresh] rebuilding
+report-hmr-latency.js:14 [Fast Refresh] done in 4486ms
+hot-reloader-client.js:197 [Fast Refresh] rebuilding
+report-hmr-latency.js:14 [Fast Refresh] done in 2102ms
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:100  POST http://localhost:9002/api/users/avatar 500 (Internal Server Error)
+uploadAvatar @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:100
+await in uploadAvatar
+handleAvatarChange @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:86
+executeDispatch @ react-dom-client.development.js:16502
+runWithFiberInDEV @ react-dom-client.development.js:845
+processDispatchQueue @ react-dom-client.development.js:16552
+eval @ react-dom-client.development.js:17150
+batchedUpdates$1 @ react-dom-client.development.js:3263
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16706
+dispatchEvent @ react-dom-client.development.js:20816
+dispatchDiscreteEvent @ react-dom-client.development.js:20784
+<input>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+ProfilePage @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:241
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14526
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:125 Avatar upload error: Error: Không thể tải lên ảnh đại diện: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
 
- ✓ Starting...
- ✓ Ready in 4.3s
- ✓ Compiled /middleware in 299ms (114 modules)
-[Middleware] Processing request: /
-[Middleware] No maintenance cookie found, defaulting to disabled
-[Middleware] Maintenance status: {
-  enabled: false,
-  message: 'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
-  allowedIPs: []
-}
- ○ Compiling / ...
- ✓ Compiled / in 21.4s (2385 modules)
- ⨯ Error: Cannot find module 'next/dist/shared/lib/no-fallback-error.external'
-Require stack:
-- C:\Users\manhq\Downloads\da2\VietExplore-AI\.next\server\app\page.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\server\require.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\server\load-components.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\build\utils.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\build\swc\options.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\build\swc\index.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\build\next-config-ts\transpile-config.js       
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\server\config.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\server\next.js
-- C:\Users\manhq\AppData\Local\npm-cache\_npx\8b377f6eec906bc4\node_modules\next\dist\server\lib\start-server.js
-    at next/dist/shared/lib/no-fallback-error.external (C:\Users\manhq\Downloads\da2\VietExplore-AI\.next\server\app\page.js:1198:18)
-    at __webpack_exec__ (C:\Users\manhq\Downloads\da2\VietExplore-AI\.next\server\app\page.js:1318:39)
-    at <unknown> (C:\Users\manhq\Downloads\da2\VietExplore-AI\.next\server\app\page.js:1319:4992)
-    at <unknown> (C:\Users\manhq\Downloads\da2\VietExplore-AI\.next\server\app\page.js:1319:47)
-    at Object.<anonymous> (C:\Users\manhq\Downloads\da2\VietExplore-AI\.next\server\app\page.js:1322:3) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array],
-  page: '/'
-}
- ○ Compiling /_error ...
+    at uploadAvatar (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:111:15)
+    at async handleAvatarChange (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:86:5)
+error @ intercept-console-error.js:50
+uploadAvatar @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:125
+await in uploadAvatar
+handleAvatarChange @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:86
+executeDispatch @ react-dom-client.development.js:16502
+runWithFiberInDEV @ react-dom-client.development.js:845
+processDispatchQueue @ react-dom-client.development.js:16552
+eval @ react-dom-client.development.js:17150
+batchedUpdates$1 @ react-dom-client.development.js:3263
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16706
+dispatchEvent @ react-dom-client.development.js:20816
+dispatchDiscreteEvent @ react-dom-client.development.js:20784
+<input>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+ProfilePage @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\profile\me\page.tsx:241
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14526
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45

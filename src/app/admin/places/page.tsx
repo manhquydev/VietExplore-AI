@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminPlacesStable } from "@/hooks/use-admin-places-stable"
 import { Place, PlaceType, PlaceRegion, PlaceStatus } from "@/lib/types/places"
-import { useToast } from "@/hooks/use-toast"
+import { toastService } from "@/lib/ui/toast-service"
 import { BrandedLoading } from "@/components/ui/branded-loading"
 import Link from "next/link"
 
@@ -61,7 +61,6 @@ interface PlaceFilters {
 export default function EnhancedPlacesManagementPage() {
   const { user } = useAuth()
   const { colors, spacing, animations, isDark } = useAdminTheme()
-  const { toast } = useToast()
   
   const [filters, setFilters] = useState<PlaceFilters>({
     search: '',
@@ -115,13 +114,13 @@ export default function EnhancedPlacesManagementPage() {
     console.log(`Bulk action: ${action} for ${places.length} places`)
     switch(action) {
       case 'publish':
-        toast.success(`Đã xuất bản ${places.length} địa điểm`)
+        toastService.success('Thành công', `Đã xuất bản ${places.length} địa điểm`)
         break
       case 'hide':
-        toast.success(`Đã ẩn ${places.length} địa điểm`)
+        toastService.success('Thành công', `Đã ẩn ${places.length} địa điểm`)
         break
       case 'delete':
-        toast.success(`Đã xóa ${places.length} địa điểm`)
+        toastService.success('Thành công', `Đã xóa ${places.length} địa điểm`)
         break
     }
   }
@@ -243,12 +242,12 @@ export default function EnhancedPlacesManagementPage() {
               <Edit3 className="h-3 w-3" />
             </EnhancedButton>
           </Link>
-          <EnhancedButton 
-            variant="ghost" 
+          <EnhancedButton
+            variant="ghost"
             size="xs"
             onClick={() => {
               if (confirm('Bạn có chắc muốn xóa địa điểm này?')) {
-                toast.success('Đã xóa địa điểm')
+                toastService.success('Thành công', 'Đã xóa địa điểm')
               }
             }}
           >

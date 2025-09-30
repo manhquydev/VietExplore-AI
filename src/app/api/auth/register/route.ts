@@ -87,20 +87,35 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Registration error:', error);
-    
+
     let errorMessage = 'Đăng ký thất bại';
-    
-    if (error.code === 'auth/email-already-exists') {
-      errorMessage = 'Email đã được sử dụng';
+    let statusCode = 400;
+
+    if (error.code === 'auth/email-already-exists' || error.code === 'auth/email-already-in-use') {
+      errorMessage = 'Email này đã được sử dụng. Vui lòng đăng nhập hoặc sử dụng email khác';
+      statusCode = 409; // Conflict
     } else if (error.code === 'auth/weak-password') {
-      errorMessage = 'Mật khẩu quá yếu';
+      errorMessage = 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn (ít nhất 6 ký tự)';
     } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Email không hợp lệ';
+      errorMessage = 'Định dạng email không hợp lệ';
+    } else if (error.code === 'auth/operation-not-allowed') {
+      errorMessage = 'Phương thức đăng ký này chưa được kích hoạt';
+      statusCode = 403;
+    } else if (error.code === 'auth/network-request-failed') {
+      errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet';
+      statusCode = 503;
+    } else if (error.message?.includes('already exists')) {
+      errorMessage = 'Tài khoản đã tồn tại. Vui lòng đăng nhập';
+      statusCode = 409;
     }
 
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 400 }
+      {
+        error: errorMessage,
+        code: error.code || 'registration/failed',
+        retryable: ['auth/network-request-failed'].includes(error.code)
+      },
+      { status: statusCode }
     );
   }
 }

@@ -305,13 +305,15 @@ export const AdminInputDialog = ({
 
 // === SPECIALIZED MODERATION DIALOGS ===
 
-export const AdminRejectDialog = ({ onConfirm, trigger }: {
+export const AdminRejectDialog = ({ onConfirm, trigger, title, description }: {
   onConfirm: (reason: string) => void | Promise<void>
   trigger: React.ReactNode
+  title?: string
+  description?: string
 }) => (
   <AdminInputDialog
-    title="Từ chối nội dung"
-    description="Vui lòng cho biết lý do từ chối để người gửi có thể hiểu và cải thiện."
+    title={title || "Từ chối nội dung"}
+    description={description || "Vui lòng cho biết lý do từ chối để người gửi có thể hiểu và cải thiện."}
     placeholder="Nhập lý do từ chối..."
     label="Lý do từ chối"
     confirmText="Từ chối"
@@ -354,14 +356,16 @@ export const AdminDeleteDialog = ({ itemName, onConfirm, trigger }: {
   />
 )
 
-export const AdminApproveDialog = ({ itemName, onConfirm, trigger }: {
+export const AdminApproveDialog = ({ itemName, onConfirm, trigger, title, description }: {
   itemName: string
   onConfirm: () => void | Promise<void>
   trigger: React.ReactNode
+  title?: string
+  description?: string
 }) => (
   <AdminConfirmDialog
-    title="Phê duyệt nội dung"
-    description={`Phê duyệt "${itemName}" và công khai cho người dùng?`}
+    title={title || "Phê duyệt nội dung"}
+    description={description || `Phê duyệt "${itemName}" và công khai cho người dùng?`}
     confirmText="Phê duyệt"
     variant="default"
     onConfirm={onConfirm}

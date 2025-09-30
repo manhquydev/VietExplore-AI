@@ -7,7 +7,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { 
+import {
   Plus,
   Search,
   Calendar,
@@ -29,7 +29,8 @@ import {
   BarChart3,
   Loader2,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  CheckCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -168,24 +169,26 @@ export default function MyItinerariesPage() {
   // Redirect if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white/95 backdrop-blur-sm">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
         <Header />
         <main className="min-h-screen pt-16">
           <section className="relative py-20 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white/40 to-sky-50/30"></div>
-            
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50/30 via-white/40 to-amber-50/30"></div>
+
             <div className="relative container">
               <div className="bg-white rounded-2xl shadow-lg border-0 max-w-md mx-auto text-center p-8">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-blue-600" />
+                <div className="w-16 h-16 bg-gradient-to-br from-brand-green to-brand-forest rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Calendar className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="gradient-text text-2xl font-bold mb-4">Đăng nhập để xem lịch trình</h1>
+                <h1 className="text-2xl font-bold mb-4 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
+                  Đăng nhập để xem lịch trình
+                </h1>
                 <p className="text-gray-600 mb-6">
                   Bạn cần đăng nhập để quản lý lịch trình cá nhân
                 </p>
-                <Button 
-                  asChild 
-                  className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+                <Button
+                  asChild
+                  className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg"
                 >
                   <Link href="/auth/login">Đăng nhập ngay</Link>
                 </Button>
@@ -199,29 +202,29 @@ export default function MyItinerariesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white/95 backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-16 sm:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white/40 to-sky-50/30"></div>
-          
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50/30 via-white/40 to-amber-50/30"></div>
+
           <div className="relative container">
             <div className="bg-white rounded-2xl shadow-lg border-0 text-center p-8 mb-8">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BarChart3 className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-gradient-to-br from-brand-gold to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <BarChart3 className="w-8 h-8 text-white" />
               </div>
-              <h1 className="gradient-text text-3xl sm:text-4xl font-bold mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
                 Lịch trình của tôi
               </h1>
               <p className="text-gray-600 text-lg mb-6">
                 Quản lý và chia sẻ các lịch trình du lịch của bạn
               </p>
-              
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+
+              <Button
+                asChild
+                className="bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white shadow-lg"
               >
                 <Link href="/itineraries/builder">
                   <Plus className="w-4 h-4 mr-2" />
@@ -235,29 +238,41 @@ export default function MyItinerariesPage() {
         <section className="container py-12 relative">
           {/* Stats Dashboard */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
-            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-lg border border-green-100 p-6 text-center hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 mx-auto mb-3 bg-brand-green/10 rounded-xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-brand-green" />
+              </div>
+              <div className="text-3xl font-bold text-brand-green mb-2">
                 {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.total || 0)}
               </div>
-              <div className="text-sm text-gray-600">Tổng lịch trình</div>
+              <div className="text-sm text-gray-700 font-medium">Tổng lịch trình</div>
             </div>
-            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="text-3xl font-bold text-green-600 mb-2">
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl shadow-lg border border-emerald-100 p-6 text-center hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 mx-auto mb-3 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-emerald-600" />
+              </div>
+              <div className="text-3xl font-bold text-emerald-600 mb-2">
                 {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.published || 0)}
               </div>
-              <div className="text-sm text-gray-600">Đã xuất bản</div>
+              <div className="text-sm text-gray-700 font-medium">Đã xuất bản</div>
             </div>
-            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
+            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl shadow-lg border border-amber-100 p-6 text-center hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 mx-auto mb-3 bg-brand-gold/10 rounded-xl flex items-center justify-center">
+                <Eye className="w-6 h-6 text-brand-gold" />
+              </div>
+              <div className="text-3xl font-bold text-brand-gold mb-2">
                 {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.totalViews || 0)}
               </div>
-              <div className="text-sm text-gray-600">Lượt xem</div>
+              <div className="text-sm text-gray-700 font-medium">Lượt xem</div>
             </div>
-            <div className="bg-white rounded-xl shadow-md border-0 p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="text-3xl font-bold text-pink-600 mb-2">
+            <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl shadow-lg border border-rose-100 p-6 text-center hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 mx-auto mb-3 bg-rose-100 rounded-xl flex items-center justify-center">
+                <Heart className="w-6 h-6 text-rose-600" />
+              </div>
+              <div className="text-3xl font-bold text-rose-600 mb-2">
                 {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : (stats?.totalLikes || 0)}
               </div>
-              <div className="text-sm text-gray-600">Lượt thích</div>
+              <div className="text-sm text-gray-700 font-medium">Lượt thích</div>
             </div>
           </div>
 
@@ -347,9 +362,9 @@ export default function MyItinerariesPage() {
               <p className="text-gray-600 mb-6">
                 {error}
               </p>
-              <Button 
+              <Button
                 onClick={refetch}
-                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+                className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Thử lại
@@ -380,9 +395,9 @@ export default function MyItinerariesPage() {
                   : "Tạo lịch trình đầu tiên để bắt đầu lên kế hoạch du lịch"
                 }
               </p>
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white"
+              <Button
+                asChild
+                className="bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white shadow-lg"
               >
                 <Link href="/itineraries/builder">
                   <Plus className="w-4 h-4 mr-2" />

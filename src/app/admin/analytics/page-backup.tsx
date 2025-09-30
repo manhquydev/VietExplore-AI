@@ -52,7 +52,7 @@ import {
   Shield
 } from "lucide-react"
 import { useAdminStats, useAdminUsers, useAdminPlaces, useModerationQueue } from "@/hooks/use-admin"
-import { useToast } from "@/components/providers/toast-provider"
+import { toastService } from "@/lib/ui/toast-service"
 import RealtimeService from "@/lib/firebase/realtime"
 import { cn } from "@/lib/utils"
 
@@ -75,7 +75,6 @@ function calculateAverageProcessingTime(moderationItems: any[] = []) {
 }
 
 export default function AdminAnalyticsPage() {
-  const { toast } = useToast()
   const [timeRange, setTimeRange] = React.useState('30d')
   const [realtimeStats, setRealtimeStats] = React.useState<Record<string, any>>({})
   const [activeTab, setActiveTab] = React.useState('overview')
@@ -152,9 +151,9 @@ export default function AdminAnalyticsPage() {
 
   React.useEffect(() => {
     if (hasError) {
-      toast.error(`Analytics data error: ${usersError || placesError || moderationError}`)
+      toastService.error('Lỗi', `Analytics data error: ${usersError || placesError || moderationError}`)
     }
-  }, [hasError, usersError, placesError, moderationError, toast])
+  }, [hasError, usersError, placesError, moderationError])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -176,9 +175,9 @@ export default function AdminAnalyticsPage() {
     try {
       // Trigger a re-fetch of all data
       await new Promise(resolve => setTimeout(resolve, 1000))
-      toast('Dữ liệu đã được cập nhật', { variant: 'default' })
+      toastService.success('Thành công', 'Dữ liệu đã được cập nhật')
     } catch (error) {
-      toast('Không thể cập nhật dữ liệu', { variant: 'destructive' })
+      toastService.error('Lỗi', 'Không thể cập nhật dữ liệu')
     } finally {
       setRefreshing(false)
     }

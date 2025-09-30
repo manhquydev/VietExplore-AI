@@ -221,9 +221,9 @@ export default function AuditDashboardPage() {
           await RealtimeService.logAuditAction({
             action: 'update',
             actor: {
-              id: user.uid || 'unknown',
-              name: user.displayName || user.email || 'Unknown User',
-              role: user.role || 'user',
+              id: user.id || 'unknown',
+              name: user.fullName || user.email || 'Unknown User',
+              role: user.role || 'traveler',
               email: user.email || undefined
             },
             target: {
@@ -245,7 +245,7 @@ export default function AuditDashboardPage() {
       }
       
       // Log access only once per session
-      const sessionKey = `audit-access-${user.uid}-${Date.now().toString().slice(0, -5)}`
+      const sessionKey = `audit-access-${user.id}-${Date.now().toString().slice(0, -5)}`
       if (!sessionStorage.getItem(sessionKey)) {
         setTimeout(logAccess, 1000)
         sessionStorage.setItem(sessionKey, '1')

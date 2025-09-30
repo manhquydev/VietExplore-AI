@@ -67,17 +67,58 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               ...user,
               uid: firebaseUser.uid
             })
-          } else {
-            console.error('Failed to fetch user data')
+          } else if (response.status === 401) {
+            // Token expired or invalid - silently sign out
+            console.warn('Auth token invalid, signing out user')
+            await signOut(auth)
             setUser(null)
+          } else {
+            console.error('Failed to fetch user data:', response.status)
+            // For other errors, use fallback user data from Firebase
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              fullName: firebaseUser.displayName || 'User',
+              username: firebaseUser.email?.split('@')[0] || 'user',
+              role: 'traveler' as any,
+              verified: false,
+              emailVerified: firebaseUser.emailVerified,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              stats: {
+                placesContributed: 0,
+                itinerariesCreated: 0,
+                helpfulVotes: 0
+              }
+            })
           }
         } catch (error: any) {
-          console.error('Error fetching user data:', error)
-          setUser(null)
-          
-          // Show user-friendly error message for specific cases
-          if (error?.code === 'auth/token-expired') {
-            console.warn('Authentication token expired, user needs to re-login')
+          console.error('Error in auth state change:', error)
+
+          // Handle token expiration
+          if (error?.code === 'auth/token-expired' || error?.code === 'auth/id-token-expired') {
+            console.warn('Authentication token expired, signing out user')
+            await signOut(auth)
+            setUser(null)
+          } else {
+            // For network errors, use fallback user data
+            console.warn('Using fallback user data due to error:', error.message)
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              fullName: firebaseUser.displayName || 'User',
+              username: firebaseUser.email?.split('@')[0] || 'user',
+              role: 'traveler' as any,
+              verified: false,
+              emailVerified: firebaseUser.emailVerified,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              stats: {
+                placesContributed: 0,
+                itinerariesCreated: 0,
+                helpfulVotes: 0
+              }
+            })
           }
         }
       } else {

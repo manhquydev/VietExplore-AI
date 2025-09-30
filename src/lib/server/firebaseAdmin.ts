@@ -18,11 +18,17 @@ function initializeFirebaseAdmin() {
 
   if (serviceAccount.projectId && serviceAccount.clientEmail && serviceAccount.privateKey) {
     try {
+      // Use NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET from env or fallback to new format
+      const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+                           `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app`;
+
+      console.log('[Firebase Admin] Initializing with storage bucket:', storageBucket);
+
       return admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: process.env.FIREBASE_PROJECT_ID,
-        storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
-        databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com/`
+        storageBucket: storageBucket,
+        databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.asia-southeast1.firebasedatabase.app`
       });
     } catch (error: any) {
       console.error('Firebase Admin SDK initialization error:', error);

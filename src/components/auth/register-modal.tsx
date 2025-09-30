@@ -21,7 +21,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   onClose,
   onSwitchToLogin,
 }) => {
-  const { registerWithEmail, loginWithGoogle, error, setError } = useAuth()
+  const { registerWithEmail, loginWithGoogle, error: authError, setError: setAuthError } = useAuth()
   const [formData, setFormData] = React.useState({
     fullName: "",
     email: "",
@@ -33,6 +33,29 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+
+  // Sync auth hook error with local error state
+  React.useEffect(() => {
+    if (authError) {
+      setErrors({ general: authError })
+    }
+  }, [authError])
+
+  // Clear errors when modal opens/closes
+  React.useEffect(() => {
+    if (isOpen) {
+      setErrors({})
+      setAuthError("")
+      // Reset form
+      setFormData({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        agreeToTerms: false,
+      })
+    }
+  }, [isOpen, setAuthError])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -67,7 +90,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors = validateForm()
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       return
@@ -77,28 +100,22 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     setErrors({})
 
     try {
-      setError(''); // Clear previous errors
+      setAuthError(''); // Clear previous errors
       const success = await registerWithEmail({
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         displayName: formData.fullName,
       })
-      
+
       if (success) {
-        // Show success message briefly before closing
-        setErrors({ general: '' });
-        
-        // Small delay to show loading complete, then close
+        // Small delay to show success state before closing
         setTimeout(() => {
           onClose();
         }, 500);
-      } else {
-        // If registerWithEmail returns false, the error will be in useAuth error state
-        if (error) {
-          setErrors({ general: error })
-        }
       }
+      // If registerWithEmail returns false, the error will be shown via Toast
+      // and synced to local state via useEffect
     } catch (error: any) {
       console.error('Registration error:', error)
       setErrors({ general: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại." })
@@ -108,16 +125,18 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   }
 
   const handleGoogleRegister = async () => {
+    setErrors({}); // Clear previous errors
     try {
-      setError(''); // Clear previous errors
+      setAuthError(''); // Clear previous errors
       const success = await loginWithGoogle()
       if (success) {
-        onClose()
-      } else {
-        if (error) {
-          setErrors({ general: error })
-        }
+        // Small delay to show success state before closing
+        setTimeout(() => {
+          onClose()
+        }, 300)
       }
+      // If loginWithGoogle returns false, the error will be shown via Toast
+      // and synced to local state via useEffect
     } catch (error: any) {
       console.error('Google registration error:', error)
       setErrors({ general: error.message || "Đăng ký Google thất bại" })

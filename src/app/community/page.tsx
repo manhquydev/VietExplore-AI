@@ -67,19 +67,19 @@ export default function CommunityPage() {
   const { contributors: topContributors, loading: contributorsLoading, error: contributorsError } = useTopContributors({ limit: 3 })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50 ">
       <Header />
       
       <main className="min-h-screen pt-16">
         {/* Hero Section */}
         <section className="relative py-20 sm:py-24 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 "></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-amber-50/40 to-green-50/60 "></div>
           
           <div className="relative container">
             <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
               <div className="flex items-center justify-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100  flex items-center justify-center">
-                  <Users className="w-6 h-6 text-sky-600 " />
+                  <Users className="w-6 h-6 text-brand-green " />
                 </div>
                 <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                   Cộng Đồng Du Lịch Việt
@@ -116,7 +116,7 @@ export default function CommunityPage() {
               </div>
 
               <div className="flex flex-wrap gap-3 justify-center">
-                <Button className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600 text-white">
+                <Button className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white">
                   <UserPlus className="w-4 h-4 mr-2" />
                   Tham gia cộng đồng
                 </Button>
@@ -147,7 +147,7 @@ export default function CommunityPage() {
                   <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="text-center">
                       <div className="w-12 h-12 bg-blue-100  rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <Users className="w-6 h-6 text-blue-600 " />
+                        <Users className="w-6 h-6 text-brand-green " />
                       </div>
                       <div className="text-2xl font-bold text-slate-900 ">
                         {communityStats.totalMembers.toLocaleString()}
@@ -167,7 +167,7 @@ export default function CommunityPage() {
                     
                     <div className="text-center">
                       <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        <Calendar className="w-6 h-6 text-brand-gold dark:text-purple-400" />
                       </div>
                       <div className="text-2xl font-bold text-slate-900 ">
                         {communityStats.totalItineraries.toLocaleString()}
@@ -240,7 +240,7 @@ export default function CommunityPage() {
                   <Link href="/community/guidelines">
                     <div className="glass-subtle p-4 rounded-xl hover:scale-105 transition-transform cursor-pointer">
                       <div className="flex items-center gap-3 mb-2">
-                        <BookOpen className="w-5 h-5 text-sky-600" />
+                        <BookOpen className="w-5 h-5 text-brand-green" />
                         <h3 className="font-semibold text-slate-900 ">Hướng dẫn đóng góp</h3>
                       </div>
                       <p className="text-sm text-slate-600 ">
@@ -252,7 +252,7 @@ export default function CommunityPage() {
                   <Link href="/community/handbook">
                     <div className="glass-subtle p-4 rounded-xl hover:scale-105 transition-transform cursor-pointer">
                       <div className="flex items-center gap-3 mb-2">
-                        <FileText className="w-5 h-5 text-teal-600" />
+                        <FileText className="w-5 h-5 text-brand-forest" />
                         <h3 className="font-semibold text-slate-900 ">Cẩm nang thành viên</h3>
                       </div>
                       <p className="text-sm text-slate-600 ">
@@ -375,7 +375,7 @@ export default function CommunityPage() {
                         {communityStats.weeklyHighlights.topPlace ? (
                           <Link 
                             href={`/places/${communityStats.weeklyHighlights.topPlace.slug}`}
-                            className="hover:text-sky-600 underline"
+                            className="hover:text-brand-green underline"
                           >
                             {communityStats.weeklyHighlights.topPlace.name} với {communityStats.weeklyHighlights.topPlace.likes.toLocaleString()} lượt thích
                           </Link>

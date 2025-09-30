@@ -11,7 +11,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/auth/auth-provider'
 import { useAdminStats } from '@/hooks/use-admin'
 import { cn } from '@/lib/utils'
-import { designSystem } from '@/lib/design-system'
+import { vietnamTravelTheme as designSystem, getRoleColors } from '@/lib/admin/vietnam-travel-theme'
 import Image from 'next/image'
 import { 
   ChevronLeft,
@@ -132,7 +132,7 @@ export function ModernSidebar({
       <aside 
         className={cn(
           // Base styles - fixed position để không cuộn theo trang
-          'fixed left-0 top-0 z-50 h-screen bg-white  border-r  transition-all duration-300 ease-out',
+          'fixed left-0 top-0 z-50 h-screen bg-white border-r border-neutral-200 transition-all duration-300 ease-out',
           // Width variations
           collapsed ? 'w-16' : 'w-64',
           // Mobile styles
@@ -140,9 +140,6 @@ export function ModernSidebar({
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           className
         )}
-        style={{
-          borderColor: designSystem.semanticColors.border.default
-        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-200">
@@ -173,9 +170,6 @@ export function ModernSidebar({
                 'hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                 collapsed && 'mx-auto'
               )}
-              style={{
-                borderColor: designSystem.semanticColors.border.default
-              }}
             >
               <ChevronLeft className={cn(
                 'h-4 w-4 transition-transform',
@@ -307,10 +301,7 @@ export function ModernSidebar({
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="fixed top-4 left-4 z-40 lg:hidden flex h-10 w-10 items-center justify-center rounded-md bg-white border shadow-sm hover:bg-neutral-50"
-        style={{
-          borderColor: designSystem.semanticColors.border.default
-        }}
+        className="fixed top-4 left-4 z-40 lg:hidden flex h-10 w-10 items-center justify-center rounded-md bg-white border border-neutral-200 shadow-sm hover:bg-neutral-50"
       >
         <Menu className="h-5 w-5" />
       </button>

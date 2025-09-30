@@ -6,7 +6,7 @@
 'use client'
 
 import * as React from 'react'
-import { ModernSidebar } from './modern-sidebar'
+import { VietnamTravelSidebar } from './vietnam-travel-sidebar'
 import { useAuth } from '@/components/auth/auth-provider'
 import { BrandedLoading } from '@/components/ui/branded-loading'
 import { useRouter } from 'next/navigation'
@@ -50,17 +50,17 @@ export function ModernAdminLayout({ children }: ModernAdminLayoutProps) {
   return (
     <div className="flex min-h-screen bg-neutral-50 ">
       {/* Sidebar */}
-      <ModernSidebar 
+      <VietnamTravelSidebar
         collapsed={sidebarCollapsed}
         onToggleCollapsed={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
-        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
       }`}>
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white  border-b  shadow-sm">
+        <header className="sticky top-0 z-30 bg-white border-b border-neutral-200 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             {/* Left side - could add breadcrumbs here */}
             <div className="flex-1">

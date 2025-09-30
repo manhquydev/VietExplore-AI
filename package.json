@@ -57,6 +57,7 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/validator": "^13.15.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
@@ -77,12 +78,13 @@
     "react-hook-form": "^7.54.2",
     "react-markdown": "^9.1.0",
     "recharts": "^2.15.1",
-    "sharp": "^0.34.3",
+    "sharp": "^0.34.4",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^12.0.0",
+    "validator": "^13.15.15",
     "xlsx": "^0.18.5",
-    "zod": "^3.24.2"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.8.0",

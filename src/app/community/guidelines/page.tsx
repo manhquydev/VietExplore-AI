@@ -191,7 +191,7 @@ export default function CommunityGuidelinesPage() {
                 </p>
               </div>
               <div>
-                <svg className="w-8 h-8 text-blue-600 mb-3 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-brand-green mb-3 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 22V7.5a3 3 0 013-3h9a3 3 0 013 3V22m-10.5-10.5h3m-3 4h3m-6-10V2.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75V1.5"/>
                 </svg>
                 <h4 className="font-semibold text-text mb-2">Phát triển</h4>

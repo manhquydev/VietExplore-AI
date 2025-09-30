@@ -3,6 +3,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,6 +21,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+const functions = getFunctions(app);
 
 // Enhanced Google Provider configuration for 2025
 export const googleProvider = new GoogleAuthProvider();
@@ -45,4 +47,4 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export { app, db, auth, storage };
+export { app, db, auth, storage, functions };

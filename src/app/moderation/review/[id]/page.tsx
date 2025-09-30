@@ -1,9 +1,13 @@
+/**
+ * Moderation Review Detail Page - Vietnam Travel Theme
+ * Modern admin interface for detailed content review
+ */
+
 "use client"
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -12,8 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { 
+import {
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -29,13 +32,15 @@ import {
   Image as ImageIcon,
   Video,
   ExternalLink,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { auth } from "@/lib/firebase"
 import { ActivityLog } from "@/components/moderation-history"
+import { BrandedLoading } from "@/components/ui/branded-loading"
 
 interface ReviewPageProps {
   params: Promise<{
@@ -244,53 +249,74 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
     }
   }
 
+  // Show loading while authenticating
   if (!isAuthenticated || !isModerator) {
     return (
-      <div className="min-h-screen bg-bg text-text">
-        <Header />
-        <main className="container py-16">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Không có quyền truy cập</h1>
-            <Button variant="secondary" onClick={() => router.back()}>
-              Quay lại
-            </Button>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <BrandedLoading
+          variant="logo"
+          size="lg"
+          text="Đang xác thực quyền truy cập..."
+        />
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg text-text">
-        <Header />
-        <main className="container py-16">
-          <div className="text-center">
-            <LoadingSpinner size="lg" />
-            <p className="mt-4 text-muted">Đang tải thông tin kiểm duyệt...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <BrandedLoading
+          variant="logo"
+          size="lg"
+          text="Đang tải thông tin kiểm duyệt..."
+        />
       </div>
     )
   }
 
   if (error || !reviewItem) {
     return (
-      <div className="min-h-screen bg-bg text-text">
-        <Header />
-        <main className="container py-16">
-          <div className="text-center">
-            <AlertTriangle className="w-12 h-12 text-danger mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-4">Lỗi</h1>
-            <p className="text-muted mb-6">{error || 'Không tìm thấy mục kiểm duyệt'}</p>
-            <Button variant="secondary" onClick={() => router.back()}>
-              Quay lại
-            </Button>
+      <div className="min-h-screen bg-neutral-50">
+        {/* Vietnam Travel Themed Header */}
+        <div className="bg-gradient-to-r from-red-100 via-red-50 to-red-100 border-b-2 border-red-200">
+          <div className="container mx-auto px-6 py-8">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-xl border-2 border-red-300">
+                <AlertTriangle className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-red-800 mb-1">⚠️ Có lỗi xảy ra</h1>
+                <p className="text-lg text-red-700 font-medium">Không thể tải thông tin kiểm duyệt</p>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <main className="container mx-auto px-6 py-16">
+          <Card className="max-w-2xl mx-auto border-2 border-red-200">
+            <CardContent className="p-12 text-center">
+              <div className="text-6xl mb-6">😔</div>
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">Không tìm thấy mục kiểm duyệt</h2>
+              <p className="text-gray-600 mb-8">{error || 'Mục này có thể đã được xử lý hoặc đã bị xóa'}</p>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="border-2 border-gray-300"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Quay lại
+                </Button>
+                <Button
+                  onClick={() => router.push('/moderation/dashboard')}
+                  className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+                >
+                  Về Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </main>
-        <Footer />
       </div>
     )
   }
@@ -300,74 +326,121 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
   const contentDetails = reviewItem.contentDetails || {}
 
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <Header />
-      
-      <main className="container py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Quay lại
-          </Button>
-          
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold">{contentDetails.name || reviewItem.metadata?.title || 'Địa điểm'}</h1>
-              <Badge variant={statusInfo.variant} className="flex items-center gap-1.5">
-                <statusInfo.icon className="w-3.5 h-3.5" />
-                {statusInfo.label}
-              </Badge>
-              <Badge variant={priorityInfo.variant} size="sm">
-                {priorityInfo.label}
-              </Badge>
-            </div>
-            
-            <div className="flex items-center gap-4 text-sm text-muted">
-              <span className="flex items-center gap-1.5">
-                <User className="w-4 h-4" />
-                Gửi bởi: <strong>{reviewItem.submitter?.fullName || reviewItem.submittedBy || 'Người dùng'}</strong>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                {new Date(reviewItem.submittedAt).toLocaleDateString('vi-VN', {
-                  day: '2-digit',
-                  month: '2-digit', 
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-              <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                ID: {reviewItem.id}
-              </span>
+    <div className="min-h-screen bg-neutral-50">
+      {/* Vietnam Travel Themed Header */}
+      <div className="bg-gradient-to-r from-green-100 via-yellow-50 to-green-100 border-b-2 border-yellow-200">
+        <div className="container mx-auto px-6 py-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/moderation/dashboard')}
+              className="flex items-center gap-2 hover:bg-white/50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Về Dashboard
+            </Button>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-yellow-500 flex items-center justify-center shadow-xl border-2 border-yellow-300 overflow-hidden flex-shrink-0">
+                <Image
+                  src="/logo-icon.svg"
+                  alt="Du Lịch Việt"
+                  width={40}
+                  height={40}
+                  className="scale-75"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-green-800">
+                    {contentDetails.name || reviewItem.metadata?.title || 'Chi tiết kiểm duyệt'}
+                  </h1>
+                  <Badge
+                    className={cn(
+                      "gap-1.5 text-xs font-semibold shadow-sm px-3 py-1",
+                      statusInfo.variant === 'success' && "bg-green-100 text-green-700",
+                      statusInfo.variant === 'warning' && "bg-yellow-100 text-yellow-700",
+                      statusInfo.variant === 'danger' && "bg-red-100 text-red-700",
+                      statusInfo.variant === 'default' && "bg-blue-100 text-blue-700",
+                      statusInfo.variant === 'secondary' && "bg-gray-100 text-gray-700"
+                    )}
+                  >
+                    <statusInfo.icon className="w-3.5 h-3.5" />
+                    {statusInfo.label}
+                  </Badge>
+                  <Badge
+                    className={cn(
+                      "text-xs font-semibold shadow-sm px-3 py-1",
+                      priorityInfo.variant === 'danger' && "bg-red-100 text-red-700",
+                      priorityInfo.variant === 'warning' && "bg-orange-100 text-orange-700",
+                      priorityInfo.variant === 'default' && "bg-blue-100 text-blue-700",
+                      priorityInfo.variant === 'secondary' && "bg-gray-100 text-gray-700"
+                    )}
+                  >
+                    {priorityInfo.label}
+                  </Badge>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 text-sm text-green-700">
+                  <span className="flex items-center gap-1.5">
+                    <User className="w-4 h-4" />
+                    <strong>{reviewItem.submitter?.fullName || reviewItem.submittedBy || 'Người dùng'}</strong>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(reviewItem.submittedAt).toLocaleDateString('vi-VN', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                  <span className="text-xs bg-white/80 text-green-700 px-3 py-1 rounded-full font-medium border border-green-200">
+                    ID: {reviewItem.id}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <main className="container mx-auto px-6 py-8">
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="content" className="flex items-center gap-2">
+              <TabsList className="grid w-full grid-cols-4 bg-white border-2 border-green-200 p-1">
+                <TabsTrigger
+                  value="content"
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white font-semibold"
+                >
                   <FileText className="w-4 h-4" />
                   Nội dung
                 </TabsTrigger>
-                <TabsTrigger value="media" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="media"
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white font-semibold"
+                >
                   <ImageIcon className="w-4 h-4" />
                   Ảnh & Video ({(contentDetails.images?.length || 0) + (contentDetails.video ? 1 : 0)})
                 </TabsTrigger>
-                <TabsTrigger value="sources" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="sources"
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold"
+                >
                   <ExternalLink className="w-4 h-4" />
-                  Nguồn tham khảo
+                  Nguồn
                 </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="history"
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white font-semibold"
+                >
                   <Clock className="w-4 h-4" />
                   Lịch sử
                 </TabsTrigger>
@@ -377,13 +450,13 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
 
                 {/* Edit Comparison for Published Places */}
                 {(contentDetails.isEditRequest || reviewItem?.itemType === 'place_edit' || reviewItem?.action === 'edit_review') && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="border-2 border-orange-200 shadow-md">
+                    <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50">
+                      <CardTitle className="flex items-center gap-2 text-orange-800">
                         <RefreshCw className="w-5 h-5 text-orange-600" />
                         So sánh chỉnh sửa địa điểm
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-orange-700">
                         Bên trái là nội dung gốc đã xuất bản, bên phải là nội dung chỉnh sửa đề xuất
                       </p>
                     </CardHeader>
@@ -505,10 +578,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 )}
 
                 {/* Basic Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
+                <Card className="border-2 border-blue-200 shadow-md">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-sky-50">
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <FileText className="w-5 h-5 text-blue-600" />
                       Thông tin cơ bản
                     </CardTitle>
                   </CardHeader>
@@ -551,10 +624,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 </Card>
 
                 {/* Location Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
+                <Card className="border-2 border-green-200 shadow-md">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+                    <CardTitle className="flex items-center gap-2 text-green-800">
+                      <MapPin className="w-5 h-5 text-green-600" />
                       Thông tin vị trí
                     </CardTitle>
                   </CardHeader>
@@ -713,9 +786,9 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 </Card>
 
                 {/* Additional Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Thông tin bổ sung</CardTitle>
+                <Card className="border-2 border-purple-200 shadow-md">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
+                    <CardTitle className="text-purple-800">Thông tin bổ sung</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid md:grid-cols-3 gap-4">
@@ -765,10 +838,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               <TabsContent value="media" className="space-y-6 mt-6">
                 {/* Video Section */}
                 {contentDetails.video && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Video className="w-5 h-5" />
+                  <Card className="border-2 border-red-200 shadow-md">
+                    <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50">
+                      <CardTitle className="flex items-center gap-2 text-red-800">
+                        <Video className="w-5 h-5 text-red-600" />
                         Video giới thiệu
                       </CardTitle>
                     </CardHeader>
@@ -804,10 +877,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 )}
 
                 {/* Images Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ImageIcon className="w-5 h-5" />
+                <Card className="border-2 border-blue-200 shadow-md">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50">
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <ImageIcon className="w-5 h-5 text-blue-600" />
                       Hình ảnh đính kèm
                     </CardTitle>
                   </CardHeader>
@@ -854,10 +927,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
               </TabsContent>
 
               <TabsContent value="sources" className="space-y-6 mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ExternalLink className="w-5 h-5" />
+                <Card className="border-2 border-purple-200 shadow-md">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
+                    <CardTitle className="flex items-center gap-2 text-purple-800">
+                      <ExternalLink className="w-5 h-5 text-purple-600" />
                       Nguồn tham khảo
                     </CardTitle>
                   </CardHeader>
@@ -908,10 +981,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Submitter Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
+            <Card className="border-2 border-green-200 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+                <CardTitle className="flex items-center gap-2 text-green-800">
+                  <User className="w-5 h-5 text-green-600" />
                   Thông tin người gửi
                 </CardTitle>
               </CardHeader>
@@ -967,10 +1040,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
             </Card>
 
             {/* Review Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Flag className="w-5 h-5" />
+            <Card className="border-2 border-yellow-200 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50">
+                <CardTitle className="flex items-center gap-2 text-yellow-800">
+                  <Shield className="w-5 h-5 text-yellow-600" />
                   Hành động kiểm duyệt
                 </CardTitle>
               </CardHeader>
@@ -999,86 +1072,107 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   {reviewItem.status === 'pending' && (
                     <div className="space-y-3">
                       <Button
-                        className="w-full justify-start bg-blue-600 hover:bg-blue-700"
+                        className="w-full justify-start bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md font-semibold"
                         onClick={() => handleAction('start_review')}
                         disabled={isProcessing}
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Nhận việc và bắt đầu duyệt
                       </Button>
-                      
-                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-xs text-amber-700">
+
+                      <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
+                        <p className="text-xs text-amber-800">
                           ⚠️ <strong>Quy trình:</strong> Phải nhận việc trước khi có thể duyệt nội dung
                         </p>
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Chỉ hiện các nút duyệt chính khi đã claim (status = in_review hoặc claimed) */}
                   {(reviewItem.status === 'in_review' || reviewItem.status === 'claimed') && (
                     <>
                       <Button
-                        className="w-full justify-start bg-green-600 hover:bg-green-700"
+                        className="w-full justify-start bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md font-semibold"
                         onClick={() => handleAction('approve')}
                         disabled={isProcessing}
                       >
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Duyệt và xuất bản
+                        ✅ Duyệt và xuất bản
                       </Button>
-                      
+
                       {/* Yêu cầu chỉnh sửa - theo tài liệu 2.2.2 (b) */}
                       <Button
                         variant="outline"
-                        className="w-full justify-start border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                        className="w-full justify-start border-2 border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800 font-semibold shadow-sm"
                         onClick={() => handleAction('request_edit')}
                         disabled={isProcessing}
                       >
                         <RefreshCw className="w-4 h-4 mr-2" />
-                        Yêu cầu chỉnh sửa
+                        ✏️ Yêu cầu chỉnh sửa
                       </Button>
-                      
+
                       <Button
                         variant="outline"
-                        className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        className="w-full justify-start border-2 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold shadow-sm"
                         onClick={() => handleAction('reject')}
                         disabled={isProcessing}
                       >
                         <XCircle className="w-4 h-4 mr-2" />
-                        Từ chối
+                        ❌ Từ chối
                       </Button>
-                      
+
                       {/* Chuyển lên cấp cao hơn - chỉ hiện với Moderator */}
                       {user?.role === 'moderator' && (
                         <Button
-                          variant="ghost"
-                          className="w-full justify-start"
+                          variant="outline"
+                          className="w-full justify-start border-2 border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-semibold shadow-sm"
                           onClick={() => handleAction('escalate')}
                           disabled={isProcessing}
                         >
                           <AlertTriangle className="w-4 h-4 mr-2" />
-                          Chuyển lên cấp cao hơn
+                          🔼 Chuyển lên cấp cao hơn
                         </Button>
                       )}
                     </>
                   )}
                 </div>
 
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    <strong>Quy trình Kiểm duyệt (theo tài liệu 2.2):</strong>
+                <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-sky-50 rounded-lg border-2 border-blue-200">
+                  <p className="text-xs text-blue-800 leading-relaxed font-semibold mb-2">
+                    📋 Quy trình Kiểm duyệt (theo tài liệu 2.2):
                   </p>
-                  <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                    <li>• <strong>Bước 1:</strong> Nhận việc (claim) để bắt đầu kiểm duyệt</li>
-                    <li>• <strong>Bước 2:</strong> Chọn 1 trong 4 hành động:</li>
-                    <li className="ml-4">→ <strong>Chấp thuận:</strong> Xuất bản ngay + ISR revalidation</li>
-                    <li className="ml-4">→ <strong>Yêu cầu chỉnh sửa:</strong> Gửi notification cho tác giả</li>
-                    <li className="ml-4">→ <strong>Từ chối:</strong> Đánh dấu rejected + archive</li>
+                  <ul className="text-xs text-blue-700 mt-2 space-y-1.5">
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-blue-600">1️⃣</span>
+                      <span>Nhận việc (claim) để bắt đầu kiểm duyệt</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-blue-600">2️⃣</span>
+                      <span>Chọn 1 trong 4 hành động:</span>
+                    </li>
+                    <li className="ml-6 flex items-start gap-2">
+                      <span>✅</span>
+                      <span><strong>Chấp thuận:</strong> Xuất bản ngay + ISR revalidation</span>
+                    </li>
+                    <li className="ml-6 flex items-start gap-2">
+                      <span>✏️</span>
+                      <span><strong>Yêu cầu chỉnh sửa:</strong> Gửi notification cho tác giả</span>
+                    </li>
+                    <li className="ml-6 flex items-start gap-2">
+                      <span>❌</span>
+                      <span><strong>Từ chối:</strong> Đánh dấu rejected + archive</span>
+                    </li>
                     {user?.role === 'moderator' && (
-                      <li className="ml-4">→ <strong>Chuyển lên Admin:</strong> Escalate khi phức tạp</li>
+                      <li className="ml-6 flex items-start gap-2">
+                        <span>🔼</span>
+                        <span><strong>Chuyển lên Admin:</strong> Escalate khi phức tạp</span>
+                      </li>
                     )}
                     {user?.role === 'admin' && (
-                      <li className="ml-4 text-amber-600">📌 <strong>Admin:</strong> Có quyền cao nhất, không cần escalate</li>
+                      <li className="ml-6 flex items-start gap-2 text-amber-700 bg-amber-50 -mx-2 px-2 py-1 rounded">
+                        <span>⭐</span>
+                        <span><strong>Admin:</strong> Có quyền cao nhất, không cần escalate</span>
+                      </li>
                     )}
                   </ul>
                 </div>
@@ -1088,8 +1182,6 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   )
 }

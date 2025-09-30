@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ToastNotifications } from "@/components/ui/toast-notifications";
+import { ToastProviderBridge } from "@/lib/ui/toast-provider-bridge";
 import { NotificationProvider } from "@/components/ui/notification-system";
 import { NetworkStatus } from "@/components/ui/network-status";
 import { GlobalEmailVerification } from "@/components/auth/global-email-verification";
@@ -63,6 +64,7 @@ export default function RootLayout({
           <ErrorBoundary>
             <NotificationProvider>
               <ToastProvider>
+                <ToastProviderBridge />
                 <AuthProvider>
                   {/* Temporarily disabled to avoid conflict with settings page */}
                   {/* <GlobalEmailVerification /> */}

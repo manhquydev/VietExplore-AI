@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card-custom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/components/auth/auth-provider'
 import { auth } from '@/lib/firebase'
-import { 
+import {
   Flag,
   Edit,
   Clock,
@@ -100,30 +102,56 @@ export default function MyReportsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Bạn cần đăng nhập</h1>
-          <p className="text-gray-600">Vui lòng đăng nhập để xem báo cáo và đề xuất của bạn.</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
+        <Header />
+        <main className="container mx-auto p-6">
+          <div className="max-w-md mx-auto text-center bg-white rounded-2xl shadow-lg p-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-brand-green to-brand-forest rounded-full flex items-center justify-center">
+              <Flag className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold mb-4 text-gray-900">Bạn cần đăng nhập</h1>
+            <p className="text-gray-600 mb-6">Vui lòng đăng nhập để xem báo cáo và đề xuất của bạn.</p>
+            <Button className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white">
+              Đăng nhập ngay
+            </Button>
+          </div>
+        </main>
+        <Footer />
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Đang tải...</div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
+        <Header />
+        <main className="container mx-auto p-6">
+          <div className="text-center py-16">
+            <div className="inline-block w-12 h-12 border-4 border-brand-green border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600">Đang tải...</p>
+          </div>
+        </main>
+        <Footer />
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Không thể tải dữ liệu</h1>
-          <Button onClick={fetchUserReports}>Thử lại</Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
+        <Header />
+        <main className="container mx-auto p-6">
+          <div className="max-w-md mx-auto text-center bg-white rounded-2xl shadow-lg p-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <h1 className="text-2xl font-bold mb-4 text-gray-900">Không thể tải dữ liệu</h1>
+            <Button onClick={fetchUserReports} className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white">
+              Thử lại
+            </Button>
+          </div>
+        </main>
+        <Footer />
       </div>
     )
   }
@@ -233,46 +261,80 @@ export default function MyReportsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Báo cáo và Đề xuất của tôi</h1>
-        <p className="text-gray-600">Theo dõi trạng thái các báo cáo và đề xuất chỉnh sửa bạn đã gửi</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
+      <Header />
+      <main className="container mx-auto p-6 max-w-4xl">
+        <div className="mb-8 text-center">
+          <div className="inline-block w-16 h-16 mb-4 bg-gradient-to-br from-brand-green to-brand-gold rounded-2xl flex items-center justify-center shadow-lg">
+            <Flag className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
+            Báo cáo và Đề xuất của tôi
+          </h1>
+          <p className="text-gray-600">Theo dõi trạng thái các báo cáo và đề xuất chỉnh sửa bạn đã gửi</p>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">{data.stats.totalReports}</div>
-            <div className="text-sm text-gray-600">Tổng báo cáo</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-600">{data.stats.pendingReports}</div>
-            <div className="text-sm text-gray-600">Báo cáo chờ xử lý</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{data.stats.totalSuggestions}</div>
-            <div className="text-sm text-gray-600">Tổng đề xuất</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{data.stats.approvedSuggestions}</div>
-            <div className="text-sm text-gray-600">Đề xuất được duyệt</div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-xl flex items-center justify-center">
+                <Flag className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="text-3xl font-bold text-red-600">{data.stats.totalReports}</div>
+              <div className="text-sm text-gray-600 mt-1">Tổng báo cáo</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Clock className="w-6 h-6 text-amber-600" />
+              </div>
+              <div className="text-3xl font-bold text-amber-600">{data.stats.pendingReports}</div>
+              <div className="text-sm text-gray-600 mt-1">Báo cáo chờ xử lý</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-xl flex items-center justify-center">
+                <Edit className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="text-3xl font-bold text-blue-600">{data.stats.totalSuggestions}</div>
+              <div className="text-sm text-gray-600 mt-1">Tổng đề xuất</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 bg-green-100 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-brand-green" />
+              </div>
+              <div className="text-3xl font-bold text-brand-green">{data.stats.approvedSuggestions}</div>
+              <div className="text-sm text-gray-600 mt-1">Đề xuất được duyệt</div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="all">Tất cả ({data.stats.totalReports + data.stats.totalSuggestions})</TabsTrigger>
-          <TabsTrigger value="reports">Báo cáo ({data.stats.totalReports})</TabsTrigger>
-          <TabsTrigger value="suggestions">Đề xuất ({data.stats.totalSuggestions})</TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6 bg-white shadow-lg border-0">
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-green data-[state=active]:to-brand-forest data-[state=active]:text-white"
+            >
+              Tất cả ({data.stats.totalReports + data.stats.totalSuggestions})
+            </TabsTrigger>
+            <TabsTrigger
+              value="reports"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
+            >
+              Báo cáo ({data.stats.totalReports})
+            </TabsTrigger>
+            <TabsTrigger
+              value="suggestions"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            >
+              Đề xuất ({data.stats.totalSuggestions})
+            </TabsTrigger>
+          </TabsList>
 
         <TabsContent value="all">
           <div className="space-y-4">
@@ -318,7 +380,9 @@ export default function MyReportsPage() {
             )}
           </div>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </main>
+      <Footer />
     </div>
   )
 }

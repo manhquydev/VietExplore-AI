@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Edit } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -247,12 +248,18 @@ export default function MyDraftsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-bg text-text">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
         <Header />
         <main className="container py-16">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Đăng nhập để xem bản nháp</h1>
-            <Button>Đăng nhập ngay</Button>
+          <div className="max-w-md mx-auto text-center bg-white rounded-2xl shadow-lg p-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-brand-green to-brand-forest rounded-full flex items-center justify-center shadow-lg">
+              <Edit className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold mb-4 text-gray-900">Đăng nhập để xem bản nháp</h1>
+            <p className="text-gray-600 mb-6">Bạn cần đăng nhập để quản lý bản nháp của mình</p>
+            <Button className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg">
+              Đăng nhập ngay
+            </Button>
           </div>
         </main>
         <Footer />
@@ -261,19 +268,21 @@ export default function MyDraftsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg text-text">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
       <Header />
       
       <main className="container py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Bản nháp của tôi</h1>
-            <p className="text-muted">
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
+              Bản nháp của tôi
+            </h1>
+            <p className="text-gray-600">
               Quản lý các địa điểm bạn đã đóng góp và theo dõi trạng thái duyệt
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg">
             <Link href="/contribute/new-place">
               <Icon name="plus" className="mr-2" />
               Thêm địa điểm mới
@@ -320,7 +329,7 @@ export default function MyDraftsPage() {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-8 gap-4 mb-8">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="text-center">
+              <div key={i} className="text-center bg-white rounded-xl p-4 shadow-md">
                 <Skeleton className="h-8 w-12 mx-auto mb-1" />
                 <Skeleton className="h-4 w-16 mx-auto" />
               </div>
@@ -328,9 +337,9 @@ export default function MyDraftsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-8 gap-4 mb-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{stats.total}</div>
-              <div className="text-sm text-muted">Tổng số</div>
+            <div className="text-center bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+              <div className="text-2xl font-bold text-brand-green">{stats.total}</div>
+              <div className="text-sm text-gray-600">Tổng số</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{stats.draft}</div>

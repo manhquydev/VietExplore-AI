@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminUsers } from "@/hooks/use-admin"
-import { useToast } from "@/components/providers/toast-provider"
+import { toastService } from "@/lib/ui/toast-service"
 import { UserRole } from "@/lib/types/auth"
 import { BrandedLoading } from "@/components/ui/branded-loading"
 import { AdminErrorState } from "@/components/admin/loading-states"
@@ -98,7 +98,6 @@ const statusConfig = {
 export default function EnhancedUserManagementPage() {
   const { user: currentUser } = useAuth()
   const { colors, spacing, animations, isDark } = useAdminTheme()
-  const { toast } = useToast()
   
   const [searchQuery, setSearchQuery] = React.useState('')
   const [roleFilter, setRoleFilter] = React.useState<string>('all')
@@ -155,27 +154,27 @@ export default function EnhancedUserManagementPage() {
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     try {
       await changeUserRole(userId, newRole)
-      toast.success(`Đã cập nhật quyền thành ${roleConfig[newRole]?.label}`)
+      toastService.success('Thành công', `Đã cập nhật quyền thành ${roleConfig[newRole]?.label}`)
     } catch (error) {
-      toast.error('Lỗi khi cập nhật quyền người dùng')
+      toastService.error('Lỗi', 'Lỗi khi cập nhật quyền người dùng')
     }
   }
 
   const handleStatusToggle = async (userId: string, currentStatus: boolean) => {
     try {
       await toggleUserStatus(userId, !currentStatus)
-      toast.success(currentStatus ? 'Đã khóa tài khoản' : 'Đã mở khóa tài khoản')
+      toastService.success('Thành công', currentStatus ? 'Đã khóa tài khoản' : 'Đã mở khóa tài khoản')
     } catch (error) {
-      toast.error('Lỗi khi thay đổi trạng thái tài khoản')
+      toastService.error('Lỗi', 'Lỗi khi thay đổi trạng thái tài khoản')
     }
   }
 
   const handleSendPasswordReset = async (email: string) => {
     try {
       await sendPasswordReset(email)
-      toast.success('Đã gửi email đặt lại mật khẩu')
+      toastService.success('Thành công', 'Đã gửi email đặt lại mật khẩu')
     } catch (error) {
-      toast.error('Lỗi khi gửi email đặt lại mật khẩu')
+      toastService.error('Lỗi', 'Lỗi khi gửi email đặt lại mật khẩu')
     }
   }
 
@@ -184,7 +183,7 @@ export default function EnhancedUserManagementPage() {
       label: 'Gửi email xác thực',
       onClick: (users: User[]) => {
         console.log('Send verification emails to', users.length, 'users')
-        toast.success(`Đã gửi email xác thực cho ${users.length} người dùng`)
+        toastService.success('Thành công', `Đã gửi email xác thực cho ${users.length} người dùng`)
       },
       variant: 'secondary' as const
     },
@@ -192,7 +191,7 @@ export default function EnhancedUserManagementPage() {
       label: 'Khóa tài khoản',
       onClick: (users: User[]) => {
         console.log('Disable', users.length, 'users')
-        toast.success(`Đã khóa ${users.length} tài khoản`)
+        toastService.success('Thành công', `Đã khóa ${users.length} tài khoản`)
       },
       variant: 'danger' as const,
       disabled: (users: User[]) => users.some(u => u.disabled)

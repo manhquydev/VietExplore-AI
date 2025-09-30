@@ -123,7 +123,7 @@ export const Header: React.FC = () => {
                     <div className="relative">
                       <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200">
                         <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold">
+                        <AvatarFallback className="bg-gradient-to-br from-green-700 to-amber-600 text-white font-semibold shadow-inner">
                           {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
@@ -143,7 +143,7 @@ export const Header: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12 ring-2 ring-primary/20 ring-primary/20">
                         <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold text-lg">
+                        <AvatarFallback className="bg-gradient-to-br from-green-700 to-amber-600 text-white font-semibold text-lg shadow-inner">
                           {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
@@ -343,7 +343,7 @@ export const Header: React.FC = () => {
                         <div className="flex items-center gap-3 p-3 glass-subtle rounded-xl">
                           <Avatar className="h-10 w-10 ring-2 ring-primary/20 ring-primary/20">
                             <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                            <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold">
+                            <AvatarFallback className="bg-gradient-to-br from-green-700 to-amber-600 text-white font-semibold shadow-inner">
                               {getInitials(user.fullName, user.email)}
                             </AvatarFallback>
                           </Avatar>

@@ -10,13 +10,13 @@ import {
 } from '@/lib/types/itineraries'
 
 interface RouteContext {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 // GET /api/itineraries/[id] - Get single itinerary
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
     
     // Get itinerary document
     const doc = await db.collection(COLLECTIONS.ITINERARIES).doc(id).get()
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 // PATCH /api/itineraries/[id] - Update itinerary
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
     
     const authResult = await verifyAuthToken(request)
     
@@ -211,7 +211,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 // DELETE /api/itineraries/[id] - Delete itinerary
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const { id } = context.params
+    const { id } = await context.params
     
     const authResult = await verifyAuthToken(request)
     
