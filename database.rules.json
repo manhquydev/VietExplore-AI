@@ -1,134 +1,152 @@
 {
   "rules": {
-    // Places stats - publicly readable, allow writes for view tracking (both client and server)
+    // Places stats - publicly readable, allow writes for view tracking
     "places": {
       "$placeId": {
         "stats": {
           ".read": true,
-          ".write": true
+          ".write": true,
+          ".indexOn": ["status", "region", "type"]
         }
       }
     },
-    
-    // User interactions - users can read/write their own data
+
+    // User interactions and stats
     "users": {
       "$userId": {
-        ".read": "$userId === auth.uid || auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())",
+        ".read": "$userId === auth.uid || auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
         ".write": "$userId === auth.uid",
         "interactions": {
           ".read": "$userId === auth.uid",
           ".write": "$userId === auth.uid"
         },
         "recent_interactions": {
-          ".read": "$userId === auth.uid || auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())",
+          ".read": "$userId === auth.uid || auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
           ".write": "$userId === auth.uid"
+        },
+        "stats": {
+          ".read": "$userId === auth.uid || auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+          ".write": false
         }
       }
     },
-    
-    // Admin/moderator lists - only they can read/write
+
+    // Admin/moderator lists
     "admins": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())",
-      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+      ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+      ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
+
     "moderators": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())",
-      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+      ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+      ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
-    // Analytics data - admins only
-    "analytics": {
-      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
-      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
-    },
-    
-    // Admin moderation stats - allow authenticated users to read/write for now
+
+    // Admin consolidated section
     "admin": {
       "moderation": {
         "reports_stats": {
           ".read": "auth != null",
           ".write": true
+        },
+        "stats": {
+          ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+          ".write": false
         }
       },
-      // Admin places data - simplified permissions for authenticated users with admin claims
       "places": {
         ".read": "auth != null && auth.token.role === 'admin'",
         ".write": "auth != null && auth.token.role === 'admin'"
+      },
+      "dashboard": {
+        "stats": {
+          ".read": "auth != null && auth.token.role === 'admin'",
+          ".write": false
+        }
       }
     },
-    
-    // Real-time notifications - users can read their own, admins can read all
+
+    // Analytics
+    "analytics": {
+      ".read": "auth != null && auth.token.role === 'admin'",
+      ".write": "auth != null && auth.token.role === 'admin'"
+    },
+
+    // Real-time notifications - users can read their own, admins/moderators can write
     "notifications": {
       "$userId": {
-        ".read": "$userId === auth.uid || auth != null && root.child('admins').child(auth.uid).exists()",
-        ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+        ".read": "$userId === auth.uid || auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+        ".write": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+        "$notificationId": {
+          "read": {
+            ".write": "$userId === auth.uid"
+          }
+        }
       }
     },
-    
-    // User presence tracking - users can update their own presence, all authenticated users can read
+
+    // User presence tracking
     "user_presence": {
       "$userId": {
         ".read": "auth != null",
         ".write": "$userId === auth.uid"
       }
     },
-    
-    // Active users tracking - authenticated users can update their own status
+
+    // Active users tracking
     "active_users": {
       "$userId": {
         ".read": "auth != null",
         ".write": "$userId === auth.uid"
       }
     },
-    
-    // User stats (unread notifications count) - users can read/write their own
+
+    // User stats
     "user_stats": {
       "$userId": {
         ".read": "$userId === auth.uid",
-        ".write": "$userId === auth.uid || auth != null && root.child('admins').child(auth.uid).exists()"
+        ".write": "$userId === auth.uid || auth != null && auth.token.role === 'admin'"
       }
     },
-    
-    // Moderator alerts - only moderators and admins can read/write
+
+    // Moderator alerts
     "moderator_alerts": {
       "$userId": {
-        ".read": "auth != null && ($userId === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())",
-        ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())"
+        ".read": "auth != null && ($userId === auth.uid || auth.token.role === 'admin' || auth.token.role === 'moderator')",
+        ".write": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')"
       }
     },
-    
-    // Moderation queue updates - moderators and admins only
+
+    // Moderation queue updates
     "moderation_queue_updates": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists())"
+      "$itemId": {
+        ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
+        ".write": false,
+        ".indexOn": ["status", "priority", "createdAt"]
+      }
     },
-    
-    // User activity tracking - users can write their own activity
+
+    // User activity tracking
     "user_activity": {
       "$userId": {
-        ".read": "auth != null && ($userId === auth.uid || root.child('admins').child(auth.uid).exists())",
+        ".read": "auth != null && ($userId === auth.uid || auth.token.role === 'admin')",
         ".write": "$userId === auth.uid"
       }
     },
-    
-    // Audit logs - admins only can read/write, authenticated users can create logs
+
+    // Audit logs
     "audit_logs": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')"
     },
-    
-    // Audit stats - admins only
+
+    // Audit stats
     "audit_stats": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
-    // ====================================================================
-    // PHASE 2: ADMIN/MODERATOR NOTIFICATION SYSTEM RULES
-    // ====================================================================
-    
-    // Admin dashboard real-time updates - admins only
+
+    // Admin dashboard
     "admin_dashboard": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'",
@@ -141,88 +159,38 @@
         ".write": "auth != null && auth.token.role === 'admin'"
       }
     },
-    
-    // System health monitoring data - admins only
+
+    // System health
     "system_health": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
-    // Moderation handoff tracking - moderators and admins
+
+    // Moderation handoffs
     "moderation_handoffs": {
       ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
       ".write": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')"
     },
-    
-    // Health check trigger - admins only
+
+    // Health check
     "health_check": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
-    // Security monitoring data - admins only
+
+    // Security monitoring
     "security_monitoring": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
-    // System metrics collection - admins only
+
+    // System metrics
     "system_metrics": {
       ".read": "auth != null && auth.token.role === 'admin'",
       ".write": "auth != null && auth.token.role === 'admin'"
     },
-    
-    // ====================================================================
-    // AUTO-SYNC ARCHITECTURE RULES - OPTIMIZED FOR CLOUD FUNCTIONS
-    // ====================================================================
-    
-    // Auto-synced admin dashboard stats - Cloud Functions write, admins read
-    "admin": {
-      "dashboard": {
-        "stats": {
-          ".read": "auth != null && auth.token.role === 'admin'",
-          ".write": false // Only Cloud Functions can write
-        }
-      },
-      "moderation": {
-        "stats": {
-          ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
-          ".write": false // Only Cloud Functions can write
-        }
-      }
-    },
-    
-    // Auto-synced place stats - optimized structure for real-time reads
-    "places": {
-      "$placeId": {
-        "stats": {
-          ".read": true, // Public stats for all users
-          ".write": false, // Only Cloud Functions can write
-          ".indexOn": ["status", "region", "type"] // Optimize queries
-        }
-      }
-    },
-    
-    // Auto-synced user stats - privacy compliant
-    "users": {
-      "$userId": {
-        "stats": {
-          ".read": "$userId === auth.uid || auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
-          ".write": false // Only Cloud Functions can write
-        }
-      }
-    },
-    
-    // Real-time moderation queue updates - instant notifications
-    "moderation_queue_updates": {
-      "$itemId": {
-        ".read": "auth != null && (auth.token.role === 'admin' || auth.token.role === 'moderator')",
-        ".write": false, // Only Cloud Functions can write
-        ".indexOn": ["status", "priority", "createdAt"]
-      }
-    },
-    
-    // Connection optimization - track active admin connections
+
+    // Admin connections
     "admin_connections": {
       "$adminId": {
         ".read": "auth != null && auth.token.role === 'admin'",

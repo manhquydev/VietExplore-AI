@@ -1,49 +1,387 @@
-○ Compiling /api/users/avatar ...
- ✓ Compiled /api/users/avatar in 2.6s (2577 modules)
-[Avatar Upload] Starting upload process...
-ID token verified for user: fovZWjis7SYwRmHdfXqxvsJIsMy1
-User found with role: traveler
-[Avatar Upload] User authenticated: fovZWjis7SYwRmHdfXqxvsJIsMy1
-[Avatar Upload] Converting file to buffer...
-[Avatar Upload] Buffer size: 477422
-[Avatar Upload] Starting Sharp processing...
-[Avatar Upload] Sharp processing completed. Size: 40060
-[Avatar Upload] Getting Firebase Storage bucket...
-[Avatar Upload] Bucket name: vietexplore-ai.appspot.com
-[Avatar Upload] ERROR: {
-  message: '{\n' +
-    '  "error": {\n' +
-    '    "code": 404,\n' +
-    '    "message": "The specified bucket does not exist.",\n' +
-    '    "errors": [\n' +
-    '      {\n' +
-    '        "message": "The specified bucket does not exist.",\n' +
-    '        "domain": "global",\n' +
-    '        "reason": "notFound"\n' +
-    '      }\n' +
-    '    ]\n' +
-    '  }\n' +
-    '}\n',
-  stack: 'Error: {\n' +
-    '  "error": {\n' +
-    '    "code": 404,\n' +
-    '    "message": "The specified bucket does not exist.",\n' +
-    '    "errors": [\n' +
-    '      {\n' +
-    '        "message": "The specified bucket does not exist.",\n' +
-    '        "domain": "global",\n' +
-    '        "reason": "notFound"\n' +
-    '      }\n' +
-    '    ]\n' +
-    '  }\n' +
-    '}\n' +
-    '\n' +
-    '    at Gaxios._request (C:\\Users\\manhq\\Downloads\\da2\\VietExplore-AI\\node_modules\\gaxios\\build\\src\\gaxios.js:142:23)\n' +
-    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
-    '    at async JWT.requestAsync (C:\\Users\\manhq\\Downloads\\da2\\VietExplore-AI\\node_modules\\google-auth-library\\build\\src\\auth\\oauth2client.js:429:18)\n' +
-    '    at async Upload.makeRequest (C:\\Users\\manhq\\Downloads\\da2\\VietExplore-AI\\node_modules\\@google-cloud\\storage\\build\\cjs\\src\\resumable-upload.js:769:21)\n' +
-    '    at async uri.retries (C:\\Users\\manhq\\Downloads\\da2\\VietExplore-AI\\node_modules\\@google-cloud\\storage\\build\\cjs\\src\\resumable-upload.js:435:29)\n' +
-    '    at async Upload.createURIAsync (C:\\Users\\manhq\\Downloads\\da2\\VietExplore-AI\\node_modules\\@google-cloud\\storage\\build\\cjs\\src\\resumable-upload.js:432:21)',
-  name: 'Error'
-}
- POST /api/users/avatar 500 in 5378ms
+main-app.js?v=1759303206528:2282 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\ui\toast-service.ts:238 [ToastService] Initialized and ready
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\ui\toast-provider-bridge.tsx:34 [ToastProviderBridge] Subscribed to toast service
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\client\api.ts:34 API Response for /places?sortBy=rating&limit=6&featured=true: {status: 200, text: '{"success":true,"data":[{"id":"HiCVB1ZlYbopIh1cASc…el":null,"sortBy":"rating","limit":6,"offset":0}}'}
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\notifications\notification-bell.tsx:252 RangeError: Invalid time value
+    at formatDistance (formatDistance.mjs:110:15)
+    at formatDistanceToNow (formatDistanceToNow.mjs:95:79)
+    at NotificationItem (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\notifications\notification-bell.tsx:152:33)
+    at react-stack-bottom-frame (react-dom-client.development.js:22974:20)
+    at renderWithHooks (react-dom-client.development.js:6667:22)
+    at updateFunctionComponent (react-dom-client.development.js:8931:19)
+    at beginWork (react-dom-client.development.js:10556:18)
+    at runWithFiberInDEV (react-dom-client.development.js:845:30)
+    at performUnitOfWork (react-dom-client.development.js:15258:22)
+    at workLoopSync (react-dom-client.development.js:15078:41)
+    at renderRootSync (react-dom-client.development.js:15058:11)
+    at performWorkOnRoot (react-dom-client.development.js:14569:44)
+    at performSyncWorkOnRoot (react-dom-client.development.js:16365:7)
+    at flushSyncWorkAcrossRoots_impl (react-dom-client.development.js:16211:21)
+    at processRootScheduleInMicrotask (react-dom-client.development.js:16250:9)
+    at eval (react-dom-client.development.js:16384:13)
+
+The above error occurred in the <NotificationItem> component. It was handled by the <ErrorBoundaryHandler> error boundary.
+onCaughtError @ error-boundary-callbacks.js:67
+logCaughtError @ react-dom-client.development.js:8401
+runWithFiberInDEV @ react-dom-client.development.js:845
+update.callback @ react-dom-client.development.js:8434
+callCallback @ react-dom-client.development.js:6429
+commitCallbacks @ react-dom-client.development.js:6449
+runWithFiberInDEV @ react-dom-client.development.js:845
+commitClassCallbacks @ react-dom-client.development.js:12140
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12764
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12803
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12803
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12769
+flushLayoutEffects @ react-dom-client.development.js:15687
+commitRoot @ react-dom-client.development.js:15528
+commitRootWhenReady @ react-dom-client.development.js:14759
+performWorkOnRoot @ react-dom-client.development.js:14682
+performSyncWorkOnRoot @ react-dom-client.development.js:16365
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+processRootScheduleInMicrotask @ react-dom-client.development.js:16250
+eval @ react-dom-client.development.js:16384
+<NotificationItem>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+eval @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\notifications\notification-bell.tsx:252
+NotificationBell @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\notifications\notification-bell.tsx:251
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14526
+performSyncWorkOnRoot @ react-dom-client.development.js:16365
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+processRootScheduleInMicrotask @ react-dom-client.development.js:16250
+eval @ react-dom-client.development.js:16384
+<NotificationBell>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+Header @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\header.tsx:116
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14526
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20 Application error: RangeError: Invalid time value
+    at formatDistance (formatDistance.mjs:110:15)
+    at formatDistanceToNow (formatDistanceToNow.mjs:95:79)
+    at NotificationItem (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\notifications\notification-bell.tsx:152:33)
+    at react-stack-bottom-frame (react-dom-client.development.js:22974:20)
+    at renderWithHooks (react-dom-client.development.js:6667:22)
+    at updateFunctionComponent (react-dom-client.development.js:8931:19)
+    at beginWork (react-dom-client.development.js:10556:18)
+    at runWithFiberInDEV (react-dom-client.development.js:845:30)
+    at performUnitOfWork (react-dom-client.development.js:15258:22)
+    at workLoopSync (react-dom-client.development.js:15078:41)
+    at renderRootSync (react-dom-client.development.js:15058:11)
+    at performWorkOnRoot (react-dom-client.development.js:14569:44)
+    at performSyncWorkOnRoot (react-dom-client.development.js:16365:7)
+    at flushSyncWorkAcrossRoots_impl (react-dom-client.development.js:16211:21)
+    at processRootScheduleInMicrotask (react-dom-client.development.js:16250:9)
+    at eval (react-dom-client.development.js:16384:13)
+error @ intercept-console-error.js:50
+Error.useEffect @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20
+react-stack-bottom-frame @ react-dom-client.development.js:23055
+runWithFiberInDEV @ react-dom-client.development.js:845
+commitHookEffectListMount @ react-dom-client.development.js:11978
+commitHookPassiveMountEffects @ react-dom-client.development.js:12099
+commitPassiveMountOnFiber @ react-dom-client.development.js:13929
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13941
+flushPassiveEffects @ react-dom-client.development.js:15869
+flushPendingEffects @ react-dom-client.development.js:15830
+flushSpawnedWork @ react-dom-client.development.js:15796
+commitRoot @ react-dom-client.development.js:15529
+commitRootWhenReady @ react-dom-client.development.js:14759
+performWorkOnRoot @ react-dom-client.development.js:14682
+performSyncWorkOnRoot @ react-dom-client.development.js:16365
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+processRootScheduleInMicrotask @ react-dom-client.development.js:16250
+eval @ react-dom-client.development.js:16384
+<Error>
+exports.jsx @ react-jsx-runtime.development.js:339
+render @ error-boundary.js:112
+react-stack-bottom-frame @ react-dom-client.development.js:22987
+updateClassComponent @ react-dom-client.development.js:9488
+beginWork @ react-dom-client.development.js:10570
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14569
+performSyncWorkOnRoot @ react-dom-client.development.js:16365
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+processRootScheduleInMicrotask @ react-dom-client.development.js:16250
+eval @ react-dom-client.development.js:16384
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20 Application error: RangeError: Invalid time value
+    at formatDistance (formatDistance.mjs:110:15)
+    at formatDistanceToNow (formatDistanceToNow.mjs:95:79)
+    at NotificationItem (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\notifications\notification-bell.tsx:152:33)
+    at react-stack-bottom-frame (react-dom-client.development.js:22974:20)
+    at renderWithHooks (react-dom-client.development.js:6667:22)
+    at updateFunctionComponent (react-dom-client.development.js:8931:19)
+    at beginWork (react-dom-client.development.js:10556:18)
+    at runWithFiberInDEV (react-dom-client.development.js:845:30)
+    at performUnitOfWork (react-dom-client.development.js:15258:22)
+    at workLoopSync (react-dom-client.development.js:15078:41)
+    at renderRootSync (react-dom-client.development.js:15058:11)
+    at performWorkOnRoot (react-dom-client.development.js:14569:44)
+    at performSyncWorkOnRoot (react-dom-client.development.js:16365:7)
+    at flushSyncWorkAcrossRoots_impl (react-dom-client.development.js:16211:21)
+    at processRootScheduleInMicrotask (react-dom-client.development.js:16250:9)
+    at eval (react-dom-client.development.js:16384:13)
+error @ intercept-console-error.js:50
+Error.useEffect @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20
+react-stack-bottom-frame @ react-dom-client.development.js:23055
+runWithFiberInDEV @ react-dom-client.development.js:845
+commitHookEffectListMount @ react-dom-client.development.js:11978
+commitHookPassiveMountEffects @ react-dom-client.development.js:12099
+reconnectPassiveEffects @ react-dom-client.development.js:14097
+doubleInvokeEffectsOnFiber @ react-dom-client.development.js:16100
+runWithFiberInDEV @ react-dom-client.development.js:845
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16060
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+commitDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16109
+flushPassiveEffects @ react-dom-client.development.js:15879
+flushPendingEffects @ react-dom-client.development.js:15830
+flushSpawnedWork @ react-dom-client.development.js:15796
+commitRoot @ react-dom-client.development.js:15529
+commitRootWhenReady @ react-dom-client.development.js:14759
+performWorkOnRoot @ react-dom-client.development.js:14682
+performSyncWorkOnRoot @ react-dom-client.development.js:16365
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+processRootScheduleInMicrotask @ react-dom-client.development.js:16250
+eval @ react-dom-client.development.js:16384
+<Error>
+exports.jsx @ react-jsx-runtime.development.js:339
+render @ error-boundary.js:112
+react-stack-bottom-frame @ react-dom-client.development.js:22987
+updateClassComponent @ react-dom-client.development.js:9488
+beginWork @ react-dom-client.development.js:10570
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14569
+performSyncWorkOnRoot @ react-dom-client.development.js:16365
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+processRootScheduleInMicrotask @ react-dom-client.development.js:16250
+eval @ react-dom-client.development.js:16384

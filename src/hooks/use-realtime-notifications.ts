@@ -56,9 +56,9 @@ export function useRealtimeNotifications() {
 
         // Show toast for new high priority notifications
         const newHighPriorityNotifications = notificationsList.filter(
-          n => !n.read && n.priority === 'high' && 
+          n => !n.read && n.priority === 'high' &&
           // Only show if created in last 30 seconds
-          Date.now() - new Date(n.createdAt || 0).getTime() < 30000
+          Date.now() - (n.timestamp || new Date(n.createdAt || 0).getTime()) < 30000
         );
 
         newHighPriorityNotifications.forEach(notification => {

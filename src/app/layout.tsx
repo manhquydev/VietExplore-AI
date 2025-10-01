@@ -11,6 +11,7 @@ import { NetworkStatus } from "@/components/ui/network-status";
 import { GlobalEmailVerification } from "@/components/auth/global-email-verification";
 import { NotificationConnectionStatus } from "@/components/notifications/notification-bell";
 import { LightOnlyThemeProvider } from "@/providers/light-only-theme-provider";
+import { TopLoadingBar } from "@/components/ui/top-loading-bar";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 
@@ -65,6 +66,7 @@ export default function RootLayout({
             <NotificationProvider>
               <ToastProvider>
                 <ToastProviderBridge />
+                <TopLoadingBar />
                 <AuthProvider>
                   {/* Temporarily disabled to avoid conflict with settings page */}
                   {/* <GlobalEmailVerification /> */}

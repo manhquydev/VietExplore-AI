@@ -221,13 +221,41 @@ html {
   }
 }
 
-/* Skeleton animation */
+/* Skeleton animation với hiệu ứng shimmer hiện đại */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Top loading bar shimmer animation */
+@keyframes shimmer-horizontal {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer-horizontal 1s infinite;
+}
+
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 37%, #E5E7EB 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.2s infinite;
+  background: linear-gradient(90deg,
+    #E5E7EB 0%,
+    #F3F4F6 20%,
+    #E5E7EB 40%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 @layer base {
@@ -306,6 +334,84 @@ html {
   .touch-target-44 {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Smooth Scrolling for Modern Settings Page */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Settings Page Animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-in {
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    animation: fade-in 300ms ease-out;
+  }
+
+  .slide-in-up {
+    animation: slide-in-up 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .duration-300 {
+    animation-duration: 300ms;
+  }
+
+  /* Enhanced Focus States for Settings */
+  .glass-card:focus-within {
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2), var(--glass-shadow);
+  }
+
+  /* Floating Button Shadow */
+  .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Hover Scale Effects */
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+
+  /* Mobile Responsive Utilities */
+  @media (max-width: 768px) {
+    .glass-card {
+      border-radius: 1rem;
+    }
+
+    /* Hide floating button on very small screens */
+    @media (max-width: 640px) {
+      .fixed.bottom-8.right-8 {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+      }
+
+      .fixed.bottom-8.right-8 .flex {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
   }
 
   /* === ADMIN COMPONENT UTILITIES === */

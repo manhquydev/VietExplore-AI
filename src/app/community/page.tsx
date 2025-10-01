@@ -2,13 +2,16 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useCommunityStats } from "@/hooks/use-community-stats"
 import { useTopContributors } from "@/hooks/use-top-contributors"
-import { 
+import { BrandedLoading } from "@/components/ui/branded-loading"
+import {
   Users,
   MessageSquare,
   BookOpen,
@@ -62,6 +65,29 @@ const formatDate = (dateString: string) => {
   })
 }
 
+// Map user role to badge SVG icons
+const getRoleBadgeIcon = (role: string) => {
+  const roleMap: Record<string, string> = {
+    'admin': '/badges/verified.svg',
+    'partner': '/badges/community-partner.svg',
+    'contributor': '/badges/contributor.svg',
+  }
+
+  const normalizedRole = role.toLowerCase().trim()
+  return roleMap[normalizedRole] || null
+}
+
+// Get user initials for avatar fallback
+const getInitials = (name: string | undefined, username: string | undefined) => {
+  if (name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  }
+  if (username) {
+    return username.slice(0, 2).toUpperCase()
+  }
+  return 'U'
+}
+
 export default function CommunityPage() {
   const { stats: communityStats, loading: statsLoading, error: statsError } = useCommunityStats()
   const { contributors: topContributors, loading: contributorsLoading, error: contributorsError } = useTopContributors({ limit: 3 })
@@ -92,8 +118,8 @@ export default function CommunityPage() {
               <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600  mb-8">
                 {statsLoading ? (
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Đang tải thống kê...</span>
+                    <BrandedLoading size="sm" variant="spinner" text="Đang tải thống kê..." showText={false} />
+                    <span className="ml-2">Đang tải thống kê...</span>
                   </div>
                 ) : statsError ? (
                   <div className="text-red-500 text-sm">{statsError}</div>
@@ -137,9 +163,8 @@ export default function CommunityPage() {
               <div className="glass-card p-6">
                 <h2 className="text-2xl font-bold text-slate-900  mb-6">Tổng quan cộng đồng</h2>
                 {statsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                    <span>Đang tải thống kê...</span>
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <BrandedLoading size="md" variant="logo" text="Đang tải thống kê cộng đồng..." />
                   </div>
                 ) : statsError ? (
                   <div className="text-center text-red-500 py-8">{statsError}</div>
@@ -273,52 +298,61 @@ export default function CommunityPage() {
                   Người đóng góp hàng đầu
                 </h3>
                 {contributorsLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    <span className="text-sm">Đang tải...</span>
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <BrandedLoading size="sm" variant="logo" text="Đang tải..." />
                   </div>
                 ) : contributorsError ? (
                   <div className="text-center text-red-500 text-sm py-4">{contributorsError}</div>
                 ) : topContributors.length > 0 ? (
                   <div className="space-y-4">
-                    {topContributors.map((contributor, index) => (
-                      <div key={contributor.id} className="flex items-center gap-3">
-                        <div className="relative">
-                          <img 
-                            src={contributor.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'} 
-                            alt={contributor.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                          {index === 0 && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
-                              <Star className="w-3 h-3 text-white fill-current" />
+                    {topContributors.map((contributor, index) => {
+                      const badgeIcon = getRoleBadgeIcon(contributor.role)
+                      return (
+                        <Link
+                          key={contributor.id}
+                          href={`/profile/${contributor.username}`}
+                          className="flex items-center gap-3 hover:bg-gray-50 p-2 -m-2 rounded-xl transition-colors"
+                        >
+                          <div className="relative">
+                            <Avatar className="w-12 h-12 ring-2 ring-brand-green/20">
+                              <AvatarImage src={contributor.avatar || undefined} alt={contributor.name} />
+                              <AvatarFallback className="bg-gradient-to-r from-brand-green to-brand-forest text-white">
+                                {getInitials(contributor.name, contributor.username)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {index === 0 && (
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center shadow-md">
+                                <Star className="w-3 h-3 text-white fill-current" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-slate-900 text-sm truncate">
+                                {contributor.name}
+                              </h4>
+                              {badgeIcon && (
+                                <div className="w-4 h-4 flex-shrink-0">
+                                  <Image
+                                    src={badgeIcon}
+                                    alt={contributor.role}
+                                    width={16}
+                                    height={16}
+                                    className="w-full h-full object-contain"
+                                    title={contributor.role}
+                                  />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold text-slate-900  text-sm">
-                              {contributor.name}
-                            </h4>
-                            {contributor.verified && (
-                              <Badge variant="secondary" className="text-xs glass-subtle">
-                                ✓ Verified
-                              </Badge>
-                            )}
-                            {contributor.role === 'partner' && (
-                              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                                Partner
-                              </Badge>
-                            )}
+                            <div className="flex items-center gap-2 text-xs text-slate-600">
+                              <span className="truncate">@{contributor.username}</span>
+                              <span>•</span>
+                              <span className="flex-shrink-0">{contributor.contributions} đóng góp</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-slate-600 ">
-                            <span>@{contributor.username}</span>
-                            <span>•</span>
-                            <span>{contributor.contributions} đóng góp</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                        </Link>
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="text-center text-gray-500 text-sm py-4">Chưa có người đóng góp</div>
@@ -356,9 +390,8 @@ export default function CommunityPage() {
               <div className="glass-card p-6">
                 <h3 className="text-lg font-bold text-slate-900  mb-4">Nổi bật tuần này</h3>
                 {statsLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    <span className="text-sm">Đang tải...</span>
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <BrandedLoading size="sm" variant="logo" text="Đang tải..." />
                   </div>
                 ) : statsError ? (
                   <div className="text-center text-red-500 text-sm py-4">{statsError}</div>

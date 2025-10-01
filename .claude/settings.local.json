@@ -22,7 +22,9 @@
       "Bash(find:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run lint:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(powershell:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

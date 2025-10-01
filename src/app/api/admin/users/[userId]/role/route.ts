@@ -3,6 +3,7 @@ import { getAdminDb, getAdminAuth } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { UserRole } from '@/lib/types/auth';
 import { FieldValue } from 'firebase-admin/firestore';
+import { getDatabase } from 'firebase-admin/database';
 
 // PUT /api/admin/users/[userId]/role - Change user role (Admin only)
 export async function PUT(
@@ -88,6 +89,43 @@ export async function PUT(
       reason,
       timestamp: now
     });
+
+    // Send notification to user via Realtime Database
+    try {
+      const realtimeDb = getDatabase();
+      const notificationRef = realtimeDb.ref(`notifications/${userId}`).push();
+
+      const roleLabels: Record<UserRole, string> = {
+        admin: 'Quản trị viên',
+        moderator: 'Kiểm duyệt viên',
+        partner: 'Đối tác',
+        contributor: 'Cộng tác viên',
+        traveler: 'Du khách',
+        guest: 'Khách'
+      };
+
+      await notificationRef.set({
+        id: notificationRef.key,
+        type: 'role_change',
+        title: 'Quyền của bạn đã được cập nhật',
+        message: `Vai trò của bạn đã được thay đổi từ ${roleLabels[currentRole as UserRole] || currentRole} thành ${roleLabels[newRole] || newRole}${reason ? `. Lý do: ${reason}` : ''}`,
+        actionUrl: '/settings',
+        metadata: {
+          previousRole: currentRole,
+          newRole: newRole,
+          changedBy: admin.fullName || admin.email,
+          reason: reason || 'Được admin thay đổi'
+        },
+        createdAt: new Date().toISOString(),
+        timestamp: Date.now(),
+        read: false
+      });
+
+      console.log('Notification sent successfully to user:', userId);
+    } catch (notificationError) {
+      console.error('Failed to send notification:', notificationError);
+      // Don't fail the role change if notification fails
+    }
 
     return NextResponse.json({
       success: true,

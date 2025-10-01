@@ -6,16 +6,17 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { EnhancedCard, CardHeader, CardContent } from "@/components/ui/modern/enhanced-card"
 import { EnhancedButton } from "@/components/ui/modern/enhanced-button"
 import { EnhancedDataTable } from "@/components/ui/modern/enhanced-data-table"
 import { useAdminTheme } from "@/providers/admin-theme-provider"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
-  Users, Crown, Shield, Star, Edit3, Eye, UserPlus, Mail, Ban, 
+import {
+  Users, Crown, Shield, Star, Edit3, Eye, UserPlus, Mail, Ban,
   CheckCircle, AlertCircle, Filter, Download, RefreshCw, Search,
-  MoreHorizontal, Settings, Activity, TrendingUp, Calendar
+  MoreHorizontal, Settings, Activity, TrendingUp, Calendar, UserCog
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -24,10 +25,26 @@ import { toastService } from "@/lib/ui/toast-service"
 import { UserRole } from "@/lib/types/auth"
 import { BrandedLoading } from "@/components/ui/branded-loading"
 import { AdminErrorState } from "@/components/admin/loading-states"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 
 interface User {
   id: string
-  uid: string
   email: string
   fullName: string
   role: UserRole
@@ -42,41 +59,47 @@ interface User {
 }
 
 const roleConfig = {
-  admin: { 
-    label: "Quản trị viên", 
+  admin: {
+    label: "Quản trị viên",
     color: 'bg-gradient-to-r from-primary-100 to-primary-200 text-primary-800 border-primary-300',
     icon: Crown,
-    priority: 6 
+    badgeSvg: '/badges/verified.svg',
+    priority: 6
   },
-  moderator: { 
-    label: "Kiểm duyệt viên", 
+  moderator: {
+    label: "Kiểm duyệt viên",
     color: 'bg-gradient-to-r from-warning-100 to-success-100 text-warning-800 border-warning-200',
     icon: Shield,
-    priority: 5 
+    badgeSvg: null,
+    priority: 5
   },
-  partner: { 
-    label: "Đối tác", 
+  partner: {
+    label: "Đối tác",
     color: 'bg-gradient-to-r from-success-100 to-success-200 text-success-800 border-success-300',
     icon: Star,
-    priority: 4 
+    badgeSvg: '/badges/community-partner.svg',
+    priority: 4
   },
-  contributor: { 
-    label: "Cộng tác viên", 
+  contributor: {
+    label: "Cộng tác viên",
     color: 'bg-gradient-to-r from-info-100 to-primary-100 text-info-800 border-info-200',
     icon: Edit3,
-    priority: 3 
+    badgeSvg: '/badges/contributor.svg',
+    priority: 3
   },
-  traveler: { 
-    label: "Du khách", 
+  traveler: {
+    label: "Du khách",
     color: 'bg-neutral-100 text-neutral-700 border-neutral-300',
     icon: Users,
-    priority: 2 
+    badgeSvg: null,
+    priority: 2
   },
-  guest: { 
-    label: "Khách", 
+  guest: {
+    label: "Khách",
     color: 'bg-neutral-50 text-neutral-600 border-neutral-200',
     icon: Eye,
-    priority: 1 
+    badgeSvg: null,
+    priority: 1
   }
 }
 
@@ -103,6 +126,13 @@ export default function EnhancedUserManagementPage() {
   const [roleFilter, setRoleFilter] = React.useState<string>('all')
   const [statusFilter, setStatusFilter] = React.useState<string>('all')
   const [selectedUsers, setSelectedUsers] = React.useState<User[]>([])
+
+  // Dialog states
+  const [roleDialogOpen, setRoleDialogOpen] = React.useState(false)
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null)
+  const [newRole, setNewRole] = React.useState<UserRole>('traveler')
+  const [roleChangeReason, setRoleChangeReason] = React.useState('')
+  const [isChangingRole, setIsChangingRole] = React.useState(false)
 
   // Build filters for hook
   const userFilters = React.useMemo(() => {
@@ -151,12 +181,37 @@ export default function EnhancedUserManagementPage() {
     }
   }
 
-  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+  const openRoleDialog = (user: User) => {
+    setSelectedUser(user)
+    setNewRole(user.role)
+    setRoleChangeReason('')
+    setRoleDialogOpen(true)
+  }
+
+  const handleRoleChangeSubmit = async () => {
+    if (!selectedUser) return
+
+    if (selectedUser.role === newRole) {
+      toastService.warning('Cảnh báo', 'Người dùng đã có vai trò này')
+      return
+    }
+
+    setIsChangingRole(true)
     try {
-      await changeUserRole(userId, newRole)
-      toastService.success('Thành công', `Đã cập nhật quyền thành ${roleConfig[newRole]?.label}`)
-    } catch (error) {
-      toastService.error('Lỗi', 'Lỗi khi cập nhật quyền người dùng')
+      const result = await changeUserRole(selectedUser.id, newRole, roleChangeReason)
+
+      if (result.success) {
+        toastService.success('Thành công', `Đã cập nhật quyền thành ${roleConfig[newRole]?.label}`)
+        setRoleDialogOpen(false)
+        setSelectedUser(null)
+        setRoleChangeReason('')
+      } else {
+        toastService.error('Lỗi', result.error || 'Lỗi khi cập nhật quyền người dùng')
+      }
+    } catch (error: any) {
+      toastService.error('Lỗi', error.message || 'Lỗi khi cập nhật quyền người dùng')
+    } finally {
+      setIsChangingRole(false)
     }
   }
 
@@ -229,10 +284,20 @@ export default function EnhancedUserManagementPage() {
       render: (value: any, user: User) => {
         const config = roleConfig[user.role as keyof typeof roleConfig]
         const IconComponent = config?.icon || Users
-        
+
         return (
-          <Badge className={cn('px-3 py-1.5 text-xs font-semibold border', config?.color)}>
-            <IconComponent className="h-3 w-3 mr-1.5" />
+          <Badge className={cn('inline-flex items-center gap-1 rounded-full h-7 transition-colors px-3 py-1.5 text-xs font-semibold border', config?.color)}>
+            {config?.badgeSvg ? (
+              <Image
+                src={config.badgeSvg}
+                alt={user.role}
+                width={14}
+                height={14}
+                className="w-3.5 h-3.5 object-contain"
+              />
+            ) : (
+              <IconComponent className="h-3 w-3" />
+            )}
             {config?.label || user.role}
           </Badge>
         )
@@ -282,20 +347,30 @@ export default function EnhancedUserManagementPage() {
     {
       key: 'actions',
       title: 'Thao tác',
-      width: '100px',
+      width: '150px',
       render: (value: any, user: User) => (
         <div className="flex items-center gap-2">
           <EnhancedButton
             variant="ghost"
             size="xs"
+            onClick={() => openRoleDialog(user)}
+            title="Thay đổi quyền"
+          >
+            <UserCog className="h-3 w-3" />
+          </EnhancedButton>
+          <EnhancedButton
+            variant="ghost"
+            size="xs"
             onClick={() => handleSendPasswordReset(user.email)}
+            title="Gửi email đặt lại mật khẩu"
           >
             <Mail className="h-3 w-3" />
           </EnhancedButton>
           <EnhancedButton
             variant="ghost"
             size="xs"
-            onClick={() => handleStatusToggle(user.uid, user.disabled)}
+            onClick={() => handleStatusToggle(user.id, user.disabled)}
+            title={user.disabled ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
           >
             {user.disabled ? <CheckCircle className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
           </EnhancedButton>
@@ -494,6 +569,122 @@ export default function EnhancedUserManagementPage() {
           />
         </EnhancedCard>
       </div>
+
+      {/* Role Change Dialog */}
+      <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Thay đổi quyền người dùng</DialogTitle>
+            <DialogDescription>
+              Cập nhật vai trò và quyền hạn cho người dùng. Thông báo sẽ được gửi đến người dùng.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedUser && (
+            <div className="space-y-4 py-4">
+              {/* User Info */}
+              <div className="flex items-center gap-3 p-4 bg-neutral-50 rounded-lg">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedUser.fullName}`} />
+                  <AvatarFallback>
+                    {selectedUser.fullName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-semibold text-neutral-900">{selectedUser.fullName}</div>
+                  <div className="text-sm text-neutral-500">{selectedUser.email}</div>
+                </div>
+              </div>
+
+              {/* Current Role */}
+              <div className="space-y-2">
+                <Label>Vai trò hiện tại</Label>
+                <div className="flex items-center gap-2">
+                  <Badge className={cn('inline-flex items-center gap-1 rounded-full h-8 px-4 text-sm font-semibold border', roleConfig[selectedUser.role as keyof typeof roleConfig]?.color)}>
+                    {React.createElement(roleConfig[selectedUser.role as keyof typeof roleConfig]?.icon, { className: "h-4 w-4" })}
+                    {roleConfig[selectedUser.role as keyof typeof roleConfig]?.label}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* New Role */}
+              <div className="space-y-2">
+                <Label htmlFor="new-role">Vai trò mới *</Label>
+                <Select value={newRole} onValueChange={(value) => setNewRole(value as UserRole)}>
+                  <SelectTrigger id="new-role">
+                    <SelectValue placeholder="Chọn vai trò mới" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="traveler">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        <span>Du khách</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="contributor">
+                      <div className="flex items-center gap-2">
+                        <Edit3 className="h-4 w-4" />
+                        <span>Cộng tác viên</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="partner">
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        <span>Đối tác</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="moderator">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        <span>Kiểm duyệt viên</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="admin">
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-4 w-4" />
+                        <span>Quản trị viên</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Reason */}
+              <div className="space-y-2">
+                <Label htmlFor="reason">Lý do thay đổi (tùy chọn)</Label>
+                <Textarea
+                  id="reason"
+                  placeholder="Nhập lý do thay đổi quyền..."
+                  value={roleChangeReason}
+                  onChange={(e) => setRoleChangeReason(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+                <p className="text-xs text-neutral-500">
+                  Lý do sẽ được ghi lại trong lịch sử và gửi thông báo đến người dùng
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <EnhancedButton
+              variant="outline"
+              onClick={() => setRoleDialogOpen(false)}
+              disabled={isChangingRole}
+            >
+              Hủy
+            </EnhancedButton>
+            <EnhancedButton
+              variant="primary"
+              onClick={handleRoleChangeSubmit}
+              disabled={isChangingRole || !selectedUser || selectedUser.role === newRole}
+            >
+              {isChangingRole ? 'Đang cập nhật...' : 'Xác nhận thay đổi'}
+            </EnhancedButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

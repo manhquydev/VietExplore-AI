@@ -26,6 +26,11 @@ export function useAdminStats() {
     userGrowth: 0,
     placeGrowth: 0,
     lastUpdated: new Date(),
+    regionalDistribution: {
+      'bac-bo': 0,
+      'trung-bo': 0,
+      'nam-bo': 0
+    }
   });
   const [loading, setLoading] = useState(true);
   const [realtimeReportStats, setRealtimeReportStats] = useState({ pending: 0, total: 0 });
@@ -56,16 +61,22 @@ export function useAdminStats() {
     async function fetchStats() {
       setLoading(true);
       try {
-        const [usersResult, moderationResult, placesResult] = await Promise.all([
+        const token = await getAuthToken();
+        const [usersResult, moderationResult, placesResult, analyticsResponse] = await Promise.all([
           apiClient.admin.users.list({ limit: 1000 }), // Fetch all to get count
           apiClient.moderation.queue.list({ status: 'pending' }),
-          apiClient.places.list({ limit: 1000 }) // Get places count
+          apiClient.places.list({ limit: 1000 }), // Get places count
+          fetch('/api/admin/analytics/places', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
         ]);
 
         // Calculate growth rates (simplified calculation)
         const currentUserCount = usersResult.pagination?.total || usersResult.data?.length || 0;
         const currentPlaceCount = placesResult.total || placesResult.data?.length || 0;
-        
+
         // Calculate growth based on recent registrations (last 30 days vs previous 30 days)
         const last30DaysUsers = usersResult.data?.filter((user: any) => {
           const userDate = new Date(user.createdAt);
@@ -90,6 +101,24 @@ export function useAdminStats() {
         const reportPendingModeration = realtimeReportStats.pending || 0;
         const totalPendingModeration = placePendingModeration + reportPendingModeration;
 
+        // Parse regional distribution from analytics API
+        let regionalDistribution = {
+          'bac-bo': 0,
+          'trung-bo': 0,
+          'nam-bo': 0
+        };
+
+        if (analyticsResponse.ok) {
+          const analyticsData = await analyticsResponse.json();
+          if (analyticsData.success && analyticsData.data?.placeStats?.byRegion) {
+            analyticsData.data.placeStats.byRegion.forEach((item: { region: string; count: number }) => {
+              if (item.region in regionalDistribution) {
+                regionalDistribution[item.region as keyof typeof regionalDistribution] = item.count;
+              }
+            });
+          }
+        }
+
         setStats({
           totalUsers: currentUserCount,
           totalPlaces: currentPlaceCount,
@@ -99,6 +128,7 @@ export function useAdminStats() {
           userGrowth: Math.round(userGrowth * 10) / 10,
           placeGrowth: Math.round(placeGrowth * 10) / 10,
           lastUpdated: new Date(),
+          regionalDistribution
         });
       } catch (error) {
         console.error("Failed to fetch admin stats", error);
@@ -113,6 +143,11 @@ export function useAdminStats() {
           userGrowth: 0,
           placeGrowth: 0,
           lastUpdated: new Date(),
+          regionalDistribution: {
+            'bac-bo': 0,
+            'trung-bo': 0,
+            'nam-bo': 0
+          }
         }));
       } finally {
         setLoading(false);

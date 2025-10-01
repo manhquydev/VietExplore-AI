@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -201,6 +202,34 @@ export default function ProfilePage() {
     return 'U';
   }
 
+  // Map user role to badge SVG files
+  const getRoleBadgeIcon = (role: string) => {
+    const roleMap: Record<string, string> = {
+      'admin': '/badges/verified.svg',
+      'partner': '/badges/community-partner.svg',
+      'contributor': '/badges/contributor.svg',
+    }
+
+    const normalizedRole = role.toLowerCase().trim()
+    return roleMap[normalizedRole] || null
+  }
+
+  // Map badge names to their SVG files (for user.badges array)
+  const getBadgeIcon = (badgeName: string) => {
+    const badgeMap: Record<string, string> = {
+      'contributor': '/badges/contributor.svg',
+      'community-partner': '/badges/community-partner.svg',
+      'community partner': '/badges/community-partner.svg',
+      'partner': '/badges/community-partner.svg',
+      'verified': '/badges/verified.svg',
+      'admin': '/badges/verified.svg',
+      'moderator': '/badges/verified.svg',
+    }
+
+    const normalizedName = badgeName.toLowerCase().trim()
+    return badgeMap[normalizedName] || null
+  }
+
   if (!isAuthenticated || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
@@ -323,25 +352,33 @@ export default function ProfilePage() {
                   <div>
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h1 className="text-2xl font-bold mb-1 flex items-center gap-2 text-gray-900">
-                          {user.fullName || 'User'}
-                          {user.verified && (
-                            <Badge className="bg-gradient-to-r from-brand-green to-brand-forest text-white border-0 shadow-md">
-                              <Award className="w-3 h-3 mr-1" />
-                              Verified
-                            </Badge>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h1 className="text-2xl font-bold text-gray-900">
+                            {user.fullName || 'User'}
+                          </h1>
+                          {getRoleBadgeIcon(user.role) && (
+                            <div className="w-6 h-6 flex-shrink-0">
+                              <Image
+                                src={getRoleBadgeIcon(user.role)!}
+                                alt={user.role}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-contain"
+                                title={user.role}
+                              />
+                            </div>
                           )}
-                        </h1>
+                        </div>
                         <p className="text-slate-600">@{user.username}</p>
                         <div className="mt-2">
-                          <UserRoleDisplay 
+                          <UserRoleDisplay
                             role={user.role}
                             variant="compact"
                           />
                         </div>
                       </div>
-                      <Button 
-                        variant="secondary" 
+                      <Button
+                        variant="secondary"
                         onClick={() => setIsEditing(true)}
                         className="glass-subtle"
                       >
@@ -442,17 +479,32 @@ export default function ProfilePage() {
                   </h3>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {user.badges && user.badges.length > 0 ? (
-                      user.badges.map((badge, index) => (
-                        <div key={index} className="flex items-center gap-3 p-4 bg-white/50 rounded-xl">
-                          <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                            <Award className="w-5 h-5 text-white" />
+                      user.badges.map((badge, index) => {
+                        const badgeIcon = getBadgeIcon(badge)
+                        return (
+                          <div key={index} className="flex items-center gap-3 p-4 bg-white/50 rounded-xl hover:bg-white transition-colors">
+                            <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                              {badgeIcon ? (
+                                <Image
+                                  src={badgeIcon}
+                                  alt={badge}
+                                  width={40}
+                                  height={40}
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                                  <Award className="w-5 h-5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-slate-900 capitalize">{badge}</div>
+                              <div className="text-xs text-slate-600">Huy hiệu thành tích</div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-medium text-slate-900">{badge}</div>
-                            <div className="text-xs text-slate-600">Huy hiệu thành tích</div>
-                          </div>
-                        </div>
-                      ))
+                        )
+                      })
                     ) : (
                       <div className="col-span-full text-center py-8">
                         <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">

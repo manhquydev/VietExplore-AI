@@ -43,7 +43,12 @@ export default function AdminOverviewPage() {
     openReports: stats?.openReports || 0,
     systemHealth: stats?.systemHealth || 99.9,
     userGrowth: stats?.userGrowth || 0,
-    placeGrowth: stats?.placeGrowth || 0
+    placeGrowth: stats?.placeGrowth || 0,
+    regionalDistribution: stats?.regionalDistribution || {
+      'bac-bo': 0,
+      'trung-bo': 0,
+      'nam-bo': 0
+    }
   }
 
   return (
@@ -226,7 +231,11 @@ export default function AdminOverviewPage() {
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-teal-900">
-                  {Math.floor(safeStats.totalPlaces * 0.3)}
+                  {statsLoading ? (
+                    <span className="animate-pulse text-teal-300">...</span>
+                  ) : (
+                    (safeStats.regionalDistribution?.['bac-bo'] || 0).toLocaleString('vi-VN')
+                  )}
                 </span>
                 <span className="text-sm text-teal-600">địa điểm</span>
               </div>
@@ -244,7 +253,11 @@ export default function AdminOverviewPage() {
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-yellow-900">
-                  {Math.floor(safeStats.totalPlaces * 0.4)}
+                  {statsLoading ? (
+                    <span className="animate-pulse text-yellow-300">...</span>
+                  ) : (
+                    (safeStats.regionalDistribution?.['trung-bo'] || 0).toLocaleString('vi-VN')
+                  )}
                 </span>
                 <span className="text-sm text-yellow-600">địa điểm</span>
               </div>
@@ -262,7 +275,11 @@ export default function AdminOverviewPage() {
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-blue-900">
-                  {Math.floor(safeStats.totalPlaces * 0.3)}
+                  {statsLoading ? (
+                    <span className="animate-pulse text-blue-300">...</span>
+                  ) : (
+                    (safeStats.regionalDistribution?.['nam-bo'] || 0).toLocaleString('vi-VN')
+                  )}
                 </span>
                 <span className="text-sm text-blue-600">địa điểm</span>
               </div>

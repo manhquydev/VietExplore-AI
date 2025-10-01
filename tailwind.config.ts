@@ -42,15 +42,23 @@ export default {
         // Legacy support - keep existing vars for backward compatibility
         bg: 'var(--bg)',
         surface: 'var(--surface)',
-        text: 'var(--text)', 
+        text: 'var(--text)',
         muted: 'var(--muted)',
         primary: 'var(--primary)',
         secondary: 'var(--secondary)',
         'primary-700': 'var(--primary-700)',
         overlay: 'var(--overlay)',
-        
+
         // Enhanced 2025 Color System - Base tokens (override duplicates)
         ...colors2025.colorTokens,
+
+        // Admin Design System Colors (using colors-2025 with admin- prefix)
+        'admin-primary': colors2025.colorTokens.primary,
+        'admin-neutral': colors2025.colorTokens.neutral,
+        'admin-success': colors2025.colorTokens.success,
+        'admin-warning': colors2025.colorTokens.warning,
+        'admin-error': colors2025.colorTokens.danger,
+        'admin-info': colors2025.colorTokens.info,
 
         // BRAND COLORS - BÁNH CHƯNG UNIFIED SYSTEM (NEW)
         'brand-primary': unifiedBrandColors.primary,        // Green spectrum (Lá dong)

@@ -47,3 +47,6 @@ NUL
 
 docs/
 .md/
+
+# MCP configuration (contains sensitive paths)
+.claude/

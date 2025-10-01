@@ -2,7 +2,29 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { BrandedLoading, LotusLogo, BrandedCardSkeleton } from "@/components/ui/branded-loading"
+import {
+  BrandedLoading,
+  LotusLogo,
+  BrandedCardSkeleton,
+  PlaceCardSkeleton,
+  PlaceGridSkeleton,
+  CommunityStatSkeleton,
+  TopContributorSkeleton,
+  AnnouncementSkeleton,
+  SearchLoadingSkeleton,
+  InlineLoading
+} from "@/components/ui/branded-loading"
+
+// Re-export for convenience
+export {
+  PlaceCardSkeleton,
+  PlaceGridSkeleton,
+  CommunityStatSkeleton,
+  TopContributorSkeleton,
+  AnnouncementSkeleton,
+  SearchLoadingSkeleton,
+  InlineLoading
+}
 
 interface LoadingSpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg" | "xl"
