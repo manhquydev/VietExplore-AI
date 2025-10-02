@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Megaphone, Plus, Search, Eye, Edit, Trash2, Pin, Star, BarChart, Calendar } from "lucide-react";
+import { Megaphone, Plus, Search, Eye, Edit, Trash2, Pin, Star, BarChart, Calendar, Archive } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -63,15 +63,15 @@ export default function AnnouncementsAdminPage() {
     try {
       await deleteAnnouncement(deleteId);
       toast({
-        title: "Xóa thành công",
-        description: "Thông báo đã được xóa",
+        title: "Lưu trữ thành công",
+        description: "Thông báo đã được lưu trữ",
       });
       setDeleteId(null);
       refetch();
     } catch (error: any) {
       toast({
         title: "Lỗi",
-        description: error.message || "Không thể xóa thông báo",
+        description: error.message || "Không thể lưu trữ thông báo",
         variant: "destructive",
       });
     }
@@ -328,9 +328,9 @@ export default function AnnouncementsAdminPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteId(announcement.id!)}
-                        title="Lưu trữ thông báo (ẩn)"
+                        title="Lưu trữ thông báo"
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Archive className="h-4 w-4 text-muted-foreground" />
                       </Button>
                     )}
                   </div>

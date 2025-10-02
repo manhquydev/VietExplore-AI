@@ -134,6 +134,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate scheduled status requires scheduledFor
+    if (body.status === 'scheduled' && !body.scheduledFor) {
+      return NextResponse.json(
+        { success: false, error: 'scheduledFor is required when status is scheduled' },
+        { status: 400 }
+      );
+    }
+
+    // Validate scheduledFor is in the future
+    if (body.scheduledFor) {
+      const scheduledDate = new Date(body.scheduledFor);
+      if (scheduledDate <= new Date()) {
+        return NextResponse.json(
+          { success: false, error: 'scheduledFor must be a future date/time' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Generate slug from title
     let slug = generateSlug(body.title);
 

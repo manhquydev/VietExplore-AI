@@ -77,6 +77,25 @@ export async function PATCH(
 
     const body: Partial<UpdateAnnouncementInput> = await request.json();
 
+    // Validate scheduled status requires scheduledFor
+    if (body.status === 'scheduled' && !body.scheduledFor) {
+      return NextResponse.json(
+        { success: false, error: 'scheduledFor is required when status is scheduled' },
+        { status: 400 }
+      );
+    }
+
+    // Validate scheduledFor is in the future
+    if (body.scheduledFor) {
+      const scheduledDate = new Date(body.scheduledFor);
+      if (scheduledDate <= new Date()) {
+        return NextResponse.json(
+          { success: false, error: 'scheduledFor must be a future date/time' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get existing announcement
     const docRef = adminDb.collection('announcements').doc(id);
     const doc = await docRef.get();

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.manualSyncStats = exports.syncAdminStats = exports.syncModerationQueue = exports.syncUserStats = exports.syncPlaceStats = void 0;
+exports.triggerPublishScheduledAnnouncements = exports.publishScheduledAnnouncements = exports.manualSyncStats = exports.syncAdminStats = exports.syncModerationQueue = exports.syncUserStats = exports.syncPlaceStats = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 // Initialize Firebase Admin
@@ -208,6 +208,160 @@ exports.manualSyncStats = functions.https.onCall(async (data, context) => {
     catch (error) {
         console.error('Error in manual sync:', error);
         throw new functions.https.HttpsError('internal', 'Manual sync failed');
+    }
+});
+/**
+ * Scheduled function để tự động xuất bản announcements theo lịch
+ * Chạy mỗi 15 phút để kiểm tra và publish announcements đã đến giờ
+ */
+exports.publishScheduledAnnouncements = functions.pubsub
+    .schedule('*/15 * * * *')
+    .timeZone('Asia/Ho_Chi_Minh')
+    .onRun(async () => {
+    try {
+        console.log('=== Starting scheduled announcements publish job ===');
+        const now = new Date();
+        const results = {
+            processed: 0,
+            published: 0,
+            errors: [],
+            publishedIds: [],
+        };
+        // Query all scheduled announcements
+        const scheduledSnapshot = await admin.firestore()
+            .collection('announcements')
+            .where('status', '==', 'scheduled')
+            .get();
+        console.log(`Found ${scheduledSnapshot.size} scheduled announcements`);
+        // Process each scheduled announcement
+        for (const doc of scheduledSnapshot.docs) {
+            results.processed++;
+            const announcement = doc.data();
+            const scheduledFor = announcement.scheduledFor;
+            try {
+                // Check if it's time to publish
+                if (scheduledFor && new Date(scheduledFor) <= now) {
+                    const nowISO = now.toISOString();
+                    // Update to published status
+                    await admin.firestore()
+                        .collection('announcements')
+                        .doc(doc.id)
+                        .update({
+                        status: 'published',
+                        publishedAt: nowISO,
+                        updatedAt: nowISO,
+                    });
+                    results.published++;
+                    results.publishedIds.push(doc.id);
+                    console.log(`✅ Published announcement: ${announcement.title} (${doc.id})`);
+                }
+                else {
+                    console.log(`⏰ Not yet time to publish: ${announcement.title} (scheduled for ${scheduledFor})`);
+                }
+            }
+            catch (error) {
+                const errorMsg = `Failed to publish ${doc.id}: ${error.message}`;
+                console.error(`❌ ${errorMsg}`);
+                results.errors.push(errorMsg);
+            }
+        }
+        console.log('=== Scheduled announcements publish job completed ===', {
+            processed: results.processed,
+            published: results.published,
+            errors: results.errors.length,
+            publishedIds: results.publishedIds,
+        });
+        // Store job execution log
+        if (results.published > 0 || results.errors.length > 0) {
+            await admin.firestore()
+                .collection('admin_logs')
+                .add({
+                type: 'scheduled_announcements_publish',
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                results,
+            });
+        }
+        return null;
+    }
+    catch (error) {
+        console.error('Fatal error in scheduled announcements publish job:', error);
+        // Log critical error
+        await admin.firestore()
+            .collection('admin_logs')
+            .add({
+            type: 'scheduled_announcements_publish_error',
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        throw error;
+    }
+});
+/**
+ * HTTP callable function để manual trigger publish scheduled announcements
+ * Có thể gọi từ admin panel để test hoặc force publish
+ */
+exports.triggerPublishScheduledAnnouncements = functions.https.onCall(async (data, context) => {
+    // Kiểm tra quyền admin
+    if (!context.auth || !context.auth.token.role || context.auth.token.role !== 'admin') {
+        throw new functions.https.HttpsError('permission-denied', 'Only admins can trigger manual publish');
+    }
+    try {
+        console.log('Manual publish triggered by admin:', context.auth.uid);
+        const now = new Date();
+        const results = {
+            processed: 0,
+            published: 0,
+            errors: [],
+            publishedIds: [],
+        };
+        // Query all scheduled announcements
+        const scheduledSnapshot = await admin.firestore()
+            .collection('announcements')
+            .where('status', '==', 'scheduled')
+            .get();
+        // Process each scheduled announcement
+        for (const doc of scheduledSnapshot.docs) {
+            results.processed++;
+            const announcement = doc.data();
+            const scheduledFor = announcement.scheduledFor;
+            try {
+                // Check if it's time to publish
+                if (scheduledFor && new Date(scheduledFor) <= now) {
+                    const nowISO = now.toISOString();
+                    await admin.firestore()
+                        .collection('announcements')
+                        .doc(doc.id)
+                        .update({
+                        status: 'published',
+                        publishedAt: nowISO,
+                        updatedAt: nowISO,
+                    });
+                    results.published++;
+                    results.publishedIds.push(doc.id);
+                }
+            }
+            catch (error) {
+                results.errors.push(`Failed to publish ${doc.id}: ${error.message}`);
+            }
+        }
+        // Log manual trigger
+        await admin.firestore()
+            .collection('admin_logs')
+            .add({
+            type: 'manual_announcements_publish',
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            triggeredBy: context.auth.uid,
+            results,
+        });
+        return {
+            success: true,
+            message: `Published ${results.published} announcements`,
+            results,
+        };
+    }
+    catch (error) {
+        console.error('Error in manual publish:', error);
+        throw new functions.https.HttpsError('internal', 'Manual publish failed');
     }
 });
 //# sourceMappingURL=index.js.map

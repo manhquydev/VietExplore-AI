@@ -1,6 +1,6 @@
 {
   "name": "Du-Lich-Viet",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "private": true,
   "scripts": {
     "dev": "node scripts/start-dev.js",

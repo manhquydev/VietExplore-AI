@@ -35,11 +35,13 @@ export default function NewAnnouncementPage() {
     tags: [],
     isPinned: false,
     isFeatured: false,
+    status: undefined,
+    scheduledFor: undefined,
   });
 
   const [tagInput, setTagInput] = React.useState("");
 
-  const handleSubmit = async (status: "draft" | "published") => {
+  const handleSubmit = async (status: "draft" | "published" | "scheduled") => {
     if (!formData.title || !formData.content) {
       toast({
         title: "Lỗi",
@@ -47,6 +49,19 @@ export default function NewAnnouncementPage() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate scheduled time
+    if (status === "scheduled" && formData.scheduledFor) {
+      const scheduledDate = new Date(formData.scheduledFor);
+      if (scheduledDate <= new Date()) {
+        toast({
+          title: "Lỗi",
+          description: "Thời gian xuất bản phải là thời điểm trong tương lai",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -57,10 +72,12 @@ export default function NewAnnouncementPage() {
 
       toast({
         title: "Thành công",
-        description: status === "draft" ? "Đã lưu nháp" : "Đã xuất bản thông báo",
+        description: status === "draft" ? "Đã lưu nháp" : status === "scheduled" ? "Đã lên lịch xuất bản" : "Đã xuất bản thông báo",
       });
 
+      // Navigate and refresh to show new announcement
       router.push("/admin/announcements");
+      router.refresh();
     } catch (error: any) {
       toast({
         title: "Lỗi",
@@ -294,16 +311,44 @@ export default function NewAnnouncementPage() {
 
           <Card>
             <CardHeader>
+              <CardTitle>Lịch xuất bản</CardTitle>
+              <CardDescription>Chọn thời gian xuất bản thông báo</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="scheduledFor">Thời gian xuất bản (tùy chọn)</Label>
+                <Input
+                  id="scheduledFor"
+                  type="datetime-local"
+                  value={formData.scheduledFor ? new Date(formData.scheduledFor).toISOString().slice(0, 16) : ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({
+                      ...formData,
+                      scheduledFor: value ? new Date(value).toISOString() : undefined
+                    });
+                  }}
+                  min={new Date().toISOString().slice(0, 16)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Để trống để xuất bản ngay hoặc chọn thời gian tương lai để lên lịch
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Xuất bản</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button
                 className="w-full"
-                onClick={() => handleSubmit("published")}
+                onClick={() => handleSubmit(formData.scheduledFor ? "scheduled" : "published")}
                 disabled={loading}
               >
                 <Eye className="h-4 w-4 mr-2" />
-                {loading ? "Đang xuất bản..." : "Xuất bản ngay"}
+                {loading ? "Đang lưu..." : formData.scheduledFor ? "Lên lịch xuất bản" : "Xuất bản ngay"}
               </Button>
               <Button
                 className="w-full"

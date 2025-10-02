@@ -103,7 +103,9 @@ export default function EditAnnouncementPage() {
         description: "Đã cập nhật thông báo",
       });
 
+      // Navigate and refresh to show updated announcement
       router.push("/admin/announcements");
+      router.refresh();
     } catch (error: any) {
       toast({
         title: "Lỗi",
@@ -419,6 +421,30 @@ export default function EditAnnouncementPage() {
                   {formData.status === "archived" && "Đã ẩn, không hiển thị công khai"}
                 </p>
               </div>
+
+              {/* Scheduled Time - Show when status is scheduled */}
+              {formData.status === "scheduled" && (
+                <div className="space-y-2">
+                  <Label htmlFor="scheduledFor">Thời gian xuất bản *</Label>
+                  <Input
+                    id="scheduledFor"
+                    type="datetime-local"
+                    value={formData.scheduledFor ? new Date(formData.scheduledFor).toISOString().slice(0, 16) : ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData({
+                        ...formData,
+                        scheduledFor: value ? new Date(value).toISOString() : undefined
+                      });
+                    }}
+                    min={new Date().toISOString().slice(0, 16)}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Thông báo sẽ tự động xuất bản vào thời điểm này
+                  </p>
+                </div>
+              )}
 
               <Separator />
 
