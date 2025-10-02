@@ -41,8 +41,8 @@ export const Footer: React.FC = () => {
               <h4 className="font-bold text-2xl sm:text-3xl text-primary mb-4 sm:mb-6 tracking-tight">
                 Du Lịch Việt
               </h4>
-              <p className="text-muted leading-relaxed text-sm sm:text-base mb-6 sm:mb-8">
-                Một cửa sổ trong suốt mở ra vẻ đẹp bất tận của Việt Nam. 
+              <p className="text-muted leading-relaxed text-sm sm:text-base mb-6 sm:mb-8 text-justify">
+                Một cửa sổ trong suốt mở ra vẻ đẹp bất tận của Việt Nam.
                 Nơi mỗi thông tin đều được kiểm chứng, mỗi gợi ý đều đáng tin cậy.
               </p>
             </div>

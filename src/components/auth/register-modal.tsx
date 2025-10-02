@@ -152,14 +152,15 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden bg-white">
-        <div className="p-8 space-y-6">
+      <DialogContent className="sm:max-w-[440px] p-0 bg-white flex flex-col max-h-[90vh]">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 p-6 pb-4 border-b">
           <DialogHeader className="space-y-4">
             {/* Logo */}
             <div className="flex justify-center">
-              <Logo variant="horizontal" size="xl" className="h-16" />
+              <Logo variant="horizontal" size="xl" className="h-12" />
             </div>
-            
+
             <div className="space-y-2">
               <DialogTitle className="text-center text-2xl font-bold text-slate-900">
                 Đăng ký
@@ -169,7 +170,10 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
               </DialogDescription>
             </div>
           </DialogHeader>
+        </div>
 
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             {/* Google Register */}
             <Button
@@ -337,23 +341,23 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                 )}
               </Button>
             </form>
-
-            {/* Switch to Login */}
-            {onSwitchToLogin && (
-              <div className="text-center pt-4 border-t border-slate-200">
-                <p className="text-sm text-slate-600">
-                  Đã có tài khoản?{" "}
-                  <button 
-                    onClick={onSwitchToLogin}
-                    className="text-primary hover:text-primary/80 font-medium"
-                  >
-                    Đăng nhập ngay
-                  </button>
-                </p>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Fixed Footer */}
+        {onSwitchToLogin && (
+          <div className="flex-shrink-0 p-6 pt-4 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+            <p className="text-sm text-slate-600 text-center">
+              Đã có tài khoản?{" "}
+              <button
+                onClick={onSwitchToLogin}
+                className="text-primary hover:text-primary/80 font-medium"
+              >
+                Đăng nhập ngay
+              </button>
+            </p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

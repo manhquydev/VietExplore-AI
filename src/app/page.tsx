@@ -185,8 +185,8 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-text">Cộng tác viên đã xác minh</h3>
-                <p className="text-muted leading-relaxed mb-8">
-                  Những người kể chuyện chuyên nghiệp - blogger du lịch, hướng dẫn viên địa phương, 
+                <p className="text-muted leading-relaxed mb-8 text-justify">
+                  Những người kể chuyện chuyên nghiệp - blogger du lịch, hướng dẫn viên địa phương,
                   và travel influencer đã được xác minh danh tính và chuyên môn qua quy trình nghiêm ngặt.
                 </p>
                 <div className="glass-subtle rounded-xl p-4 border-l-4 border-l-primary">
@@ -209,8 +209,8 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-text">Đối tác chính thức</h3>
-                <p className="text-muted leading-relaxed mb-8">
-                  Nguồn thông tin chính thống từ Sở Du lịch các tỉnh thành, các doanh nghiệp du lịch 
+                <p className="text-muted leading-relaxed mb-8 text-justify">
+                  Nguồn thông tin chính thống từ Sở Du lịch các tỉnh thành, các doanh nghiệp du lịch
                   được cấp phép hoạt động với đầy đủ giấy tờ pháp lý.
                 </p>
                 <div className="glass-subtle rounded-xl p-4 border-l-4 border-l-success">
@@ -233,8 +233,8 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-amber-800">Địa điểm xác thực đặc biệt</h3>
-                <p className="text-muted leading-relaxed mb-8">
-                  Di sản văn hóa thế giới UNESCO, danh lam thắng cảnh quốc gia và những địa điểm 
+                <p className="text-muted leading-relaxed mb-8 text-justify">
+                  Di sản văn hóa thế giới UNESCO, danh lam thắng cảnh quốc gia và những địa điểm
                   có giá trị văn hóa lịch sử đặc biệt được kiểm định chuyên sâu.
                 </p>
                 <div className="glass-subtle rounded-xl p-4 border-l-4 border-l-amber-500 bg-amber-100/30">
@@ -250,74 +250,74 @@ export default function Home() {
 
             {/* Elegant Statistics - Eloquent Emptiness */}
             <div className="text-center mb-16">
-              <div className="glass-subtle rounded-3xl p-12 max-w-4xl mx-auto">
-                <p className="text-xl text-text leading-relaxed font-medium mb-12">
-                  Đã có <strong className="text-3xl text-primary font-bold">10,000+</strong> người dùng tin tưởng và{" "}
-                  <strong className="text-3xl text-success font-bold">1,000+</strong> địa điểm được xác minh
+              <div className="glass-subtle rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 max-w-4xl mx-auto">
+                <p className="text-base sm:text-lg lg:text-xl text-text leading-relaxed font-medium mb-8 sm:mb-10 lg:mb-12 text-justify">
+                  Đã có <strong className="text-2xl sm:text-3xl text-primary font-bold">10,000+</strong> người dùng tin tưởng và{" "}
+                  <strong className="text-2xl sm:text-3xl text-success font-bold">1,000+</strong> địa điểm được xác minh
                 </p>
                 
                 {/* Authority System Explanation - Clear Hierarchy */}
-                <div className="space-y-10">
+                <div className="space-y-6 sm:space-y-8 lg:space-y-10">
                   <div className="text-center">
-                    <h4 className="text-2xl font-bold text-text mb-3">Hệ thống đóng góp nội dung</h4>
-                    <p className="text-muted text-base max-w-2xl mx-auto">
+                    <h4 className="text-xl sm:text-2xl font-bold text-text mb-2 sm:mb-3">Hệ thống đóng góp nội dung</h4>
+                    <p className="text-muted text-sm sm:text-base max-w-2xl mx-auto px-4 sm:px-0 text-justify">
                       Phân quyền rõ ràng đảm bảo chất lượng từng thông tin
                     </p>
                   </div>
 
                   {/* Role Cards - Progressive Disclosure */}
-                  <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto">
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 max-w-6xl mx-auto">
                     {/* Guest/Traveler */}
-                    <div className="glass-subtle rounded-xl p-5 border border-border/50 group hover:border-muted/30 motion-soft">
-                      <div className="text-center space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-muted/10 flex items-center justify-center mx-auto group-hover:scale-110 motion-soft">
-                          <svg className="w-6 h-6 text-muted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <div className="glass-subtle rounded-xl p-4 sm:p-5 border border-border/50 group hover:border-muted/30 motion-soft">
+                      <div className="text-center space-y-2 sm:space-y-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted/10 flex items-center justify-center mx-auto group-hover:scale-110 motion-soft">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-muted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                           </svg>
                         </div>
-                        <h5 className="font-bold text-text text-base">Khách & Lữ khách</h5>
-                        <p className="text-sm text-muted leading-relaxed">
+                        <h5 className="font-bold text-text text-sm sm:text-base">Khách & Lữ khách</h5>
+                        <p className="text-xs sm:text-sm text-muted leading-relaxed text-justify">
                           Xem nội dung, lưu địa điểm yêu thích, tạo lịch trình cá nhân
                         </p>
                       </div>
                     </div>
 
                     {/* Contributor */}
-                    <div className="glass-subtle rounded-xl p-5 border border-primary/30 bg-primary/[0.02] group hover:border-primary/50 motion-soft">
-                      <div className="text-center space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto group-hover:scale-110 motion-soft">
-                          <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <div className="glass-subtle rounded-xl p-4 sm:p-5 border border-primary/30 bg-primary/[0.02] group hover:border-primary/50 motion-soft">
+                      <div className="text-center space-y-2 sm:space-y-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto group-hover:scale-110 motion-soft">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                           </svg>
                         </div>
                         <div className="space-y-1">
-                          <span className="inline-block bg-primary/15 text-primary text-xs font-bold px-3 py-1 rounded-full">
+                          <span className="inline-block bg-primary/15 text-primary text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                             CẦN KIỂM DUYỆT
                           </span>
-                          <h5 className="font-bold text-primary text-base">Cộng tác viên</h5>
+                          <h5 className="font-bold text-primary text-sm sm:text-base">Cộng tác viên</h5>
                         </div>
-                        <p className="text-sm text-muted leading-relaxed">
+                        <p className="text-xs sm:text-sm text-muted leading-relaxed text-justify">
                           Tạo địa điểm mới, quản lý bản nháp. Nội dung được ưu tiên xét duyệt nhanh
                         </p>
                       </div>
                     </div>
 
                     {/* Partner */}
-                    <div className="glass-subtle rounded-xl p-5 border border-success/30 bg-success/[0.02] group hover:border-success/50 motion-soft">
-                      <div className="text-center space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto group-hover:scale-110 motion-soft">
-                          <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <div className="glass-subtle rounded-xl p-4 sm:p-5 border border-success/30 bg-success/[0.02] group hover:border-success/50 motion-soft sm:col-span-2 md:col-span-1">
+                      <div className="text-center space-y-2 sm:space-y-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto group-hover:scale-110 motion-soft">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-success" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                           </svg>
                         </div>
                         <div className="space-y-1">
-                          <span className="inline-block bg-success/15 text-success text-xs font-bold px-3 py-1 rounded-full">
+                          <span className="inline-block bg-success/15 text-success text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                             ƯU TIÊN CAO
                           </span>
-                          <h5 className="font-bold text-success text-base">Đối tác chính thức</h5>
+                          <h5 className="font-bold text-success text-sm sm:text-base">Đối tác chính thức</h5>
                         </div>
-                        <p className="text-sm text-muted leading-relaxed">
+                        <p className="text-xs sm:text-sm text-muted leading-relaxed text-justify">
                           Sở Du lịch, doanh nghiệp được cấp phép. Kiểm duyệt ưu tiên tối đa
                         </p>
                       </div>
@@ -325,16 +325,16 @@ export default function Home() {
                   </div>
 
                   {/* Quality Commitment - Refined */}
-                  <div className="glass-card rounded-2xl p-6 border border-primary/20 bg-gradient-to-br from-primary/[0.03] to-secondary/[0.03] max-w-4xl mx-auto">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <div className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-primary/20 bg-gradient-to-br from-primary/[0.03] to-secondary/[0.03] max-w-4xl mx-auto">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                       </div>
-                      <div className="flex-1 space-y-2">
-                        <h5 className="text-lg font-bold text-text">Cam kết kiểm duyệt 100%</h5>
-                        <p className="text-muted text-sm leading-relaxed">
+                      <div className="flex-1 space-y-1.5 sm:space-y-2">
+                        <h5 className="text-base sm:text-lg font-bold text-text">Cam kết kiểm duyệt 100%</h5>
+                        <p className="text-muted text-xs sm:text-sm leading-relaxed text-justify">
                           Mọi địa điểm đều được <strong className="text-primary">đội ngũ Moderator xác minh</strong> trước khi xuất bản.
                           Đảm bảo thông tin chính xác, hình ảnh phù hợp, và giá trị thực cho cộng đồng du lịch.
                         </p>

@@ -90,9 +90,10 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex justify-between items-center mb-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-md my-8 mx-4 flex flex-col max-h-[calc(100vh-4rem)]">
+        {/* Fixed Header */}
+        <div className="flex justify-between items-center p-6 pb-4 flex-shrink-0">
           <h2 className="text-xl font-bold">
             {mode === 'login' && 'Đăng Nhập'}
             {mode === 'register' && 'Đăng Ký'}
@@ -107,17 +108,19 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
           </button>
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
-          </div>
-        )}
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto flex-1 px-6 pb-4">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
 
-        {success && (
-          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-            {success}
-          </div>
-        )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+              {success}
+            </div>
+          )}
 
         {mode === 'login' && (
           <form onSubmit={handleLogin} className="space-y-4">
@@ -260,8 +263,10 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
             </button>
           </>
         )}
+        </div>
 
-        <div className="mt-4 text-center space-y-2">
+        {/* Fixed Footer */}
+        <div className="p-6 pt-4 text-center space-y-2 flex-shrink-0 border-t">
           {mode === 'login' && (
             <>
               <button
@@ -270,7 +275,7 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
                   setError('');
                   setSuccess('');
                 }}
-                className="text-blue-600 hover:underline text-sm block"
+                className="text-blue-600 hover:underline text-sm block w-full"
                 disabled={loading}
               >
                 Chưa có tài khoản? Đăng ký ngay
@@ -281,7 +286,7 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
                   setError('');
                   setSuccess('');
                 }}
-                className="text-yellow-600 hover:underline text-sm block"
+                className="text-yellow-600 hover:underline text-sm block w-full"
                 disabled={loading}
               >
                 Quên mật khẩu?
@@ -296,7 +301,7 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
                 setError('');
                 setSuccess('');
               }}
-              className="text-blue-600 hover:underline text-sm"
+              className="text-blue-600 hover:underline text-sm w-full"
               disabled={loading}
             >
               Đã có tài khoản? Đăng nhập
@@ -310,7 +315,7 @@ const AuthPopup: React.FC<AuthPopupProps> = ({
                 setError('');
                 setSuccess('');
               }}
-              className="text-blue-600 hover:underline text-sm"
+              className="text-blue-600 hover:underline text-sm w-full"
               disabled={loading}
             >
               Quay lại đăng nhập
