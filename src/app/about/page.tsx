@@ -113,50 +113,45 @@ export default function AboutPage() {
       <Header />
       
       <main className="relative">
-        {/* Hero Section - "Digital Window" Principle */}
-        <section className="container py-16 lg:py-24">
+        {/* Hero Section - Compact & Optimized */}
+        <section className="container py-8 sm:py-12">
           <div className="max-w-5xl mx-auto">
             {/* Glass morphism card with background image */}
             <div className="relative overflow-hidden rounded-3xl">
               {/* Background image with overlay */}
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
                   backgroundImage: `url('https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=2070')`
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-white/60 to-secondary/20 backdrop-blur-sm" />
-              
+
               {/* Content with glass effect */}
-              <div className="relative glass-card text-center p-8 sm:p-12 border-0">
-                <Badge className="mb-6 glass-subtle border-primary/20 text-primary px-4 py-2">
+              <div className="relative glass-card text-center p-6 sm:p-8 border-0">
+                <Badge className="mb-4 glass-subtle border-primary/20 text-primary px-4 py-2">
                   🇻🇳 Cửa sổ đến Việt Nam
                 </Badge>
-                
+
                 {/* Typography as Voice - Confident & Modern */}
-                <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
                   <span className="gradient-text">Du Lịch Việt</span>
                   <br />
                   <span className="text-foreground">Trong suốt & Tinh tế</span>
                 </h1>
-                
-                {/* Eloquence of Emptiness - Generous spacing */}
-                <div className="space-y-6 max-w-3xl mx-auto">
-                  <p className="text-lg sm:text-xl text-muted leading-relaxed">
-                    Chúng tôi không chỉ xây dựng một website du lịch. Chúng tôi tạo ra một 
-                    <span className="font-medium text-primary"> cửa sổ kỹ thuật số</span>, 
+
+                {/* Compact content */}
+                <div className="space-y-4 max-w-3xl mx-auto">
+                  <p className="text-base sm:text-lg text-muted leading-relaxed">
+                    Chúng tôi không chỉ xây dựng một website du lịch. Chúng tôi tạo ra một
+                    <span className="font-medium text-primary"> cửa sổ kỹ thuật số</span>,
                     nơi mỗi click và cuộn trang đều mở ra những khung cảnh đầy cảm hứng của vẻ đẹp Việt Nam.
-                  </p>
-                  
-                  <p className="text-base text-muted/80 leading-relaxed">
-                    Giao diện của chúng tôi như một tấm kính trong suốt, tinh tế - cho phép bạn tương tác 
-                    mà không làm gián đoạn kết nối cảm xúc với cảnh quan phía sau.
                   </p>
                 </div>
 
-                {/* Gentle Motion - Subtle interactions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                  <Button 
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+                  <Button
                     size="lg"
                     className="motion-gentle hover:scale-105 shadow-soft"
                     asChild
@@ -166,10 +161,10 @@ export default function AboutPage() {
                       Khám phá cộng đồng
                     </Link>
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="lg" 
-                    className="glass-subtle motion-gentle hover:scale-105" 
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="glass-subtle motion-gentle hover:scale-105"
                     asChild
                   >
                     <Link href="/about/mission">

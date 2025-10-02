@@ -36,20 +36,46 @@ export default function ResourcesPage() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
       <Header />
       
-      <main className="container py-16 max-w-7xl">
-        {/* Hero Section */}
-        <div className="glass-card text-center p-8 sm:p-12 mb-12">
-          <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <BookOpen className="w-8 h-8 text-brand-green" />
+      <main className="min-h-screen pt-16">
+        {/* Hero Section - Compact & Optimized */}
+        <section className="relative py-8 sm:py-12 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/80 via-green-50/40 to-amber-50/60"></div>
+
+          <div className="relative container max-w-7xl">
+            <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-brand-green" />
+                </div>
+                <h1 className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                  Tài nguyên du lịch
+                </h1>
+              </div>
+              <p className="text-base sm:text-lg text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+                Tổng hợp đầy đủ các hướng dẫn, công cụ và thông tin cần thiết<br className="hidden sm:block" />
+                để bạn có chuyến khám phá Việt Nam an toàn và trọn vẹn.
+              </p>
+
+              {/* Quick access stats */}
+              <div className="flex items-center justify-center gap-6 text-sm text-slate-600">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <span>Hướng dẫn toàn diện</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Cập nhật liên tục</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>Dễ dàng tra cứu</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="gradient-text text-4xl sm:text-5xl font-bold mb-6 leading-tight">
-            Tài nguyên du lịch
-          </h1>
-          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Tổng hợp đầy đủ các hướng dẫn, công cụ và thông tin cần thiết 
-            để bạn có chuyến khám phá Việt Nam an toàn và trọn vẹn.
-          </p>
-        </div>
+        </section>
+
+        <section className="container py-8 sm:py-12 max-w-7xl">
 
         {/* Essential Resources Grid */}
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
@@ -372,8 +398,9 @@ export default function ResourcesPage() {
             </Button>
           </div>
         </div>
+        </section>
       </main>
-      
+
       <Footer />
     </div>
   )

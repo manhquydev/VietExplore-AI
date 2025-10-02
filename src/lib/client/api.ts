@@ -192,6 +192,7 @@ export const apiClient = {
         });
         return callApi(`/admin/users?${params.toString()}`);
       },
+      stats: () => callApi('/admin/users/stats'),
       changeRole: (userId: string, newRole: UserRole, reason?: string) => callApi(`/admin/users/${userId}/role`, {
         method: 'PUT',
         body: JSON.stringify({ newRole, reason }),

@@ -17,14 +17,14 @@ export default function CommunityGuidelinesPage() {
     <div className="min-h-screen bg-bg text-text">
       <Header />
       
-      <div className="container mx-auto py-16 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-text mb-6">
+      <div className="container mx-auto py-8 max-w-4xl">
+        {/* Compact Header with glass-card */}
+        <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8 mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">
             Quy tắc cộng đồng
           </h1>
-          <p className="text-xl text-muted max-w-2xl mx-auto">
-            Những nguyên tắc cơ bản để xây dựng một cộng đồng du lịch tích cực, 
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Những nguyên tắc cơ bản để xây dựng một cộng đồng du lịch tích cực,
             hữu ích và đáng tin cậy cho tất cả mọi người.
           </p>
         </div>

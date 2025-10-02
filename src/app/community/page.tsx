@@ -78,25 +78,27 @@ export default function CommunityPage() {
       <Header />
       
       <main className="min-h-screen pt-16">
-        {/* Hero Section */}
-        <section className="relative py-20 sm:py-24 overflow-hidden">
+        {/* Hero Section - Compact & Optimized */}
+        <section className="relative py-8 sm:py-12 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-amber-50/40 to-green-50/60 "></div>
-          
+
           <div className="relative container">
-            <div className="glass-card max-w-4xl mx-auto text-center p-8 sm:p-12">
-              <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8">
+              <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100  flex items-center justify-center">
                   <Users className="w-6 h-6 text-brand-green " />
                 </div>
-                <h1 className="gradient-text text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+                <h1 className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
                   Cộng Đồng Du Lịch Việt
                 </h1>
               </div>
-              <p className="text-lg sm:text-xl text-slate-600  mb-8 max-w-2xl mx-auto leading-relaxed">
-                Kết nối với hàng nghìn người yêu du lịch Việt Nam. Chia sẻ trải nghiệm, khám phá địa điểm mới và lên kế hoạch chuyến đi cùng nhau.
+              <p className="text-base sm:text-lg text-slate-600  mb-6 max-w-2xl mx-auto leading-relaxed">
+                Kết nối với hàng nghìn người yêu du lịch Việt Nam. Chia sẻ trải nghiệm,<br className="hidden sm:block" />
+                khám phá địa điểm mới và lên kế hoạch chuyến đi cùng nhau.
               </p>
-              
-              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600  mb-8">
+
+              {/* Quick Stats - Visual Indicators */}
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600  mb-6">
                 {statsLoading ? (
                   <div className="flex items-center gap-2">
                     <BrandedLoading size="sm" variant="spinner" text="Đang tải thống kê..." showText={false} />
@@ -107,16 +109,20 @@ export default function CommunityPage() {
                 ) : communityStats ? (
                   <>
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-sky-500" />
+                      <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
                       <span>{communityStats.totalMembers.toLocaleString()} thành viên</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-teal-500" />
+                      <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
                       <span>{communityStats.totalPlaces.toLocaleString()} địa điểm</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-purple-500" />
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                       <span>{communityStats.totalItineraries.toLocaleString()} lịch trình</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                      <span>+{communityStats.monthlyGrowth}% tăng trưởng</span>
                     </div>
                   </>
                 ) : null}
@@ -140,62 +146,6 @@ export default function CommunityPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Community Stats */}
-              <div className="glass-card p-6">
-                <h2 className="text-2xl font-bold text-slate-900  mb-6">Tổng quan cộng đồng</h2>
-                {statsLoading ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <BrandedLoading size="md" variant="logo" text="Đang tải thống kê cộng đồng..." />
-                  </div>
-                ) : statsError ? (
-                  <div className="text-center text-red-500 py-8">{statsError}</div>
-                ) : communityStats ? (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-blue-100  rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <Users className="w-6 h-6 text-brand-green " />
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900 ">
-                        {communityStats.totalMembers.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-slate-600 ">Thành viên</div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <MapPin className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900 ">
-                        {communityStats.totalPlaces.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-slate-600 ">Địa điểm</div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <Calendar className="w-6 h-6 text-brand-gold dark:text-purple-400" />
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900 ">
-                        {communityStats.totalItineraries.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-slate-600 ">Lịch trình</div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900 ">
-                        +{communityStats.monthlyGrowth}%
-                      </div>
-                      <div className="text-sm text-slate-600 ">Tăng trưởng</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-500 py-8">Không có dữ liệu</div>
-                )}
-              </div>
-
               {/* Announcements */}
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-6">

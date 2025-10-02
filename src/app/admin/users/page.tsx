@@ -25,6 +25,7 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminUsers } from "@/hooks/use-admin"
 import { toastService } from "@/lib/ui/toast-service"
 import { UserRole } from "@/lib/types/auth"
+import { apiClient } from "@/lib/client/api"
 import { BrandedLoading } from "@/components/ui/branded-loading"
 import { AdminErrorState } from "@/components/admin/loading-states"
 import {
@@ -123,11 +124,12 @@ const statusConfig = {
 export default function EnhancedUserManagementPage() {
   const { user: currentUser } = useAuth()
   const { colors, spacing, animations, isDark } = useAdminTheme()
-  
+
   const [searchQuery, setSearchQuery] = React.useState('')
   const [roleFilter, setRoleFilter] = React.useState<string>('all')
   const [statusFilter, setStatusFilter] = React.useState<string>('all')
   const [selectedUsers, setSelectedUsers] = React.useState<User[]>([])
+  const [roleStats, setRoleStats] = React.useState<Record<UserRole, number> | null>(null)
 
   // Dialog states
   const [roleDialogOpen, setRoleDialogOpen] = React.useState(false)
@@ -148,14 +150,32 @@ export default function EnhancedUserManagementPage() {
     return filters
   }, [roleFilter, searchQuery])
 
-  const { 
-    users, 
-    loading, 
-    error, 
-    changeUserRole, 
-    sendPasswordReset, 
-    toggleUserStatus 
+  const {
+    users,
+    loading,
+    error,
+    changeUserRole,
+    sendPasswordReset,
+    toggleUserStatus
   } = useAdminUsers(userFilters)
+
+  // Fetch role statistics
+  React.useEffect(() => {
+    async function fetchRoleStats() {
+      try {
+        const result = await apiClient.admin.users.stats()
+        if (result.success && result.data) {
+          setRoleStats(result.data.byRole)
+        }
+      } catch (error) {
+        console.error('Failed to fetch role stats:', error)
+      }
+    }
+
+    if (currentUser?.role === 'admin') {
+      fetchRoleStats()
+    }
+  }, [currentUser, users]) // Re-fetch when users change
 
   const filteredUsers = React.useMemo(() => {
     let filtered = users || []
@@ -454,7 +474,7 @@ export default function EnhancedUserManagementPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 space-y-8">
-        
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <EnhancedCard variant="elevated">
@@ -522,6 +542,75 @@ export default function EnhancedUserManagementPage() {
           </EnhancedCard>
         </div>
 
+        {/* Role Distribution Statistics */}
+        <EnhancedCard variant="elevated">
+          <CardHeader
+            title="Phân bố vai trò"
+            subtitle="Thống kê số lượng người dùng theo từng vai trò"
+            icon={<Filter className="h-5 w-5" />}
+          />
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {(Object.entries(roleConfig) as [UserRole, typeof roleConfig[UserRole]][]).map(([role, config]) => {
+                const count = roleStats?.[role] || 0
+                const IconComponent = config.icon
+                const isActive = roleFilter === role
+
+                return (
+                  <button
+                    key={role}
+                    onClick={() => setRoleFilter(roleFilter === role ? 'all' : role)}
+                    className={cn(
+                      "relative p-4 rounded-xl border-2 transition-all duration-200 text-left hover:scale-105",
+                      isActive
+                        ? "border-primary-500 bg-primary-50 shadow-lg"
+                        : "border-neutral-200 bg-white hover:border-primary-300"
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        config.color.split(' ')[0]
+                      )}>
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      {isActive && (
+                        <CheckCircle className="h-4 w-4 text-primary-600" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-neutral-700">
+                        {config.label}
+                      </p>
+                      <p className="text-2xl font-bold text-neutral-900">
+                        {count}
+                      </p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {roleFilter !== 'all' && (
+              <div className="mt-4 p-3 bg-primary-50 border border-primary-200 rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-primary-700" />
+                  <span className="text-sm font-medium text-primary-900">
+                    Đang lọc: {roleConfig[roleFilter as UserRole]?.label}
+                  </span>
+                </div>
+                <EnhancedButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => setRoleFilter('all')}
+                >
+                  Xóa bộ lọc
+                </EnhancedButton>
+              </div>
+            )}
+          </CardContent>
+        </EnhancedCard>
+
         {/* Enhanced Data Table */}
         <EnhancedCard variant="elevated" size="lg">
           <EnhancedDataTable
@@ -529,15 +618,39 @@ export default function EnhancedUserManagementPage() {
             columns={tableColumns}
             loading={loading}
             search={
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm theo tên, email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm theo tên, email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                    <SelectItem value="active">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-success-500"></div>
+                        <span>Hoạt động</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="disabled">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-danger-500"></div>
+                        <span>Bị khóa</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             }
             selection={{

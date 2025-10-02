@@ -86,9 +86,10 @@ export default function FAQPage() {
       
       <main className="container py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">Câu Hỏi Thường Gặp</h1>
-            <p className="text-muted">
+          {/* Compact Hero with glass-card */}
+          <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8 mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">Câu Hỏi Thường Gặp</h1>
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
               Tìm câu trả lời cho những thắc mắc phổ biến về Du Lịch Việt
             </p>
           </div>

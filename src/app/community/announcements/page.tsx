@@ -37,14 +37,14 @@ export default function AnnouncementsPageNew() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <div className="container mx-auto py-12 px-4 max-w-5xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
-            <Megaphone className="h-8 w-8 text-primary" />
+      <div className="container mx-auto py-8 px-4 max-w-5xl">
+        {/* Compact Header with glass-card */}
+        <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8 mb-8">
+          <div className="inline-flex items-center justify-center p-3 bg-brand-green/10 rounded-full mb-4">
+            <Megaphone className="h-6 w-6 text-brand-green" />
           </div>
-          <h1 className="text-4xl font-bold mb-3">Thông báo cộng đồng</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 gradient-text">Thông báo cộng đồng</h1>
+          <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto">
             Cập nhật mới nhất về tính năng, sự kiện và hoạt động của Du Lịch Việt
           </p>
         </div>

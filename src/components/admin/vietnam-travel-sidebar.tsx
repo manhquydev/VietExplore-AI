@@ -24,7 +24,8 @@ import {
   AlertTriangle,
   TrendingUp,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Megaphone
 } from 'lucide-react'
 
 interface VietnamTravelSidebarProps {
@@ -104,6 +105,14 @@ const navigationSections: NavSection[] = [
         href: '/admin/places',
         icon: MapPin,
         description: 'Quản lý địa điểm',
+        roles: ['moderator', 'admin']
+      },
+      {
+        id: 'announcements',
+        title: 'Thông báo',
+        href: '/admin/announcements',
+        icon: Megaphone,
+        description: 'Quản lý thông báo cộng đồng',
         roles: ['moderator', 'admin']
       },
       {

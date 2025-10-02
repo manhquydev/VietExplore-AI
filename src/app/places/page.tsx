@@ -140,7 +140,8 @@ export default function PlacesPage() {
                 Khám Phá Việt Nam
               </h1>
               <p className="text-base sm:text-lg text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-                Hành trình qua hàng nghìn địa điểm tuyệt vời được cộng đồng tin tưởng và xác minh
+                Hành trình qua hàng nghìn địa điểm tuyệt vời<br className="hidden sm:block" />
+                được cộng đồng tin tưởng và xác minh
               </p>
 
               {/* Enhanced Search Bar - More compact */}

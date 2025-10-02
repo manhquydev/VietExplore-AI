@@ -318,6 +318,9 @@ html {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    display: inline-block;
+    padding-bottom: 0.1em;
+    line-height: 1.2;
   }
   
   
