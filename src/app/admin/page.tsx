@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import * as React from "react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useAdminStats } from "@/hooks/use-admin"

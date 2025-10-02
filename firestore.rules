@@ -277,11 +277,44 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false; // Only functions can write
     }
-    
+
     match /admin_logs/{document} {
       allow read: if isAdmin();
       allow create: if isAdmin(); // Allow admin to create logs
       allow write: if false; // Prevent updates after creation
+    }
+
+    // 4.12. announcements (Community Announcements)
+    match /announcements/{announcementId} {
+      // Public can read published announcements
+      allow read: if resource.data.status == 'published';
+
+      // List published announcements for public
+      allow list: if request.query.limit != null; // Require pagination
+
+      // Admin and Moderator can create announcements
+      allow create: if isModerator() || isAdmin();
+
+      // Admin and Moderator can update, plus author can update their own drafts
+      allow update: if (isModerator() || isAdmin())
+        || (isSignedIn() && resource.data.authorId == request.auth.uid && resource.data.status == 'draft');
+
+      // Only admin can delete
+      allow delete: if isAdmin();
+
+      // Validation rules for create/update
+      allow create, update: if
+        request.resource.data.keys().hasAll(['title', 'slug', 'content', 'type', 'status', 'priority', 'authorId', 'authorName', 'viewCount', 'isPinned', 'isFeatured', 'createdAt', 'updatedAt']) &&
+        isNonEmptyString(request.resource.data.title) &&
+        request.resource.data.title.size() <= 200 &&
+        isSlug(request.resource.data.slug) &&
+        isNonEmptyString(request.resource.data.content) &&
+        request.resource.data.type in ['announcement', 'feature', 'guide', 'community', 'maintenance', 'event'] &&
+        request.resource.data.status in ['draft', 'scheduled', 'published', 'archived'] &&
+        request.resource.data.priority in ['low', 'medium', 'high', 'urgent'] &&
+        request.resource.data.viewCount is int &&
+        request.resource.data.isPinned is bool &&
+        request.resource.data.isFeatured is bool;
     }
 
     // Default deny all other documents

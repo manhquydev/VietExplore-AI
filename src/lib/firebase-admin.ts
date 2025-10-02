@@ -10,11 +10,12 @@ const serviceAccount: ServiceAccount = {
 };
 
 // Initialize Firebase Admin SDK
-const app = !getApps().length 
+const app = !getApps().length
   ? initializeApp({
       credential: cert(serviceAccount),
       projectId: process.env.FIREBASE_PROJECT_ID,
       storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
+      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.asia-southeast1.firebasedatabase.app`,
     })
   : getApps()[0];
 

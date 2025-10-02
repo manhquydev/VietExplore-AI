@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "Thông tin về chương trình đối tác cộng đồng Du Lịch Việt",
 }
 
+export const dynamic = 'force-dynamic'
+
 const partnerTypes = [
   {
     type: "government",

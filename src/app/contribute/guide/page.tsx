@@ -20,6 +20,8 @@ import {
   FileText
 } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "Hướng dẫn đóng góp | Du Lịch Việt",
   description: "Hướng dẫn chi tiết về cách đóng góp địa điểm và nội dung chất lượng cho Du Lịch Việt",

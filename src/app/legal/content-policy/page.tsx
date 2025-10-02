@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Hướng dẫn về nội dung và quy tắc cộng đồng cho nền tảng Du Lịch Việt",
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function ContentPolicyPage() {
   return (
     <div className="min-h-screen bg-bg text-text">

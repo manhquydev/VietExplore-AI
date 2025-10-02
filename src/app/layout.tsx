@@ -13,6 +13,9 @@ import { NotificationConnectionStatus } from "@/components/notifications/notific
 import { LightOnlyThemeProvider } from "@/providers/light-only-theme-provider";
 import { TopLoadingBar } from "@/components/ui/top-loading-bar";
 
+// Force dynamic rendering for all pages to support useSearchParams in client components
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 
     (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002')),

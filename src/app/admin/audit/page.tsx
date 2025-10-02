@@ -54,6 +54,8 @@ import { cn } from "@/lib/utils"
 import { useRealtimeAuditLogs, AuditLog } from "@/hooks/use-realtime-audit-logs"
 import { RealtimeService } from "@/lib/firebase/realtime"
 
+export const dynamic = 'force-dynamic'
+
 // Mock data removed - now using real-time data from Firebase
 
 const getActionIcon = (action: AuditLog['action']) => {
@@ -587,7 +589,6 @@ export default function AuditDashboardPage() {
                           </div>
                         ) : (
                           <span className="text-gray-500 text-sm">
-                            {console.log('Log without changes:', log)}
                             -
                           </span>
                         )}

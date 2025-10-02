@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import * as React from "react"
 import { useParams, notFound, useRouter } from "next/navigation"
 import { PlaceDetailContent } from "@/components/place-detail-content"

@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Icon } from "@/components/ui/icon"
 
+export const dynamic = 'force-dynamic'
+
 const faqCategories = [
   {
     name: "Sử dụng nền tảng",

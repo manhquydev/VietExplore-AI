@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -10,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useCommunityStats } from "@/hooks/use-community-stats"
 import { useTopContributors } from "@/hooks/use-top-contributors"
+import { useAnnouncements } from "@/hooks/use-announcements"
 import { BrandedLoading } from "@/components/ui/branded-loading"
 import {
   Users,
@@ -28,33 +31,6 @@ import {
   Globe,
   Loader2
 } from "lucide-react"
-
-const announcements = [
-  {
-    id: "announce_001",
-    title: "Chào mừng các thành viên mới tham gia cộng đồng Du Lịch Việt!",
-    content: "Chúng tôi rất vui mừng chào đón hơn 10,000 thành viên đã tham gia cộng đồng. Cảm ơn mọi người đã tin tưởng và đóng góp để xây dựng nền tảng du lịch đáng tin cậy.",
-    date: "2024-03-15T10:00:00Z",
-    author: "Du Lịch Việt Team",
-    important: true
-  },
-  {
-    id: "announce_002", 
-    title: "Cập nhật tính năng AI Trợ lý - Gợi ý lịch trình thông minh hơn",
-    content: "Chúng tôi đã nâng cấp AI Trợ lý với khả năng hiểu ngữ cảnh tốt hơn và đưa ra gợi ý lịch trình phù hợp với ngân sách, thời gian và sở thích của bạn.",
-    date: "2024-03-10T14:30:00Z",
-    author: "Technical Team",
-    important: false
-  },
-  {
-    id: "announce_003",
-    title: "Quy định mới về đóng góp nội dung - Đảm bảo chất lượng thông tin",
-    content: "Để đảm bảo thông tin chính xác và đáng tin cậy, chúng tôi đã cập nhật quy định về đóng góp nội dung. Vui lòng xem hướng dẫn chi tiết.",
-    date: "2024-03-05T09:15:00Z", 
-    author: "Community Team",
-    important: false
-  }
-]
 
 
 const formatDate = (dateString: string) => {
@@ -91,6 +67,11 @@ const getInitials = (name: string | undefined, username: string | undefined) => 
 export default function CommunityPage() {
   const { stats: communityStats, loading: statsLoading, error: statsError } = useCommunityStats()
   const { contributors: topContributors, loading: contributorsLoading, error: contributorsError } = useTopContributors({ limit: 3 })
+  const { announcements, loading: announcementsLoading } = useAnnouncements({
+    filters: { isPinned: true },
+    limit: 3,
+    adminMode: false
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50 ">
@@ -228,33 +209,47 @@ export default function CommunityPage() {
                 </div>
                 
                 <div className="space-y-4">
-                  {announcements.map((announcement) => (
-                    <div key={announcement.id} className="glass-subtle p-6 rounded-2xl">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          {announcement.important && (
-                            <Badge variant="danger" className="bg-gradient-to-r from-red-500 to-pink-500 text-white">
-                              Quan trọng
-                            </Badge>
-                          )}
-                          <span className="text-sm text-slate-600 ">
-                            {formatDate(announcement.date)}
+                  {announcementsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+                    </div>
+                  ) : announcements.length === 0 ? (
+                    <div className="glass-subtle p-8 rounded-2xl text-center">
+                      <p className="text-slate-600">Chưa có thông báo nào</p>
+                    </div>
+                  ) : (
+                    announcements.map((announcement) => (
+                      <Link
+                        key={announcement.id}
+                        href={`/community/announcements/${announcement.slug}`}
+                        className="block glass-subtle p-6 rounded-2xl hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            {announcement.isPinned && (
+                              <Badge variant="danger" className="bg-gradient-to-r from-red-500 to-pink-500 text-white">
+                                Quan trọng
+                              </Badge>
+                            )}
+                            <span className="text-sm text-slate-600">
+                              {announcement.publishedAt && formatDate(announcement.publishedAt)}
+                            </span>
+                          </div>
+                          <span className="text-sm text-slate-500">
+                            {announcement.authorName}
                           </span>
                         </div>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
-                          {announcement.author}
-                        </span>
-                      </div>
-                      
-                      <h3 className="text-lg font-bold text-slate-900  mb-2">
-                        {announcement.title}
-                      </h3>
-                      
-                      <p className="text-slate-600  leading-relaxed">
-                        {announcement.content}
-                      </p>
-                    </div>
-                  ))}
+
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">
+                          {announcement.title}
+                        </h3>
+
+                        <p className="text-slate-600 leading-relaxed line-clamp-2">
+                          {announcement.excerpt}
+                        </p>
+                      </Link>
+                    ))
+                  )}
                 </div>
               </div>
 

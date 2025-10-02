@@ -13,7 +13,7 @@ import { useAdminStats } from '@/hooks/use-admin'
 import { cn } from '@/lib/utils'
 import { vietnamTravelTheme as designSystem, getRoleColors } from '@/lib/admin/vietnam-travel-theme'
 import Image from 'next/image'
-import { 
+import {
   ChevronLeft,
   Home,
   Shield,
@@ -23,7 +23,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Megaphone
 } from 'lucide-react'
 
 interface ModernSidebarProps {
@@ -63,6 +64,14 @@ const navigation: NavItem[] = [
     href: '/admin/places',
     icon: MapPin,
     description: 'Quản lý địa điểm du lịch',
+    roles: ['moderator', 'admin']
+  },
+  {
+    id: 'announcements',
+    title: 'Thông báo',
+    href: '/admin/announcements',
+    icon: Megaphone,
+    description: 'Quản lý thông báo cộng đồng',
     roles: ['moderator', 'admin']
   },
   {

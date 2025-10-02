@@ -34,9 +34,11 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     "claim_moderation_item",
     "manage_partial_admin",
     "manage_settings", // Basic settings access
+    "manage_announcements", // Create and manage announcements
+    "publish_announcements", // Publish announcements
     // Inherits traveler permissions
     "report_content",
-    "create_itinerary", 
+    "create_itinerary",
     "save_places"
   ],
   admin: [
@@ -47,7 +49,9 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     "manage_maintenance", // Maintenance mode
     "view_audit_logs", // Security audit logs
     "manage_users_advanced", // Advanced user management
-    "system_override" // Override any restriction
+    "system_override", // Override any restriction
+    "manage_announcements", // Create and manage announcements
+    "publish_announcements" // Publish announcements
   ]
 };
 

@@ -64,19 +64,19 @@ export interface ResetPasswordData {
   email: string;
 }
 
-export type Permission = 
-  | 'create_place' 
-  | 'review_content' 
-  | 'manage_users' 
-  | 'admin' 
-  | 'view_moderation_queue' 
-  | 'all_permissions' 
-  | 'create_place_priority' 
-  | 'create_itinerary' 
-  | 'save_places' 
-  | 'report_content' 
-  | 'manage_drafts' 
-  | 'partner_badge' 
+export type Permission =
+  | 'create_place'
+  | 'review_content'
+  | 'manage_users'
+  | 'admin'
+  | 'view_moderation_queue'
+  | 'all_permissions'
+  | 'create_place_priority'
+  | 'create_itinerary'
+  | 'save_places'
+  | 'report_content'
+  | 'manage_drafts'
+  | 'partner_badge'
   | 'fast_review'
   | 'approve_content'
   | 'reject_content'
@@ -85,8 +85,10 @@ export type Permission =
   | 'manage_partial_admin'
   | 'manage_settings'
   | 'manage_security'
-  | 'manage_notifications' 
+  | 'manage_notifications'
   | 'manage_maintenance'
   | 'view_audit_logs'
   | 'manage_users_advanced'
-  | 'system_override';
+  | 'system_override'
+  | 'manage_announcements'
+  | 'publish_announcements';

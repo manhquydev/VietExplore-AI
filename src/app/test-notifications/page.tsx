@@ -6,6 +6,8 @@ import { useRealtimeNotifications, useUserPresence } from "@/hooks/use-realtime-
 import { useAuth } from "@/components/auth/auth-provider"
 import { Badge } from "@/components/ui/badge"
 
+export const dynamic = 'force-dynamic'
+
 export default function TestNotificationsPage() {
   const { toast, success, error, warning, info } = useToast()
   const { user, isAuthenticated } = useAuth()

@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Disable static optimization to allow useSearchParams in client components
+  output: 'standalone',
+  // Skip static generation errors
+  staticPageGenerationTimeout: 1000,
   images: {
     remotePatterns: [
       {

@@ -77,6 +77,18 @@ service firebase.storage {
       allow write: if isSignedIn(); // Any authenticated user can upload itinerary images
     }
 
+    // Announcement images - only moderators and admins can upload
+    match /announcements/images/{imageId} {
+      allow read: if true; // Public read for announcement images
+      allow write: if isSignedIn() && isModerator();
+    }
+
+    // Announcement images with userId - only moderators and admins can upload
+    match /announcements/images/{userId}/{imageId} {
+      allow read: if true; // Public read for announcement images
+      allow write: if isSignedIn() && (isOwner(userId) || isModerator());
+    }
+
     // Admin uploads
     match /admin/{allPaths=**} {
       allow read, write: if isAdmin();

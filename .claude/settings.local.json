@@ -24,7 +24,13 @@
       "Bash(npm run lint:*)",
       "WebSearch",
       "Bash(powershell:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(timeout 10 bash -c \"while ! curl -s http://localhost:9002 > /dev/null; do sleep 1; done && echo ''Server is ready''\")",
+      "Bash(timeout 15 bash -c \"while ! curl -s http://localhost:9003 > /dev/null 2>&1; do sleep 1; done && echo ''Server ready''\")",
+      "Bash(python:*)",
+      "Bash(timeout 15 bash -c \"while ! curl -s http://localhost:9002 > /dev/null 2>&1; do sleep 1; done && echo ''Server ready''\")",
+      "Bash(timeout 30 bash -c \"while ! curl -s http://localhost:9002 > /dev/null 2>&1; do sleep 1; done && echo ''Server ready''\")",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []
