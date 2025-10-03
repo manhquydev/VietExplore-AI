@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { EmailVerificationNotice } from './email-verification-notice';

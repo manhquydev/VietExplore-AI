@@ -5,11 +5,29 @@ dotenv.config({ path: ".env.local" });
 import * as admin from 'firebase-admin';
 import { ServiceAccount } from 'firebase-admin/app';
 
-const serviceAccount: ServiceAccount = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-};
+// Parse service account from JSON string or individual env vars
+let serviceAccount: ServiceAccount;
+
+if (process.env.FIREBASE_ADMIN_SDK_JSON) {
+  try {
+    const parsed = JSON.parse(process.env.FIREBASE_ADMIN_SDK_JSON);
+    serviceAccount = {
+      projectId: parsed.project_id,
+      clientEmail: parsed.client_email,
+      privateKey: parsed.private_key,
+    };
+  } catch (error) {
+    console.error('Failed to parse FIREBASE_ADMIN_SDK_JSON:', error);
+    throw new Error('Invalid FIREBASE_ADMIN_SDK_JSON format');
+  }
+} else {
+  // Fallback to individual env vars
+  serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  };
+}
 
 function initializeFirebaseAdmin() {
   if (admin.apps.length > 0) {
@@ -24,11 +42,17 @@ function initializeFirebaseAdmin() {
 
       console.log('[Firebase Admin] Initializing with storage bucket:', storageBucket);
 
+      // Get database URL from environment or construct from project ID
+      const databaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
+                         `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.asia-southeast1.firebasedatabase.app`;
+
+      console.log('[Firebase Admin] Initializing with database URL:', databaseURL);
+
       return admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: process.env.FIREBASE_PROJECT_ID,
         storageBucket: storageBucket,
-        databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.asia-southeast1.firebasedatabase.app`
+        databaseURL: databaseURL
       });
     } catch (error: any) {
       console.error('Firebase Admin SDK initialization error:', error);

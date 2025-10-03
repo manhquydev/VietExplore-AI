@@ -272,6 +272,9 @@ export async function PUT(
     }
 
     const itemData = itemDoc.data();
+
+    // Declare placeDocForUpdate at function scope to use in audit log later
+    let placeDocForUpdate: FirebaseFirestore.DocumentSnapshot | null = null;
     
     // Check claim requirement - theo quy trình tài liệu mục 2.2.1
     if (moderator.role !== 'admin') {
@@ -635,7 +638,7 @@ export async function PUT(
       }
 
       // Check if the place document exists before updating
-      const placeDocForUpdate = await adminDb.collection('places').doc(contentId).get();
+      placeDocForUpdate = await adminDb.collection('places').doc(contentId).get();
       if (!placeDocForUpdate.exists) {
         console.warn(`Place document ${contentId} not found, cleaning up moderation queue entry`);
         
@@ -665,7 +668,18 @@ export async function PUT(
       // Update user stats and send notifications
       if (action === 'approve') {
         const placeData = placeDocForUpdate.data();
-        
+
+        console.log('========================================');
+        console.log('[MODERATION] APPROVE ACTION - DEBUG INFO');
+        console.log('========================================');
+        console.log('Place ID:', contentId);
+        console.log('Place Name:', placeData?.name);
+        console.log('Created By:', placeData?.createdBy);
+        console.log('Item Type:', itemData!.itemType);
+        console.log('Moderator:', moderator.id, moderator.email);
+        console.log('Review Notes:', reviewNotes);
+        console.log('========================================');
+
         if (placeData?.createdBy) {
           await adminDb.collection('users').doc(placeData.createdBy).update({
             'stats.placesPublished': FieldValue.increment(1),
@@ -673,22 +687,44 @@ export async function PUT(
           });
 
           // Send approval notification to submitter
-          if (itemData!.itemType === 'place_edit') {
-            await EnhancedNotificationService.notifyEditSubmitter(
-              placeData.createdBy,
-              contentId,
-              placeData.name || 'Địa điểm',
-              'approved',
-              reviewNotes
-            );
-          } else {
-            await EnhancedNotificationService.notifyPlaceSubmitter(
-              placeData.createdBy,
-              contentId,
-              placeData.name || 'Địa điểm',
-              'approved',
-              reviewNotes
-            );
+          console.log(`[MODERATION] 🔔 Sending approval notification to user ${placeData.createdBy} for place ${contentId}`);
+          try {
+            const editDraftId = itemData?.metadata?.editDraftId;
+
+            if (itemData!.itemType === 'place_edit') {
+              console.log('[MODERATION] Calling notifyEditSubmitter...');
+              const result = await EnhancedNotificationService.notifyEditSubmitter(
+                placeData.createdBy,
+                contentId,
+                placeData.name || 'Địa điểm',
+                placeData.slug || contentId,
+                editDraftId || contentId,
+                'approved',
+                reviewNotes
+              );
+              console.log('[MODERATION] ✅ Edit approval notification result:', JSON.stringify(result, null, 2));
+            } else {
+              console.log('[MODERATION] Calling notifyPlaceSubmitter...');
+              const result = await EnhancedNotificationService.notifyPlaceSubmitter(
+                placeData.createdBy,
+                contentId,
+                placeData.name || 'Địa điểm',
+                placeData.slug || contentId,
+                contentId, // draftId = contentId for regular submissions
+                'approved',
+                reviewNotes
+              );
+              console.log('[MODERATION] ✅ Place approval notification result:', JSON.stringify(result, null, 2));
+            }
+          } catch (notifError: any) {
+            console.error('========================================');
+            console.error('[MODERATION] ❌ NOTIFICATION ERROR');
+            console.error('========================================');
+            console.error('Error message:', notifError.message);
+            console.error('Error stack:', notifError.stack);
+            console.error('Error details:', notifError);
+            console.error('========================================');
+            // Don't block moderation flow if notification fails
           }
 
           // Trigger cache revalidation for approved content
@@ -704,24 +740,61 @@ export async function PUT(
       } else if (action === 'reject') {
         // Send rejection notification to submitter
         const placeData = placeDocForUpdate.data();
+
+        console.log('========================================');
+        console.log('[MODERATION] REJECT ACTION - DEBUG INFO');
+        console.log('========================================');
+        console.log('Place ID:', contentId);
+        console.log('Place Name:', placeData?.name);
+        console.log('Created By:', placeData?.createdBy);
+        console.log('Item Type:', itemData!.itemType);
+        console.log('Moderator:', moderator.id, moderator.email);
+        console.log('Review Notes:', reviewNotes);
+        console.log('========================================');
+
         if (placeData?.createdBy) {
-          if (itemData!.itemType === 'place_edit') {
-            await EnhancedNotificationService.notifyEditSubmitter(
-              placeData.createdBy,
-              contentId,
-              placeData.name || 'Địa điểm',
-              'rejected',
-              reviewNotes
-            );
-          } else {
-            await EnhancedNotificationService.notifyPlaceSubmitter(
-              placeData.createdBy,
-              contentId,
-              placeData.name || 'Địa điểm',
-              'rejected',
-              reviewNotes
-            );
+          console.log(`[MODERATION] 🔔 Sending rejection notification to user ${placeData.createdBy} for place ${contentId}`);
+          try {
+            const editDraftId = itemData?.metadata?.editDraftId;
+
+            if (itemData!.itemType === 'place_edit') {
+              console.log('[MODERATION] Calling notifyEditSubmitter for rejection...');
+              const result = await EnhancedNotificationService.notifyEditSubmitter(
+                placeData.createdBy,
+                contentId,
+                placeData.name || 'Địa điểm',
+                placeData.slug || contentId,
+                editDraftId || contentId,
+                'rejected',
+                reviewNotes
+              );
+              console.log('[MODERATION] ✅ Edit rejection notification result:', JSON.stringify(result, null, 2));
+            } else {
+              console.log('[MODERATION] Calling notifyPlaceSubmitter for rejection...');
+              const result = await EnhancedNotificationService.notifyPlaceSubmitter(
+                placeData.createdBy,
+                contentId,
+                placeData.name || 'Địa điểm',
+                placeData.slug || contentId,
+                contentId, // draftId = contentId for regular submissions
+                'rejected',
+                reviewNotes
+              );
+              console.log('[MODERATION] ✅ Place rejection notification result:', JSON.stringify(result, null, 2));
+            }
+          } catch (notifError: any) {
+            console.error('========================================');
+            console.error('[MODERATION] ❌ NOTIFICATION ERROR');
+            console.error('========================================');
+            console.error('Error message:', notifError.message);
+            console.error('Error stack:', notifError.stack);
+            console.error('Error details:', notifError);
+            console.error('========================================');
+            // Don't block moderation flow if notification fails
           }
+        } else {
+          console.error('[MODERATION] ⚠️ WARNING: placeData.createdBy is missing!');
+          console.error('Place data:', JSON.stringify(placeData, null, 2));
         }
       } else if (action === 'escalate') {
         // Send escalation notification to admins
@@ -731,6 +804,42 @@ export async function PUT(
           moderator.fullName || moderator.email,
           reviewNotes || 'Không có lý do cụ thể'
         );
+      } else if (action === 'request_edit') {
+        // Send needs_revision notification to submitter
+        const placeData = placeDocForUpdate?.data();
+
+        console.log('========================================');
+        console.log('[MODERATION] REQUEST_EDIT ACTION - DEBUG INFO');
+        console.log('========================================');
+        console.log('Place ID:', contentId);
+        console.log('Place Name:', placeData?.name);
+        console.log('Created By:', placeData?.createdBy);
+        console.log('Moderator:', moderator.id, moderator.email);
+        console.log('Review Notes:', reviewNotes);
+        console.log('========================================');
+
+        if (placeData?.createdBy) {
+          console.log(`[MODERATION] 🔔 Sending REVISION_REQUESTED notification to user ${placeData.createdBy} for place ${contentId}`);
+          try {
+            await EnhancedNotificationService.notifyRevisionRequested(
+              contentId, // draftId
+              placeData.name || 'Địa điểm',
+              placeData.createdBy,
+              reviewNotes || 'Cần chỉnh sửa theo yêu cầu'
+            );
+            console.log('[MODERATION] ✅ Revision requested notification sent successfully');
+          } catch (notifError: any) {
+            console.error('========================================');
+            console.error('[MODERATION] ❌ NOTIFICATION ERROR');
+            console.error('========================================');
+            console.error('Error message:', notifError.message);
+            console.error('Error stack:', notifError.stack);
+            console.error('========================================');
+            // Don't block moderation flow if notification fails
+          }
+        } else {
+          console.error('[MODERATION] ⚠️ WARNING: placeData.createdBy is missing!');
+        }
       }
     }
 

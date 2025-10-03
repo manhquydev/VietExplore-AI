@@ -9,6 +9,40 @@ Bộ scripts này giúp bạn reset và làm sạch dữ liệu trong dự án V
 - Cần tạo lại admin user duy nhất
 - Database bị lỗi hoặc corrupted
 
+## 🆕 **KHUYẾN NGHỊ: Sử dụng `reset-complete.js`**
+
+**Script mới nhất (December 2024)** - Xóa **100% dữ liệu** dự án:
+- ✅ **36+ Firestore collections** (vs 4 collections của scripts cũ)
+- ✅ **5 Storage folders** (places/, users/, itineraries/, homepage/, announcements/)
+- ✅ Progress tracking chi tiết
+- ✅ Giao diện tiếng Việt
+
+👉 **Xem chi tiết:** [HUONG-DAN-RESET-COMPLETE.md](./HUONG-DAN-RESET-COMPLETE.md)
+
+---
+
+## 📊 So sánh các Reset Scripts
+
+| Tính năng | reset-vn-admin.js | reset-project.js | **reset-complete.js** ⭐ |
+|-----------|-------------------|------------------|--------------------------|
+| **Collections xóa** | 4 | 4 | **36+** |
+| **Phủ sóng dữ liệu** | ~20% | ~20% | **100%** |
+| **Storage cleanup** | ✅ `places/` | ✅ `places/` | **✅ 5 folders** |
+| **Ngôn ngữ** | 🇻🇳 Tiếng Việt | 🇬🇧 English | **🇻🇳 Tiếng Việt** |
+| **Progress tracking** | Cơ bản | Không | **Chi tiết** |
+| **Batch operations** | Có | Có | **Tối ưu** |
+| **Status preview** | ✅ | ✅ | **✅ Chi tiết** |
+| **Use case** | Quick test | Quick test | **Production-ready** |
+
+### 💡 Chọn script nào?
+
+- **🚀 Để reset hoàn toàn 100%:** `reset-complete.js` (Khuyến nghị)
+- **⚡ Để reset nhanh 80%:** `reset-vn-admin.js` (Tiếng Việt)
+- **🔧 Để custom admin:** `reset-project.js` (Có options)
+- **🎯 Để xóa từng phần:** Dùng scripts riêng lẻ
+
+---
+
 ## ⚠️ LƯU Ý QUAN TRỌNG
 
 **CÁC SCRIPTS NÀY SẼ XÓA DỮ LIỆU VĨNH VIỄN!**
@@ -113,11 +147,47 @@ node scripts/create-single-admin.js \
 
 ## 🔄 Script tổng hợp - KHUYẾN NGHỊ
 
-### Reset hoàn toàn (All-in-one)
+### ⭐ Reset hoàn toàn 100% - `reset-complete.js` (MỚI NHẤT)
+
+**Xóa tất cả 36+ collections, Storage files, và Auth users:**
+
+```bash
+# 1. Kiểm tra trạng thái hiện tại
+node scripts/reset-complete.js --status
+
+# 2. Reset hoàn toàn dự án
+node scripts/reset-complete.js --confirm
+
+# 3. Hiển thị trợ giúp
+node scripts/reset-complete.js --help
+```
+
+**Quy trình thực hiện:**
+1. 🗑️ Xóa **36+ Firestore collections** (users, places, deletion_requests, announcements, ...)
+2. 📦 Xóa **5 Storage folders** (places/, users/, itineraries/, homepage/, announcements/)
+3. 👥 Xóa tất cả **Firebase Auth users**
+4. 👤 Tạo **admin user mới** tự động
+5. 📊 Báo cáo chi tiết từng bước
+
+**Admin account được tạo:**
+- Email: `admin@dulichviet.tech`
+- Password: `Manhquy203@`
+- Role: `admin` (full permissions)
+
+👉 **Chi tiết đầy đủ:** [HUONG-DAN-RESET-COMPLETE.md](./HUONG-DAN-RESET-COMPLETE.md)
+
+---
+
+### Reset nhanh 80% - `reset-project.js` / `reset-vn-admin.js`
+
+**Xóa 4 collections chính (nhanh hơn nhưng còn sót data):**
 
 ```bash
 # Reset toàn bộ project với admin mặc định
 node scripts/reset-project.js --confirm
+
+# Hoặc dùng phiên bản tiếng Việt
+node scripts/reset-vn-admin.js --confirm
 
 # Reset với admin custom
 node scripts/reset-project.js \
@@ -128,10 +198,12 @@ node scripts/reset-project.js \
 ```
 
 **Quy trình thực hiện:**
-1. 🗑️ Xóa tất cả places data (bao gồm ảnh)
-2. 👥 Xóa tất cả users data 
+1. 🗑️ Xóa places data (bao gồm ảnh)
+2. 👥 Xóa users data
 3. 👤 Tạo admin user mới
-4. 📊 Báo cáo kết quả chi tiết
+4. 📊 Báo cáo kết quả
+
+**⚠️ Lưu ý:** Script này chỉ xóa 4 collections, còn sót ~29 collections khác (announcements, itineraries, reviews, etc.)
 
 ### Reset chỉ data (giữ lại users)
 
@@ -142,24 +214,55 @@ node scripts/reset-project.js --data-only --confirm
 
 ## 📱 Hướng dẫn sử dụng
 
-### Scenario 1: Bắt đầu project mới
+### Scenario 1: Bắt đầu project mới (100% clean) ⭐
+
+**Khuyến nghị sử dụng `reset-complete.js`:**
 
 ```bash
-# 1. Kiểm tra trạng thái
-node scripts/reset-project.js --status
+# 1. Kiểm tra trạng thái hiện tại
+node scripts/reset-complete.js --status
 
-# 2. Reset hoàn toàn
-node scripts/reset-project.js --confirm
+# 2. Reset hoàn toàn 100% (36+ collections)
+node scripts/reset-complete.js --confirm
 
 # 3. Start development server
 npm run dev
 
 # 4. Login admin panel: http://localhost:9002/admin
-# Email: admin@vietexplore.ai
-# Password: VietExplore2024!Reset
+# Email: admin@dulichviet.tech
+# Password: Manhquy203@
+
+# 5. (Optional) Seed data mẫu
+node scripts/seed-places-vietnam.js --confirm
+node scripts/seed-users.js --confirm
 ```
 
-### Scenario 2: Làm sạch data test
+**Kết quả:**
+- ✅ 36+ collections đã xóa (bao gồm deletion_requests, moderation, moderationQueue)
+- ✅ Storage files đã xóa (places/, users/, itineraries/, homepage/, announcements/)
+- ✅ Tất cả users đã xóa
+- ✅ Admin mới đã tạo với thông tin cố định
+- ✅ Database 100% sạch, không còn dữ liệu rác
+
+---
+
+### Scenario 2: Reset nhanh 80% (Quick test)
+
+**Dùng script cũ nếu chỉ cần xóa nhanh:**
+
+```bash
+# Reset nhanh với tiếng Việt
+node scripts/reset-vn-admin.js --confirm
+
+# Hoặc dùng script English
+node scripts/reset-project.js --confirm
+```
+
+**⚠️ Lưu ý:** Còn sót ~29 collections (announcements, itineraries, reviews, etc.)
+
+---
+
+### Scenario 3: Làm sạch data test (giữ users)
 
 ```bash
 # Chỉ xóa places, giữ lại user accounts
@@ -169,7 +272,11 @@ node scripts/reset-project.js --data-only --confirm
 node scripts/seed-places-vietnam.js --confirm
 ```
 
-### Scenario 3: Tạo lại admin với thông tin riêng
+---
+
+### Scenario 4: Tạo lại admin với thông tin riêng
+
+**Nếu muốn custom admin (không dùng admin@dulichviet.tech):**
 
 ```bash
 # 1. Xóa tất cả users cũ
@@ -181,6 +288,16 @@ node scripts/create-single-admin.js \
   --password YourSecurePassword \
   --name "Your Name" \
   --confirm
+```
+
+**Hoặc sửa trực tiếp trong `reset-complete.js` (line 104-109):**
+```javascript
+const adminConfig = {
+  email: 'youremail@domain.com',
+  password: 'YourSecurePassword',
+  fullName: 'Your Name',
+  username: 'yourusername'
+};
 ```
 
 ## 🚨 Troubleshooting

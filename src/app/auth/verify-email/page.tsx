@@ -20,7 +20,7 @@ import {
   RefreshCw 
 } from 'lucide-react';
 import { EmailVerificationService } from '@/lib/auth/email-verification';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/auth/auth-provider';
 import { useFirebaseAuth } from '@/hooks/use-firebase-auth';
 import { cn } from '@/lib/utils';
 

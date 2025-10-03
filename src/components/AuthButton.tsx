@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/components/auth/auth-provider';
 import AuthPopup from './AuthPopup';
 
 const AuthButton: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false);
-  const { user, logout, loading } = useAuth();
+  const { user, logout, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return <div className="animate-pulse">Đang tải...</div>;
   }
 

@@ -16,9 +16,10 @@ import { FieldValue } from 'firebase-admin/firestore';
 export enum NotificationType {
   // Content submission
   PLACE_SUBMITTED = 'place_submitted',
-  PLACE_APPROVED = 'place_approved', 
+  PLACE_RECEIVED = 'place_received', // Địa điểm đã được tiếp nhận kiểm duyệt
+  PLACE_APPROVED = 'place_approved',
   PLACE_REJECTED = 'place_rejected',
-  
+
   // Editing workflow
   EDIT_REQUESTED = 'edit_requested',
   EDIT_APPROVED = 'edit_approved',
@@ -167,11 +168,22 @@ export class EnhancedNotificationService {
       retentionDays: 7
     },
 
+    [NotificationType.PLACE_RECEIVED]: {
+      type: NotificationType.PLACE_RECEIVED,
+      title: '📬 Địa điểm đã được tiếp nhận',
+      body: 'Địa điểm "{placeName}" của bạn đã được tiếp nhận và đang chờ kiểm duyệt',
+      actionUrl: '/contribute/my-drafts/{draftId}/moderation',
+      actionText: 'Xem nhật ký',
+      priority: NotificationPriority.MEDIUM,
+      channels: [NotificationChannel.IN_APP],
+      retentionDays: 30
+    },
+
     [NotificationType.PLACE_APPROVED]: {
       type: NotificationType.PLACE_APPROVED,
       title: '✅ Địa điểm đã được phê duyệt',
       body: 'Địa điểm "{placeName}" của bạn đã được phê duyệt và xuất bản',
-      actionUrl: '/places/{placeId}',
+      actionUrl: '/places/{slug}',
       actionText: 'Xem địa điểm',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
@@ -182,7 +194,7 @@ export class EnhancedNotificationService {
       type: NotificationType.PLACE_REJECTED,
       title: '❌ Địa điểm bị từ chối',
       body: 'Địa điểm "{placeName}" bị từ chối. Lý do: {reason}',
-      actionUrl: '/my-places/drafts/{draftId}',
+      actionUrl: '/contribute/my-drafts/{draftId}',
       actionText: 'Chỉnh sửa',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
@@ -193,7 +205,7 @@ export class EnhancedNotificationService {
       type: NotificationType.EDIT_REQUESTED,
       title: '✏️ Yêu cầu chỉnh sửa',
       body: 'Địa điểm "{placeName}" cần chỉnh sửa: {reason}',
-      actionUrl: '/places/{placeId}/edit',
+      actionUrl: '/contribute/my-drafts/{draftId}',
       actionText: 'Chỉnh sửa ngay',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
@@ -202,9 +214,9 @@ export class EnhancedNotificationService {
 
     [NotificationType.REVISION_REQUESTED]: {
       type: NotificationType.REVISION_REQUESTED,
-      title: '🔄 Yêu cầu sửa lại (lần {attemptNumber})',
-      body: 'Cần sửa lại địa điểm "{placeName}": {reason}',
-      actionUrl: '/places/{placeId}/edit',
+      title: '🔄 Yêu cầu sửa lại',
+      body: 'Địa điểm "{placeName}" cần sửa lại theo yêu cầu: {reason}',
+      actionUrl: '/contribute/my-drafts/{draftId}',
       actionText: 'Sửa lại',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
@@ -215,7 +227,7 @@ export class EnhancedNotificationService {
       type: NotificationType.EDIT_APPROVED,
       title: '✅ Chỉnh sửa được duyệt',
       body: 'Chỉnh sửa địa điểm "{placeName}" đã được phê duyệt',
-      actionUrl: '/places/{placeId}',
+      actionUrl: '/places/{slug}',
       actionText: 'Xem địa điểm',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
@@ -226,7 +238,7 @@ export class EnhancedNotificationService {
       type: NotificationType.EDIT_REJECTED,
       title: '❌ Chỉnh sửa bị từ chối',
       body: 'Chỉnh sửa địa điểm "{placeName}" bị từ chối: {reason}',
-      actionUrl: '/places/{placeId}/edit',
+      actionUrl: '/contribute/my-drafts/{draftId}',
       actionText: 'Sửa lại',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
@@ -414,7 +426,8 @@ export class EnhancedNotificationService {
           const userSetting = preferences.preferences[type];
 
           // Check if notification type is enabled
-          if (userSetting && !userSetting.enabled) {
+          // If userSetting is undefined, treat as enabled by default
+          if (userSetting && userSetting.enabled === false) {
             console.log(`Notification ${type} disabled for user ${userId}`);
             continue;
           }
@@ -692,6 +705,10 @@ export class EnhancedNotificationService {
     return {
       userId,
       preferences: {
+        [NotificationType.PLACE_RECEIVED]: {
+          enabled: true,
+          channels: [NotificationChannel.IN_APP]
+        },
         [NotificationType.PLACE_APPROVED]: {
           enabled: true,
           channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL]
@@ -703,6 +720,14 @@ export class EnhancedNotificationService {
         [NotificationType.REVISION_REQUESTED]: {
           enabled: true,
           channels: [NotificationChannel.IN_APP, NotificationChannel.PUSH]
+        },
+        [NotificationType.EDIT_APPROVED]: {
+          enabled: true,
+          channels: [NotificationChannel.IN_APP]
+        },
+        [NotificationType.EDIT_REJECTED]: {
+          enabled: true,
+          channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL]
         },
         [NotificationType.CONTENT_ESCALATED]: {
           enabled: true,
@@ -782,16 +807,24 @@ export class EnhancedNotificationService {
     });
   }
 
-  static async notifyPlaceApproved(placeId: string, placeName: string, ownerId: string): Promise<void> {
-    await this.sendNotification(ownerId, NotificationType.PLACE_APPROVED, {
-      placeId,
+  static async notifyPlaceReceived(draftId: string, placeName: string, ownerId: string): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_RECEIVED, {
+      draftId,
       placeName
     });
   }
 
-  static async notifyPlaceRejected(placeId: string, placeName: string, ownerId: string, reason: string): Promise<void> {
-    await this.sendNotification(ownerId, NotificationType.PLACE_REJECTED, {
+  static async notifyPlaceApproved(placeId: string, placeName: string, slug: string, ownerId: string): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_APPROVED, {
       placeId,
+      placeName,
+      slug
+    });
+  }
+
+  static async notifyPlaceRejected(draftId: string, placeName: string, ownerId: string, reason: string): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_REJECTED, {
+      draftId,
       placeName,
       reason
     });
@@ -799,18 +832,15 @@ export class EnhancedNotificationService {
 
   // Revision workflow
   static async notifyRevisionRequested(
-    placeId: string, 
-    placeName: string, 
-    ownerId: string, 
-    reason: string,
-    attemptNumber: number
+    draftId: string,
+    placeName: string,
+    ownerId: string,
+    reason: string
   ): Promise<void> {
-    const type = attemptNumber > 1 ? NotificationType.REVISION_REQUESTED : NotificationType.EDIT_REQUESTED;
-    await this.sendNotification(ownerId, type, {
-      placeId,
+    await this.sendNotification(ownerId, NotificationType.REVISION_REQUESTED, {
+      draftId,
       placeName,
-      reason,
-      attemptNumber
+      reason
     });
   }
 
@@ -819,37 +849,73 @@ export class EnhancedNotificationService {
     userId: string,
     placeId: string,
     placeName: string,
+    slug: string,
+    draftId: string,
     status: 'approved' | 'rejected',
     reviewNotes?: string
-  ): Promise<void> {
-    const type = status === 'approved' ? NotificationType.EDIT_APPROVED : NotificationType.EDIT_REJECTED;
-    await this.sendNotification(userId, type, {
+  ): Promise<any> {
+    console.log(`[NOTIFICATION] notifyEditSubmitter called:`, {
+      userId,
       placeId,
       placeName,
+      slug,
+      draftId,
       status,
       reviewNotes
     });
+
+    const type = status === 'approved' ? NotificationType.EDIT_APPROVED : NotificationType.EDIT_REJECTED;
+    const result = await this.sendNotification(userId, type, {
+      placeId,
+      placeName,
+      slug,
+      draftId,
+      status,
+      reviewNotes,
+      reason: reviewNotes // Add reason for template interpolation
+    });
+
+    console.log(`[NOTIFICATION] notifyEditSubmitter result:`, result);
+    return result;
   }
 
   static async notifyPlaceSubmitter(
     userId: string,
     placeId: string,
     placeName: string,
+    slug: string,
+    draftId: string,
     status: 'approved' | 'rejected' | 'needs_edit',
     reviewNotes?: string
-  ): Promise<void> {
+  ): Promise<any> {
+    console.log(`[NOTIFICATION] notifyPlaceSubmitter called:`, {
+      userId,
+      placeId,
+      placeName,
+      slug,
+      draftId,
+      status,
+      reviewNotes
+    });
+
     const typeMap = {
       approved: NotificationType.PLACE_APPROVED,
       rejected: NotificationType.PLACE_REJECTED,
       needs_edit: NotificationType.REVISION_REQUESTED
     };
-    
-    await this.sendNotification(userId, typeMap[status], {
+
+    const result = await this.sendNotification(userId, typeMap[status], {
       placeId,
       placeName,
+      slug,
+      draftId,
       status,
-      reviewNotes
+      reviewNotes,
+      reason: reviewNotes // Add reason for template interpolation
     });
+
+    console.log(`[NOTIFICATION] notifyPlaceSubmitter result:`, result);
+    return result;
   }
 
   static async notifyNewModerationItem(

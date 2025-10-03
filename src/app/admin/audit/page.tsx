@@ -58,12 +58,11 @@ export const dynamic = 'force-dynamic'
 
 // Mock data removed - now using real-time data from Firebase
 
-const getActionIcon = (action: AuditLog['action']) => {
+const getActionIcon = (action: string) => {
   switch (action) {
     case 'create':
       return <FileText className="h-4 w-4 text-green-600" />
     case 'update':
-    case 'transfer':
       return <Edit className="h-4 w-4 text-blue-600" />
     case 'delete':
       return <Trash2 className="h-4 w-4 text-red-600" />
@@ -74,13 +73,19 @@ const getActionIcon = (action: AuditLog['action']) => {
     case 'suspend':
       return <Shield className="h-4 w-4 text-orange-600" />
     case 'restore':
-      return <CheckCircle className="h-4 w-4 text-blue-600" />
+      return <RefreshCw className="h-4 w-4 text-blue-600" />
+    case 'transfer':
+      return <Edit className="h-4 w-4 text-purple-600" />
+    case 'claim':
+      return <User className="h-4 w-4 text-indigo-600" />
+    case 'escalate':
+      return <AlertTriangle className="h-4 w-4 text-yellow-600" />
     default:
       return <Activity className="h-4 w-4 text-gray-600" />
   }
 }
 
-const getActionLabel = (action: AuditLog['action']) => {
+const getActionLabel = (action: string) => {
   switch (action) {
     case 'create': return 'Tạo mới'
     case 'update': return 'Cập nhật'
@@ -90,7 +95,9 @@ const getActionLabel = (action: AuditLog['action']) => {
     case 'suspend': return 'Đình chỉ'
     case 'restore': return 'Khôi phục'
     case 'transfer': return 'Chuyển quyền'
-    default: return action
+    case 'claim': return 'Tiếp nhận'
+    case 'escalate': return 'Báo cáo lên'
+    default: return action.charAt(0).toUpperCase() + action.slice(1)
   }
 }
 
@@ -104,6 +111,34 @@ const getSeverityColor = (severity: AuditLog['severity']) => {
       return 'bg-yellow-100 text-yellow-800 border-yellow-300'
     default:
       return 'bg-gray-100 text-gray-800 border-gray-300'
+  }
+}
+
+const getRoleColor = (role: string) => {
+  switch (role) {
+    case 'admin':
+      return 'bg-red-100 text-red-800 border-red-300'
+    case 'moderator':
+      return 'bg-purple-100 text-purple-800 border-purple-300'
+    case 'partner':
+      return 'bg-blue-100 text-blue-800 border-blue-300'
+    case 'contributor':
+      return 'bg-green-100 text-green-800 border-green-300'
+    case 'traveler':
+      return 'bg-gray-100 text-gray-800 border-gray-300'
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-300'
+  }
+}
+
+const getRoleLabel = (role: string) => {
+  switch (role) {
+    case 'admin': return 'Admin'
+    case 'moderator': return 'Kiểm duyệt viên'
+    case 'partner': return 'Đối tác'
+    case 'contributor': return 'Cộng tác viên'
+    case 'traveler': return 'Du khách'
+    default: return role
   }
 }
 
@@ -468,6 +503,10 @@ export default function AuditDashboardPage() {
                     <SelectItem value="approve">Phê duyệt</SelectItem>
                     <SelectItem value="reject">Từ chối</SelectItem>
                     <SelectItem value="suspend">Đình chỉ</SelectItem>
+                    <SelectItem value="restore">Khôi phục</SelectItem>
+                    <SelectItem value="transfer">Chuyển quyền</SelectItem>
+                    <SelectItem value="claim">Tiếp nhận</SelectItem>
+                    <SelectItem value="escalate">Báo cáo lên</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -549,10 +588,15 @@ export default function AuditDashboardPage() {
                       <TableCell>
                         <div>
                           <div className="font-medium">{log.actor.name}</div>
-                          <div className="text-sm text-gray-600 flex items-center gap-1">
-                            <Badge className="text-xs">
-                              {log.actor.role}
+                          <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                            <Badge className={cn("text-xs", getRoleColor(log.actor.role))}>
+                              {getRoleLabel(log.actor.role)}
                             </Badge>
+                            {log.actor.email && (
+                              <span className="text-xs text-gray-500 ml-1">
+                                {log.actor.email}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </TableCell>

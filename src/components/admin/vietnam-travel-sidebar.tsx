@@ -246,7 +246,7 @@ export function VietnamTravelSidebar({
               />
             </div>
             <div className="text-white">
-              <div className="font-bold text-lg">VietExplore</div>
+              <div className="font-bold text-lg">Du Lịch Việt</div>
               <div className="text-xs text-white/80">Admin Portal</div>
             </div>
           </div>

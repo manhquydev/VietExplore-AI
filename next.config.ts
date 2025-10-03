@@ -12,6 +12,20 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   // Skip static generation errors
   staticPageGenerationTimeout: 1000,
+  // Security headers for Firebase Auth popup
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

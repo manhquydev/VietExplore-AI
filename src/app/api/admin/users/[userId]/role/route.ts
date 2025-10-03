@@ -4,6 +4,7 @@ import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { UserRole } from '@/lib/types/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getDatabase } from 'firebase-admin/database';
+import { ServerAuditService } from '@/lib/server/audit-service';
 
 // PUT /api/admin/users/[userId]/role - Change user role (Admin only)
 export async function PUT(
@@ -89,6 +90,28 @@ export async function PUT(
       reason,
       timestamp: now
     });
+
+    // Log to unified audit system with detailed changes
+    await ServerAuditService.logUserAction(
+      'update',
+      admin,
+      {
+        id: userId,
+        fullName: userData?.fullName,
+        email: userData?.email
+      },
+      [
+        {
+          field: 'role',
+          before: currentRole,
+          after: newRole
+        }
+      ],
+      {
+        reason: reason || 'Thay đổi vai trò người dùng',
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      }
+    );
 
     // Send notification to user via Realtime Database
     try {

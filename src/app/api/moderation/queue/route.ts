@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // GET /api/moderation/queue - Get moderation queue (Moderator/Admin only)
 export async function GET(request: NextRequest) {

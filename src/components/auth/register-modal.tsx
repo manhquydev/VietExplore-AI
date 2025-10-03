@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/components/auth/auth-provider"
 
 interface RegisterModalProps {
   isOpen: boolean
@@ -21,7 +21,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   onClose,
   onSwitchToLogin,
 }) => {
-  const { registerWithEmail, loginWithGoogle, error: authError, setError: setAuthError } = useAuth()
+  const { register, loginWithGoogle } = useAuth()
   const [formData, setFormData] = React.useState({
     fullName: "",
     email: "",
@@ -34,18 +34,10 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   const [isLoading, setIsLoading] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 
-  // Sync auth hook error with local error state
-  React.useEffect(() => {
-    if (authError) {
-      setErrors({ general: authError })
-    }
-  }, [authError])
-
   // Clear errors when modal opens/closes
   React.useEffect(() => {
     if (isOpen) {
       setErrors({})
-      setAuthError("")
       // Reset form
       setFormData({
         fullName: "",
@@ -55,7 +47,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
         agreeToTerms: false,
       })
     }
-  }, [isOpen, setAuthError])
+  }, [isOpen])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -100,22 +92,17 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     setErrors({})
 
     try {
-      setAuthError(''); // Clear previous errors
-      const success = await registerWithEmail({
+      await register({
+        fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        displayName: formData.fullName,
+        agreeToTerms: formData.agreeToTerms,
       })
 
-      if (success) {
-        // Small delay to show success state before closing
-        setTimeout(() => {
-          onClose();
-        }, 500);
-      }
-      // If registerWithEmail returns false, the error will be shown via Toast
-      // and synced to local state via useEffect
+      // Small delay to show success state before closing
+      setTimeout(() => {
+        onClose()
+      }, 500)
     } catch (error: any) {
       console.error('Registration error:', error)
       setErrors({ general: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại." })
@@ -125,9 +112,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   }
 
   const handleGoogleRegister = async () => {
-    setErrors({}); // Clear previous errors
+    setErrors({})
     try {
-      setAuthError(''); // Clear previous errors
       const success = await loginWithGoogle()
       if (success) {
         // Small delay to show success state before closing
@@ -135,8 +121,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
           onClose()
         }, 300)
       }
-      // If loginWithGoogle returns false, the error will be shown via Toast
-      // and synced to local state via useEffect
     } catch (error: any) {
       console.error('Google registration error:', error)
       setErrors({ general: error.message || "Đăng ký Google thất bại" })
@@ -166,7 +150,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                 Đăng ký
               </DialogTitle>
               <DialogDescription className="text-center text-slate-600">
-                Chào mừng tới VietExplore
+                Chào mừng tới Du Lịch Việt
               </DialogDescription>
             </div>
           </DialogHeader>

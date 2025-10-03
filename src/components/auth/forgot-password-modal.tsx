@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/components/auth/auth-provider"
 
 interface ForgotPasswordModalProps {
   isOpen: boolean

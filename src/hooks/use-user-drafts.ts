@@ -170,19 +170,14 @@ export function useUserDrafts(options: UseUserDraftsOptions = {}) {
     }
 
     try {
-      // For now, we'll just mark it as submitted
-      // In a real app, this would call a specific API endpoint
+      // Use the correct submit endpoint for drafts
       const token = await auth.currentUser.getIdToken();
-      const response = await fetch(`/api/places/${draftId}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/places/drafts/${draftId}/submit`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          status: 'submitted',
-          submittedAt: new Date().toISOString() 
-        })
+        }
       });
 
       const result = await response.json();

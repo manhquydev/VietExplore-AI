@@ -26,9 +26,13 @@ import { vi } from "date-fns/locale";
 
 const notificationIcons = {
   // Place moderation
+  place_received: "📬",
   place_approved: "✅",
-  place_rejected: "❌", 
+  place_rejected: "❌",
   place_needs_edit: "✏️",
+  revision_requested: "🔄",
+  edit_approved: "✅",
+  edit_rejected: "❌",
   edit_request_approved: "✅",
   edit_request_rejected: "❌",
   new_moderation_item: "📋",
@@ -112,8 +116,10 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
     }
 
     // Navigate to relevant page if actionUrl exists
-    if (notification.data?.actionUrl) {
-      window.location.href = notification.data.actionUrl;
+    // Check both root level and data.actionUrl for backward compatibility
+    const actionUrl = notification.data?.actionUrl || (notification as any).actionUrl;
+    if (actionUrl) {
+      window.location.href = actionUrl;
     }
   };
 

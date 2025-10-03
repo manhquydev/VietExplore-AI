@@ -52,7 +52,7 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
 // Success messages
 export const AUTH_SUCCESS_MESSAGES = {
   LOGIN_SUCCESS: 'Đăng nhập thành công! Chào mừng bạn trở lại',
-  REGISTER_SUCCESS: 'Đăng ký thành công! Chào mừng bạn đến với VietExplore',
+  REGISTER_SUCCESS: 'Đăng ký thành công! Chào mừng bạn đến với Du Lịch Việt',
   LOGOUT_SUCCESS: 'Đã đăng xuất thành công',
   PASSWORD_RESET_SENT: 'Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn',
   PASSWORD_RESET_SUCCESS: 'Mật khẩu đã được đặt lại thành công',

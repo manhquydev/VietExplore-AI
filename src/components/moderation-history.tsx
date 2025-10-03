@@ -444,10 +444,10 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                       <div className="flex items-center gap-2 text-sm text-muted">
                         <span>Thực hiện:</span>
                         <span className="font-medium text-foreground">
-                          {entry.actor.fullName || 
-                           entry.userName || 
-                           entry.moderatorName || 
-                           (entry.actor.user_id ? `User #${entry.actor.user_id.slice(-6)}` : 'Hệ thống')}
+                          {entry.actor.fullName ||
+                           entry.userName ||
+                           entry.moderatorName ||
+                           (entry.actor.user_id && typeof entry.actor.user_id === 'string' ? `User #${entry.actor.user_id.slice(-6)}` : 'Hệ thống')}
                         </span>
                         {entry.actor.role && (
                           <Badge variant="secondary" className="text-xs ml-1">
@@ -499,9 +499,9 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                     <div className="flex items-center gap-2 text-sm text-muted">
                       <span>Bởi:</span>
                       <span className="font-medium text-foreground">
-                        {entry.userName || entry.moderatorName || 
-                         (entry.userId ? `User #${entry.userId.slice(-6)}` : 
-                          entry.moderatorId ? `Moderator #${entry.moderatorId.slice(-6)}` : 'Hệ thống')}
+                        {entry.userName || entry.moderatorName ||
+                         (entry.userId && typeof entry.userId === 'string' ? `User #${entry.userId.slice(-6)}` :
+                          entry.moderatorId && typeof entry.moderatorId === 'string' ? `Moderator #${entry.moderatorId.slice(-6)}` : 'Hệ thống')}
                       </span>
                       {(entry.userRole || entry.moderatorRole) && (
                         <Badge variant="secondary" className="text-xs ml-1">
@@ -552,7 +552,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                   )}
 
                   {/* Display target information */}
-                  {entry.target && (
+                  {entry.target && entry.target.place_id && (
                     <div className="text-xs text-muted">
                       <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
                       Mục tiêu: <span className="font-mono text-xs">{entry.target.place_id.slice(-8)}</span>
@@ -659,7 +659,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                       )}
 
                       {/* Reference Information */}
-                      {entry.metadata.originalPlaceId && (
+                      {entry.metadata.originalPlaceId && typeof entry.metadata.originalPlaceId === 'string' && (
                         <div className="flex items-center text-xs text-muted">
                           <span className="inline-block w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span>
                           <span>Địa điểm gốc: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{entry.metadata.originalPlaceId.slice(-8)}</span></span>

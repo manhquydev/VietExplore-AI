@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { ForgotPasswordModal } from "./forgot-password-modal"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/components/auth/auth-provider"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -23,7 +23,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onSwitchToRegister,
 }) => {
-  const { loginWithEmail, loginWithGoogle, error: authError, setError: setAuthError } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [showPassword, setShowPassword] = React.useState(false)
@@ -31,20 +31,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [error, setError] = React.useState("")
   const [showForgotPassword, setShowForgotPassword] = React.useState(false)
 
-  // Sync auth hook error with local error state
-  React.useEffect(() => {
-    if (authError) {
-      setError(authError)
-    }
-  }, [authError])
-
   // Clear errors when modal opens/closes
   React.useEffect(() => {
     if (isOpen) {
       setError("")
-      setAuthError("")
     }
-  }, [isOpen, setAuthError])
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,13 +44,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setError("")
 
     try {
-      const success = await loginWithEmail({ email, password })
-      if (success) {
-        // Small delay to show success state before closing
-        setTimeout(() => {
-          onClose()
-        }, 300)
-      }
+      await login(email, password)
+      // Small delay to show success state before closing
+      setTimeout(() => {
+        onClose()
+      }, 300)
     } catch (error: any) {
       console.error('Login error:', error)
       setError(error.message || "Email hoặc mật khẩu không đúng")
@@ -68,7 +58,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   }
 
   const handleGoogleLogin = async () => {
-    setError("") // Clear any previous errors
+    setError("")
     try {
       const success = await loginWithGoogle()
       if (success) {
@@ -99,7 +89,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 Đăng nhập
               </DialogTitle>
               <DialogDescription className="text-center text-slate-600">
-                Chào mừng trở lại VietExplore
+                Chào mừng trở lại Du Lịch Việt
               </DialogDescription>
             </div>
           </DialogHeader>

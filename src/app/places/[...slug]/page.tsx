@@ -3,6 +3,7 @@ import { PlaceDetailContent } from "@/components/place-detail-content"
 import { Place } from "@/lib/types/places"
 import { Metadata } from "next"
 import { getCanonicalPlaceUrl, parseCompoundUrl } from "@/lib/utils/url-helpers"
+import { getAdminDb } from "@/lib/server/firebaseAdmin"
 
 interface PlaceData {
   id: string
@@ -81,53 +82,42 @@ interface PlaceData {
   }
 }
 
-// Fetch all place IDs for compound URL parsing
+// Fetch all place IDs for compound URL parsing - Direct Firestore access
 async function getAllPlaceIds(): Promise<string[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-      (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002');
-    const response = await fetch(`${baseUrl}/api/places`, {
-      next: { revalidate: 3600 } // Cache for 1 hour
-    });
-    
-    if (!response.ok) {
-      return [];
-    }
-    
-    const result = await response.json();
-    if (!result.success || !result.data) {
-      return [];
-    }
-    
-    return result.data.map((place: any) => place.id);
+    const adminDb = getAdminDb();
+    const placesSnapshot = await adminDb.collection('places')
+      .where('status', '==', 'published')
+      .select() // Only get document IDs for performance
+      .get();
+
+    return placesSnapshot.docs.map(doc => doc.id);
   } catch (error) {
-    console.error('Error fetching place IDs:', error);
+    console.error('Error fetching place IDs from Firestore:', error);
     return [];
   }
 }
 
-// Fetch real place data from API
+// Fetch real place data - Direct Firestore access
 async function getPlaceData(id: string): Promise<PlaceData | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-      (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002');
-    const response = await fetch(`${baseUrl}/api/places/${id}`, {
-      next: { revalidate: 300 } // Cache for 5 minutes
-    });
-    
-    if (!response.ok) {
+    const adminDb = getAdminDb();
+    const placeDoc = await adminDb.collection('places').doc(id).get();
+
+    if (!placeDoc.exists) {
       return null;
     }
-    
-    const result = await response.json();
-    if (!result.success || !result.data) {
+
+    const place = placeDoc.data() as Place;
+
+    // Only return published places
+    if (place.status !== 'published') {
       return null;
     }
-    
-    // Transform API data to PlaceData format
-    const place = result.data;
+
+    // Transform Firestore data to PlaceData format
     return {
-      id: place.id,
+      id: placeDoc.id,
       name: place.name,
       shortDescription: place.shortDescription || '',
       description: place.description || '',
@@ -168,7 +158,7 @@ async function getPlaceData(id: string): Promise<PlaceData | null> {
       addressConversion: place.addressConversion || undefined
     };
   } catch (error) {
-    console.error('Error fetching place data:', error);
+    console.error('Error fetching place data from Firestore:', error);
     return null;
   }
 }

@@ -1,7 +1,7 @@
 import { getDatabase } from 'firebase-admin/database'
 
 interface AuditLogData {
-  action: 'create' | 'update' | 'delete' | 'approve' | 'reject' | 'suspend' | 'restore' | 'transfer' | 'claim' | 'escalate'
+  action: 'create' | 'update' | 'delete' | 'approve' | 'reject' | 'suspend' | 'restore' | 'transfer' | 'claim' | 'escalate' | 'start_review' | 'request_edit' | 'direct_delete'
   actor: {
     id: string
     name: string
@@ -99,7 +99,7 @@ export class ServerAuditService {
 
   // Helper methods for common audit scenarios
   static async logModerationAction(
-    action: 'approve' | 'reject' | 'escalate' | 'claim',
+    action: 'approve' | 'reject' | 'escalate' | 'claim' | 'start_review' | 'request_edit' | 'direct_delete',
     moderator: { id: string, fullName: string, role: string, email?: string },
     item: { id: string, contentType: string, title?: string, name?: string },
     metadata: { reviewNotes?: string, reason?: string, ip?: string } = {}

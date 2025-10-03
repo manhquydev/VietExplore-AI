@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuthToken } from '@/lib/server/auth-middleware'
 import { getAdminDb } from '@/lib/server/firebaseAdmin'
 import { RealtimeService } from '@/lib/firebase/realtime'
+import { ServerAuditService } from '@/lib/server/audit-service'
 
 interface UserBanRequest {
   reason: string
@@ -201,6 +202,43 @@ export async function POST(
       ipAddress: request.headers.get('x-forwarded-for') || 'unknown'
     })
 
+    // Log to unified audit system with detailed changes
+    const changes = [
+      {
+        field: 'status',
+        before: targetUser?.status || 'active',
+        after: 'banned'
+      }
+    ]
+
+    if (body.revokePermissions && userUpdateData.role) {
+      changes.push({
+        field: 'role',
+        before: targetUser?.role,
+        after: 'traveler'
+      })
+    }
+
+    await ServerAuditService.logUserAction(
+      'suspend',
+      {
+        id: user.uid,
+        fullName: user.fullName,
+        role: user.role,
+        email: user.email
+      },
+      {
+        id: targetUserId,
+        fullName: targetUser?.fullName,
+        email: targetUser?.email
+      },
+      changes,
+      {
+        reason: `${body.banType}: ${body.reason}${isPermanent ? ' (vĩnh viễn)' : ` (${body.duration} giờ)`}`,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      }
+    )
+
     return NextResponse.json({
       success: true,
       data: {
@@ -346,6 +384,43 @@ export async function DELETE(
       timestamp: now.toISOString(),
       ipAddress: request.headers.get('x-forwarded-for') || 'unknown'
     })
+
+    // Log to unified audit system with detailed changes
+    const unbanChanges = [
+      {
+        field: 'status',
+        before: 'banned',
+        after: 'active'
+      }
+    ]
+
+    if (targetUser?.roleRevokedDueToBan && targetUser?.previousRole) {
+      unbanChanges.push({
+        field: 'role',
+        before: 'traveler',
+        after: targetUser.previousRole
+      })
+    }
+
+    await ServerAuditService.logUserAction(
+      'restore',
+      {
+        id: user.uid,
+        fullName: user.fullName,
+        role: user.role,
+        email: user.email
+      },
+      {
+        id: targetUserId,
+        fullName: targetUser?.fullName,
+        email: targetUser?.email
+      },
+      unbanChanges,
+      {
+        reason: `Khôi phục tài khoản: ${reason}`,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      }
+    )
 
     // Notify user
     try {

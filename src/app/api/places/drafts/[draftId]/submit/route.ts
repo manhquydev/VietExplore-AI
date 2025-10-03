@@ -268,6 +268,20 @@ export async function POST(
           draft.name
         );
       }
+
+      // Notify submitter that place has been received for moderation
+      console.log(`[NOTIFICATION] Sending PLACE_RECEIVED notification to user ${user.id} for draft ${draftId}`);
+      try {
+        await EnhancedNotificationService.notifyPlaceReceived(
+          draftId,
+          draft.name,
+          user.id
+        );
+        console.log(`[NOTIFICATION] ✅ Successfully sent PLACE_RECEIVED notification`);
+      } catch (notifError) {
+        console.error(`[NOTIFICATION] ❌ Error sending PLACE_RECEIVED notification:`, notifError);
+        // Don't block submission if notification fails
+      }
     }
 
     // Update user stats only for first-time submissions

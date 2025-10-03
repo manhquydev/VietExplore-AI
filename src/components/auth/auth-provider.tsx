@@ -1,15 +1,20 @@
 "use client"
 
 import * as React from "react"
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
-  signInWithCustomToken 
+  signInWithCustomToken,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  sendPasswordResetEmail
 } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { auth, googleProvider, isMobileDevice } from '@/lib/firebase'
 import { User } from '@/lib/types/auth'
+import { toastService } from '@/lib/ui/toast-service'
 
 interface AuthContextType {
   user: User | null
@@ -17,7 +22,9 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
-  logout: () => void
+  loginWithGoogle: () => Promise<boolean>
+  resetPassword: (email: string) => Promise<boolean>
+  logout: () => Promise<void>
   updateUser: (data: Partial<User>) => void
 }
 
@@ -47,62 +54,175 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
+  // Force refresh user data from API
+  const refreshUserData = React.useCallback(async (firebaseUser: any) => {
+    try {
+      const token = await firebaseUser.getIdToken(true) // Force refresh token
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache' // Prevent caching
+        }
+      })
+
+      if (response.ok) {
+        const { user } = await response.json()
+        setUser({
+          ...user,
+          uid: firebaseUser.uid
+        })
+        return true
+      } else if (response.status === 401) {
+        console.warn('Auth token invalid, signing out user')
+        await signOut(auth)
+        setUser(null)
+        return false
+      } else {
+        console.error('Failed to fetch user data:', response.status)
+        // Use fallback user data
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          fullName: firebaseUser.displayName || 'User',
+          username: firebaseUser.email?.split('@')[0] || 'user',
+          role: 'traveler' as any,
+          verified: false,
+          emailVerified: firebaseUser.emailVerified,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          stats: {
+            placesContributed: 0,
+            itinerariesCreated: 0,
+            helpfulVotes: 0
+          }
+        })
+        return true
+      }
+    } catch (error: any) {
+      console.error('Error refreshing user data:', error)
+      if (error?.code === 'auth/token-expired' || error?.code === 'auth/id-token-expired') {
+        await signOut(auth)
+        setUser(null)
+        return false
+      }
+      return false
+    }
+  }, [])
+
   // Initialize auth state with Firebase
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // Get user data from our API
-          const token = await firebaseUser.getIdToken()
-          const response = await fetch('/api/auth/me', {
-            headers: {
-              'Authorization': `Bearer ${token}`
+          // Retry mechanism with exponential backoff for new users
+          const maxRetries = 3
+          const baseDelay = 500
+          let lastError: any = null
+
+          for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+              const token = await firebaseUser.getIdToken()
+              const response = await fetch('/api/auth/me', {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Cache-Control': 'no-cache'
+                }
+              })
+
+              if (response.ok) {
+                const { user } = await response.json()
+                setUser({
+                  ...user,
+                  uid: firebaseUser.uid
+                })
+                setIsLoading(false)
+                return // Success - exit early
+              } else if (response.status === 401) {
+                // User document might not exist yet (Google sign-in race condition)
+                console.log(`Attempt ${attempt + 1}/${maxRetries}: User document not found, retrying...`)
+
+                if (attempt < maxRetries - 1) {
+                  // Wait with exponential backoff before retrying
+                  const delay = baseDelay * Math.pow(2, attempt)
+                  await new Promise(resolve => setTimeout(resolve, delay))
+                  continue
+                } else {
+                  // Final attempt failed - check if this is a real auth error
+                  try {
+                    // Verify token is still valid
+                    await firebaseUser.getIdToken(true) // Force refresh
+
+                    // Token is valid but user doc doesn't exist - use fallback
+                    console.warn('User document not found after retries, using fallback data')
+                    lastError = null // Clear error - we'll use fallback
+                    break
+                  } catch (tokenError: any) {
+                    // Token is actually invalid - sign out
+                    if (tokenError?.code === 'auth/token-expired' ||
+                        tokenError?.code === 'auth/id-token-expired') {
+                      console.warn('Token expired, signing out')
+                      await signOut(auth)
+                      setUser(null)
+                      setIsLoading(false)
+                      return
+                    }
+                  }
+                }
+              } else {
+                console.error(`Attempt ${attempt + 1}/${maxRetries}: Unexpected status ${response.status}`)
+                lastError = new Error(`HTTP ${response.status}`)
+
+                if (attempt < maxRetries - 1) {
+                  const delay = baseDelay * Math.pow(2, attempt)
+                  await new Promise(resolve => setTimeout(resolve, delay))
+                  continue
+                }
+              }
+            } catch (fetchError: any) {
+              console.error(`Attempt ${attempt + 1}/${maxRetries}:`, fetchError)
+              lastError = fetchError
+
+              if (attempt < maxRetries - 1) {
+                const delay = baseDelay * Math.pow(2, attempt)
+                await new Promise(resolve => setTimeout(resolve, delay))
+                continue
+              }
+            }
+          }
+
+          // All retries exhausted - use fallback user data
+          console.warn('Using fallback user data after retries')
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            fullName: firebaseUser.displayName || 'User',
+            username: firebaseUser.email?.split('@')[0] || 'user',
+            role: 'traveler' as any,
+            verified: false,
+            emailVerified: firebaseUser.emailVerified,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            stats: {
+              placesContributed: 0,
+              itinerariesCreated: 0,
+              helpfulVotes: 0
             }
           })
-          
-          if (response.ok) {
-            const { user } = await response.json()
-            // Ensure Firebase UID is included
-            setUser({
-              ...user,
-              uid: firebaseUser.uid
-            })
-          } else if (response.status === 401) {
-            // Token expired or invalid - silently sign out
-            console.warn('Auth token invalid, signing out user')
-            await signOut(auth)
-            setUser(null)
-          } else {
-            console.error('Failed to fetch user data:', response.status)
-            // For other errors, use fallback user data from Firebase
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              fullName: firebaseUser.displayName || 'User',
-              username: firebaseUser.email?.split('@')[0] || 'user',
-              role: 'traveler' as any,
-              verified: false,
-              emailVerified: firebaseUser.emailVerified,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              stats: {
-                placesContributed: 0,
-                itinerariesCreated: 0,
-                helpfulVotes: 0
-              }
-            })
-          }
-        } catch (error: any) {
-          console.error('Error in auth state change:', error)
 
-          // Handle token expiration
-          if (error?.code === 'auth/token-expired' || error?.code === 'auth/id-token-expired') {
-            console.warn('Authentication token expired, signing out user')
+        } catch (error: any) {
+          console.error('Critical error in auth state change:', error)
+
+          // Only sign out for specific auth errors
+          if (error?.code === 'auth/token-expired' ||
+              error?.code === 'auth/id-token-expired' ||
+              error?.code === 'auth/user-disabled' ||
+              error?.code === 'auth/user-token-expired') {
+            console.warn('Auth error, signing out user')
             await signOut(auth)
             setUser(null)
           } else {
-            // For network errors, use fallback user data
-            console.warn('Using fallback user data due to error:', error.message)
+            // For other errors, use fallback
+            console.warn('Using fallback user data due to critical error')
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
@@ -131,7 +251,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [])
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true)
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -144,22 +263,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await response.json()
 
       if (!response.ok) {
+        toastService.error('Đăng nhập thất bại', data.error || 'Email hoặc mật khẩu không đúng')
         throw new Error(data.error || 'Đăng nhập thất bại')
       }
-      
+
       // Sign in on client with custom token
+      // DON'T set user here - let onAuthStateChanged handle it
       await signInWithCustomToken(auth, data.token)
-      setUser(data.user)
+
+      // Success toast
+      toastService.success('Thành công', 'Đăng nhập thành công!')
 
     } catch (error: any) {
+      console.error('Login error:', error)
       throw new Error(error.message || 'Đăng nhập thất bại')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const register = async (data: RegisterData) => {
-    setIsLoading(true)
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -177,17 +298,105 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await response.json()
 
       if (!response.ok) {
+        toastService.error('Đăng ký thất bại', result.error || 'Không thể tạo tài khoản')
         throw new Error(result.error || 'Đăng ký thất bại')
       }
-      
+
       // Sign in on client with custom token from register response
+      // DON'T set user here - let onAuthStateChanged handle it
       await signInWithCustomToken(auth, result.token)
-      setUser(result.user)
+
+      // Success toast
+      toastService.success('Đăng ký thành công', 'Chào mừng bạn đến với Du Lịch Việt!')
 
     } catch (error: any) {
+      console.error('Register error:', error)
       throw new Error(error.message || 'Đăng ký thất bại')
-    } finally {
-      setIsLoading(false)
+    }
+  }
+
+  const loginWithGoogle = async (): Promise<boolean> => {
+    try {
+      const isMobile = isMobileDevice()
+
+      if (isMobile) {
+        // Use redirect for mobile
+        toastService.info('Đang chuyển hướng...', 'Vui lòng đợi')
+        await signInWithRedirect(auth, googleProvider)
+        return true
+      } else {
+        // Use popup for desktop
+        const result = await signInWithPopup(auth, googleProvider)
+
+        // Ensure user document exists IMMEDIATELY after Google sign-in
+        if (result.user) {
+          console.log('Google sign-in successful, ensuring user document exists...')
+
+          try {
+            // Create or get user document (idempotent operation)
+            const registerResponse = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                uid: result.user.uid,
+                email: result.user.email,
+                password: 'google-auth-placeholder',
+                fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
+                acceptTerms: true,
+                isGoogleAuth: true
+              }),
+            })
+
+            if (!registerResponse.ok) {
+              console.error('Failed to create user document:', await registerResponse.text())
+              throw new Error('Failed to create user document')
+            }
+
+            const data = await registerResponse.json()
+            console.log('User document ensured:', data.isExisting ? 'existing' : 'created')
+
+            // Wait a brief moment for Firestore to propagate
+            await new Promise(resolve => setTimeout(resolve, 500))
+          } catch (docError) {
+            console.error('Error ensuring user document:', docError)
+            // Don't fail the entire login - onAuthStateChanged will handle fallback
+          }
+        }
+
+        toastService.success('Thành công', 'Đăng nhập Google thành công!')
+        return true
+      }
+    } catch (error: any) {
+      console.error('Google login error:', error)
+
+      if (error.code === 'auth/popup-blocked') {
+        toastService.error('Popup bị chặn', 'Vui lòng cho phép popup và thử lại')
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        // Silent - user cancelled
+        console.log('User cancelled Google sign-in')
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        toastService.warning('Tài khoản đã tồn tại', 'Email này đã được đăng ký với phương thức khác')
+      } else {
+        toastService.error('Lỗi', 'Đăng nhập Google thất bại')
+      }
+      return false
+    }
+  }
+
+  const resetPassword = async (email: string): Promise<boolean> => {
+    try {
+      if (!email || !email.trim()) {
+        toastService.error('Thiếu thông tin', 'Vui lòng nhập email')
+        return false
+      }
+
+      await sendPasswordResetEmail(auth, email)
+      toastService.success('Email đã gửi', 'Vui lòng kiểm tra hộp thư để đặt lại mật khẩu')
+      return true
+    } catch (error: any) {
+      console.error('Reset password error:', error)
+      toastService.error('Lỗi', 'Không thể gửi email đặt lại mật khẩu')
+      return false
     }
   }
 
@@ -195,8 +404,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await signOut(auth)
       setUser(null)
+      toastService.success('Đã đăng xuất', 'Hẹn gặp lại!')
     } catch (error) {
       console.error('Logout error:', error)
+      toastService.error('Lỗi', 'Không thể đăng xuất')
     }
   }
 
@@ -210,6 +421,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
     login,
     register,
+    loginWithGoogle,
+    resetPassword,
     logout,
     updateUser,
   }
