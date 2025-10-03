@@ -250,6 +250,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe()
   }, [])
 
+  // Handle redirect result from Google sign-in
+  React.useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result?.user) {
+          console.log('Redirect result successful, ensuring user document exists...')
+
+          // Ensure user document exists after redirect
+          try {
+            const registerResponse = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                uid: result.user.uid,
+                email: result.user.email,
+                password: 'google-auth-placeholder',
+                fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
+                acceptTerms: true,
+                isGoogleAuth: true
+              }),
+            })
+
+            if (registerResponse.ok) {
+              const data = await registerResponse.json()
+              console.log('User document ensured after redirect:', data.isExisting ? 'existing' : 'created')
+              toastService.success('Thành công', 'Đăng nhập Google thành công!')
+            }
+          } catch (docError) {
+            console.error('Error ensuring user document after redirect:', docError)
+          }
+        }
+      } catch (error: any) {
+        // Only log non-null errors (null means no redirect pending)
+        if (error) {
+          console.error('Redirect result error:', error)
+          if (error.code !== 'auth/popup-closed-by-user') {
+            toastService.error('Lỗi', 'Đăng nhập thất bại sau redirect')
+          }
+        }
+      }
+    }
+
+    handleRedirectResult()
+  }, [])
+
   const login = async (email: string, password: string) => {
     try {
       const response = await fetch('/api/auth/login', {
@@ -325,8 +371,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await signInWithRedirect(auth, googleProvider)
         return true
       } else {
-        // Use popup for desktop
-        const result = await signInWithPopup(auth, googleProvider)
+        // Try popup first for desktop
+        let result
+        try {
+          result = await signInWithPopup(auth, googleProvider)
+        } catch (popupError: any) {
+          // Auto-fallback to redirect if popup fails due to COOP or blocking
+          if (
+            popupError.code === 'auth/popup-blocked' ||
+            popupError.code === 'auth/popup-closed-by-user' ||
+            popupError.message?.includes('Cross-Origin-Opener-Policy')
+          ) {
+            console.log('Popup failed, falling back to redirect...', popupError.code)
+            toastService.info('Đang chuyển hướng...', 'Popup bị chặn, chuyển sang redirect')
+            await signInWithRedirect(auth, googleProvider)
+            return true
+          }
+          // Re-throw other errors
+          throw popupError
+        }
 
         // Ensure user document exists IMMEDIATELY after Google sign-in
         if (result.user) {
@@ -370,7 +433,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Google login error:', error)
 
       if (error.code === 'auth/popup-blocked') {
-        toastService.error('Popup bị chặn', 'Vui lòng cho phép popup và thử lại')
+        toastService.error('Popup bị chặn', 'Vui lòng cho phép popup hoặc làm mới trang')
       } else if (error.code === 'auth/popup-closed-by-user') {
         // Silent - user cancelled
         console.log('User cancelled Google sign-in')

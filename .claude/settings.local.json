@@ -30,7 +30,10 @@
       "Bash(python:*)",
       "Bash(timeout 15 bash -c \"while ! curl -s http://localhost:9002 > /dev/null 2>&1; do sleep 1; done && echo ''Server ready''\")",
       "Bash(timeout 30 bash -c \"while ! curl -s http://localhost:9002 > /dev/null 2>&1; do sleep 1; done && echo ''Server ready''\")",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(firebase functions:delete:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(firebase functions:list:*)"
     ],
     "deny": [],
     "ask": []

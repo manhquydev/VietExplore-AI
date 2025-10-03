@@ -237,22 +237,26 @@ export async function GET(request: NextRequest) {
     // Clean up expired claims in the background
     if (expiredClaims.length > 0) {
       console.log(`Releasing ${expiredClaims.length} expired claim(s)`);
-      
+
+      // Fix: Use admin.firestore.FieldValue directly để tránh scope issue
+      const FieldValueDelete = FieldValue.delete();
+      const nowISO = new Date().toISOString();
+
       const expiredCleanupPromises = expiredClaims.map(async (entryId) => {
         try {
           await adminDb.collection('moderation_queue').doc(entryId).update({
             status: 'pending',
-            claimedBy: FieldValue.delete(),
-            claimedAt: FieldValue.delete(),
-            claimExpiresAt: FieldValue.delete(),
-            updatedAt: new Date().toISOString()
+            claimedBy: FieldValueDelete,
+            claimedAt: FieldValueDelete,
+            claimExpiresAt: FieldValueDelete,
+            updatedAt: nowISO
           });
           console.log(`Released expired claim: ${entryId}`);
         } catch (error) {
           console.error(`Failed to release expired claim ${entryId}:`, error);
         }
       });
-      
+
       // Execute cleanup in background without blocking the response
       Promise.all(expiredCleanupPromises).catch(error => {
         console.error('Error during expired claim cleanup:', error);

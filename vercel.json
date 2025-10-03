@@ -1,13 +1,38 @@
 {
   "version": 2,
   "regions": ["sin1"],
-  "crons": [
+  "_comment_crons": "MIGRATED TO FIREBASE CLOUD SCHEDULER - See functions/src/index.ts",
+  "_crons_deprecated": [
     {
+      "_note": "Replaced by: scheduledCleanupExpiredClaims (Firebase)",
       "path": "/api/cron/cleanup-expired-claims",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "_note": "Replaced by: scheduledArchiveModerationQueue (Firebase)",
+      "path": "/api/cron/archive-moderation-queue",
       "schedule": "0 2 * * *"
+    },
+    {
+      "_note": "Replaced by: scheduledModerationHealthCheck (Firebase)",
+      "path": "/api/cron/moderation-health-check",
+      "schedule": "0 */6 * * *"
     }
   ],
   "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        }
+      ]
+    },
     {
       "source": "/api/(.*)",
       "headers": [
@@ -21,7 +46,7 @@
       "source": "/places/(.*)",
       "headers": [
         {
-          "key": "Cache-Control", 
+          "key": "Cache-Control",
           "value": "public, s-maxage=300, stale-while-revalidate=600"
         }
       ]

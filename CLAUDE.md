@@ -82,16 +82,48 @@ Guest → Traveler → Contributor → Partner → Moderator → Admin
 
 ### Content Moderation Workflow
 
-**Three-Stage Process:**
-1. **Submission:** Contributors create content → `submitted` status
-2. **Review Queue:** Moderators review via `/moderation/dashboard`
-3. **Publication:** Approved content becomes `published` and public
+**Stable Long-Term Solution (v2.0 - State Machine Enforced):**
 
-**Moderation Features:**
+**State Machine (STRICT ENFORCEMENT):**
+```
+pending → claimed → in_review → approved/rejected/needs_revision
+(chờ)    (tiếp nhận) (đang duyệt)  (quyết định cuối)
+```
+
+**Place Lifecycle:**
+1. **Creation:** Contributors create draft → submit for review (status: `pending`)
+2. **Moderation:** Moderators review via `/admin/moderation/queue`
+   - **Step 1 - CLAIM:** `pending` → `claimed` (Moderator tiếp nhận việc, timeout 2h)
+   - **Step 2 - START REVIEW:** `claimed` → `in_review` (Bắt đầu kiểm duyệt chính thức)
+   - **Step 3 - DECISION:** `in_review` → `approved`/`rejected`/`needs_revision`
+   - Approved/Rejected entries **GIỮ 30 NGÀY** trong queue
+   - Auto-archive sau 30 ngày → `moderation_archive` collection
+3. **Publication:** Approved content becomes `published` and public
+4. **Monitoring:** Reports, edit requests, quality checks
+
+**Key Features:**
+- ✅ **Strict State Machine:** Bắt buộc tuân theo flow, không cho skip state
+- ✅ **Audit Trail:** Approved/rejected visible 30 days
+- ✅ **Rollback Capability:** Can review/rollback decisions
+- ✅ **Auto-Archive:** Cron job daily at 2AM archives old entries
+- ✅ **Auto-Cleanup:** Archive > 90 days automatically deleted
 - Priority-based queue (urgent → high → medium → low)
-- Escalation system for complex cases
-- Moderation history tracking and notes
-- Real-time dashboard with filtering and search
+- Claim mechanism with 2h timeout
+- Escalation system for Moderators (Admin không cần escalate - quyền cao nhất)
+- Real-time dashboard with filtering and tabs
+
+**UI Behavior by Tab:**
+- **Tab "Chờ duyệt" (pending):** Chỉ nút "Tiếp nhận"
+- **Tab "Đã tiếp nhận" (claimed):** Nút "Bắt đầu kiểm duyệt" + "Bỏ tiếp nhận"
+- **Tab "Đang duyệt" (in_review):** Đầy đủ nút Duyệt/Từ chối/Yêu cầu sửa + Escalate (chỉ Moderator)
+- **Tab "Đã duyệt/Bị từ chối":** Read-only (Admin có thể rollback)
+
+**API Validation:**
+- `start_review`: Chỉ từ `claimed` → `in_review`
+- `approve/reject/request_edit`: Chỉ từ `in_review`
+- `escalate`: Chỉ Moderator, chặn Admin (403 error)
+
+**Documentation:** See `PLACE_LIFECYCLE_WORKFLOW.md` for complete workflow
 
 ### Key React Patterns
 

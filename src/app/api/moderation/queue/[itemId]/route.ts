@@ -254,10 +254,12 @@ export async function PUT(
     const moderator = authResult.user;
     const { action, reviewNotes, newTrustLabel } = await request.json();
 
-    // Validate action - thêm request_edit và direct_delete theo tài liệu 2.2.2
-    if (!['approve', 'reject', 'escalate', 'start_review', 'request_edit', 'direct_delete'].includes(action)) {
+    // STATE MACHINE: pending → claimed → in_review → approved/rejected/needs_revision
+    // Validate action - theo tài liệu 2.2 và state machine best practices
+    const validActions = ['approve', 'reject', 'escalate', 'start_review', 'request_edit', 'direct_delete'];
+    if (!validActions.includes(action)) {
       return NextResponse.json(
-        { error: 'Hành động không hợp lệ' },
+        { error: `Hành động không hợp lệ. Chỉ chấp nhận: ${validActions.join(', ')}` },
         { status: 400 }
       );
     }
@@ -275,17 +277,58 @@ export async function PUT(
 
     // Declare placeDocForUpdate at function scope to use in audit log later
     let placeDocForUpdate: FirebaseFirestore.DocumentSnapshot | null = null;
-    
-    // Check claim requirement - theo quy trình tài liệu mục 2.2.1
-    if (moderator.role !== 'admin') {
-      // Items with status 'pending' must be claimed first before processing
-      if (itemData!.status === 'pending' && !itemData!.claimedBy) {
+
+    // STATE MACHINE VALIDATION - Enforce state transitions
+    // pending → claimed → in_review → approved/rejected/needs_revision
+
+    // 1. Validate state transition based on action
+    if (action === 'start_review') {
+      // start_review MUST be from 'claimed' status ONLY
+      if (itemData!.status !== 'claimed') {
         return NextResponse.json(
-          { error: 'Cần tiếp nhận địa điểm trước khi xử lý' },
+          {
+            error: `Không thể bắt đầu kiểm duyệt từ trạng thái "${itemData!.status}". Phải từ trạng thái "claimed" (đã tiếp nhận).`,
+            expectedFlow: 'pending → claimed → in_review'
+          },
+          { status: 400 }
+        );
+      }
+    } else if (['approve', 'reject', 'request_edit'].includes(action)) {
+      // Final decisions MUST be from 'in_review' status ONLY
+      if (itemData!.status !== 'in_review') {
+        return NextResponse.json(
+          {
+            error: `Không thể ${action === 'approve' ? 'duyệt' : action === 'reject' ? 'từ chối' : 'yêu cầu sửa'} từ trạng thái "${itemData!.status}". Phải ở trạng thái "in_review" (đang duyệt).`,
+            expectedFlow: 'pending → claimed → in_review → decision'
+          },
+          { status: 400 }
+        );
+      }
+    } else if (action === 'escalate') {
+      // Escalate can be from 'in_review' or 'claimed'
+      if (!['claimed', 'in_review'].includes(itemData!.status)) {
+        return NextResponse.json(
+          {
+            error: `Không thể chuyển lên từ trạng thái "${itemData!.status}". Phải ở "claimed" hoặc "in_review".`
+          },
+          { status: 400 }
+        );
+      }
+
+      // Block Admin from escalating (Admin is highest authority)
+      if (moderator.role === 'admin') {
+        return NextResponse.json(
+          {
+            error: 'Admin không cần escalate. Bạn có quyền cao nhất và có thể xử lý trực tiếp.',
+            hint: 'Chỉ Moderator mới có thể chuyển lên Admin.'
+          },
           { status: 403 }
         );
       }
-      
+    }
+
+    // 2. Check claim requirement - theo quy trình tài liệu mục 2.2.1
+    if (moderator.role !== 'admin') {
       // Check if item is claimed by another moderator
       if (itemData!.claimedBy && itemData!.claimedBy !== moderator.id) {
         return NextResponse.json(
@@ -293,7 +336,7 @@ export async function PUT(
           { status: 403 }
         );
       }
-      
+
       // Check if claim has expired
       if (itemData!.claimedBy === moderator.id && itemData!.claimExpiresAt) {
         const claimExpiry = new Date(itemData!.claimExpiresAt);
@@ -305,7 +348,7 @@ export async function PUT(
         }
       }
     }
-    
+
     const now = new Date().toISOString();
 
     // Update moderation item - theo tài liệu 2.2.2
@@ -853,6 +896,17 @@ export async function PUT(
       reviewNotes: reviewNotes || '',
       timestamp: now
     });
+
+    // STABLE LONG-TERM FIX: Keep entries in queue for audit trail
+    // Approved/Rejected entries remain visible for 30 days before auto-archive
+    // This allows admins to:
+    // 1. Review recent decisions
+    // 2. Rollback if needed
+    // 3. Maintain clear audit trail
+    //
+    // Status already updated above (line 334), entry remains in queue
+    // Auto-archive cron job will move entries > 30 days to moderation_archive
+    console.log(`ℹ️  Moderation entry ${itemId} kept in queue with status: ${action}`);
 
     const messages = {
       'approve': 'Nội dung đã được phê duyệt',

@@ -310,10 +310,10 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                   Quay lại
                 </Button>
                 <Button
-                  onClick={() => router.push('/moderation/dashboard')}
+                  onClick={() => router.push('/admin/moderation/queue')}
                   className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
                 >
-                  Về Dashboard
+                  Về Danh sách
                 </Button>
               </div>
             </CardContent>
@@ -336,11 +336,17 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push('/moderation/dashboard')}
+              onClick={() => {
+                // Điều hướng về đúng trang moderation dựa trên role
+                const targetPath = user?.role === 'admin'
+                  ? '/admin/moderation/queue'  // Admin về trang queue chính
+                  : '/admin/moderation/queue'  // Moderator cũng về queue (có thể là /moderation/dashboard nếu cần)
+                router.push(targetPath)
+              }}
               className="flex items-center gap-2 hover:bg-white/50"
             >
               <ArrowLeft className="w-4 h-4" />
-              Về Dashboard
+              Về Danh sách
             </Button>
           </div>
 
@@ -1070,47 +1076,107 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                 <Separator />
 
                 <div className="space-y-3">
-                  {/* Quy trình theo tài liệu 2.2.1: Phải claim trước khi duyệt */}
+                  {/* STATE FLOW: pending → claimed → in_review → approved/rejected/needs_revision */}
+
+                  {/* PENDING: Show Claim button */}
                   {reviewItem.status === 'pending' && (
                     <div className="space-y-3">
                       <Button
                         className="w-full justify-start bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md font-semibold"
-                        onClick={() => handleAction('start_review')}
+                        onClick={async () => {
+                          setIsProcessing(true)
+                          try {
+                            if (!user || !reviewItem) return
+
+                            const firebaseUser = auth.currentUser
+                            if (!firebaseUser) {
+                              throw new Error('Chưa đăng nhập')
+                            }
+
+                            const token = await firebaseUser.getIdToken()
+                            const response = await fetch(`/api/moderation/queue/${reviewItem.id}`, {
+                              method: 'PATCH',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                              },
+                              body: JSON.stringify({ action: 'claim' })
+                            })
+
+                            if (!response.ok) {
+                              throw new Error(`HTTP ${response.status}`)
+                            }
+
+                            const result = await response.json()
+                            if (result.success) {
+                              // Update local state
+                              setReviewItem(prev => prev ? {
+                                ...prev,
+                                status: 'claimed',
+                                claimedBy: user.id,
+                                claimedAt: new Date().toISOString()
+                              } : null)
+                            } else {
+                              throw new Error(result.error || 'Không thể tiếp nhận')
+                            }
+                          } catch (error: any) {
+                            console.error('Claim failed:', error)
+                            alert(error.message || 'Có lỗi xảy ra')
+                          } finally {
+                            setIsProcessing(false)
+                          }
+                        }}
                         disabled={isProcessing}
                       >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Nhận việc và bắt đầu duyệt
+                        Tiếp nhận việc này
                       </Button>
 
                       <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
                         <p className="text-xs text-amber-800">
-                          ⚠️ <strong>Quy trình:</strong> Phải nhận việc trước khi có thể duyệt nội dung
+                          ⚠️ <strong>Bước 1:</strong> Tiếp nhận việc trước khi bắt đầu kiểm duyệt
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Chỉ hiện các nút duyệt chính khi đã claim (status = in_review hoặc claimed) */}
-                  {(reviewItem.status === 'in_review' || reviewItem.status === 'claimed') && (
+                  {/* CLAIMED: Show Start Review button */}
+                  {reviewItem.status === 'claimed' && (
+                    <div className="space-y-3">
+                      <Button
+                        className="w-full justify-start bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md font-semibold"
+                        onClick={() => handleAction('start_review')}
+                        disabled={isProcessing}
+                      >
+                        Bắt đầu kiểm duyệt
+                      </Button>
+
+                      <div className="p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-800">
+                          ℹ️ <strong>Bước 2:</strong> Bắt đầu kiểm duyệt để xem đầy đủ các tùy chọn
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* IN_REVIEW: Show all review action buttons */}
+                  {reviewItem.status === 'in_review' && (
                     <>
                       <Button
                         className="w-full justify-start bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md font-semibold"
                         onClick={() => handleAction('approve')}
                         disabled={isProcessing}
                       >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        ✅ Duyệt và xuất bản
+                        Duyệt và xuất bản
                       </Button>
 
                       {/* Yêu cầu chỉnh sửa - theo tài liệu 2.2.2 (b) */}
                       <Button
                         variant="outline"
-                        className="w-full justify-start border-2 border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800 font-semibold shadow-sm"
+                        className="w-full justify-start border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:text-orange-800 font-semibold shadow-sm"
                         onClick={() => handleAction('request_edit')}
                         disabled={isProcessing}
                       >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        ✏️ Yêu cầu chỉnh sửa
+                        Yêu cầu chỉnh sửa
                       </Button>
 
                       <Button
@@ -1119,20 +1185,18 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                         onClick={() => handleAction('reject')}
                         disabled={isProcessing}
                       >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        ❌ Từ chối
+                        Từ chối
                       </Button>
 
                       {/* Chuyển lên cấp cao hơn - chỉ hiện với Moderator */}
                       {user?.role === 'moderator' && (
                         <Button
                           variant="outline"
-                          className="w-full justify-start border-2 border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-semibold shadow-sm"
+                          className="w-full justify-start border-2 border-purple-300 text-purple-600 hover:bg-purple-50 hover:text-purple-700 font-semibold shadow-sm"
                           onClick={() => handleAction('escalate')}
                           disabled={isProcessing}
                         >
-                          <AlertTriangle className="w-4 h-4 mr-2" />
-                          🔼 Chuyển lên cấp cao hơn
+                          Chuyển lên Admin
                         </Button>
                       )}
                     </>
@@ -1141,16 +1205,20 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
 
                 <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-sky-50 rounded-lg border-2 border-blue-200">
                   <p className="text-xs text-blue-800 leading-relaxed font-semibold mb-2">
-                    📋 Quy trình Kiểm duyệt (theo tài liệu 2.2):
+                    📋 Quy trình Kiểm duyệt (State Machine):
                   </p>
                   <ul className="text-xs text-blue-700 mt-2 space-y-1.5">
                     <li className="flex items-start gap-2">
                       <span className="font-bold text-blue-600">1️⃣</span>
-                      <span>Nhận việc (claim) để bắt đầu kiểm duyệt</span>
+                      <span><strong>PENDING →</strong> Tiếp nhận việc (claim)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="font-bold text-blue-600">2️⃣</span>
-                      <span>Chọn 1 trong 4 hành động:</span>
+                      <span className="font-bold text-purple-600">2️⃣</span>
+                      <span><strong>CLAIMED →</strong> Bắt đầu kiểm duyệt (start_review)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-green-600">3️⃣</span>
+                      <span><strong>IN_REVIEW →</strong> Chọn 1 trong 4 hành động:</span>
                     </li>
                     <li className="ml-6 flex items-start gap-2">
                       <span>✅</span>
@@ -1162,7 +1230,7 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                     </li>
                     <li className="ml-6 flex items-start gap-2">
                       <span>❌</span>
-                      <span><strong>Từ chối:</strong> Đánh dấu rejected + archive</span>
+                      <span><strong>Từ chối:</strong> Đánh dấu rejected + archive sau 30 ngày</span>
                     </li>
                     {user?.role === 'moderator' && (
                       <li className="ml-6 flex items-start gap-2">
@@ -1177,6 +1245,11 @@ export default function ReviewDetailPage({ params }: ReviewPageProps) {
                       </li>
                     )}
                   </ul>
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <p className="text-xs text-blue-600 italic">
+                      ⚠️ Bắt buộc tuân thủ state flow: pending → claimed → in_review
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

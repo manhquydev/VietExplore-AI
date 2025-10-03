@@ -23,11 +23,24 @@ import { AdminTableSkeleton, AdminLoading, AdminErrorState, AdminEmptyState } fr
 import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog, AdminRequestEditDialog } from "@/components/admin/confirmation-dialogs"
 
-// Chỉ các trạng thái cho NEW PLACE moderation queue
+// STATUS CONFIG - Moderation Queue Lifecycle
+//
+// ACTIVE STATES (cần action):
+// - pending: Chờ moderator claim
+// - claimed: Đã claim, đang chờ start review
+// - in_review: Đang review tích cực
+// - needs_revision: Yêu cầu user sửa
+//
+// FINALIZED STATES (audit trail):
+// - approved: Đã duyệt (giữ 30 ngày trước archive)
+// - rejected: Bị từ chối (giữ 30 ngày trước archive)
+//
+// Sau 30 ngày, entries với status approved/rejected
+// sẽ được auto-archive bởi cron job sang moderation_archive
 const statusConfig = {
-  pending: { 
-    label: "Chờ duyệt", 
-    variant: "warning" as const, 
+  pending: {
+    label: "Chờ duyệt",
+    variant: "warning" as const,
     icon: adminIcons.status.pending,
     color: "admin-status-warning"
   },
@@ -37,27 +50,27 @@ const statusConfig = {
     icon: adminIcons.actions.view,
     color: "admin-status-info"
   },
-  in_review: { 
-    label: "Đang duyệt", 
-    variant: "default" as const, 
+  in_review: {
+    label: "Đang duyệt",
+    variant: "default" as const,
     icon: adminIcons.actions.view,
     color: "admin-status-info"
   },
-  approved: { 
-    label: "Đã duyệt", 
-    variant: "success" as const, 
+  approved: {
+    label: "Đã duyệt",
+    variant: "success" as const,
     icon: adminIcons.status.success,
     color: "admin-status-success"
   },
-  rejected: { 
-    label: "Bị từ chối", 
-    variant: "destructive" as const, 
+  rejected: {
+    label: "Bị từ chối",
+    variant: "destructive" as const,
     icon: adminIcons.status.error,
     color: "admin-status-error"
   },
-  needs_revision: { 
-    label: "Yêu cầu sửa", 
-    variant: "secondary" as const, 
+  needs_revision: {
+    label: "Yêu cầu sửa",
+    variant: "secondary" as const,
     icon: adminIcons.actions.edit,
     color: "admin-status-warning"
   }
@@ -550,21 +563,69 @@ export default function NewPlaceQueuePage() {
                                   </Link>
                                 </Button>
 
-                                {/* Show Claim button only for pending items - Vietnam Style */}
-                                {status === 'pending' && !item.claimedBy && (
+                                {/* STATE FLOW: pending → claimed → in_review → approved/rejected/needs_revision */}
+
+                                {/* PENDING: Show only Claim button - Check ITEM status, not tab status */}
+                                {item.status === 'pending' && !item.claimedBy && (
                                   <Button
                                     size="sm"
                                     className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-md font-semibold"
                                     disabled={claimingItemId === item.id}
                                     onClick={() => handleClaim(item.id)}
                                   >
-                                    <adminIcons.actions.view className="w-4 h-4 mr-2" />
-                                    {claimingItemId === item.id ? '⏳ Đang tiếp nhận...' : '🙋 Tiếp nhận ngay'}
+                                    {claimingItemId === item.id ? 'Đang tiếp nhận...' : 'Tiếp nhận'}
                                   </Button>
                                 )}
 
-                                {/* Show action buttons only for claimed items - Vietnam Styled */}
-                                {(status === 'claimed' || status === 'in_review') &&
+                                {/* CLAIMED: Show Start Review button - Check ITEM status */}
+                                {item.status === 'claimed' &&
+                                 (item.claimedBy === user?.id || user?.role === 'admin') && (
+                                  <Button
+                                    size="sm"
+                                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md font-semibold"
+                                    onClick={async () => {
+                                      try {
+                                        const firebaseUser = auth.currentUser
+                                        if (!firebaseUser) {
+                                          toastService.error('Lỗi', 'Vui lòng đăng nhập lại')
+                                          return
+                                        }
+
+                                        const token = await firebaseUser.getIdToken()
+                                        const response = await fetch(`/api/moderation/queue/${item.id}`, {
+                                          method: 'PUT',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${token}`
+                                          },
+                                          body: JSON.stringify({ action: 'start_review' })
+                                        })
+
+                                        if (!response.ok) {
+                                          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+                                        }
+
+                                        const result = await response.json()
+                                        if (result?.success) {
+                                          toastService.success('Thành công', 'Đã bắt đầu kiểm duyệt')
+                                          await fetchStatusCounts()
+                                          window.dispatchEvent(new CustomEvent('moderationUpdated'))
+                                        } else {
+                                          const errorMessage = result?.error || 'Có lỗi xảy ra'
+                                          toastService.error('Lỗi', errorMessage)
+                                        }
+                                      } catch (error: any) {
+                                        console.error('Error starting review:', error)
+                                        toastService.error('Lỗi', error?.message || 'Có lỗi không mong đợi')
+                                      }
+                                    }}
+                                  >
+                                    Bắt đầu kiểm duyệt
+                                  </Button>
+                                )}
+
+                                {/* IN_REVIEW: Show all review action buttons - Check ITEM status */}
+                                {item.status === 'in_review' &&
                                  (item.claimedBy === user?.id || user?.role === 'admin') && (
                                   <>
                                     <AdminApproveDialog
@@ -575,8 +636,7 @@ export default function NewPlaceQueuePage() {
                                           size="sm"
                                           className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md font-semibold border-0"
                                         >
-                                          <adminIcons.status.success className="w-4 h-4 mr-2" />
-                                          ✅ Phê duyệt & Xuất bản
+                                          Duyệt
                                         </Button>
                                       }
                                     />
@@ -587,8 +647,7 @@ export default function NewPlaceQueuePage() {
                                           size="sm"
                                           className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-md font-semibold border-0"
                                         >
-                                          <adminIcons.status.error className="w-4 h-4 mr-2" />
-                                          ❌ Từ chối
+                                          Từ chối
                                         </Button>
                                       }
                                     />
@@ -599,23 +658,24 @@ export default function NewPlaceQueuePage() {
                                           size="sm"
                                           className="bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md font-semibold border-0"
                                         >
-                                          <adminIcons.actions.edit className="w-4 h-4 mr-2" />
-                                          ✏️ Yêu cầu sửa
+                                          Yêu cầu sửa
                                         </Button>
                                       }
                                     />
-                                    <AdminEscalateDialog
-                                      onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
-                                      trigger={
-                                        <Button
-                                          size="sm"
-                                          className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md font-semibold border-0"
-                                        >
-                                          <adminIcons.status.warning className="w-4 h-4 mr-2" />
-                                          🚀 Chuyển Admin
-                                        </Button>
-                                      }
-                                    />
+                                    {/* Escalate button - Only for Moderator (Admin không cần escalate) */}
+                                    {user?.role === 'moderator' && (
+                                      <AdminEscalateDialog
+                                        onConfirm={(reason) => handleAction(item.id, 'escalate', reason)}
+                                        trigger={
+                                          <Button
+                                            size="sm"
+                                            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md font-semibold border-0"
+                                          >
+                                            Chuyển Admin
+                                          </Button>
+                                        }
+                                      />
+                                    )}
                                   </>
                                 )}
 

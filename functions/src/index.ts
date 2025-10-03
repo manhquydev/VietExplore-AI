@@ -7,24 +7,44 @@ admin.initializeApp();
 /**
  * Sync place stats từ Firestore sang Realtime Database
  * Trigger khi place document được update
+ *
+ * IDEMPOTENCY FIX: Added timestamp comparison để prevent stale updates
  */
 export const syncPlaceStats = functions.firestore
   .document('places/{placeId}')
   .onWrite(async (change, context) => {
     const { placeId } = context.params;
-    
+    const eventId = context.eventId; // Unique event ID cho deduplication
+
     try {
       // Nếu document bị xóa
       if (!change.after.exists) {
         await admin.database()
           .ref(`places/${placeId}`)
           .remove();
-        console.log(`Removed place stats for ${placeId}`);
+        console.log(`[${eventId}] Removed place stats for ${placeId}`);
         return;
       }
-      
+
       const placeData = change.after.data();
-      
+      const placeUpdatedAt = placeData?.updatedAt;
+
+      // IDEMPOTENCY CHECK: Compare với existing data trong Realtime DB
+      const existingStatsRef = admin.database().ref(`places/${placeId}/stats`);
+      const existingSnapshot = await existingStatsRef.once('value');
+      const existingStats = existingSnapshot.val();
+
+      // Nếu đã có data mới hơn, skip update để tránh overwrite
+      if (existingStats?.placeUpdatedAt && placeUpdatedAt) {
+        const existingTime = new Date(existingStats.placeUpdatedAt).getTime();
+        const newTime = new Date(placeUpdatedAt).getTime();
+
+        if (existingTime >= newTime) {
+          console.log(`[${eventId}] Skipping stale update for ${placeId} (existing: ${existingStats.placeUpdatedAt}, new: ${placeUpdatedAt})`);
+          return;
+        }
+      }
+
       // Sync basic stats to Realtime DB
       const statsData = {
         views: placeData?.viewCount || 0,
@@ -32,20 +52,20 @@ export const syncPlaceStats = functions.firestore
         saves: placeData?.saveCount || 0,
         status: placeData?.status || 'draft',
         lastUpdated: admin.database.ServerValue.TIMESTAMP,
+        placeUpdatedAt: placeUpdatedAt || null, // Track source timestamp
+        eventId: eventId, // Track event for debugging
         // Metadata for admin dashboard
         region: placeData?.region || '',
         type: placeData?.type || '',
         province: placeData?.province || '',
       };
-      
-      await admin.database()
-        .ref(`places/${placeId}/stats`)
-        .set(statsData);
-        
-      console.log(`Synced place stats for ${placeId}:`, statsData);
-      
+
+      await existingStatsRef.set(statsData);
+
+      console.log(`[${eventId}] Synced place stats for ${placeId}:`, statsData);
+
     } catch (error) {
-      console.error(`Error syncing place stats for ${placeId}:`, error);
+      console.error(`[${eventId}] Error syncing place stats for ${placeId}:`, error);
     }
   });
 
@@ -93,43 +113,72 @@ export const syncUserStats = functions.firestore
 /**
  * Sync moderation queue từ Firestore sang Realtime Database
  * Trigger khi moderation item được thêm/cập nhật
+ *
+ * IDEMPOTENCY FIX: Added event tracking để prevent duplicate processing
  */
 export const syncModerationQueue = functions.firestore
   .document('moderation_queue/{itemId}')
   .onWrite(async (change, context) => {
     const { itemId } = context.params;
-    
+    const eventId = context.eventId;
+
     try {
+      // IMPORTANT: Nếu document bị xóa (ví dụ sau khi approve), cleanup Realtime DB
       if (!change.after.exists) {
         await admin.database()
           .ref(`moderation_queue_updates/${itemId}`)
           .remove();
+        console.log(`[${eventId}] Removed moderation queue sync for ${itemId} (deleted from Firestore)`);
+
+        // Also update stats khi có entry bị xóa
+        await updateModerationStats();
         return;
       }
-      
+
       const moderationData = change.after.data();
-      
+      const moderationUpdatedAt = moderationData?.updatedAt;
+
+      // IDEMPOTENCY CHECK: Kiểm tra event đã được process chưa
+      const processedEventsRef = admin.database().ref(`processed_events/moderation_queue/${eventId}`);
+      const eventSnapshot = await processedEventsRef.once('value');
+
+      if (eventSnapshot.exists()) {
+        console.log(`[${eventId}] Skipping duplicate event for moderation ${itemId}`);
+        return;
+      }
+
+      // Mark event as processed (TTL 24 hours tự động cleanup)
+      await processedEventsRef.set({
+        itemId: itemId,
+        processedAt: admin.database.ServerValue.TIMESTAMP,
+        status: moderationData?.status,
+      });
+
       // Sync to realtime for instant admin updates
       const updateData = {
         status: moderationData?.status || 'pending',
         priority: moderationData?.priority || 'medium',
         type: moderationData?.type || 'place_submission',
+        itemType: moderationData?.itemType || null,
         createdAt: moderationData?.createdAt || null,
+        submittedAt: moderationData?.submittedAt || null,
         assignedTo: moderationData?.assignedTo || null,
         lastUpdated: admin.database.ServerValue.TIMESTAMP,
+        moderationUpdatedAt: moderationUpdatedAt || null,
+        eventId: eventId,
       };
-      
+
       await admin.database()
         .ref(`moderation_queue_updates/${itemId}`)
         .set(updateData);
-        
+
       // Cập nhật tổng stats cho admin dashboard
       await updateModerationStats();
-      
-      console.log(`Synced moderation item ${itemId}`);
-      
+
+      console.log(`[${eventId}] Synced moderation item ${itemId} with status ${moderationData?.status}`);
+
     } catch (error) {
-      console.error(`Error syncing moderation item ${itemId}:`, error);
+      console.error(`[${eventId}] Error syncing moderation item ${itemId}:`, error);
     }
   });
 
@@ -416,3 +465,316 @@ export const triggerPublishScheduledAnnouncements = functions.https.onCall(async
     throw new functions.https.HttpsError('internal', 'Manual publish failed');
   }
 });
+
+// ============================================================================
+// SCHEDULED FUNCTIONS - AUTOMATED BACKGROUND JOBS
+// ============================================================================
+
+/**
+ * SCHEDULED FUNCTION 1: Cleanup Expired Claims
+ *
+ * Schedule: Every 2 hours
+ * Purpose: Auto-release moderation claims that expired (> 2h timeout)
+ *
+ * Replaces: Vercel cron /api/cron/cleanup-expired-claims
+ */
+export const scheduledCleanupExpiredClaims = functions
+  .runWith({
+    timeoutSeconds: 300,
+    memory: '512MB',
+  })
+  .pubsub.schedule('every 2 hours')
+  .timeZone('Asia/Ho_Chi_Minh')
+  .onRun(async (context) => {
+    console.log('='.repeat(60));
+    console.log('🧹 SCHEDULED: Cleanup Expired Claims');
+    console.log('Triggered at:', new Date().toISOString());
+    console.log('='.repeat(60));
+
+    try {
+      const db = admin.firestore();
+      const now = new Date();
+      const nowISOString = now.toISOString();
+
+      // Find expired claims
+      const expiredClaimsQuery = await db.collection('moderation_queue')
+        .where('status', '==', 'claimed')
+        .where('claimExpiresAt', '<', nowISOString)
+        .get();
+
+      let releasedCount = 0;
+
+      // Release expired claims
+      const releasePromises = expiredClaimsQuery.docs.map(async (doc) => {
+        try {
+          await db.collection('moderation_queue').doc(doc.id).update({
+            status: 'pending',
+            claimedBy: admin.firestore.FieldValue.delete(),
+            claimedAt: admin.firestore.FieldValue.delete(),
+            claimExpiresAt: admin.firestore.FieldValue.delete(),
+            updatedAt: nowISOString,
+            autoReleasedAt: nowISOString,
+            autoReleaseReason: 'Expired claim (2 hours timeout)',
+          });
+
+          releasedCount++;
+          console.log(`✅ Auto-released expired claim: ${doc.id}`);
+        } catch (error) {
+          console.error(`❌ Failed to release claim ${doc.id}:`, error);
+        }
+      });
+
+      await Promise.all(releasePromises);
+
+      console.log(`\n📊 Released ${releasedCount} expired claims`);
+      console.log('='.repeat(60));
+
+      return {
+        success: true,
+        releasedCount,
+        timestamp: nowISOString,
+      };
+
+    } catch (error) {
+      console.error('❌ Error in cleanup expired claims:', error);
+      throw error;
+    }
+  });
+
+/**
+ * SCHEDULED FUNCTION 2: Archive Moderation Queue
+ *
+ * Schedule: Daily at 2:00 AM (Vietnam time)
+ * Purpose: Move approved/rejected entries > 30 days to moderation_archive
+ *
+ * Replaces: Vercel cron /api/cron/archive-moderation-queue
+ */
+export const scheduledArchiveModerationQueue = functions
+  .runWith({
+    timeoutSeconds: 540, // 9 minutes
+    memory: '1GB',
+  })
+  .pubsub.schedule('0 2 * * *') // Daily at 2 AM
+  .timeZone('Asia/Ho_Chi_Minh')
+  .onRun(async (context) => {
+    console.log('='.repeat(60));
+    console.log('🗄️  SCHEDULED: Archive Moderation Queue');
+    console.log('Triggered at:', new Date().toISOString());
+    console.log('='.repeat(60));
+
+    try {
+      const db = admin.firestore();
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const thirtyDaysAgoISO = thirtyDaysAgo.toISOString();
+
+      const results = {
+        scanned: 0,
+        archived: 0,
+        errors: 0,
+        oldArchiveCleanedUp: 0,
+      };
+
+      // Archive approved/rejected entries > 30 days
+      const finalizedStatuses = ['approved', 'rejected'];
+
+      for (const status of finalizedStatuses) {
+        const query = db.collection('moderation_queue')
+          .where('status', '==', status)
+          .where('reviewedAt', '<', thirtyDaysAgoISO);
+
+        const snapshot = await query.get();
+        results.scanned += snapshot.size;
+
+        console.log(`Found ${snapshot.size} ${status} entries > 30 days old`);
+
+        // Process in batches to avoid timeout
+        const batchSize = 100;
+        for (let i = 0; i < snapshot.docs.length; i += batchSize) {
+          const batch = snapshot.docs.slice(i, i + batchSize);
+
+          await Promise.all(batch.map(async (doc) => {
+            try {
+              const data = doc.data();
+
+              // Create archive entry
+              await db.collection('moderation_archive').doc(doc.id).set({
+                ...data,
+                originalId: doc.id,
+                archivedAt: now.toISOString(),
+                archivedReason: 'auto_archive_30_days',
+              });
+
+              // Delete from queue
+              await db.collection('moderation_queue').doc(doc.id).delete();
+
+              results.archived++;
+              console.log(`✅ Archived ${doc.id}`);
+
+            } catch (error: any) {
+              results.errors++;
+              console.error(`❌ Failed to archive ${doc.id}:`, error.message);
+            }
+          }));
+        }
+      }
+
+      // Cleanup old archive entries (> 90 days)
+      try {
+        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        const oldArchiveSnapshot = await db.collection('moderation_archive')
+          .where('archivedAt', '<', ninetyDaysAgo.toISOString())
+          .get();
+
+        if (oldArchiveSnapshot.size > 0) {
+          console.log(`\n🗑️  Cleaning up ${oldArchiveSnapshot.size} archive entries > 90 days`);
+
+          const deletePromises = oldArchiveSnapshot.docs.map(doc => doc.ref.delete());
+          await Promise.all(deletePromises);
+
+          results.oldArchiveCleanedUp = oldArchiveSnapshot.size;
+          console.log(`✅ Cleaned up ${oldArchiveSnapshot.size} old entries`);
+        }
+      } catch (cleanupError) {
+        console.error('⚠️  Warning: Old archive cleanup failed:', cleanupError);
+      }
+
+      // Log results
+      await db.collection('admin_logs').add({
+        type: 'moderation_queue_archive',
+        timestamp: now.toISOString(),
+        results,
+      });
+
+      console.log('\n📊 ARCHIVE SUMMARY');
+      console.log(`Scanned: ${results.scanned}, Archived: ${results.archived}, Errors: ${results.errors}`);
+      console.log(`Old archive cleaned: ${results.oldArchiveCleanedUp}`);
+      console.log('='.repeat(60));
+
+      return results;
+
+    } catch (error) {
+      console.error('❌ Error in archive moderation queue:', error);
+      throw error;
+    }
+  });
+
+/**
+ * SCHEDULED FUNCTION 3: Moderation Health Check
+ *
+ * Schedule: Every 6 hours
+ * Purpose: Monitor queue health and detect issues
+ *
+ * Replaces: Vercel cron /api/cron/moderation-health-check
+ */
+export const scheduledModerationHealthCheck = functions
+  .runWith({
+    timeoutSeconds: 300,
+    memory: '512MB',
+  })
+  .pubsub.schedule('every 6 hours')
+  .timeZone('Asia/Ho_Chi_Minh')
+  .onRun(async (context) => {
+    console.log('='.repeat(60));
+    console.log('🏥 SCHEDULED: Moderation Health Check');
+    console.log('Triggered at:', new Date().toISOString());
+    console.log('='.repeat(60));
+
+    try {
+      const db = admin.firestore();
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+      const healthReport = {
+        timestamp: now.toISOString(),
+        healthy: true,
+        issues: [] as any[],
+        stats: {
+          totalPending: 0,
+          totalClaimed: 0,
+          totalInReview: 0,
+          stuckItems: 0,
+          approvedNotArchived: 0,
+        },
+      };
+
+      // Get all queue entries
+      const queueSnapshot = await db.collection('moderation_queue').get();
+
+      const stuckItems: string[] = [];
+      const approvedNotArchived: string[] = [];
+
+      for (const doc of queueSnapshot.docs) {
+        const data = doc.data();
+        const status = data.status;
+
+        // Count by status
+        if (status === 'pending') healthReport.stats.totalPending++;
+        else if (status === 'claimed') healthReport.stats.totalClaimed++;
+        else if (status === 'in_review') healthReport.stats.totalInReview++;
+
+        // Check for stuck items (> 3 days in pending/claimed)
+        const submittedAt = data.submittedAt ? new Date(data.submittedAt) : null;
+        if (submittedAt && submittedAt < threeDaysAgo) {
+          if (status === 'pending' || status === 'claimed') {
+            stuckItems.push(doc.id);
+            healthReport.stats.stuckItems++;
+          }
+        }
+
+        // Check for approved/rejected that should be archived
+        const reviewedAt = data.reviewedAt ? new Date(data.reviewedAt) : null;
+        if (reviewedAt && reviewedAt < threeDaysAgo) {
+          if (status === 'approved' || status === 'rejected') {
+            approvedNotArchived.push(doc.id);
+            healthReport.stats.approvedNotArchived++;
+          }
+        }
+      }
+
+      // Generate issues
+      if (stuckItems.length > 0) {
+        healthReport.healthy = false;
+        healthReport.issues.push({
+          severity: 'warning',
+          type: 'STUCK_ITEMS',
+          description: `${stuckItems.length} items stuck > 3 days`,
+          affectedItems: stuckItems.slice(0, 5),
+        });
+      }
+
+      if (healthReport.stats.totalPending > 50) {
+        healthReport.healthy = false;
+        healthReport.issues.push({
+          severity: 'warning',
+          type: 'HIGH_QUEUE_BACKLOG',
+          description: `Queue has ${healthReport.stats.totalPending} pending items`,
+        });
+      }
+
+      // Log health report
+      await db.collection('moderation_health_logs').add({
+        ...healthReport,
+        createdAt: now.toISOString(),
+      });
+
+      console.log('\n📊 HEALTH REPORT');
+      console.log(`Healthy: ${healthReport.healthy}`);
+      console.log(`Pending: ${healthReport.stats.totalPending}, Claimed: ${healthReport.stats.totalClaimed}`);
+      console.log(`Stuck items: ${healthReport.stats.stuckItems}`);
+      console.log(`Issues: ${healthReport.issues.length}`);
+      console.log('='.repeat(60));
+
+      // Alert if critical issues
+      if (!healthReport.healthy) {
+        console.error('🚨 HEALTH CHECK FAILED - Critical issues detected!');
+        // TODO: Send alert email/Slack notification
+      }
+
+      return healthReport;
+
+    } catch (error) {
+      console.error('❌ Error in health check:', error);
+      throw error;
+    }
+  });
