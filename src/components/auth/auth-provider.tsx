@@ -250,13 +250,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe()
   }, [])
 
-  // Handle redirect result from Google sign-in
+  // Handle redirect result from Google sign-in (mobile)
+  // Note: onAuthStateChanged will automatically handle the redirect result
+  // This effect just ensures user document creation for Google sign-in after redirect
   React.useEffect(() => {
+    let mounted = true
+
     const handleRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth)
+
+        if (!mounted) return
+
         if (result?.user) {
-          console.log('Redirect result successful, ensuring user document exists...')
+          console.log('[Redirect] User returned from Google OAuth, ensuring user document exists...')
 
           // Ensure user document exists after redirect
           try {
@@ -275,17 +282,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             if (registerResponse.ok) {
               const data = await registerResponse.json()
-              console.log('User document ensured after redirect:', data.isExisting ? 'existing' : 'created')
-              toastService.success('Thành công', 'Đăng nhập Google thành công!')
+              console.log('[Redirect] User document ensured:', data.isExisting ? 'existing' : 'created')
+
+              // Wait for Firestore propagation
+              await new Promise(resolve => setTimeout(resolve, 500))
+
+              if (mounted) {
+                toastService.success('Thành công', 'Đăng nhập Google thành công!')
+              }
+            } else {
+              console.error('[Redirect] Failed to create user document:', await registerResponse.text())
             }
           } catch (docError) {
-            console.error('Error ensuring user document after redirect:', docError)
+            console.error('[Redirect] Error ensuring user document:', docError)
+            // Still show success - onAuthStateChanged will handle fallback
           }
+        } else {
+          console.log('[Redirect] No pending redirect result')
         }
       } catch (error: any) {
         // Only log non-null errors (null means no redirect pending)
-        if (error) {
-          console.error('Redirect result error:', error)
+        if (error && mounted) {
+          console.error('[Redirect] Error handling redirect result:', error)
           if (error.code !== 'auth/popup-closed-by-user') {
             toastService.error('Lỗi', 'Đăng nhập thất bại sau redirect')
           }
@@ -293,7 +311,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
 
-    handleRedirectResult()
+    // Small delay to ensure auth is initialized
+    const timer = setTimeout(() => {
+      if (mounted) {
+        handleRedirectResult()
+      }
+    }, 200)
+
+    return () => {
+      mounted = false
+      clearTimeout(timer)
+    }
   }, [])
 
   const login = async (email: string, password: string) => {
@@ -367,8 +395,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (isMobile) {
         // Use redirect for mobile
+        console.log('[Mobile] Starting Google redirect flow...')
         toastService.info('Đang chuyển hướng...', 'Vui lòng đợi')
         await signInWithRedirect(auth, googleProvider)
+        console.log('[Mobile] Redirect initiated, user will be redirected...')
         return true
       } else {
         // Try popup first for desktop
