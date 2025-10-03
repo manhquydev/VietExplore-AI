@@ -47,6 +47,10 @@
     {
       "source": "/api/moderation/claim",
       "destination": "/api/edge/moderation/claim"
+    },
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://vietexplore-ai.firebaseapp.com/__/auth/:path*"
     }
   ]
 }
