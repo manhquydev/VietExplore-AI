@@ -280,9 +280,12 @@ const viewCount = Math.max(realtimeViews, firestoreViews)
 - ❌ Using Cloud Functions for counter sync → adds 100ms-5s latency
 - ❌ No session tracking → users refresh = multiple counts
 - ❌ Different display logic in different components → inconsistent UX
+- ❌ **NEVER hardcode stats to 0 in SSR** - Always read from Firestore `place.stats.saves`, `place.stats.likes`, etc.
+- ❌ Hardcoding breaks real-time sync even when API/hooks work correctly
 - ✅ **DO** use `ViewTracker.trackPlaceView()` for all view increments
 - ✅ **DO** use shared hooks (`useViewTracking`, `usePlaceStats`) in components
 - ✅ **DO** format numbers with `.toLocaleString('vi-VN')` for Vietnamese locale
+- ✅ **DO** read initial stats from `place.stats.*` fields in SSR for accurate client hydration
 
 **View Cache Cleanup:**
 - Expired cache entries (>1 hour) should be cleaned periodically
@@ -296,3 +299,152 @@ const viewCount = Math.max(realtimeViews, firestoreViews)
 - `src/components/place-detail-content.tsx` - Example implementation
 
 When working with this codebase, always consider the role-based permission system, maintain the moderation workflow integrity, ensure proper Firebase security rule compliance, follow the notification workflow patterns for consistency, and use centralized view tracking to prevent count inflation.
+
+### Place Review System Best Practices
+
+**Review Architecture:**
+- **Collection:** `place_reviews` in Firestore
+- **Schema:** Defined in `src/lib/types/reviews.ts`
+- **API Endpoint:** `src/app/api/places/[id]/reviews/route.ts`
+- **Frontend Hook:** `src/hooks/use-place-reviews.ts`
+- **UI Component:** `src/components/place-detail-content.tsx`
+
+**Critical Implementation Rules:**
+- ✅ **ALWAYS** ensure Firestore rules exist for `place_reviews` collection before deployment
+- ✅ **ALWAYS** add composite indexes for review queries (placeId + status + createdAt)
+- ✅ **ALWAYS** match UI property names with backend schema:
+  - Use `review.userInfo.name` NOT `review.userName`
+  - Use `review.content` NOT `review.comment`
+  - Display `review.title`, `review.visitDate`, `review.images[]`
+- ✅ **ALWAYS** provide visual indicators for anonymous vs public reviews
+  - Anonymous badge for `review.isAnonymous === true`
+  - Verified badge for `!review.isAnonymous && review.isVerified`
+  - Different avatar styling (gray for anonymous, blue for public)
+- ✅ **DO** implement helpful voting system with `review.helpfulCount`
+- ✅ **DO** provide spam/inappropriate content reporting
+- ✅ **DO** respect user privacy with proper anonymous name handling ("Người dùng ẩn danh")
+
+**Anonymous Review System:**
+- Backend properly handles `isAnonymous` flag in API (line 110 in reviews route)
+- When `isAnonymous === true`, backend sets `userInfo.name = "Người dùng ẩn danh"`
+- Frontend displays badge and uses gray styling for anonymous reviews
+- User can toggle anonymous mode in ReviewModal checkbox
+
+**Review Content Display:**
+Required elements to show:
+1. Title (bold) - optional field
+2. Content (main review text) - required, supports multiline
+3. Rating stars (1-5) - visual display
+4. Visit date - optional, shows when user visited
+5. Review images - optional, max 4 visible + counter
+6. Helpful count + interactive button
+7. Report abuse button
+8. Created date
+9. Anonymous/Verified badges
+
+**Common Pitfalls to Avoid:**
+- ❌ **NEVER** create review collection without Firestore security rules
+- ❌ **NEVER** skip composite indexes - queries will fail in production
+- ❌ **NEVER** mismatch property names between backend schema and frontend display
+- ❌ **NEVER** ignore `isAnonymous` flag in UI rendering
+- ❌ **NEVER** allow users to see reviewer identity when `isAnonymous === true`
+- ❌ **NEVER** forget to pass `placeId` prop to ReviewModal component
+- ❌ **NEVER** call hooks (useState, useEffect) inside loops, conditions, or nested functions
+  - **BAD:** `reviews.map(review => { const [state, setState] = useState() ... })`
+  - **GOOD:** Extract to separate component: `reviews.map(review => <ReviewItem review={review} />)`
+  - **Reason:** Violates Rules of Hooks, causes "Rendered more hooks than previous render" error
+- ❌ **NEVER** manually implement fetch for authenticated APIs
+  - **BAD:** `fetch('/api/endpoint', { headers: { Authorization: ... } })`
+  - **GOOD:** `callApi('/endpoint', { method: 'POST' })`
+  - **Reason:** `callApi()` from `src/lib/client/api.ts` handles auth tokens automatically, includes error handling, logging
+  - **Result:** Missing auth header → 401 Unauthorized errors
+- ❌ **NEVER** skip rate limiting for user-generated actions
+  - **BAD:** Allow unlimited reports/votes/submissions
+  - **GOOD:** Limit to X actions per time period (e.g., 3 reports/week)
+  - **Reason:** Prevents spam attacks and abuse
+- ❌ **NEVER** notify content owner about reports against their content
+  - **BAD:** Notify place owner when their place is reported
+  - **GOOD:** Reports go to moderators only
+  - **Reason:** Conflict of interest, owner can manipulate/delete negative feedback
+
+**Firestore Deployment:**
+After updating `firestore.rules` or `firestore.indexes.json`:
+```bash
+# Deploy security rules
+firebase deploy --only firestore:rules
+
+# Deploy indexes
+firebase deploy --only firestore:indexes
+
+# Or deploy both
+firebase deploy --only firestore
+```
+
+**Review Display UX Best Practices:**
+- ✅ **Initial Load:** 3 reviews (mobile-friendly, prevents overwhelming)
+- ✅ **Load More Pattern:** "Xem thêm X đánh giá" button (better UX than infinite scroll)
+- ✅ **Review Summary:** Display rating average + breakdown with progress bars
+- ✅ **Sort/Filter:** Dropdown with options (newest, oldest, highest_rating, lowest_rating, most_helpful)
+- ✅ **Expandable Content:** Long reviews (>200 chars) show preview with "Đọc thêm" button
+- ✅ **Count Display:** Use `stats.totalReviews` NOT `reviews.length` (shows actual total)
+- ✅ **Progress Indicator:** Show "Hiển thị X / Y đánh giá" for user awareness
+
+**Review Interaction Features:**
+
+**1. Helpful System (Vote system):**
+- **API Endpoints:**
+  - `POST /api/reviews/[id]/helpful` - Mark review as helpful
+  - `DELETE /api/reviews/[id]/helpful` - Remove helpful vote
+- **Collection:** `review_helpful` (userId, reviewId, createdAt)
+- **Features:**
+  - Prevent duplicate votes (1 vote/user/review)
+  - Prevent self-voting
+  - Atomic increment/decrement with `FieldValue.increment()`
+  - Optimistic UI updates with rollback on error
+  - Visual feedback (blue color + filled icon when voted)
+- **Security:** Firestore rules enforce email verification + ownership
+
+**2. Report System:**
+- **API Endpoint:** `POST /api/reviews/[id]/report`
+- **Collection:** `review_reports` (reviewId, placeId, reportedBy, reason, status)
+- **Report Reasons:**
+  - Spam/quảng cáo
+  - Nội dung không phù hợp
+  - Ngôn từ xúc phạm
+  - Đánh giá giả mạo
+  - Không liên quan
+  - Lý do khác
+- **Workflow:**
+  - User submits report → status: 'pending'
+  - **Reports go to MODERATORS ONLY** (NOT place owner)
+  - Review author NOT notified until action taken
+  - Moderators review in admin panel
+  - Prevent duplicate reports (1 report/user/review)
+  - **Rate limit: 3 reports/user/week** (prevent spam abuse)
+- **Security:** Firestore rules enforce authentication + prevent abuse
+- **Why NOT notify place owner:**
+  - Review thuộc về reviewer, not place owner
+  - Prevent conflict of interest
+  - Moderators are neutral third-party
+
+**Testing Checklist:**
+- [ ] Anonymous reviews show gray avatar + "Ẩn danh" badge
+- [ ] Public reviews show blue avatar + reviewer name
+- [ ] Verified users show "Đã xác thực" badge
+- [ ] Review title displays when provided
+- [ ] Review content shows full multiline text
+- [ ] Visit date displays with calendar icon
+- [ ] Images gallery shows (max 4 + counter)
+- [ ] Helpful button toggles state (gray ↔ blue)
+- [ ] Helpful count updates correctly with optimistic UI
+- [ ] Cannot vote on own review (shows error toast)
+- [ ] Cannot vote without login (shows auth error)
+- [ ] Report button opens modal with form
+- [ ] Report submission successful → shows success toast
+- [ ] Cannot submit duplicate reports
+- [ ] Only 1 review per user per place allowed
+- [ ] Review Summary shows correct average + breakdown
+- [ ] Load More button shows remaining count correctly
+- [ ] Sort dropdown changes review order
+- [ ] Long reviews (>200 chars) show "Đọc thêm" button
+- [ ] Expandable reviews toggle properly

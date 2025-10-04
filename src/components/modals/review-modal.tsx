@@ -247,7 +247,7 @@ export function ReviewModal({
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 py-3 text-base font-semibold"
+                className="flex-1 py-3 text-base font-semibold hover:bg-gray-50"
                 disabled={isSubmitting}
               >
                 Hủy
@@ -255,7 +255,7 @@ export function ReviewModal({
               <Button
                 type="submit"
                 disabled={rating === 0 || !content.trim() || isSubmitting}
-                className="flex-1 py-3 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="flex-1 py-3 text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-600/50 transition-all duration-200"
               >
                 {isSubmitting ? (
                   <>

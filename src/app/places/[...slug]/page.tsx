@@ -151,7 +151,7 @@ async function getPlaceData(id: string): Promise<PlaceData | null> {
       stats: {
         views: place.viewCount || 0,
         likes: place.likeCount || 0,
-        saves: 0, // Not implemented yet
+        saves: place.stats?.saves || 0,
         reviews: place.rating?.count || 0
       },
       vietnamAddress: place.vietnamAddress || undefined,

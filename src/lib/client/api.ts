@@ -95,6 +95,9 @@ async function callApi<T>(
   }
 }
 
+// Export callApi for direct use in components
+export { callApi };
+
 export const apiClient = {
   auth: {
     login: (email: string, password: string) => callApi('/auth/login', {

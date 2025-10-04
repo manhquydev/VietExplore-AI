@@ -232,6 +232,55 @@ service cloud.firestore {
       allow update: if isModerator() || isAdmin();
     }
 
+    // 4.7.5. place_reviews (Review system)
+    match /place_reviews/{reviewId} {
+      // Public can read published reviews
+      allow read: if resource.data.status == 'published';
+
+      // List published reviews (filtered by read rule)
+      allow list: if true;
+
+      // Authenticated users can create reviews
+      allow create: if emailVerified()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['placeId', 'placeName', 'userId', 'userInfo', 'rating', 'content', 'isAnonymous', 'status'])
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && isNonEmptyString(request.resource.data.content)
+        && request.resource.data.status == 'published'; // Auto-publish for now
+
+      // Users can update their own reviews (except rating after creation)
+      allow update: if emailVerified()
+        && isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.rating == resource.data.rating; // Can't change rating
+
+      // Users can delete their own reviews, moderators can delete any
+      allow delete: if (emailVerified() && isOwner(resource.data.userId))
+        || isModerator()
+        || isAdmin();
+    }
+
+    // 4.7.6. review_helpful (Helpful vote tracking)
+    match /review_helpful/{voteId} {
+      allow read: if isSignedIn();
+      allow create: if emailVerified()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['userId', 'reviewId', 'createdAt']);
+      allow delete: if emailVerified() && isOwner(resource.data.userId);
+    }
+
+    // 4.7.7. review_reports (Review report system)
+    match /review_reports/{reportId} {
+      allow read: if isModerator() || isAdmin() || (isSignedIn() && isOwner(resource.data.reportedBy));
+      allow create: if emailVerified()
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.keys().hasAll(['reviewId', 'placeId', 'reportedBy', 'reason', 'status'])
+        && request.resource.data.status == 'pending';
+      allow update: if isModerator() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // 4.8. partners
     match /partners/{partnerId} {
       allow read: if true;

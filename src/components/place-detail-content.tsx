@@ -4,6 +4,13 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card-custom"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { TrustBadge } from "@/components/ui/role-badge"
 import { ProfessionalRoleBadge } from "@/components/ui/professional-role-badge"
 import { PlaceClassificationBadge } from "@/components/ui/place-classification-badge"
@@ -49,12 +56,14 @@ import {
   Layers,
   Grid3X3,
   ArrowUpRight,
-  Check
+  Check,
+  Loader2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import Link from "next/link"
 import { usePlaceInteractions } from "@/hooks/use-place-interactions"
+import { callApi } from "@/lib/client/api"
 import { usePlaceReviews } from "@/hooks/use-place-reviews"
 import { ReviewModal } from "@/components/modals/review-modal"
 import { ReportModal } from "@/components/modals/report-modal"
@@ -150,6 +159,382 @@ const regionLabels = {
   "nam-bo": "Miền Nam"
 }
 
+// Separate component for Review Item to use hooks properly
+function ReviewItem({ review }: { review: any }) {
+  const { isAuthenticated, user } = useAuth()
+  const { toast } = useToast()
+  const [isExpanded, setIsExpanded] = React.useState(false)
+  const [isHelpful, setIsHelpful] = React.useState(false)
+  const [helpfulCount, setHelpfulCount] = React.useState(review.helpfulCount || 0)
+  const [isVoting, setIsVoting] = React.useState(false)
+  const [isLoadingHelpfulState, setIsLoadingHelpfulState] = React.useState(true)
+  const [showReportModal, setShowReportModal] = React.useState(false)
+
+  const contentPreview = review.content.length > 200 ? review.content.slice(0, 200) + '...' : review.content
+  const shouldShowExpand = review.content.length > 200
+
+  // Load initial helpful state from server
+  React.useEffect(() => {
+    const loadHelpfulState = async () => {
+      if (!isAuthenticated) {
+        setIsLoadingHelpfulState(false)
+        return
+      }
+
+      try {
+        const result = await callApi<{ isHelpful: boolean }>(
+          `/reviews/${review.id}/helpful`,
+          { method: 'GET' }
+        )
+
+        // callApi returns the response directly, not wrapped in { success, data }
+        if (result && typeof result === 'object' && 'isHelpful' in result) {
+          setIsHelpful(result.isHelpful)
+        }
+      } catch (error) {
+        console.error('Failed to load helpful state:', error)
+      } finally {
+        setIsLoadingHelpfulState(false)
+      }
+    }
+
+    loadHelpfulState()
+  }, [review.id, isAuthenticated])
+
+  const handleHelpfulClick = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Bạn cần đăng nhập để đánh dấu đánh giá hữu ích",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (user?.id === review.userId) {
+      toast({
+        title: "Không thể thực hiện",
+        description: "Bạn không thể vote cho đánh giá của chính mình",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsVoting(true)
+
+    // Store original state for rollback
+    const originalIsHelpful = isHelpful
+    const originalCount = helpfulCount
+
+    try {
+      // Optimistic update
+      const newIsHelpful = !isHelpful
+      const newCount = newIsHelpful ? helpfulCount + 1 : helpfulCount - 1
+      setIsHelpful(newIsHelpful)
+      setHelpfulCount(newCount)
+
+      // Use centralized API client (handles auth automatically)
+      // Use ORIGINAL state to determine method (before optimistic update)
+      // If was helpful → DELETE, if wasn't → POST
+      const result = await callApi<{ helpfulCount: number }>(
+        `/reviews/${review.id}/helpful`,
+        { method: originalIsHelpful ? 'DELETE' : 'POST' }
+      )
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update vote')
+      }
+
+      // Update with server count to stay in sync
+      if (result.data?.helpfulCount !== undefined) {
+        setHelpfulCount(result.data.helpfulCount)
+      }
+
+    } catch (error: any) {
+      // Rollback on error
+      setIsHelpful(originalIsHelpful)
+      setHelpfulCount(originalCount)
+
+      toast({
+        title: "Lỗi",
+        description: error.error || error.message || "Không thể cập nhật vote. Vui lòng thử lại.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsVoting(false)
+    }
+  }
+
+  return (
+    <div className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "h-10 w-10 rounded-full flex items-center justify-center",
+            review.isAnonymous ? "bg-gray-100" : "bg-blue-100"
+          )}>
+            <User className={cn(
+              "h-5 w-5",
+              review.isAnonymous ? "text-gray-400" : "text-blue-600"
+            )} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="font-medium text-gray-900">{review.userInfo.name}</div>
+              {review.isAnonymous && (
+                <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                  Ẩn danh
+                </Badge>
+              )}
+              {!review.isAnonymous && review.isVerified && (
+                <Badge variant="default" className="text-xs px-2 py-0.5 bg-blue-500">
+                  <Check className="h-3 w-3 mr-1" />
+                  Đã xác thực
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+              {review.visitDate && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Ghé thăm: {new Date(review.visitDate).toLocaleDateString('vi-VN')}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={cn(
+                "h-4 w-4",
+                star <= review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
+              )}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Review Title */}
+      {review.title && (
+        <h4 className="font-semibold text-gray-900 mb-2">{review.title}</h4>
+      )}
+
+      {/* Review Content */}
+      <p className="text-gray-700 mb-3 whitespace-pre-wrap">
+        {isExpanded || !shouldShowExpand ? review.content : contentPreview}
+      </p>
+      {shouldShowExpand && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-3"
+        >
+          {isExpanded ? 'Thu gọn' : 'Đọc thêm'}
+        </button>
+      )}
+
+      {/* Review Images */}
+      {review.images && review.images.length > 0 && (
+        <div className="flex gap-2 mb-3 overflow-x-auto">
+          {review.images.slice(0, 4).map((img: string, idx: number) => (
+            <img
+              key={idx}
+              src={img}
+              alt={`Review image ${idx + 1}`}
+              className="h-20 w-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => window.open(img, '_blank')}
+            />
+          ))}
+          {review.images.length > 4 && (
+            <div className="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 text-sm">
+              +{review.images.length - 4}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Review Actions */}
+      <div className="flex items-center gap-4 text-sm">
+        <button
+          onClick={handleHelpfulClick}
+          disabled={isVoting || isLoadingHelpfulState}
+          className={cn(
+            "flex items-center gap-1 transition-colors",
+            isHelpful ? "text-blue-600" : "text-gray-600 hover:text-blue-600",
+            (isVoting || isLoadingHelpfulState) && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          {isLoadingHelpfulState ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ThumbsUp className={cn("h-4 w-4", isHelpful && "fill-current")} />
+          )}
+          <span>Hữu ích ({helpfulCount})</span>
+        </button>
+        <button
+          onClick={() => setShowReportModal(true)}
+          className="flex items-center gap-1 text-gray-600 hover:text-red-600 transition-colors"
+        >
+          <Flag className="h-4 w-4" />
+          <span>Báo cáo</span>
+        </button>
+      </div>
+
+      {/* Report Modal */}
+      <ReviewReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reviewId={review.id}
+        placeName={review.placeName}
+      />
+    </div>
+  )
+}
+
+// Review Report Modal Component
+function ReviewReportModal({
+  isOpen,
+  onClose,
+  reviewId,
+  placeName
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  reviewId: string;
+  placeName: string;
+}) {
+  const { toast } = useToast()
+  const [reason, setReason] = React.useState('')
+  const [details, setDetails] = React.useState('')
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!reason) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn lý do báo cáo",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Use centralized API client (handles auth automatically)
+      const result = await callApi(
+        `/reviews/${reviewId}/report`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ reason, details })
+        }
+      )
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to submit report')
+      }
+
+      toast({
+        title: "Thành công",
+        description: result.message || "Báo cáo đã được gửi thành công. Moderators sẽ xem xét trong thời gian sớm nhất."
+      })
+
+      onClose()
+      setReason('')
+      setDetails('')
+
+    } catch (error: any) {
+      toast({
+        title: "Lỗi",
+        description: error.error || error.message || "Không thể gửi báo cáo. Vui lòng thử lại.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Báo cáo đánh giá</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Báo cáo đánh giá của địa điểm: <strong>{placeName}</strong>
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Lý do báo cáo <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">-- Chọn lý do --</option>
+              <option value="spam">Spam hoặc quảng cáo</option>
+              <option value="inappropriate">Nội dung không phù hợp</option>
+              <option value="offensive">Ngôn từ xúc phạm</option>
+              <option value="fake">Đánh giá giả mạo</option>
+              <option value="irrelevant">Không liên quan đến địa điểm</option>
+              <option value="other">Lý do khác</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Chi tiết (tùy chọn)
+            </label>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              placeholder="Mô tả chi tiết vấn đề..."
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting ? 'Đang gửi...' : 'Gửi báo cáo'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const { user, isAuthenticated } = useAuth()
   const { toast } = useToast()
@@ -158,13 +543,14 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [modalImageIndex, setModalImageIndex] = React.useState(0)
   const [showReviewModal, setShowReviewModal] = React.useState(false)
   const [showReportModal, setShowReportModal] = React.useState(false)
+  const [reviewSortBy, setReviewSortBy] = React.useState<'newest' | 'oldest' | 'highest_rating' | 'lowest_rating' | 'most_helpful'>('newest')
 
   // Use centralized view tracking hook
   const { viewCount } = useViewTracking(place.id, place.stats.views || 0)
 
   // Use real hooks for reviews and interactions
   const { interactions, toggleLike, toggleSave, error: interactionError } = usePlaceInteractions(place.id, place.stats.likes || 0, place.stats.saves || 0)
-  const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError, hasUserReviewed, userReview } = usePlaceReviews(place.id, { limit: 5 })
+  const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError, hasUserReviewed, userReview, loadMore, hasMore, isLoading: reviewsLoading } = usePlaceReviews(place.id, { limit: 3, sortBy: reviewSortBy })
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % place.images.length)
@@ -440,49 +826,118 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-2xl">
                       <Star className="h-6 w-6 text-yellow-500" />
-                      Đánh giá ({reviews.length})
+                      Đánh giá ({stats?.totalReviews || 0})
                     </CardTitle>
                     <Button onClick={handleReviewClick} className="flex items-center gap-2">
                       <Plus className="h-4 w-4" />
                       Viết đánh giá
                     </Button>
                   </div>
+
+                  {/* Review Summary */}
+                  {stats && stats.totalReviews > 0 && (
+                    <div className="mt-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
+                      <div className="flex items-center gap-8">
+                        {/* Average Rating */}
+                        <div className="text-center">
+                          <div className="text-5xl font-bold text-gray-900 mb-1">
+                            {stats.averageRating.toFixed(1)}
+                          </div>
+                          <div className="flex items-center gap-1 justify-center mb-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={cn(
+                                  "h-5 w-5",
+                                  star <= Math.round(stats.averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                                )}
+                              />
+                            ))}
+                          </div>
+                          <div className="text-sm text-gray-600">{stats.totalReviews} đánh giá</div>
+                        </div>
+
+                        {/* Rating Breakdown */}
+                        <div className="flex-1 space-y-2">
+                          {[5, 4, 3, 2, 1].map((rating) => {
+                            const count = stats.ratingBreakdown[rating as keyof typeof stats.ratingBreakdown] || 0
+                            const percentage = stats.totalReviews > 0 ? (count / stats.totalReviews) * 100 : 0
+                            return (
+                              <div key={rating} className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 w-12">
+                                  <span className="text-sm font-medium text-gray-700">{rating}</span>
+                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                                </div>
+                                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-yellow-400 transition-all duration-300"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                                <div className="text-sm text-gray-600 w-12 text-right">{count}</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  {reviews.length === 0 ? (
+                  {stats?.totalReviews === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {reviews.map((review) => (
-                        <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <User className="h-4 w-4 text-blue-600" />
-                              </div>
-                              <div>
-                                <div className="font-medium text-gray-900">{review.userName}</div>
-                                <div className="text-sm text-gray-500">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={cn(
-                                    "h-4 w-4",
-                                    star <= review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                                  )}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          <p className="text-gray-700">{review.comment}</p>
+                      {/* Sort/Filter Bar */}
+                      <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                        <div className="text-sm text-gray-600">
+                          Hiển thị {reviews.length} / {stats?.totalReviews || 0} đánh giá
                         </div>
+                        <Select value={reviewSortBy} onValueChange={(value: any) => setReviewSortBy(value)}>
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Sắp xếp theo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="newest">Mới nhất</SelectItem>
+                            <SelectItem value="oldest">Cũ nhất</SelectItem>
+                            <SelectItem value="highest_rating">Điểm cao nhất</SelectItem>
+                            <SelectItem value="lowest_rating">Điểm thấp nhất</SelectItem>
+                            <SelectItem value="most_helpful">Hữu ích nhất</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Reviews List */}
+                      {reviews.map((review) => (
+                        <ReviewItem key={review.id} review={review} />
                       ))}
+
+                      {/* Load More Button */}
+                      {hasMore && (
+                        <div className="pt-6 border-t border-gray-100">
+                          <Button
+                            variant="outline"
+                            onClick={loadMore}
+                            disabled={reviewsLoading}
+                            className="w-full py-6 text-base font-semibold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all"
+                          >
+                            {reviewsLoading ? (
+                              <>
+                                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                                Đang tải...
+                              </>
+                            ) : (
+                              <>
+                                <ChevronRight className="h-5 w-5 mr-2" />
+                                Xem thêm {(stats?.totalReviews || 0) - reviews.length} đánh giá
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -851,6 +1306,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
           onClose={() => setShowReviewModal(false)}
           onSubmit={handleReviewSubmit}
           placeName={place.name}
+          placeId={place.id}
         />
 
         {/* Report Modal */}

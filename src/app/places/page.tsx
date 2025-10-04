@@ -155,15 +155,15 @@ export default function PlacesPage() {
               {/* Quick access stats - New addition */}
               <div className="flex items-center justify-center gap-6 mt-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <span>1000+ địa điểm</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                   <span>Cộng đồng tin tưởng</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-700 rounded-full animate-pulse"></div>
                   <span>Cập nhật thường xuyên</span>
                 </div>
               </div>
@@ -224,7 +224,7 @@ export default function PlacesPage() {
                 <Button
                   variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                   size="sm"
-                  className={viewMode === 'grid' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10  border-0'}
+                  className={viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/50' : 'hover:bg-white/10  border-0'}
                   onClick={() => setViewMode('grid')}
                 >
                   Lưới
@@ -232,7 +232,7 @@ export default function PlacesPage() {
                 <Button
                   variant={viewMode === 'list' ? 'primary' : 'ghost'}
                   size="sm"
-                  className={viewMode === 'list' ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white border-0' : 'hover:bg-white/10  border-0'}
+                  className={viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/50' : 'hover:bg-white/10  border-0'}
                   onClick={() => setViewMode('list')}
                 >
                   Danh sách
