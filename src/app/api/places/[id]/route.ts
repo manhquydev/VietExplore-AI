@@ -3,6 +3,7 @@ import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { Place } from '@/lib/types/places';
 import { parseCompoundUrl } from '@/lib/utils/url-helpers';
+import { trackPlaceView, getClientIP, getUserAgent } from '@/lib/server/view-tracker';
 
 // GET /api/places/[id] - Get single place by ID or slug
 export async function GET(
@@ -57,27 +58,25 @@ export async function GET(
       }
     }
 
-    // Increment view count using the correct document ID
-    const newViewCount = (placeData.viewCount || 0) + 1;
-    await adminDb.collection('places').doc(placeId).update({
-      viewCount: newViewCount
-    });
+    // Track view with session-based deduplication
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
 
-    // Sync with Realtime Database for real-time updates
-    try {
-      const { RealtimeService } = await import('@/lib/firebase/realtime');
-      await RealtimeService.updatePlaceStats(placeId, 'views', 1);
-    } catch (realtimeError) {
-      console.warn('Failed to sync view count with Realtime Database:', realtimeError);
-      // Don't fail the request if realtime sync fails
-    }
+    const viewResult = await trackPlaceView(placeId, { ip, userAgent });
+
+    console.log('[API_PLACES_GET] View tracking result:', {
+      placeId,
+      isUnique: viewResult.isUnique,
+      viewCount: viewResult.viewCount,
+      ip: ip.substring(0, 10) + '...', // Log partial IP for privacy
+    });
 
     return NextResponse.json({
       success: true,
       data: {
         id: placeId,
         ...placeData,
-        viewCount: newViewCount
+        viewCount: viewResult.viewCount
       }
     });
 

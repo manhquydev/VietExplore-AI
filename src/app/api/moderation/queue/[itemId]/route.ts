@@ -160,18 +160,33 @@ export async function PATCH(
         });
       });
 
-      // Notify other moderators that item was claimed (optional)
-      // This helps prevent multiple moderators from trying to claim the same item
-      // EnhancedNotificationService.notifyModerators(
-      //   'moderation_claimed',
-      //   'Mục kiểm duyệt đã được nhận',
-      //   `${moderator.fullName} đã nhận mục kiểm duyệt`,
-      //   { itemId, claimedBy: moderator.fullName }
-      // );
-
-      // Log audit action for claiming moderation item
+      // Notify submitter that their place has been claimed for review
       const itemDoc1 = await adminDb.collection('moderation_queue').doc(itemId).get();
       const itemData1 = itemDoc1.data();
+
+      if (itemData1?.submittedBy && (itemData1?.contentType === 'place' || itemData1?.itemType === 'place_edit' || itemData1?.itemType === 'new_place')) {
+        const contentId = itemData1.contentId || itemData1.itemId;
+        const placeDoc = await adminDb.collection('places').doc(contentId).get();
+        const placeData = placeDoc.exists ? placeDoc.data() : null;
+
+        if (placeData) {
+          console.log(`[NOTIFICATION] Sending PLACE_CLAIMED notification to user ${itemData1.submittedBy} for place ${contentId}`);
+          try {
+            await EnhancedNotificationService.notifyPlaceClaimed(
+              contentId,
+              placeData.name || 'Địa điểm',
+              itemData1.submittedBy,
+              moderator.fullName || moderator.email
+            );
+            console.log(`[NOTIFICATION] ✅ Successfully sent PLACE_CLAIMED notification`);
+          } catch (notifError) {
+            console.error(`[NOTIFICATION] ❌ Error sending PLACE_CLAIMED notification:`, notifError);
+            // Don't block claim if notification fails
+          }
+        }
+      }
+
+      // Log audit action for claiming moderation item
       await ServerAuditService.logModerationAction(
         'claim',
         moderator,
@@ -392,7 +407,27 @@ export async function PUT(
           reason: reviewNotes || 'Bắt đầu kiểm duyệt',
           createdAt: now
         });
-        
+
+        // Notify submitter that review has started
+        const placeDoc = await adminDb.collection('places').doc(contentId).get();
+        const placeData = placeDoc.exists ? placeDoc.data() : null;
+
+        if (placeData?.createdBy) {
+          console.log(`[NOTIFICATION] Sending PLACE_IN_REVIEW notification to user ${placeData.createdBy} for place ${contentId}`);
+          try {
+            await EnhancedNotificationService.notifyPlaceInReview(
+              contentId,
+              placeData.name || 'Địa điểm',
+              placeData.createdBy,
+              moderator.fullName || moderator.email
+            );
+            console.log(`[NOTIFICATION] ✅ Successfully sent PLACE_IN_REVIEW notification`);
+          } catch (notifError) {
+            console.error(`[NOTIFICATION] ❌ Error sending PLACE_IN_REVIEW notification:`, notifError);
+            // Don't block review flow if notification fails
+          }
+        }
+
       } else if (action === 'approve') {
         // Handle different approval cases based on item type
         if (itemData!.itemType === 'place_edit') {

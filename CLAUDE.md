@@ -176,6 +176,53 @@ pending → claimed → in_review → approved/rejected/needs_revision
 - Integrated with Google AI for intelligent trip planning
 - Development server on separate port for AI testing
 
+### Real-time Notification System
+
+**Architecture:**
+- **Backend Service:** `src/lib/server/enhanced-notification-service.ts` - Centralized notification creation
+- **Frontend Hook:** `src/hooks/use-realtime-notifications.ts` - Real-time subscription via Firebase Realtime Database
+- **UI Components:**
+  - `src/components/notifications/notification-bell.tsx` - Bell icon dropdown (max 10 recent)
+  - `src/app/notifications/page.tsx` - Full notifications page with filtering
+
+**Notification Workflow for Place Moderation:**
+```
+User submits place
+    ↓
+📬 PLACE_RECEIVED - "Địa điểm đã được tiếp nhận"
+    ↓
+👤 PLACE_CLAIMED - "Đã được tiếp nhận xử lý" (when moderator claims)
+    ↓
+🔍 PLACE_IN_REVIEW - "Đang được kiểm duyệt" (when review starts)
+    ↓
+✅ PLACE_APPROVED / ❌ PLACE_REJECTED / 🔄 REVISION_REQUESTED
+```
+
+**Key Implementation Points:**
+- **Always include both `createdAt` (ISO string) and `timestamp` (number)** when creating notifications
+- Notifications are **automatically sorted by timestamp descending** (newest first) in `src/lib/firebase/realtime.ts:227`
+- Use `EnhancedNotificationService` static methods for consistency:
+  - `notifyPlaceReceived(draftId, placeName, ownerId)`
+  - `notifyPlaceClaimed(draftId, placeName, ownerId, moderatorName)`
+  - `notifyPlaceInReview(draftId, placeName, ownerId, moderatorName)`
+  - `notifyPlaceApproved(placeId, placeName, slug, ownerId)`
+  - `notifyPlaceRejected(draftId, placeName, ownerId, reason)`
+  - `notifyRevisionRequested(draftId, placeName, ownerId, reason)`
+
+**Notification Types:**
+- Add new types to `NotificationType` enum in `enhanced-notification-service.ts`
+- Add corresponding icons to `notificationIcons` object in notification components
+- Add default preferences in `getDefaultPreferences()` method
+- Add template in `NOTIFICATION_TEMPLATES` object with title, body, actionUrl, priority, channels
+
+**Common Pitfalls:**
+- ❌ **DON'T** create notifications directly with Firebase - use `EnhancedNotificationService`
+- ❌ **DON'T** forget to add notification calls in moderation workflow actions
+- ❌ **DON'T** block operations if notification fails - wrap in try/catch and log errors
+- ✅ **DO** include moderator name for transparency in claimed/in_review notifications
+- ✅ **DO** log notification calls with `[NOTIFICATION]` prefix for debugging
+- ✅ **DO** provide actionUrl for navigation to relevant pages
+
 ### Error Patterns & Debugging
 
 **Common Issues:**
@@ -183,10 +230,69 @@ pending → claimed → in_review → approved/rejected/needs_revision
 - **"The query requires an index"** - Run Firebase index deployment
 - **Role permission errors** - Verify user role in `/admin/dashboard`
 - **Image upload failures** - Check Firebase Storage rules and auth
+- **Notifications not appearing** - Check Firebase Realtime Database path `notifications/{userId}`, verify timestamps exist
+- **Wrong notification order** - Ensure all notifications have `timestamp` field (number) for proper sorting
 
 **Debugging Tools:**
 - Firebase Admin SDK logs in server console
 - Role switcher component in development for testing permissions
 - Comprehensive error boundaries for user-friendly error handling
+- `[NOTIFICATION]` prefixed console logs for tracking notification flow
 
-When working with this codebase, always consider the role-based permission system, maintain the moderation workflow integrity, and ensure proper Firebase security rule compliance.
+**Page Structure Convention:**
+- **ALL user-facing pages MUST include `<Header />` component** from `@/components/header`
+- Root layout (`src/app/layout.tsx`) does NOT include Header - each page imports it individually
+- Admin pages use separate `src/app/admin/layout.tsx` with admin-specific navigation
+
+### View Count & Analytics Best Practices
+
+**Architecture Decision:**
+- ✅ **CORRECT:** Use Firestore as single source of truth for persistent counters
+- ❌ **WRONG:** Dual-sync between Firestore ↔ Realtime DB for same metric (causes race conditions)
+- ✅ Use Realtime DB only for ephemeral real-time data (presence, chat), not persistent counters
+
+**Implementation:**
+- Use `FieldValue.increment()` for atomic, thread-safe updates
+- Implement session-based tracking with IP + User-Agent fingerprinting
+- Cache viewed items with 1-hour TTL in `view_cache` collection to prevent count inflation
+- Centralized service: `src/lib/server/view-tracker.ts`
+
+**Display Pattern:**
+```typescript
+// ✅ CORRECT: Use centralized hook with optimistic updates
+import { useViewTracking } from '@/hooks/use-place-stats'
+
+const { viewCount } = useViewTracking(placeId, initialViewCount)
+return <div>{viewCount.toLocaleString('vi-VN')} lượt xem</div>
+
+// ❌ WRONG: Manual tracking with Math.max() hides synchronization problems
+const viewCount = Math.max(realtimeViews, firestoreViews)
+```
+
+**Shared Hook Pattern:**
+- `src/hooks/use-place-stats.ts` - Centralized stats management
+- `useViewTracking()` - Auto-increment view count with optimistic UI
+- `usePlaceStats()` - Real-time subscription for all stats (views, likes, saves)
+- `usePlaceStatsCompact()` - Compact number formatting for cards (1.2K, 1.2M)
+
+**Common Pitfalls:**
+- ❌ Incrementing on every API call without deduplication → inflated counts
+- ❌ Using Cloud Functions for counter sync → adds 100ms-5s latency
+- ❌ No session tracking → users refresh = multiple counts
+- ❌ Different display logic in different components → inconsistent UX
+- ✅ **DO** use `ViewTracker.trackPlaceView()` for all view increments
+- ✅ **DO** use shared hooks (`useViewTracking`, `usePlaceStats`) in components
+- ✅ **DO** format numbers with `.toLocaleString('vi-VN')` for Vietnamese locale
+
+**View Cache Cleanup:**
+- Expired cache entries (>1 hour) should be cleaned periodically
+- Use `ViewTracker.cleanupExpiredViewCache()` via cron job
+- Prevents `view_cache` collection from growing indefinitely
+
+**Files:**
+- `src/lib/server/view-tracker.ts` - Server-side tracking service
+- `src/hooks/use-place-stats.ts` - Client-side hooks
+- `src/app/api/places/[id]/route.ts` - API endpoint using ViewTracker
+- `src/components/place-detail-content.tsx` - Example implementation
+
+When working with this codebase, always consider the role-based permission system, maintain the moderation workflow integrity, ensure proper Firebase security rule compliance, follow the notification workflow patterns for consistency, and use centralized view tracking to prevent count inflation.

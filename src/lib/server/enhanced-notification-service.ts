@@ -17,6 +17,8 @@ export enum NotificationType {
   // Content submission
   PLACE_SUBMITTED = 'place_submitted',
   PLACE_RECEIVED = 'place_received', // Địa điểm đã được tiếp nhận kiểm duyệt
+  PLACE_CLAIMED = 'place_claimed', // Địa điểm đã được moderator tiếp nhận xử lý
+  PLACE_IN_REVIEW = 'place_in_review', // Địa điểm đang được kiểm duyệt chính thức
   PLACE_APPROVED = 'place_approved',
   PLACE_REJECTED = 'place_rejected',
 
@@ -174,6 +176,28 @@ export class EnhancedNotificationService {
       body: 'Địa điểm "{placeName}" của bạn đã được tiếp nhận và đang chờ kiểm duyệt',
       actionUrl: '/contribute/my-drafts/{draftId}/moderation',
       actionText: 'Xem nhật ký',
+      priority: NotificationPriority.MEDIUM,
+      channels: [NotificationChannel.IN_APP],
+      retentionDays: 30
+    },
+
+    [NotificationType.PLACE_CLAIMED]: {
+      type: NotificationType.PLACE_CLAIMED,
+      title: '👤 Địa điểm đã được tiếp nhận xử lý',
+      body: 'Kiểm duyệt viên {moderatorName} đã tiếp nhận địa điểm "{placeName}" để xử lý',
+      actionUrl: '/contribute/my-drafts/{draftId}/moderation',
+      actionText: 'Xem tiến trình',
+      priority: NotificationPriority.MEDIUM,
+      channels: [NotificationChannel.IN_APP],
+      retentionDays: 30
+    },
+
+    [NotificationType.PLACE_IN_REVIEW]: {
+      type: NotificationType.PLACE_IN_REVIEW,
+      title: '🔍 Địa điểm đang được kiểm duyệt',
+      body: 'Địa điểm "{placeName}" của bạn đang được kiểm duyệt chính thức bởi {moderatorName}',
+      actionUrl: '/contribute/my-drafts/{draftId}/moderation',
+      actionText: 'Xem tiến trình',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -709,6 +733,14 @@ export class EnhancedNotificationService {
           enabled: true,
           channels: [NotificationChannel.IN_APP]
         },
+        [NotificationType.PLACE_CLAIMED]: {
+          enabled: true,
+          channels: [NotificationChannel.IN_APP]
+        },
+        [NotificationType.PLACE_IN_REVIEW]: {
+          enabled: true,
+          channels: [NotificationChannel.IN_APP]
+        },
         [NotificationType.PLACE_APPROVED]: {
           enabled: true,
           channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL]
@@ -811,6 +843,32 @@ export class EnhancedNotificationService {
     await this.sendNotification(ownerId, NotificationType.PLACE_RECEIVED, {
       draftId,
       placeName
+    });
+  }
+
+  static async notifyPlaceClaimed(
+    draftId: string,
+    placeName: string,
+    ownerId: string,
+    moderatorName: string
+  ): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_CLAIMED, {
+      draftId,
+      placeName,
+      moderatorName
+    });
+  }
+
+  static async notifyPlaceInReview(
+    draftId: string,
+    placeName: string,
+    ownerId: string,
+    moderatorName: string
+  ): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_IN_REVIEW, {
+      draftId,
+      placeName,
+      moderatorName
     });
   }
 

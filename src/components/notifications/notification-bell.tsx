@@ -27,6 +27,8 @@ import { vi } from "date-fns/locale";
 const notificationIcons = {
   // Place moderation
   place_received: "📬",
+  place_claimed: "👤",
+  place_in_review: "🔍",
   place_approved: "✅",
   place_rejected: "❌",
   place_needs_edit: "✏️",

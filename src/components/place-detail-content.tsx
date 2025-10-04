@@ -59,6 +59,7 @@ import { usePlaceReviews } from "@/hooks/use-place-reviews"
 import { ReviewModal } from "@/components/modals/review-modal"
 import { ReportModal } from "@/components/modals/report-modal"
 import { useToast } from "@/hooks/use-toast"
+import { useViewTracking } from "@/hooks/use-place-stats"
 
 interface PlaceData {
   id: string
@@ -157,6 +158,9 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [modalImageIndex, setModalImageIndex] = React.useState(0)
   const [showReviewModal, setShowReviewModal] = React.useState(false)
   const [showReportModal, setShowReportModal] = React.useState(false)
+
+  // Use centralized view tracking hook
+  const { viewCount } = useViewTracking(place.id, place.stats.views || 0)
 
   // Use real hooks for reviews and interactions
   const { interactions, toggleLike, toggleSave, error: interactionError } = usePlaceInteractions(place.id, place.stats.likes || 0, place.stats.saves || 0)
@@ -355,7 +359,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 <div className="flex items-center gap-6 mt-8 pt-6 border-t border-gray-200">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Eye className="h-4 w-4" />
-                    <span className="text-sm">{place.stats.views} lượt xem</span>
+                    <span className="text-sm">{viewCount.toLocaleString('vi-VN')} lượt xem</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <MessageCircle className="h-4 w-4" />
