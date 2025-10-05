@@ -1,5 +1,5 @@
 export type ReportType = 'incorrect_info' | 'inappropriate_content' | 'spam' | 'duplicate' | 'other';
-export type ReportStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed';
+export type ReportStatus = 'pending' | 'in_review' | 'resolved' | 'dismissed';
 export type EditSuggestionStatus = 'pending' | 'under_review' | 'approved' | 'rejected';
 
 export interface PlaceReport {
@@ -87,7 +87,7 @@ export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
 
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
   pending: 'Chờ xử lý',
-  under_review: 'Đang xem xét',
+  in_review: 'Đang điều tra',
   resolved: 'Đã giải quyết',
   dismissed: 'Đã bác bỏ'
 };

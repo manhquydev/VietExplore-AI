@@ -80,8 +80,8 @@ export function useAdminReports(filters: AdminReportsFilters = {}) {
   }, [user, filters.status, filters.reportType, filters.limit, filters.offset]);
 
   const updateReportStatus = useCallback(async (
-    reportId: string, 
-    action: 'approve' | 'resolve' | 'reject' | 'dismiss' | 'escalate',
+    reportId: string,
+    action: 'resolve' | 'dismiss' | 'escalate',
     notes?: string
   ) => {
     if (!user || !['admin', 'moderator'].includes(user.role)) {

@@ -836,3 +836,199 @@ REVIEW_REMOVED: {
 - API endpoints: 1 hour
 - Notifications: 30 minutes
 - Testing: 30-60 minutes
+
+---
+
+## Common Pitfalls & Lessons Learned
+
+### ❌ Nhầm lẫn giữa Content Moderation vs Report Handling (2025-01-05)
+
+**Problem:** Dùng `AdminApproveDialog` và action `'approve'` cho báo cáo địa điểm
+
+**Root Cause:**
+- Không phân biệt rõ 2 workflows khác nhau:
+  - **Content Moderation** = Duyệt/Từ chối NỘI DUNG
+  - **Report Handling** = Xử lý KHIẾU NẠI về nội dung
+
+**Why Wrong:**
+1. **Approve/Reject ≠ Resolve/Dismiss**
+   - Approve = Nội dung hợp lệ → Công khai (cho địa điểm, bài viết, review)
+   - Resolve = Khiếu nại hợp lệ → Đã xử lý vấn đề (sửa địa điểm, ẩn hình ảnh vi phạm)
+   - Reject = Nội dung vi phạm → Ẩn/Xóa
+   - Dismiss = Khiếu nại sai → Bác bỏ (không hợp lệ)
+
+2. **UI Text sai nghiêm trọng:**
+   - ❌ "Phê duyệt báo cáo về 'Ba Na Hills' và công khai cho người dùng"
+   - → Vô nghĩa! Báo cáo là nội bộ, không có "công khai báo cáo"
+   - ✅ "Xác nhận đã xử lý xong báo cáo về 'Ba Na Hills'? Ghi chú hành động đã thực hiện"
+
+3. **Logic nghịch lý:**
+   - Approve báo cáo = Resolved = Báo cáo HỢP LỆ
+   - → Nghĩa là ĐỊA ĐIỂM có VẤN ĐỀ, KHÔNG phải "phê duyệt địa điểm"
+
+**Solution Applied:**
+
+**1. Tạo components riêng biệt cho Report Handling:**
+```typescript
+// NEW: src/components/admin/confirmation-dialogs.tsx
+
+// ✅ Content Moderation (places, reviews, posts)
+AdminApproveDialog  // "Phê duyệt ... và công khai cho người dùng?"
+AdminRejectDialog   // "Từ chối ... Nội dung sẽ bị ẩn"
+
+// ✅ Report Handling (complaints about content)
+AdminResolveReportDialog  // "Xác nhận đã xử lý xong báo cáo? Ghi chú hành động..."
+AdminDismissReportDialog  // "Xác nhận báo cáo không hợp lệ? Lý do bác bỏ..."
+```
+
+**2. Fix API status mapping:**
+```typescript
+// OLD (WRONG):
+const statusMapping = {
+  'approve': 'resolved',  // ❌ Không có approve cho report
+  'reject': 'dismissed',  // ❌ Reject ≠ Dismiss
+  'escalate': 'escalated' // ❌ Status không tồn tại
+};
+
+// NEW (CORRECT):
+const statusMapping = {
+  'resolve': 'resolved',   // ✅ Giải quyết khiếu nại
+  'dismiss': 'dismissed',  // ✅ Bác bỏ khiếu nại
+  'escalate': 'in_review'  // ✅ Chuyển Admin (giữ in_review + flag escalated)
+};
+```
+
+**3. Thống nhất Type Definitions:**
+```typescript
+// OLD: Mâu thuẫn giữa code và type
+type ReportStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed'
+// But API uses: status = 'in_review' ← không match!
+
+// NEW: Nhất quán
+type ReportStatus = 'pending' | 'in_review' | 'resolved' | 'dismissed'
+```
+
+**Correct Workflow Patterns:**
+
+```typescript
+// === CONTENT MODERATION (địa điểm, review, bài viết) ===
+User submit content → Moderator review
+    ↓
+├─ APPROVE → status: published, visible: true
+│   Dialog: "Phê duyệt ... và công khai?"
+│   Component: AdminApproveDialog
+│
+└─ REJECT → status: rejected, visible: false
+    Dialog: "Từ chối ... Lý do?"
+    Component: AdminRejectDialog
+
+// === REPORT HANDLING (khiếu nại về content) ===
+User report problem → Moderator investigate
+    ↓
+├─ RESOLVE → status: resolved (Báo cáo hợp lệ → Đã fix)
+│   Dialog: "Xác nhận đã xử lý? Ghi chú hành động..."
+│   Component: AdminResolveReportDialog
+│
+├─ DISMISS → status: dismissed (Báo cáo sai → Bác bỏ)
+│   Dialog: "Xác nhận báo cáo không hợp lệ? Lý do..."
+│   Component: AdminDismissReportDialog
+│
+└─ ESCALATE → status: in_review + escalated: true
+    Dialog: "Chuyển lên Admin? Lý do..."
+    Component: AdminEscalateDialog
+```
+
+**Prevention Strategy:**
+1. ✅ **Tách biệt components** cho 2 workflows khác nhau
+2. ✅ **Naming convention rõ ràng:**
+   - `Approve/Reject` = Content moderation
+   - `Resolve/Dismiss` = Report handling
+3. ✅ **Review UI text:** Kiểm tra ngữ nghĩa có logic không
+4. ✅ **Type safety:** Action types phải match workflow
+
+**Files Changed:**
+- [src/lib/types/reports.ts](src/lib/types/reports.ts)
+- [src/components/admin/confirmation-dialogs.tsx](src/components/admin/confirmation-dialogs.tsx)
+- [src/app/api/admin/reports/[reportId]/route.ts](src/app/api/admin/reports/[reportId]/route.ts)
+- [src/hooks/use-admin-reports.ts](src/hooks/use-admin-reports.ts)
+- [src/app/admin/moderation/reports/page.tsx](src/app/admin/moderation/reports/page.tsx)
+
+---
+
+### ❌ Missing Required Props in Component Usage (2025-01-05)
+
+**Problem:** Place report modal failed with `TypeError: onSubmit is not a function`
+
+**Root Cause:**
+- `ReportModal` component requires `onSubmit` callback prop
+- Component was rendered at [place-detail-content.tsx:1313-1318](src/components/place-detail-content.tsx#L1313-L1318) WITHOUT this prop
+- TypeScript didn't catch this at build time (prop types were correct but usage wasn't enforced)
+
+**Error Log:**
+```
+Error submitting report: TypeError: onSubmit is not a function
+    at handleSubmit (src/components/modals/report-modal.tsx:56:13)
+```
+
+**Solution Applied:**
+```typescript
+// ✅ CORRECT: Added missing handler function
+const handleReportSubmit = async (reportData: ReportFormData) => {
+  try {
+    const result = await callApi(`/places/${place.id}/reports`, {
+      method: 'POST',
+      body: JSON.stringify(reportData)
+    })
+
+    if (!result.success) throw new Error(result.error || 'Failed to submit report')
+
+    toast({
+      title: "Gửi báo cáo thành công",
+      description: result.message || "Chúng tôi sẽ xem xét trong thời gian sớm nhất.",
+    })
+
+    setShowReportModal(false)
+  } catch (error: any) {
+    toast({
+      title: "Lỗi",
+      description: error.error || error.message || "Không thể gửi báo cáo. Vui lòng thử lại.",
+      variant: "destructive",
+    })
+  }
+}
+
+// ✅ CORRECT: Wire up the prop
+<ReportModal
+  isOpen={showReportModal}
+  onClose={() => setShowReportModal(false)}
+  onSubmit={handleReportSubmit}  // ← Fixed: Added missing prop
+  placeId={place.id}
+  placeName={place.name}
+/>
+```
+
+**Prevention Strategies:**
+1. ✅ **Always check component prop requirements before usage** - Review component interface/props
+2. ✅ **Follow existing patterns** - Look for similar components (e.g., `ReviewModal` at line 568 had working implementation)
+3. ✅ **Use `callApi()` helper** - From `@/lib/client/api` for authenticated requests (auto-handles auth tokens)
+4. ✅ **Complete error handling pattern:**
+   ```typescript
+   const handleSubmit = async (data) => {
+     try {
+       const result = await callApi('/endpoint', { method: 'POST', body: JSON.stringify(data) })
+       if (!result.success) throw new Error(result.error)
+       toast({ success message })
+       closeModal()
+     } catch (error) {
+       toast({ error message, variant: "destructive" })
+     }
+   }
+   ```
+5. ✅ **Test before committing** - Run `npm run build` to catch TypeScript errors early
+
+**Files Changed:**
+- [place-detail-content.tsx](src/components/place-detail-content.tsx) - Added `handleReportSubmit` function and wired `onSubmit` prop
+
+**Related Patterns:**
+- Place report API: [/api/places/[id]/reports/route.ts](src/app/api/places/[id]/reports/route.ts)
+- Review modal (working example): [place-detail-content.tsx:568-584](src/components/place-detail-content.tsx#L568-L584)

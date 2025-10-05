@@ -69,6 +69,7 @@ import { ReviewModal } from "@/components/modals/review-modal"
 import { ReportModal } from "@/components/modals/report-modal"
 import { useToast } from "@/hooks/use-toast"
 import { useViewTracking } from "@/hooks/use-place-stats"
+import { ReportFormData } from "@/lib/types/reports"
 
 interface PlaceData {
   id: string
@@ -594,6 +595,36 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
     }
 
     setShowReviewModal(true)
+  }
+
+  const handleReportSubmit = async (reportData: ReportFormData) => {
+    try {
+      const result = await callApi(
+        `/places/${place.id}/reports`,
+        {
+          method: 'POST',
+          body: JSON.stringify(reportData)
+        }
+      )
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to submit report')
+      }
+
+      toast({
+        title: "Gửi báo cáo thành công",
+        description: result.message || "Chúng tôi sẽ xem xét trong thời gian sớm nhất.",
+      })
+
+      setShowReportModal(false)
+
+    } catch (error: any) {
+      toast({
+        title: "Lỗi",
+        description: error.error || error.message || "Không thể gửi báo cáo. Vui lòng thử lại.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -1313,6 +1344,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
         <ReportModal
           isOpen={showReportModal}
           onClose={() => setShowReportModal(false)}
+          onSubmit={handleReportSubmit}
           placeId={place.id}
           placeName={place.name}
         />

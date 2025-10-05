@@ -19,7 +19,7 @@ import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { useAdminReports } from "@/hooks/use-admin-reports"
 import { AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
 import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
-import { AdminApproveDialog, AdminRejectDialog, AdminEscalateDialog } from "@/components/admin/confirmation-dialogs"
+import { AdminResolveReportDialog, AdminDismissReportDialog, AdminEscalateDialog, AdminConfirmDialog } from "@/components/admin/confirmation-dialogs"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { getAuth } from "firebase/auth"
 
@@ -124,47 +124,10 @@ export default function ReportsHandlingPage() {
 
   const handleAction = async (
     reportId: string, 
-    action: 'resolve' | 'dismiss' | 'escalate' | 'request_delete' | 'claim' | 'release',
+    action: 'resolve' | 'dismiss' | 'escalate' | 'claim' | 'release',
     notes?: string
   ) => {
     try {
-      // Handle special delete request action
-      if (action === 'request_delete') {
-        const firebaseUser = auth.currentUser;
-        if (!firebaseUser) {
-          toast({
-            title: "Lỗi xác thực",
-            description: "Vui lòng đăng nhập lại để tiếp tục",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        const token = await firebaseUser.getIdToken();
-        const response = await fetch(`/api/admin/reports/${reportId}/request-delete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ notes })
-        });
-
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error(result.error);
-        }
-
-        toast({
-          title: "Thành công", 
-          description: "Đã gửi yêu cầu xóa địa điểm cho Admin duyệt",
-          variant: "success"
-        });
-        
-        await fetchStatusCounts();
-        return;
-      }
-
       // Handle claim and release actions
       if (action === 'claim' || action === 'release') {
         const firebaseUser = auth.currentUser;
@@ -588,13 +551,13 @@ export default function ReportsHandlingPage() {
                                 {/* Action buttons based on status and role */}
                                 {status === 'pending' && (
                                   // Pending reports: show Claim button
-                                  <AdminApproveDialog
+                                  <AdminConfirmDialog
                                     title="Tiếp nhận báo cáo"
-                                    description={`Bạn có muốn tiếp nhận và điều tra báo cáo này không? Báo cáo sẽ được chuyển sang trạng thái "Đang điều tra" và được khóa cho bạn xử lý.`}
-                                    itemName={`báo cáo về "${report.placeName}"`}
+                                    description={`Bạn có muốn tiếp nhận và điều tra báo cáo về "${report.placeName}" không? Báo cáo sẽ được chuyển sang trạng thái "Đang điều tra" và được khóa cho bạn xử lý.`}
+                                    confirmText="Tiếp nhận điều tra"
                                     onConfirm={() => handleAction(report.id, 'claim')}
                                     trigger={
-                                      <Button 
+                                      <Button
                                         size="sm"
                                         variant="outline"
                                         className="text-blue-600 border-blue-600 hover:bg-blue-50"
@@ -611,32 +574,31 @@ export default function ReportsHandlingPage() {
                                   <>
                                     {(report.reviewerInfo?.id === user?.id || user?.role === 'admin') && (
                                       <>
-                                        <AdminApproveDialog
-                                          itemName={`báo cáo về "${report.placeName}"`}
-                                          onConfirm={() => handleAction(report.id, 'resolve')}
+                                        <AdminResolveReportDialog
+                                          itemName={report.placeName}
+                                          onConfirm={(notes) => handleAction(report.id, 'resolve', notes)}
                                           trigger={
-                                            <Button 
+                                            <Button
                                               size="sm"
                                               variant="outline"
                                               className="text-green-600 border-green-600 hover:bg-green-50"
                                             >
                                               <adminIcons.status.success className="w-4 h-4 mr-2" />
-                                              Giải quyết
+                                              Giải quyết báo cáo
                                             </Button>
                                           }
                                         />
-                                        <AdminRejectDialog
-                                          title="Bỏ qua báo cáo"
-                                          description="Bạn có chắc chắn muốn bỏ qua báo cáo này không? Báo cáo sẽ được đánh dấu là 'Đã bỏ qua' và người báo cáo sẽ nhận được thông báo."
+                                        <AdminDismissReportDialog
+                                          itemName={report.placeName}
                                           onConfirm={(reason) => handleAction(report.id, 'dismiss', reason)}
                                           trigger={
-                                            <Button 
+                                            <Button
                                               size="sm"
-                                              variant="outline" 
+                                              variant="outline"
                                               className="text-gray-600 border-gray-600 hover:bg-gray-50"
                                             >
                                               <adminIcons.status.error className="w-4 h-4 mr-2" />
-                                              Bỏ qua báo cáo
+                                              Bác bỏ báo cáo
                                             </Button>
                                           }
                                         />
@@ -653,25 +615,6 @@ export default function ReportsHandlingPage() {
                                               >
                                                 <adminIcons.status.warning className="w-4 h-4 mr-2" />
                                                 Chuyển Admin
-                                              </Button>
-                                            }
-                                          />
-                                        )}
-
-                                        {/* Delete Place option for severe reports */}
-                                        {(reportType === 'safety_legal' || slaStatus.status === 'overdue') && (
-                                          <AdminRejectDialog
-                                            title="Xóa địa điểm"
-                                            description="Bạn có chắc chắn muốn yêu cầu xóa địa điểm này? Địa điểm sẽ được chuyển sang trạng thái 'Chờ xóa' và cần Admin duyệt."
-                                            onConfirm={(reason) => handleAction(report.id, 'request_delete', reason)}
-                                            trigger={
-                                              <Button 
-                                                size="sm"
-                                                variant="outline"
-                                                className="text-red-600 border-red-600 hover:bg-red-50"
-                                              >
-                                                <adminIcons.actions.delete className="w-4 h-4 mr-2" />
-                                                Yêu cầu xóa
                                               </Button>
                                             }
                                           />
@@ -717,13 +660,14 @@ export default function ReportsHandlingPage() {
 
                                     {/* Admin override - allow admin to reassign even if claimed by someone else */}
                                     {user?.role === 'admin' && report.reviewerInfo?.id !== user?.id && (
-                                      <AdminApproveDialog
+                                      <AdminConfirmDialog
                                         title="Tiếp quản báo cáo"
-                                        description={`Báo cáo này đang được xử lý bởi ${report.reviewerInfo?.name}. Bạn có muốn tiếp quản báo cáo này không?`}
-                                        itemName={`báo cáo từ ${report.reviewerInfo?.name}`}
+                                        description={`Báo cáo về "${report.placeName}" đang được xử lý bởi ${report.reviewerInfo?.name}. Bạn có muốn tiếp quản báo cáo này không?`}
+                                        confirmText="Tiếp quản báo cáo"
+                                        variant="warning"
                                         onConfirm={() => handleAction(report.id, 'claim')}
                                         trigger={
-                                          <Button 
+                                          <Button
                                             size="sm"
                                             variant="outline"
                                             className="text-purple-600 border-purple-600 hover:bg-purple-50"

@@ -389,3 +389,51 @@ export const AdminRequestEditDialog = ({ onConfirm, trigger }: {
     multiline
   />
 )
+
+// === REPORT HANDLING DIALOGS (Different from Content Moderation) ===
+
+export const AdminResolveReportDialog = ({
+  itemName,
+  onConfirm,
+  trigger
+}: {
+  itemName: string
+  onConfirm: (notes: string) => void | Promise<void>
+  trigger: React.ReactNode
+}) => (
+  <AdminInputDialog
+    title="Giải quyết báo cáo"
+    description={`Xác nhận đã xử lý xong báo cáo về "${itemName}"? Vui lòng ghi chú hành động đã thực hiện.`}
+    placeholder="Ví dụ: Đã cập nhật địa chỉ chính xác, Đã ẩn hình ảnh không phù hợp, Đã cảnh cáo tác giả..."
+    label="Ghi chú xử lý"
+    confirmText="Đánh dấu đã giải quyết"
+    variant="default"
+    onConfirm={onConfirm}
+    trigger={trigger}
+    multiline
+    required
+  />
+)
+
+export const AdminDismissReportDialog = ({
+  itemName,
+  onConfirm,
+  trigger
+}: {
+  itemName: string
+  onConfirm: (reason: string) => void | Promise<void>
+  trigger: React.ReactNode
+}) => (
+  <AdminInputDialog
+    title="Bác bỏ báo cáo"
+    description={`Xác nhận báo cáo về "${itemName}" không hợp lệ? Vui lòng ghi rõ lý do để người báo cáo hiểu.`}
+    placeholder="Ví dụ: Thông tin địa điểm chính xác, Không vi phạm quy định cộng đồng, Báo cáo không có căn cứ..."
+    label="Lý do bác bỏ"
+    confirmText="Bác bỏ báo cáo"
+    variant="destructive"
+    onConfirm={onConfirm}
+    trigger={trigger}
+    multiline
+    required
+  />
+)

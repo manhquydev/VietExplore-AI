@@ -48,19 +48,17 @@ export async function PATCH(
 
     const reportData = reportDoc.data();
     
-    // Map actions to statuses
-    const statusMapping = {
-      'approve': 'resolved',
+    // Map actions to statuses (Report Handling - NOT Content Moderation)
+    const statusMapping: Record<string, string> = {
       'resolve': 'resolved',
-      'reject': 'dismissed',
       'dismiss': 'dismissed',
-      'escalate': 'escalated'
+      'escalate': 'in_review'  // Escalate keeps in_review but marks escalated flag
     };
 
-    const newStatus = statusMapping[action as keyof typeof statusMapping];
+    const newStatus = statusMapping[action];
     if (!newStatus) {
       return NextResponse.json(
-        { success: false, error: 'Hành động không hợp lệ' },
+        { success: false, error: 'Hành động không hợp lệ. Chỉ chấp nhận: resolve, dismiss, escalate' },
         { status: 400 }
       );
     }
@@ -81,6 +79,16 @@ export async function PATCH(
 
     if (notes) {
       updateData.reviewNotes = notes;
+    }
+
+    // Handle escalation - mark as escalated but keep in_review
+    if (action === 'escalate') {
+      updateData.escalated = true;
+      updateData.escalatedAt = new Date().toISOString();
+      updateData.escalatedBy = user.id;
+      updateData.escalatedReason = notes || 'Cần Admin xem xét';
+      // Don't change status, keep as in_review
+      updateData.status = 'in_review';
     }
 
     await adminDb.collection('place_reports').doc(reportId).update(updateData);
@@ -115,9 +123,11 @@ export async function PATCH(
 
     return NextResponse.json({
       success: true,
-      message: `Báo cáo đã được ${action === 'approve' || action === 'resolve' ? 'giải quyết' : 
-                                  action === 'reject' || action === 'dismiss' ? 'bỏ qua' : 
-                                  'chuyển lên cấp cao hơn'}`,
+      message: action === 'resolve'
+        ? 'Báo cáo đã được giải quyết thành công'
+        : action === 'dismiss'
+          ? 'Báo cáo đã được bác bỏ'
+          : 'Báo cáo đã được chuyển lên Admin xử lý',
       data: {
         id: reportId,
         ...reportData,
