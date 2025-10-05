@@ -172,16 +172,6 @@ export const Header: React.FC = () => {
                       </DropdownMenuItem>
 
                       <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 transition-colors">
-                        <Link href="/itineraries/my" className="flex items-center gap-3 px-3">
-                          <Calendar className="w-5 h-5 text-purple-600" />
-                          <div className="flex-1">
-                            <div className="font-medium text-slate-900">Lịch trình của tôi</div>
-                            <div className="text-xs text-slate-500">Quản lý hành trình du lịch</div>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem asChild className="h-10 cursor-pointer rounded-lg hover:bg-slate-100/50 transition-colors">
                         <Link href="/places/saved" className="flex items-center gap-3 px-3">
                           <Heart className="w-5 h-5 text-rose-600" />
                           <div className="flex-1">

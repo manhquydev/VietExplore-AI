@@ -8,7 +8,6 @@ import { Footer } from '@/components/footer';
 import { Hero } from '@/components/hero';
 import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
-import AiPlanner from '@/components/ai-planner';
 import DestinationGrid from '@/components/destination-grid';
 import { usePublicHomepageSettings } from '@/hooks/use-homepage-settings';
 
@@ -37,13 +36,6 @@ export default function Home() {
       <main>
         {/* Hero Section */}
         <Hero />
-
-        {/* AI Planner - Glass Integration */}
-        <section className="container py-20">
-          <div className="glass-card p-8 lg:p-12">
-            <AiPlanner />
-          </div>
-        </section>
 
         {/* Quick Search - Window to Discovery */}
         <section className="container py-20">
