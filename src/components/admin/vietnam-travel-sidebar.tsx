@@ -25,7 +25,8 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronRight,
-  Megaphone
+  Megaphone,
+  MessageSquare
 } from 'lucide-react'
 
 interface VietnamTravelSidebarProps {
@@ -89,10 +90,17 @@ const navigationSections: NavSection[] = [
       },
       {
         id: 'moderation-reports',
-        title: 'Báo cáo',
+        title: 'Báo cáo Địa điểm',
         href: '/admin/moderation/reports',
         icon: FileText,
-        description: 'Báo cáo kiểm duyệt'
+        description: 'Báo cáo vi phạm địa điểm'
+      },
+      {
+        id: 'moderation-review-reports',
+        title: 'Báo cáo Đánh giá',
+        href: '/admin/moderation/review-reports',
+        icon: MessageSquare,
+        description: 'Báo cáo vi phạm đánh giá'
       }
     ]
   },

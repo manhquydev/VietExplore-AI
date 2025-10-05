@@ -300,6 +300,101 @@ const viewCount = Math.max(realtimeViews, firestoreViews)
 
 When working with this codebase, always consider the role-based permission system, maintain the moderation workflow integrity, ensure proper Firebase security rule compliance, follow the notification workflow patterns for consistency, and use centralized view tracking to prevent count inflation.
 
+### Critical Pattern: Cron Job + User Actions Race Conditions
+
+**⚠️ LESSON LEARNED (2025-01-04): Địa điểm published bị reset về pending**
+
+**Problem:**
+Cron jobs cleaning up "stale" data can overwrite recent user actions, causing approved/published items to reset to `pending` state.
+
+**Root Cause:**
+1. **Missing cleanup triggers:** Actions like `start_review`/`approve` didn't delete `claimExpiresAt` field
+2. **Query-then-update anti-pattern:** Cron job used non-atomic `query().then(update())`
+3. **No transaction recheck:** Status could change between query and update (race window)
+
+**Race Condition Timeline:**
+```
+T0: Item in 'claimed' state, claimExpiresAt = "2025-01-04T10:00:00Z"
+T1: User clicks "Approve" → status = 'approved', places.status = 'published'
+    ❌ BUT claimExpiresAt NOT deleted
+T2: Cron job runs (every 30 min):
+    - Query: WHERE status='claimed' AND claimExpiresAt < now
+    - Finds item in cache (stale read)
+T3: Cron update executes:
+    - SET status = 'pending' ← ❌ Overwrites 'approved'!
+    - Published place disappears from public view
+```
+
+**Solution (5-Layer Protection):**
+
+```typescript
+// 1. ✅ DELETE cleanup triggers when leaving watched state
+if (action === 'start_review' || action === 'approve' || action === 'reject') {
+  updateData.claimExpiresAt = FieldValue.delete();
+  updateData.claimedBy = FieldValue.delete();
+  updateData.claimedAt = FieldValue.delete();
+}
+
+// 2. ✅ USE Firestore Transactions for atomic check-and-update
+await db.runTransaction(async (transaction) => {
+  // 3. ✅ RE-FETCH inside transaction to get fresh state
+  const freshDoc = await transaction.get(docRef);
+
+  // 4. ✅ RECHECK all conditions inside transaction
+  if (freshDoc.data().status !== 'claimed') {
+    console.log('Status changed, skipping cleanup');
+    return; // Prevent overwrite
+  }
+
+  if (freshDoc.data().claimExpiresAt >= now) {
+    console.log('Claim extended, skipping');
+    return;
+  }
+
+  // 5. ✅ ONLY update if all checks pass
+  transaction.update(docRef, {
+    status: 'pending',
+    claimExpiresAt: FieldValue.delete()
+  });
+});
+```
+
+**Anti-pattern (NEVER do this):**
+```typescript
+// ❌ BAD - Race condition window between query and update
+const docs = await db.collection('items')
+  .where('status', '==', 'claimed')
+  .where('expiresAt', '<', now)
+  .get();
+
+// 50-200ms race window here - status can change!
+docs.forEach(doc => {
+  doc.ref.update({ status: 'pending' }); // May overwrite newer state
+});
+```
+
+**Testing Race Conditions:**
+```bash
+# Simulate concurrent approve + cron cleanup
+1. Start item in 'claimed' state with claimExpiresAt
+2. Approve item (should delete claimExpiresAt)
+3. Immediately run cron job
+4. Verify item stays 'approved', not reset to 'pending'
+```
+
+**Monitoring:**
+- Log detailed stats: `found`, `released`, `skipped`, `errors`
+- Alert if `skipped > 50%` (indicates high contention)
+- Track items that transition `approved → pending` (should be ZERO)
+
+**Files implementing this pattern:**
+- `src/app/api/moderation/queue/[itemId]/route.ts` - Cleanup on state exit
+- `src/app/api/cron/cleanup-expired-claims/route.ts` - Transaction-based cleanup
+
+**Key Takeaway:**
+Always ask: "What if a user action happens RIGHT BEFORE this cron job runs?"
+Use transactions + field deletion to make race conditions impossible.
+
 ### Place Review System Best Practices
 
 **Review Architecture:**
@@ -448,3 +543,296 @@ firebase deploy --only firestore
 - [ ] Sort dropdown changes review order
 - [ ] Long reviews (>200 chars) show "Đọc thêm" button
 - [ ] Expandable reviews toggle properly
+
+## Review Report System (Moderator Workflow)
+
+### Architecture Overview
+
+**Purpose:** Allow users to report inappropriate reviews for moderator review
+
+**Collections:**
+- `review_reports` - Stores reports against reviews
+- **NOT** for place reports (separate: `place_reports`)
+
+**Workflow:**
+```
+User reports review → review_reports collection → Moderators review → Resolve/Remove/Dismiss
+```
+
+**Key Principle:** Reports go to **MODERATORS ONLY**, NOT to review author (conflict of interest)
+
+---
+
+### Critical Firestore Rules Pattern (LESSON LEARNED)
+
+**❌ WRONG - Too Restrictive:**
+```javascript
+allow create: if emailVerified()
+  && request.resource.data.keys().hasAll(['reviewId', 'placeId', 'reportedBy', 'reason', 'status'])
+  && request.resource.data.status == 'pending';
+```
+
+**Problem:** `keys().hasAll([...])` checks if document has **EXACTLY** those keys and **NO OTHERS**
+- Blocks any additional metadata fields (reporterName, details, createdAt, etc.)
+- Causes: **500 Internal Server Error** on write attempts
+- Hard to debug: Error is vague "permission denied"
+
+**✅ CORRECT - Validate Individual Fields:**
+```javascript
+allow create: if emailVerified()
+  && request.resource.data.reportedBy == request.auth.uid
+  && request.resource.data.reviewId is string
+  && request.resource.data.placeId is string
+  && request.resource.data.reportedBy is string
+  && request.resource.data.reason is string
+  && request.resource.data.status == 'pending';
+```
+
+**Benefits:**
+- Validates required fields exist AND correct type
+- Allows extra metadata (reporterEmail, details, timestamps, etc.)
+- More flexible for future schema evolution
+- Clear error messages when validation fails
+
+**Rule of Thumb:**
+- Use `keys().hasAll([...])` ONLY when you need strict schema enforcement
+- For user-generated content, validate individual fields instead
+- Always allow audit trail fields (createdAt, updatedAt, metadata)
+
+---
+
+### Firestore Indexes Required
+
+```json
+{
+  "collectionGroup": "review_reports",
+  "fields": [
+    {"fieldPath": "status", "order": "ASCENDING"},
+    {"fieldPath": "createdAt", "order": "DESCENDING"}
+  ]
+},
+{
+  "collectionGroup": "review_reports",
+  "fields": [
+    {"fieldPath": "reviewerId", "order": "ASCENDING"},
+    {"fieldPath": "status", "order": "ASCENDING"},
+    {"fieldPath": "createdAt", "order": "DESCENDING"}
+  ]
+},
+{
+  "collectionGroup": "review_reports",
+  "fields": [
+    {"fieldPath": "reportedBy", "order": "ASCENDING"},
+    {"fieldPath": "createdAt", "order": "DESCENDING"}
+  ]
+},
+{
+  "collectionGroup": "review_reports",
+  "fields": [
+    {"fieldPath": "reason", "order": "ASCENDING"},
+    {"fieldPath": "status", "order": "ASCENDING"},
+    {"fieldPath": "createdAt", "order": "DESCENDING"}
+  ]
+}
+```
+
+---
+
+### API Implementation
+
+**File:** `src/app/api/reviews/[id]/report/route.ts`
+
+**Key Features:**
+1. **Rate Limiting:** 3 reports per user per week (moderators bypass)
+2. **Duplicate Prevention:** Check existing pending reports
+3. **Rich Context:** Store review preview, place name, reporter info
+4. **Status:** Always `pending` on creation
+5. **Moderator Target:** Reports go to moderators, NOT review author
+
+**Schema:**
+```typescript
+{
+  reviewId: string,           // Review being reported
+  placeId: string,            // Place context
+  placeName: string,          // For display
+  reviewContent: string,      // First 200 chars preview
+  reviewRating: number,       // Context
+  reviewAuthorId: string,     // (NOT notified until action taken)
+  reportedBy: string,         // Reporter user ID
+  reporterName: string,       // For moderator reference
+  reporterEmail: string,      // Contact if needed
+  reason: string,             // spam|inappropriate|fake|offensive|irrelevant|other
+  details: string,            // Optional explanation
+  status: 'pending',          // pending|in_review|resolved|dismissed
+  createdAt: string,          // ISO timestamp
+  updatedAt: string           // ISO timestamp
+}
+```
+
+---
+
+### Admin UI (TODO - Not Yet Built)
+
+**Location:** `/admin/moderation/review-reports` (to be created)
+
+**Features Needed:**
+1. **Tabs by Status:**
+   - Pending (chờ xử lý)
+   - In Review (đang điều tra)
+   - Resolved (đã xử lý)
+   - Dismissed (đã bỏ qua)
+
+2. **Display Context:**
+   - Original review content + rating + author
+   - Place name + link to place page
+   - Reporter info (name, email, role)
+   - Report reason + details
+   - Timestamp + SLA tracking
+
+3. **Actions:**
+   - **Claim** - Assign report to moderator (prevent conflicts)
+   - **View Review** - Link to place page, scroll to review
+   - **Resolve** - Mark resolved, keep review (false alarm)
+   - **Remove Review** - Delete review from `place_reviews`
+   - **Dismiss** - Reject report as invalid
+   - **Escalate** - Moderator → Admin (complex cases)
+
+4. **Filters:**
+   - Report reason dropdown
+   - Date range
+   - Reporter name search
+   - Reviewer name search
+
+**Reuse Patterns From:** `src/app/admin/moderation/reports/page.tsx` (place reports)
+
+---
+
+### Notifications (TODO - Not Yet Implemented)
+
+**Events to Notify:**
+1. **New Report** → Moderators (all with role moderator/admin)
+2. **Report Resolved** → Reporter (outcome explanation)
+3. **Review Removed** → Review Author (reason + appeal link)
+
+**Notification Types to Add:**
+```typescript
+REVIEW_REPORTED: {
+  title: "Báo cáo đánh giá mới",
+  body: "Có báo cáo mới về đánh giá tại {placeName}",
+  actionUrl: "/admin/moderation/review-reports",
+  priority: "high",
+  channels: ["moderator", "admin"]
+}
+
+REVIEW_REPORT_RESOLVED: {
+  title: "Báo cáo của bạn đã được xử lý",
+  body: "Báo cáo về đánh giá tại {placeName} đã được giải quyết",
+  actionUrl: "/places/{placeSlug}",
+  priority: "medium",
+  channels: ["in_app"]
+}
+
+REVIEW_REMOVED: {
+  title: "Đánh giá của bạn đã bị xóa",
+  body: "Đánh giá tại {placeName} vi phạm quy định cộng đồng",
+  actionUrl: "/community-guidelines",
+  priority: "high",
+  channels: ["in_app", "email"]
+}
+```
+
+---
+
+### Common Pitfalls (LESSONS LEARNED)
+
+**❌ Using `keys().hasAll()` for field validation:**
+- **Problem:** Blocks additional metadata fields
+- **Result:** 500 errors, hard to debug
+- **Fix:** Validate individual fields with type checks
+
+**❌ No admin UI for review reports:**
+- **Problem:** Reports sit in DB unprocessed
+- **Result:** User reports ignored, bad reviews stay up
+- **Fix:** Build dedicated moderator interface
+
+**❌ Notifying review author about reports:**
+- **Problem:** Conflict of interest, manipulation risk
+- **Result:** Authors delete negative reviews preemptively
+- **Fix:** Only notify moderators until decision made
+
+**❌ No rate limiting on reports:**
+- **Problem:** Spam attacks, harassment
+- **Result:** Report queue flooded
+- **Fix:** 3 reports/week limit (moderators bypass)
+
+**❌ Mixing review reports with place reports:**
+- **Problem:** Different workflows, different contexts
+- **Result:** Confusion in admin UI, wrong actions
+- **Fix:** Separate collections, separate UIs
+
+**❌ Generic error messages without debugging context:**
+- **Problem:** `console.error('Error:', error)` provides no actionable info
+- **Result:** Cannot debug where failure occurred or with what data
+- **Fix:** Add detailed contextual logging:
+  ```typescript
+  console.log('[FEATURE] Attempting action:', { userId, itemId, action });
+  await operation();
+  console.log('[FEATURE] Success:', result.id);
+  // In catch:
+  console.error('[FEATURE] Error details:', {
+    message: error instanceof Error ? error.message : 'Unknown',
+    stack: error instanceof Error ? error.stack : undefined,
+    context: { userId, itemId }
+  });
+  ```
+- **Benefits:** Trace exact failure point, see input data, easier debugging
+
+**❌ Assuming Firestore rules block Firebase Admin SDK:**
+- **Problem:** Debugging Firestore rules when using `firebase-admin` package
+- **Result:** Wasted time investigating rules when they weren't the issue
+- **Key Fact:** **Firebase Admin SDK BYPASSES ALL Firestore security rules**
+  - Client SDK (browser/app) → Rules enforced
+  - Admin SDK (server/Cloud Functions) → Full access, NO rule checks
+- **Fix:** If Admin SDK fails, check: network, credentials, data format, collection path - NOT rules
+- **When to check rules:** Only when client-side operations fail (browser fetch, mobile SDK)
+
+---
+
+### Testing Checklist
+
+- [ ] Report submission returns 200 OK (not 500)
+- [ ] Report appears in `review_reports` collection
+- [ ] Cannot submit duplicate report (same review + user)
+- [ ] Rate limiting enforced (3 reports/week)
+- [ ] Moderators bypass rate limit
+- [ ] Report contains all context fields
+- [ ] Review author NOT notified on report creation
+- [ ] (Future) Moderator receives notification
+- [ ] (Future) Can view/process in admin UI
+- [ ] (Future) Can resolve/remove/dismiss
+- [ ] (Future) Reporter notified of outcome
+
+---
+
+### Implementation Status
+
+✅ **Completed:**
+- API endpoint for creating reports
+- Firestore rules (fixed from restrictive to flexible)
+- Firestore composite indexes
+- Rate limiting (3/week)
+- Duplicate prevention
+- Rich context storage
+
+❌ **TODO:**
+- Admin UI page (`/admin/moderation/review-reports`)
+- API endpoints for moderator actions (claim, resolve, remove, etc.)
+- Notification system integration
+- Email notifications for resolved reports
+- Appeal system for removed reviews
+
+**Estimated Effort for Remaining Work:** 4-5 hours
+- Admin UI: 2-3 hours (reuse patterns from place reports)
+- API endpoints: 1 hour
+- Notifications: 30 minutes
+- Testing: 30-60 minutes

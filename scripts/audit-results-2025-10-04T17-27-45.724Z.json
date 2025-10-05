@@ -1,0 +1,38 @@
+{
+  "affectedPlaces": [
+    {
+      "placeId": "DlOjNRnOyFGWdosXBly3",
+      "placeName": "Biển Bãi Môn",
+      "placeStatus": "published",
+      "queueId": "di1zgRYFSbQwzbNhbO0q",
+      "queueStatus": "pending",
+      "publishedAt": "2025-10-04T02:37:04.598Z",
+      "issue": "Published place has pending queue status"
+    },
+    {
+      "placeId": "T5uRt23zLNudWYYurbOE",
+      "placeName": "Ba Na Hills",
+      "placeStatus": "published",
+      "queueId": "797JMBKDzqFGd8C19DX6",
+      "queueStatus": "pending",
+      "publishedAt": "2025-10-04T02:30:01.299Z",
+      "issue": "Published place has pending queue status"
+    },
+    {
+      "placeId": "U5m11mMWN7BQzL7BzbSu",
+      "placeName": "An Giang",
+      "placeStatus": "published",
+      "queueId": "Mmk1Vp9BWQspQTxaqQ3L",
+      "queueStatus": "pending",
+      "publishedAt": "2025-10-04T02:30:17.240Z",
+      "issue": "Published place has pending queue status"
+    }
+  ],
+  "autoReleasedItems": [],
+  "inconsistentStates": [],
+  "stats": {
+    "totalChecked": 3,
+    "affectedCount": 0,
+    "needsReview": 3
+  }
+}

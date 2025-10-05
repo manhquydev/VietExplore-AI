@@ -381,12 +381,29 @@ export async function PUT(
     // Add action to handle "start_review" to mark content as in_review
     if (action === 'start_review') {
       updateData.status = 'in_review';
+      // CRITICAL: Delete claim fields để prevent cron job race condition
+      // Nếu không xóa, cron job có thể overwrite status về 'pending'
+      updateData.claimExpiresAt = FieldValue.delete();
+      updateData.claimedBy = FieldValue.delete();
+      updateData.claimedAt = FieldValue.delete();
     }
 
     if (action === 'escalate') {
       updateData.escalatedTo = 'admin'; // Escalate to admin
       updateData.escalatedAt = now;
       updateData.escalationReason = reviewNotes;
+      // CRITICAL: Delete claim fields when escalating
+      updateData.claimExpiresAt = FieldValue.delete();
+      updateData.claimedBy = FieldValue.delete();
+      updateData.claimedAt = FieldValue.delete();
+    }
+
+    // CRITICAL: Delete claim fields for all final actions (approve/reject/request_edit)
+    // to prevent cron job from resetting status to 'pending'
+    if (['approve', 'reject', 'request_edit'].includes(action)) {
+      updateData.claimExpiresAt = FieldValue.delete();
+      updateData.claimedBy = FieldValue.delete();
+      updateData.claimedAt = FieldValue.delete();
     }
 
     await adminDb.collection('moderation_queue').doc(itemId).update(updateData);

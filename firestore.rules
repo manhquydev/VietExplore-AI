@@ -273,10 +273,16 @@ service cloud.firestore {
     // 4.7.7. review_reports (Review report system)
     match /review_reports/{reportId} {
       allow read: if isModerator() || isAdmin() || (isSignedIn() && isOwner(resource.data.reportedBy));
+
+      // Allow create with required fields validation (allows additional metadata fields)
       allow create: if emailVerified()
         && request.resource.data.reportedBy == request.auth.uid
-        && request.resource.data.keys().hasAll(['reviewId', 'placeId', 'reportedBy', 'reason', 'status'])
+        && request.resource.data.reviewId is string
+        && request.resource.data.placeId is string
+        && request.resource.data.reportedBy is string
+        && request.resource.data.reason is string
         && request.resource.data.status == 'pending';
+
       allow update: if isModerator() || isAdmin();
       allow delete: if isAdmin();
     }
