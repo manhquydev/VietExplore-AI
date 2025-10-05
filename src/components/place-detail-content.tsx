@@ -70,6 +70,7 @@ import { ReportModal } from "@/components/modals/report-modal"
 import { useToast } from "@/hooks/use-toast"
 import { useViewTracking } from "@/hooks/use-place-stats"
 import { ReportFormData } from "@/lib/types/reports"
+import { PlaceChatWidget } from "@/components/place-chat-widget"
 
 interface PlaceData {
   id: string
@@ -1347,6 +1348,13 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
           onSubmit={handleReportSubmit}
           placeId={place.id}
           placeName={place.name}
+        />
+
+        {/* AI Chat Widget */}
+        <PlaceChatWidget
+          placeId={place.id}
+          placeName={place.name}
+          placeType={place.type}
         />
       </main>
       <Footer />

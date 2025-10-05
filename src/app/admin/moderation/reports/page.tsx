@@ -20,6 +20,7 @@ import { useAdminReports } from "@/hooks/use-admin-reports"
 import { AdminErrorState, AdminEmptyState } from "@/components/admin/loading-states"
 import { BrandedLoading, BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { AdminResolveReportDialog, AdminDismissReportDialog, AdminEscalateDialog, AdminConfirmDialog } from "@/components/admin/confirmation-dialogs"
+import { PlaceActionSelector, PlaceAction } from "@/components/admin/place-action-selector"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { getAuth } from "firebase/auth"
 
@@ -53,15 +54,8 @@ const statusConfig = {
 }
 
 const reportTypeConfig = {
-  safety_legal: {
-    label: "An toàn/Pháp lý",
-    priority: "Nghiêm trọng",
-    sla: "6 giờ",
-    color: "bg-red-100 text-red-800 border-red-200",
-    icon: Shield
-  },
-  misinformation: {
-    label: "Thông tin sai lệch", 
+  incorrect_info: {
+    label: "Thông tin sai lệch",
     priority: "Cao",
     sla: "24 giờ",
     color: "bg-orange-100 text-orange-800 border-orange-200",
@@ -69,15 +63,29 @@ const reportTypeConfig = {
   },
   inappropriate_content: {
     label: "Nội dung không phù hợp",
-    priority: "Trung bình", 
+    priority: "Trung bình",
     sla: "48 giờ",
     color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    icon: Flag
+  },
+  spam: {
+    label: "Spam/Rác",
+    priority: "Trung bình",
+    sla: "48 giờ",
+    color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    icon: Flag
+  },
+  duplicate: {
+    label: "Trùng lặp",
+    priority: "Thấp",
+    sla: "72 giờ",
+    color: "bg-gray-100 text-gray-800 border-gray-200",
     icon: Flag
   },
   other: {
     label: "Khác",
     priority: "Thấp",
-    sla: "72 giờ", 
+    sla: "72 giờ",
     color: "bg-gray-100 text-gray-800 border-gray-200",
     icon: Flag
   }
@@ -123,7 +131,7 @@ export default function ReportsHandlingPage() {
   }, [fetchStatusCounts])
 
   const handleAction = async (
-    reportId: string, 
+    reportId: string,
     action: 'resolve' | 'dismiss' | 'escalate' | 'claim' | 'release',
     notes?: string
   ) => {
@@ -159,13 +167,13 @@ export default function ReportsHandlingPage() {
           'claim': 'Đã tiếp nhận báo cáo để điều tra. Báo cáo giờ được khóa cho bạn xử lý.',
           'release': 'Đã trả báo cáo về pool chung. Các moderator khác có thể tiếp nhận báo cáo này.'
         }
-        
+
         toast({
           title: "Thành công",
           description: actionMessages[action],
           variant: "success"
         });
-        
+
         // Refresh reports list to get updated status
         await fetchStatusCounts();
         // Refresh the reports data to update UI immediately
@@ -176,20 +184,20 @@ export default function ReportsHandlingPage() {
       // Handle normal report actions
       const mappedAction = action === 'resolve' ? 'resolve' : action === 'dismiss' ? 'dismiss' : 'escalate'
       const result = await updateReportStatus(reportId, mappedAction, notes)
-      
+
       const actionMessages = {
         'resolve': 'Báo cáo đã được xử lý và giải quyết',
         'dismiss': 'Báo cáo đã được bỏ qua',
         'escalate': 'Báo cáo đã được chuyển lên Admin xử lý'
       }
-      toast({ 
+      toast({
         title: "Thành công",
         description: actionMessages[action as keyof typeof actionMessages] || 'Hành động đã được thực hiện thành công',
         variant: "success"
       })
-      
+
       await fetchStatusCounts()
-      
+
     } catch (error: any) {
       console.error('Error in handleAction:', error)
       const errorMessage = error?.message || 'Có lỗi không mong đợi xảy ra'
@@ -198,6 +206,65 @@ export default function ReportsHandlingPage() {
         description: errorMessage,
         variant: "destructive"
       })
+    }
+  }
+
+  // NEW: Handle resolve with place action
+  const handleResolveWithAction = async (reportId: string, placeAction: PlaceAction) => {
+    try {
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        toast({
+          title: "Lỗi xác thực",
+          description: "Vui lòng đăng nhập lại để tiếp tục",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch(`/api/admin/reports/${reportId}/resolve-with-action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ action: placeAction })
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Không thể xử lý báo cáo');
+      }
+
+      const actionMessages = {
+        'request_edit': 'Đã yêu cầu owner chỉnh sửa địa điểm',
+        'suspend': `Đã đình chỉ địa điểm trong ${placeAction.suspendDuration} giờ`,
+        'hide_permanent': 'Đã ẩn địa điểm vĩnh viễn',
+        'warning_only': 'Đã gửi cảnh báo cho owner'
+      }
+
+      toast({
+        title: "Xử lý thành công",
+        description: actionMessages[placeAction.type] || 'Báo cáo đã được xử lý',
+        variant: "success"
+      });
+
+      // Refresh reports list
+      await fetchStatusCounts();
+      await refetch();
+
+    } catch (error: any) {
+      console.error('[REPORT] Error resolving with action:', {
+        reportId,
+        action: placeAction.type,
+        error: error instanceof Error ? error.message : 'Unknown'
+      });
+      toast({
+        title: "Lỗi",
+        description: error?.message || 'Có lỗi không mong đợi xảy ra',
+        variant: "destructive"
+      });
     }
   }
 
@@ -465,26 +532,12 @@ export default function ReportsHandlingPage() {
                               </div>
 
                               {/* Priority Alert */}
-                              {(reportType === 'safety_legal' || slaStatus.status === 'overdue') && (
-                                <div className={cn(
-                                  "rounded-lg p-3 mb-4 border",
-                                  reportType === 'safety_legal' 
-                                    ? "bg-red-50 border-red-200" 
-                                    : "bg-orange-50 border-orange-200"
-                                )}>
+                              {slaStatus.status === 'overdue' && (
+                                <div className="rounded-lg p-3 mb-4 border bg-orange-50 border-orange-200">
                                   <div className="flex items-center gap-2">
-                                    <AlertTriangle className={cn(
-                                      "h-4 w-4",
-                                      reportType === 'safety_legal' ? "text-red-600" : "text-orange-600"
-                                    )} />
-                                    <div className={cn(
-                                      "text-sm font-medium",
-                                      reportType === 'safety_legal' ? "text-red-800" : "text-orange-800"
-                                    )}>
-                                      {reportType === 'safety_legal' 
-                                        ? 'Báo cáo ưu tiên cao - Cần xử lý ngay lập tức'
-                                        : 'Cảnh báo: Báo cáo đã quá hạn SLA'
-                                      }
+                                    <AlertTriangle className="h-4 w-4 text-orange-600" />
+                                    <div className="text-sm font-medium text-orange-800">
+                                      Cảnh báo: Báo cáo đã quá hạn SLA
                                     </div>
                                   </div>
                                 </div>
@@ -574,9 +627,12 @@ export default function ReportsHandlingPage() {
                                   <>
                                     {(report.reviewerInfo?.id === user?.id || user?.role === 'admin') && (
                                       <>
-                                        <AdminResolveReportDialog
-                                          itemName={report.placeName}
-                                          onConfirm={(notes) => handleAction(report.id, 'resolve', notes)}
+                                        <PlaceActionSelector
+                                          reportId={report.id}
+                                          placeId={report.placeId}
+                                          placeName={report.placeName}
+                                          reportIssue={`${report.reportType}: ${report.reason}`}
+                                          onConfirm={(action) => handleResolveWithAction(report.id, action)}
                                           trigger={
                                             <Button
                                               size="sm"

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Bell, Check, CheckCheck, Trash2, Eye, Filter } from "lucide-react";
+import { Bell, CheckCheck, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,68 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
-
-const notificationIcons = {
-  // Place moderation
-  place_received: "📬",
-  place_claimed: "👤",
-  place_in_review: "🔍",
-  place_approved: "✅",
-  place_rejected: "❌",
-  place_needs_edit: "✏️",
-  revision_requested: "🔄",
-  edit_approved: "✅",
-  edit_rejected: "❌",
-  edit_request_approved: "✅",
-  edit_request_rejected: "❌",
-  new_moderation_item: "📋",
-  moderation_claimed: "👤",
-  moderation_escalated: "⚠️",
-  reports_threshold_reached: "🚨",
-  // User interactions
-  place_liked: "❤️",
-  place_saved: "💾",
-  place_review_posted: "⭐",
-  place_comment_reply: "💬",
-  place_published: "🎉",
-  place_featured: "⭐",
-  place_milestone: "🏆",
-  // System notifications
-  system_maintenance: "🔧",
-  security_alert: "🔐",
-  feature_update: "🚀",
-  weekly_summary: "📊",
-  // Admin/Moderator notifications
-  system_performance_degraded: "🚨",
-  database_connection_issues: "🔴",
-  api_rate_limit_exceeded: "⚡",
-  storage_quota_warning: "📦",
-  cdn_failure_detected: "🌐",
-  suspicious_login_patterns: "⚠️",
-  multiple_failed_login_attempts: "🔐",
-  data_export_request: "📋",
-  gdpr_deletion_request: "🗂️",
-  admin_privilege_escalation: "🔑",
-  moderation_queue_overload: "📊",
-  content_volume_spike: "📈",
-  user_registration_anomaly: "👥",
-  spam_detection_threshold: "🛡️",
-  server_memory_critical: "🖥️",
-  disk_space_warning: "💾",
-  backup_failure: "💿",
-  ssl_certificate_expiring: "🔒",
-  third_party_service_down: "🔗",
-  moderation_handoff_received: "👥",
-  moderation_sla_warning: "⏰",
-  moderation_queue_stuck: "🔄",
-  content_pattern_detected: "🔍"
-};
-
-const notificationColors = {
-  high: "text-red-600 bg-red-50 border-red-200",
-  medium: "text-amber-600 bg-amber-50 border-amber-200",
-  low: "text-slate-600 bg-slate-50 border-slate-200"
-};
+import { getNotificationIcon, priorityConfig } from "@/lib/notification-config";
 
 interface NotificationItemProps {
   notification: RealtimeNotification;
@@ -113,13 +52,18 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
     onMarkAsRead(notification.id);
   };
 
+  // Get professional icon config
+  const iconConfig = getNotificationIcon(notification.type);
+  const IconComponent = iconConfig.icon;
+  const priority = priorityConfig[notification.priority];
+
   return (
     <div
       className={cn(
-        "group relative flex items-start gap-3 p-4 cursor-pointer rounded-xl transition-all duration-300",
+        "group relative flex items-start gap-4 p-5 cursor-pointer rounded-xl transition-all duration-200",
         "hover:shadow-md hover:scale-[1.01] motion-soft",
-        !notification.read && "bg-gradient-to-r from-brand-primary-50 to-brand-secondary-50/30 border-l-4 border-brand-green",
-        notification.read && "bg-white hover:bg-slate-50/50",
+        !notification.read && "bg-white border border-l-4 border-brand-green shadow-sm",
+        notification.read && "bg-slate-50/50 border border-transparent hover:bg-slate-50",
         isDeleting && "opacity-0 scale-95 translate-x-full"
       )}
       onClick={handleClick}
@@ -127,31 +71,34 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
       tabIndex={0}
       aria-label={notification.title}
     >
-      {/* Icon */}
+      {/* Professional Icon */}
       <div className={cn(
-        "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all duration-300",
-        "bg-gradient-to-br shadow-sm",
-        notification.priority === 'high' && "from-red-100 to-rose-100 group-hover:from-red-200 group-hover:to-rose-200",
-        notification.priority === 'medium' && "from-amber-100 to-yellow-100 group-hover:from-amber-200 group-hover:to-yellow-200",
-        notification.priority === 'low' && "from-slate-100 to-gray-100 group-hover:from-slate-200 group-hover:to-gray-200"
+        "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200",
+        "group-hover:scale-110",
+        iconConfig.bgClass
       )}>
-        <span className="text-xl transform group-hover:scale-110 transition-transform duration-300">
-          {notificationIcons[notification.type] || "📧"}
-        </span>
+        <IconComponent className={cn("w-6 h-6", iconConfig.colorClass)} />
       </div>
 
       <div className="flex-1 min-w-0 space-y-2">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
-          <p className={cn(
-            "text-sm leading-snug",
-            !notification.read ? "font-semibold text-slate-900" : "font-medium text-slate-700"
-          )}>
-            {notification.title}
-          </p>
-          {!notification.read && (
-            <div className="w-2 h-2 bg-brand-green rounded-full animate-pulse shadow-sm shadow-brand-green/50 flex-shrink-0" />
-          )}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <p className={cn(
+              "text-sm leading-tight flex-1 min-w-0",
+              !notification.read ? "font-semibold text-slate-900" : "font-medium text-slate-600"
+            )}>
+              {notification.title}
+            </p>
+            {/* Priority dot - subtle indicator */}
+            {notification.priority === 'high' && !notification.read && (
+              <div className={cn(
+                "w-2 h-2 rounded-full flex-shrink-0",
+                priority.dotClass,
+                "animate-pulse"
+              )} />
+            )}
+          </div>
         </div>
 
         {/* Message */}
@@ -161,49 +108,43 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
 
         {/* Footer */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2 py-0.5 border transition-all duration-200",
-                notificationColors[notification.priority]
-              )}
-            >
-              {notification.priority === 'high' ? 'Cao' : notification.priority === 'medium' ? 'Trung bình' : 'Thấp'}
-            </Badge>
+          <span className="text-xs text-slate-400 font-medium">
+            {formatDistanceToNow(
+              new Date(notification.createdAt || notification.timestamp || Date.now()),
+              {
+                addSuffix: true,
+                locale: vi
+              }
+            )}
+          </span>
 
-            <span className="text-xs text-slate-400 font-medium">
-              {formatDistanceToNow(
-                new Date(notification.createdAt || notification.timestamp || Date.now()),
-                {
-                  addSuffix: true,
-                  locale: vi
-                }
-              )}
-            </span>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="flex items-center gap-1 notification-action opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Quick Actions - Always visible on mobile, hover on desktop */}
+          <div className={cn(
+            "flex items-center gap-1 notification-action transition-all duration-200",
+            "sm:opacity-0 sm:translate-x-2 sm:pointer-events-none",
+            "sm:group-hover:opacity-100 sm:group-hover:translate-x-0 sm:group-hover:pointer-events-auto"
+          )}>
             {!notification.read && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 hover:bg-brand-green/10 hover:text-brand-green"
+                className="h-8 w-8 p-0 hover:bg-brand-green/10 hover:text-brand-green active:scale-90"
                 onClick={handleMarkAsRead}
                 title="Đánh dấu đã đọc"
+                aria-label="Đánh dấu đã đọc"
               >
-                <Eye className="w-3.5 h-3.5" />
+                <Eye className="w-4 h-4" />
               </Button>
             )}
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-600"
+              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 active:scale-90"
               onClick={handleDelete}
               title="Xóa"
+              aria-label="Xóa thông báo"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -211,7 +152,7 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
 
       {/* Read status indicator */}
       {notification.read && (
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-4 right-4">
           <CheckCheck className="w-4 h-4 text-slate-300" />
         </div>
       )}

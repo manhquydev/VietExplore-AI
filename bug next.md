@@ -1,38 +1,21 @@
-page-21f59c84cf75461f.js:1 API Response for /places?sortBy=rating&limit=6&featured=true: {status: 200, text: '{"success":true,"data":[{"id":"U5m11mMWN7BQzL7BzbS…el":null,"sortBy":"rating","limit":6,"offset":0}}'}
-5031-5ca26aefbc5920c0.js:1 [Redirect] No pending redirect result
-ae6eea6a-3d2b8807aa792f5f.js:1 Cross-Origin-Opener-Policy policy would block the window.close call.
-close @ ae6eea6a-3d2b8807aa792f5f.js:1
-cleanUp @ ae6eea6a-3d2b8807aa792f5f.js:1
-unregisterAndCleanUp @ ae6eea6a-3d2b8807aa792f5f.js:1
-resolve @ ae6eea6a-3d2b8807aa792f5f.js:1
-onAuthEvent @ ae6eea6a-3d2b8807aa792f5f.js:1
-await in onAuthEvent
-sendToConsumer @ ae6eea6a-3d2b8807aa792f5f.js:1
-(anonymous) @ ae6eea6a-3d2b8807aa792f5f.js:1
-onEvent @ ae6eea6a-3d2b8807aa792f5f.js:1
-(anonymous) @ ae6eea6a-3d2b8807aa792f5f.js:1
-Sm @ cb=gapi.loaded_0?le=scs:195
-(anonymous) @ cb=gapi.loaded_0?le=scs:195
-gl @ cb=gapi.loaded_0?le=scs:174
-pl @ cb=gapi.loaded_0?le=scs:174
-Kk @ cb=gapi.loaded_0?le=scs:175
-(anonymous) @ cb=gapi.loaded_0?le=scs:168
-ae6eea6a-3d2b8807aa792f5f.js:1 Cross-Origin-Opener-Policy policy would block the window.close call.
-close @ ae6eea6a-3d2b8807aa792f5f.js:1
-cleanUp @ ae6eea6a-3d2b8807aa792f5f.js:1
-unregisterAndCleanUp @ ae6eea6a-3d2b8807aa792f5f.js:1
-resolve @ ae6eea6a-3d2b8807aa792f5f.js:1
-onAuthEvent @ ae6eea6a-3d2b8807aa792f5f.js:1
-await in onAuthEvent
-sendToConsumer @ ae6eea6a-3d2b8807aa792f5f.js:1
-(anonymous) @ ae6eea6a-3d2b8807aa792f5f.js:1
-onEvent @ ae6eea6a-3d2b8807aa792f5f.js:1
-(anonymous) @ ae6eea6a-3d2b8807aa792f5f.js:1
-Sm @ cb=gapi.loaded_0?le=scs:195
-(anonymous) @ cb=gapi.loaded_0?le=scs:195
-gl @ cb=gapi.loaded_0?le=scs:174
-pl @ cb=gapi.loaded_0?le=scs:174
-Kk @ cb=gapi.loaded_0?le=scs:175
-(anonymous) @ cb=gapi.loaded_0?le=scs:168
-5031-5ca26aefbc5920c0.js:1 Google sign-in successful, ensuring user document exists...
-5031-5ca26aefbc5920c0.js:1 User document ensured: existing
+hot-reloader-client.js:102 Console was cleared
+client.js:82 ./src/components/place-chat-widget.tsx:21:1
+Module not found: Can't resolve '@/components/ui/use-toast'
+  19 | import { cn } from '@/lib/utils';
+  20 | import ReactMarkdown from 'react-markdown';
+> 21 | import { toast } from '@/components/ui/use-toast';
+     | ^
+  22 |
+  23 | interface PlaceChatWidgetProps {
+  24 |   placeId: string;
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/place-detail-content.tsx
+nextJsHandleConsoleError @ client.js:82
+handleErrors @ hot-reloader-client.js:163
+processMessage @ hot-reloader-client.js:224
+eval @ hot-reloader-client.js:71
+handleMessage @ websocket.js:65
+favicon.ico:1  GET http://localhost:9002/favicon.ico 404 (Not Found)

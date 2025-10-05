@@ -33,7 +33,7 @@ export const chatFlow = ai.defineFlow(
         ? `Previous conversation:\n${conversationMessages.join('\n')}\n\nUser: ${input.message}`
         : input.message;
       
-      const result = await ai.generate({
+      const { text } = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
         prompt: fullPrompt,
         config: {
@@ -43,8 +43,8 @@ export const chatFlow = ai.defineFlow(
           topP: 0.9,
         }
       });
-      
-      const responseText = typeof result.text === 'function' ? result.text() : result.text || result.output?.text || 'No response received';
+
+      const responseText = text || 'No response received';
       console.log('✅ Success with Google AI model: gemini-2.5-flash');
       return responseText;
       

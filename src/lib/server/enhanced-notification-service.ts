@@ -47,7 +47,12 @@ export enum NotificationType {
   // Reports
   CONTENT_REPORTED = 'content_reported',
   REPORT_RESOLVED = 'report_resolved',
-  
+
+  // Place Actions (from report handling)
+  PLACE_SUSPENDED = 'place_suspended',
+  PLACE_HIDDEN = 'place_hidden',
+  PLACE_WARNING = 'place_warning',
+
   // System
   SYSTEM_MAINTENANCE = 'system_maintenance',
   ROLE_CHANGED = 'role_changed',
@@ -161,10 +166,10 @@ export class EnhancedNotificationService {
   private static templates: { [key in NotificationType]: NotificationTemplate } = {
     [NotificationType.PLACE_SUBMITTED]: {
       type: NotificationType.PLACE_SUBMITTED,
-      title: '📍 Địa điểm mới chờ duyệt',
-      body: 'Có địa điểm mới "{placeName}" cần được kiểm duyệt',
-      actionUrl: '/moderation/queue/{itemId}',
-      actionText: 'Xem chi tiết',
+      title: 'Địa điểm mới cần kiểm duyệt',
+      body: '"{placeName}" đang chờ kiểm duyệt trong hàng đợi',
+      actionUrl: '/admin/moderation/queue',
+      actionText: 'Xem hàng đợi',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 7
@@ -172,10 +177,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.PLACE_RECEIVED]: {
       type: NotificationType.PLACE_RECEIVED,
-      title: '📬 Địa điểm đã được tiếp nhận',
-      body: 'Địa điểm "{placeName}" của bạn đã được tiếp nhận và đang chờ kiểm duyệt',
+      title: 'Địa điểm đã được tiếp nhận',
+      body: '"{placeName}" đã gửi thành công. Chúng tôi sẽ kiểm duyệt trong vòng 24 giờ.',
       actionUrl: '/contribute/my-drafts/{draftId}/moderation',
-      actionText: 'Xem nhật ký',
+      actionText: 'Xem tiến trình',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -183,10 +188,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.PLACE_CLAIMED]: {
       type: NotificationType.PLACE_CLAIMED,
-      title: '👤 Địa điểm đã được tiếp nhận xử lý',
-      body: 'Kiểm duyệt viên {moderatorName} đã tiếp nhận địa điểm "{placeName}" để xử lý',
+      title: 'Đã được tiếp nhận xử lý',
+      body: '{moderatorName} đang xử lý địa điểm "{placeName}" của bạn',
       actionUrl: '/contribute/my-drafts/{draftId}/moderation',
-      actionText: 'Xem tiến trình',
+      actionText: 'Theo dõi',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -194,10 +199,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.PLACE_IN_REVIEW]: {
       type: NotificationType.PLACE_IN_REVIEW,
-      title: '🔍 Địa điểm đang được kiểm duyệt',
-      body: 'Địa điểm "{placeName}" của bạn đang được kiểm duyệt chính thức bởi {moderatorName}',
+      title: 'Đang được kiểm duyệt',
+      body: '{moderatorName} đang kiểm duyệt "{placeName}". Kết quả sẽ có trong thời gian sớm nhất.',
       actionUrl: '/contribute/my-drafts/{draftId}/moderation',
-      actionText: 'Xem tiến trình',
+      actionText: 'Xem chi tiết',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -205,8 +210,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.PLACE_APPROVED]: {
       type: NotificationType.PLACE_APPROVED,
-      title: '✅ Địa điểm đã được phê duyệt',
-      body: 'Địa điểm "{placeName}" của bạn đã được phê duyệt và xuất bản',
+      title: 'Địa điểm đã được công khai',
+      body: '"{placeName}" đã được phê duyệt. Cảm ơn bạn đã đóng góp cho cộng đồng!',
       actionUrl: '/places/{slug}',
       actionText: 'Xem địa điểm',
       priority: NotificationPriority.MEDIUM,
@@ -216,10 +221,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.PLACE_REJECTED]: {
       type: NotificationType.PLACE_REJECTED,
-      title: '❌ Địa điểm bị từ chối',
-      body: 'Địa điểm "{placeName}" bị từ chối. Lý do: {reason}',
-      actionUrl: '/contribute/my-drafts/{draftId}',
-      actionText: 'Chỉnh sửa',
+      title: 'Địa điểm cần chỉnh sửa',
+      body: '"{placeName}" chưa đạt tiêu chuẩn. Lý do: {reason}',
+      actionUrl: '/contribute/edit/{draftId}',
+      actionText: 'Chỉnh sửa ngay',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       retentionDays: 60
@@ -227,10 +232,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.EDIT_REQUESTED]: {
       type: NotificationType.EDIT_REQUESTED,
-      title: '✏️ Yêu cầu chỉnh sửa',
-      body: 'Địa điểm "{placeName}" cần chỉnh sửa: {reason}',
-      actionUrl: '/contribute/my-drafts/{draftId}',
-      actionText: 'Chỉnh sửa ngay',
+      title: 'Yêu cầu chỉnh sửa địa điểm',
+      body: '"{placeName}" cần được cập nhật: {reason}',
+      actionUrl: '/contribute/edit/{draftId}',
+      actionText: 'Chỉnh sửa',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
       retentionDays: 14
@@ -238,10 +243,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.REVISION_REQUESTED]: {
       type: NotificationType.REVISION_REQUESTED,
-      title: '🔄 Yêu cầu sửa lại',
-      body: 'Địa điểm "{placeName}" cần sửa lại theo yêu cầu: {reason}',
-      actionUrl: '/contribute/my-drafts/{draftId}',
-      actionText: 'Sửa lại',
+      title: 'Cần chỉnh sửa bổ sung',
+      body: '"{placeName}" cần điều chỉnh theo yêu cầu: {reason}',
+      actionUrl: '/contribute/edit/{draftId}',
+      actionText: 'Bắt đầu sửa',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       retentionDays: 21
@@ -249,10 +254,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.EDIT_APPROVED]: {
       type: NotificationType.EDIT_APPROVED,
-      title: '✅ Chỉnh sửa được duyệt',
-      body: 'Chỉnh sửa địa điểm "{placeName}" đã được phê duyệt',
+      title: 'Chỉnh sửa đã được duyệt',
+      body: 'Cập nhật cho "{placeName}" đã được phê duyệt và hiển thị công khai',
       actionUrl: '/places/{slug}',
-      actionText: 'Xem địa điểm',
+      actionText: 'Xem kết quả',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -260,10 +265,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.EDIT_REJECTED]: {
       type: NotificationType.EDIT_REJECTED,
-      title: '❌ Chỉnh sửa bị từ chối',
-      body: 'Chỉnh sửa địa điểm "{placeName}" bị từ chối: {reason}',
-      actionUrl: '/contribute/my-drafts/{draftId}',
-      actionText: 'Sửa lại',
+      title: 'Chỉnh sửa chưa được chấp nhận',
+      body: 'Cập nhật "{placeName}" chưa phù hợp. Lý do: {reason}',
+      actionUrl: '/contribute/edit/{draftId}',
+      actionText: 'Xem lại',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       retentionDays: 30
@@ -271,9 +276,9 @@ export class EnhancedNotificationService {
 
     [NotificationType.DELETION_REQUESTED]: {
       type: NotificationType.DELETION_REQUESTED,
-      title: '🗑️ Yêu cầu xóa địa điểm',
-      body: 'Có yêu cầu xóa địa điểm "{placeName}"',
-      actionUrl: '/moderation/deletions/{requestId}',
+      title: 'Yêu cầu xóa địa điểm',
+      body: 'Có yêu cầu xóa địa điểm "{placeName}". Vui lòng xem xét.',
+      actionUrl: '/admin/moderation/deletions/{requestId}',
       actionText: 'Xem yêu cầu',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP],
@@ -282,8 +287,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.DELETION_APPROVED]: {
       type: NotificationType.DELETION_APPROVED,
-      title: '✅ Địa điểm đã được xóa',
-      body: 'Địa điểm "{placeName}" đã được xóa theo yêu cầu',
+      title: 'Địa điểm đã được xóa',
+      body: '"{placeName}" đã được xóa khỏi hệ thống theo yêu cầu của bạn',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       retentionDays: 90
@@ -291,8 +296,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.DELETION_REJECTED]: {
       type: NotificationType.DELETION_REJECTED,
-      title: '❌ Từ chối xóa địa điểm',
-      body: 'Yêu cầu xóa "{placeName}" bị từ chối. Lý do: {reason}',
+      title: 'Từ chối xóa địa điểm',
+      body: 'Yêu cầu xóa "{placeName}" không được chấp thuận. Lý do: {reason}',
       actionUrl: '/places/{placeId}',
       actionText: 'Xem địa điểm',
       priority: NotificationPriority.MEDIUM,
@@ -302,8 +307,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.CONTENT_CLAIMED]: {
       type: NotificationType.CONTENT_CLAIMED,
-      title: '👤 Nội dung đã được nhận',
-      body: '{moderatorName} đã nhận kiểm duyệt "{contentName}"',
+      title: 'Nội dung đã được tiếp nhận',
+      body: '{moderatorName} đang kiểm duyệt "{contentName}"',
       priority: NotificationPriority.LOW,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 3
@@ -311,10 +316,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.CONTENT_RELEASED]: {
       type: NotificationType.CONTENT_RELEASED,
-      title: '🔓 Nội dung đã được release',
-      body: 'Nội dung "{contentName}" đã được release, có thể nhận lại',
-      actionUrl: '/moderation/queue/{itemId}',
-      actionText: 'Nhận ngay',
+      title: 'Nội dung có thể tiếp nhận lại',
+      body: '"{contentName}" đã được giải phóng khỏi hàng đợi',
+      actionUrl: '/admin/moderation/queue/{itemId}',
+      actionText: 'Tiếp nhận',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 1
@@ -322,9 +327,9 @@ export class EnhancedNotificationService {
 
     [NotificationType.CLAIM_EXPIRING]: {
       type: NotificationType.CLAIM_EXPIRING,
-      title: '⏰ Claim sắp hết hạn',
-      body: 'Claim "{contentName}" sẽ hết hạn trong {hoursRemaining}h',
-      actionUrl: '/moderation/queue/{itemId}',
+      title: 'Tiếp nhận sắp hết hạn',
+      body: '"{contentName}" cần xử lý trong {hoursRemaining} giờ nữa',
+      actionUrl: '/admin/moderation/queue/{itemId}',
       actionText: 'Xử lý ngay',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
@@ -333,8 +338,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.CLAIM_EXPIRED]: {
       type: NotificationType.CLAIM_EXPIRED,
-      title: '⏱️ Claim đã timeout',
-      body: 'Claim "{contentName}" đã timeout và được release tự động',
+      title: 'Tiếp nhận đã hết hạn',
+      body: '"{contentName}" đã được giải phóng do hết thời gian xử lý',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 7
@@ -342,10 +347,10 @@ export class EnhancedNotificationService {
 
     [NotificationType.CONTENT_ESCALATED]: {
       type: NotificationType.CONTENT_ESCALATED,
-      title: '🚨 Nội dung được escalate',
-      body: 'Nội dung "{contentName}" cần review từ cấp cao hơn',
+      title: 'Nội dung cần xem xét cấp cao',
+      body: '"{contentName}" cần sự xem xét từ quản trị viên cấp cao',
       actionUrl: '/admin/escalations/{escalationId}',
-      actionText: 'Xem chi tiết',
+      actionText: 'Xem ngay',
       priority: NotificationPriority.URGENT,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL, NotificationChannel.PUSH],
       retentionDays: 30
@@ -353,8 +358,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.ESCALATION_ASSIGNED]: {
       type: NotificationType.ESCALATION_ASSIGNED,
-      title: '📋 Được giao escalation',
-      body: 'Bạn được giao xử lý escalation "{contentName}"',
+      title: 'Được giao vụ việc quan trọng',
+      body: 'Bạn được giao xử lý "{contentName}" với độ ưu tiên cao',
       actionUrl: '/admin/escalations/{escalationId}',
       actionText: 'Xử lý ngay',
       priority: NotificationPriority.URGENT,
@@ -364,8 +369,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.ESCALATION_RESOLVED]: {
       type: NotificationType.ESCALATION_RESOLVED,
-      title: '✅ Escalation đã giải quyết',
-      body: 'Escalation "{contentName}" đã được giải quyết',
+      title: 'Vụ việc đã được giải quyết',
+      body: '"{contentName}" đã được xử lý xong bởi quản trị viên',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -373,9 +378,9 @@ export class EnhancedNotificationService {
 
     [NotificationType.CONTENT_REPORTED]: {
       type: NotificationType.CONTENT_REPORTED,
-      title: '🚩 Báo cáo nội dung',
+      title: 'Báo cáo nội dung mới',
       body: 'Có báo cáo về "{contentName}": {reportReason}',
-      actionUrl: '/moderation/reports/{reportId}',
+      actionUrl: '/admin/moderation/reports/{reportId}',
       actionText: 'Xem báo cáo',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP],
@@ -384,8 +389,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.REPORT_RESOLVED]: {
       type: NotificationType.REPORT_RESOLVED,
-      title: '✅ Báo cáo đã xử lý',
-      body: 'Báo cáo của bạn về "{contentName}" đã được xử lý',
+      title: 'Báo cáo đã được xử lý',
+      body: 'Báo cáo của bạn về "{contentName}" đã được kiểm tra và xử lý',
       priority: NotificationPriority.MEDIUM,
       channels: [NotificationChannel.IN_APP],
       retentionDays: 30
@@ -393,8 +398,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.SYSTEM_MAINTENANCE]: {
       type: NotificationType.SYSTEM_MAINTENANCE,
-      title: '🔧 Bảo trì hệ thống',
-      body: 'Hệ thống sẽ bảo trì từ {startTime} đến {endTime}',
+      title: 'Bảo trì hệ thống',
+      body: 'Hệ thống sẽ bảo trì từ {startTime} đến {endTime}. Vui lòng lưu ý.',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       retentionDays: 3
@@ -402,8 +407,8 @@ export class EnhancedNotificationService {
 
     [NotificationType.ROLE_CHANGED]: {
       type: NotificationType.ROLE_CHANGED,
-      title: '👤 Quyền hạn thay đổi',
-      body: 'Quyền hạn của bạn đã thay đổi thành: {newRole}',
+      title: 'Quyền hạn đã thay đổi',
+      body: 'Vai trò của bạn đã được cập nhật thành: {newRole}',
       priority: NotificationPriority.HIGH,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       retentionDays: 90
@@ -411,13 +416,47 @@ export class EnhancedNotificationService {
 
     [NotificationType.ACCOUNT_WARNING]: {
       type: NotificationType.ACCOUNT_WARNING,
-      title: '⚠️ Cảnh báo tài khoản',
-      body: 'Tài khoản của bạn có vấn đề: {reason}',
+      title: 'Cảnh báo tài khoản',
+      body: 'Tài khoản của bạn có vấn đề cần chú ý: {reason}',
       actionUrl: '/profile/warnings',
       actionText: 'Xem chi tiết',
       priority: NotificationPriority.CRITICAL,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL, NotificationChannel.PUSH],
       retentionDays: 365
+    },
+
+    // Place Actions (from report handling)
+    [NotificationType.PLACE_SUSPENDED]: {
+      type: NotificationType.PLACE_SUSPENDED,
+      title: 'Địa điểm bị đình chỉ tạm thời',
+      body: '"{placeName}" bị đình chỉ {duration}h do vi phạm: {reason}. Sẽ tự động khôi phục lúc {expiresAt}.',
+      actionUrl: '/my-places/{placeId}',
+      actionText: 'Xem chi tiết',
+      priority: NotificationPriority.URGENT,
+      channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+      retentionDays: 90
+    },
+
+    [NotificationType.PLACE_HIDDEN]: {
+      type: NotificationType.PLACE_HIDDEN,
+      title: 'Địa điểm đã bị ẩn',
+      body: '"{placeName}" đã bị ẩn khỏi công khai do: {reason}. Bạn có thể khiếu nại quyết định này.',
+      actionUrl: '/support/appeal?placeId={placeId}&reportId={reportId}',
+      actionText: 'Khiếu nại',
+      priority: NotificationPriority.URGENT,
+      channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+      retentionDays: 180
+    },
+
+    [NotificationType.PLACE_WARNING]: {
+      type: NotificationType.PLACE_WARNING,
+      title: 'Cảnh báo địa điểm',
+      body: 'Địa điểm "{placeName}" có vi phạm nhẹ: {reason}. Vui lòng chỉnh sửa để tránh bị xử lý.',
+      actionUrl: '/contribute/edit/{placeId}',
+      actionText: 'Chỉnh sửa',
+      priority: NotificationPriority.MEDIUM,
+      channels: [NotificationChannel.IN_APP],
+      retentionDays: 30
     }
   };
 
@@ -1021,6 +1060,52 @@ export class EnhancedNotificationService {
       itemId,
       contentName,
       hoursRemaining
+    });
+  }
+
+  // Place Actions (Report Resolution)
+  static async notifyPlaceSuspended(
+    placeId: string,
+    placeName: string,
+    ownerId: string,
+    reason: string,
+    duration: number,
+    expiresAt: string
+  ): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_SUSPENDED, {
+      placeId,
+      placeName,
+      reason,
+      duration,
+      expiresAt
+    });
+  }
+
+  static async notifyPlaceHidden(
+    placeId: string,
+    placeName: string,
+    ownerId: string,
+    reason: string,
+    reportId?: string
+  ): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_HIDDEN, {
+      placeId,
+      placeName,
+      reason,
+      reportId
+    });
+  }
+
+  static async notifyPlaceWarning(
+    placeId: string,
+    placeName: string,
+    ownerId: string,
+    reason: string
+  ): Promise<void> {
+    await this.sendNotification(ownerId, NotificationType.PLACE_WARNING, {
+      placeId,
+      placeName,
+      reason
     });
   }
 

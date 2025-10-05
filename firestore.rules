@@ -306,6 +306,14 @@ service cloud.firestore {
       allow read, create, update: if isModerator() || isAdmin();
     }
 
+    // 4.10.1. suspension_schedules (auto-restore scheduled suspensions)
+    match /suspension_schedules/{scheduleId} {
+      allow read: if isModerator() || isAdmin();
+      allow create: if isModerator() || isAdmin();
+      allow update: if isAdmin(); // Only admin can manually update processed status
+      allow delete: if isAdmin();
+    }
+
     // 4.11. labels, audits, system
     match /labels/{id} { 
       allow read: if true; 

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Bell, Check, CheckCheck, Clock, AlertCircle, X, Archive, Trash2, Eye } from "lucide-react";
+import { Bell, CheckCheck, X, Trash2, Eye, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,79 +23,7 @@ import { useRealtimeNotifications, RealtimeNotification } from "@/hooks/use-real
 import { useAuth } from "@/components/auth/auth-provider";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-
-const notificationIcons = {
-  // Place moderation
-  place_received: "📬",
-  place_claimed: "👤",
-  place_in_review: "🔍",
-  place_approved: "✅",
-  place_rejected: "❌",
-  place_needs_edit: "✏️",
-  revision_requested: "🔄",
-  edit_approved: "✅",
-  edit_rejected: "❌",
-  edit_request_approved: "✅",
-  edit_request_rejected: "❌",
-  new_moderation_item: "📋",
-  moderation_claimed: "👤",
-  moderation_escalated: "⚠️",
-  reports_threshold_reached: "🚨",
-  // User interactions
-  place_liked: "❤️",
-  place_saved: "💾",
-  place_review_posted: "⭐",
-  place_comment_reply: "💬",
-  place_published: "🎉",
-  place_featured: "⭐",
-  place_milestone: "🏆",
-  // System notifications
-  system_maintenance: "🔧",
-  security_alert: "🔐",
-  feature_update: "🚀",
-  weekly_summary: "📊",
-  // Admin/Moderator notifications (Phase 2)
-  // System Health & Performance
-  system_performance_degraded: "🚨",
-  database_connection_issues: "🔴",
-  api_rate_limit_exceeded: "⚡",
-  storage_quota_warning: "📦",
-  cdn_failure_detected: "🌐",
-  // Security & Compliance
-  suspicious_login_patterns: "⚠️",
-  multiple_failed_login_attempts: "🔐",
-  data_export_request: "📋",
-  gdpr_deletion_request: "🗂️",
-  admin_privilege_escalation: "🔑",
-  // Business Operations
-  moderation_queue_overload: "📊",
-  content_volume_spike: "📈",
-  user_registration_anomaly: "👥",
-  spam_detection_threshold: "🛡️",
-  // Infrastructure Monitoring
-  server_memory_critical: "🖥️",
-  disk_space_warning: "💾",
-  backup_failure: "💿",
-  ssl_certificate_expiring: "🔒",
-  third_party_service_down: "🔗",
-  // Moderation Workflow
-  moderation_handoff_received: "👥",
-  moderation_sla_warning: "⏰",
-  moderation_queue_stuck: "🔄",
-  content_pattern_detected: "🔍"
-};
-
-const notificationColors = {
-  high: "text-red-600 bg-red-50 border-red-200",
-  medium: "text-amber-600 bg-amber-50 border-amber-200",
-  low: "text-slate-600 bg-slate-50 border-slate-200"
-};
-
-const priorityGradients = {
-  high: "from-red-500/10 to-rose-500/5",
-  medium: "from-amber-500/10 to-yellow-500/5",
-  low: "from-slate-500/10 to-gray-500/5"
-};
+import { getNotificationIcon, priorityConfig } from "@/lib/notification-config";
 
 interface NotificationItemProps {
   notification: RealtimeNotification;
@@ -137,50 +65,51 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
     onMarkAsRead(notification.id);
   };
 
+  // Get professional icon config
+  const iconConfig = getNotificationIcon(notification.type);
+  const IconComponent = iconConfig.icon;
+  const priority = priorityConfig[notification.priority];
+
   return (
     <div
       className={cn(
-        "group relative flex items-start gap-2 sm:gap-3 p-3 sm:p-4 cursor-pointer rounded-xl transition-all duration-300",
-        "hover:shadow-md active:scale-[0.98] sm:hover:scale-[1.02] motion-soft touch-target-44",
-        !notification.read && "bg-gradient-to-r from-brand-primary-50 to-brand-secondary-50/30 border-l-4 border-brand-green",
-        notification.read && "bg-white hover:bg-slate-50/50 active:bg-slate-100",
+        "group relative flex items-start gap-3 p-4 cursor-pointer rounded-xl transition-all duration-200",
+        "hover:shadow-md hover:scale-[1.01] motion-soft",
+        !notification.read && "bg-white border border-l-4 border-brand-green shadow-sm",
+        notification.read && "bg-slate-50/50 border border-transparent hover:bg-slate-50",
         isDeleting && "opacity-0 scale-95 translate-x-full"
       )}
       onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       role="button"
       tabIndex={0}
       aria-label={notification.title}
     >
-      {/* Icon with gradient background */}
+      {/* Professional Icon */}
       <div className={cn(
-        "flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-base sm:text-lg transition-all duration-300",
-        "bg-gradient-to-br shadow-sm",
-        notification.priority === 'high' && "from-red-100 to-rose-100 group-hover:from-red-200 group-hover:to-rose-200",
-        notification.priority === 'medium' && "from-amber-100 to-yellow-100 group-hover:from-amber-200 group-hover:to-yellow-200",
-        notification.priority === 'low' && "from-slate-100 to-gray-100 group-hover:from-slate-200 group-hover:to-gray-200"
+        "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200",
+        "group-hover:scale-110",
+        iconConfig.bgClass
       )}>
-        <span className="text-lg sm:text-xl transform group-hover:scale-110 transition-transform duration-300">
-          {notificationIcons[notification.type] || "📧"}
-        </span>
+        <IconComponent className={cn("w-5 h-5", iconConfig.colorClass)} />
       </div>
 
-      <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex-1 min-w-0 space-y-1.5">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
-          <p className={cn(
-            "text-sm leading-snug truncate transition-colors",
-            !notification.read ? "font-semibold text-slate-900" : "font-medium text-slate-700"
-          )}>
-            {notification.title}
-          </p>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {notification.priority === 'high' && (
-              <AlertCircle className="w-4 h-4 text-red-500 animate-pulse" />
-            )}
-            {!notification.read && (
-              <div className="w-2 h-2 bg-brand-green rounded-full animate-pulse shadow-sm shadow-brand-green/50" />
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <p className={cn(
+              "text-sm leading-tight flex-1 min-w-0",
+              !notification.read ? "font-semibold text-slate-900" : "font-medium text-slate-600"
+            )}>
+              {notification.title}
+            </p>
+            {/* Priority dot - subtle indicator */}
+            {notification.priority === 'high' && !notification.read && (
+              <div className={cn(
+                "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                priority.dotClass,
+                "animate-pulse"
+              )} />
             )}
           </div>
         </div>
@@ -192,27 +121,15 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
 
         {/* Footer */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2 py-0.5 border transition-all duration-200",
-                notificationColors[notification.priority]
-              )}
-            >
-              {notification.priority === 'high' ? 'Cao' : notification.priority === 'medium' ? 'Trung bình' : 'Thấp'}
-            </Badge>
-
-            <span className="text-xs text-slate-400 font-medium">
-              {formatDistanceToNow(
-                new Date(notification.createdAt || notification.timestamp || Date.now()),
-                {
-                  addSuffix: true,
-                  locale: vi
-                }
-              )}
-            </span>
-          </div>
+          <span className="text-xs text-slate-400 font-medium">
+            {formatDistanceToNow(
+              new Date(notification.createdAt || notification.timestamp || Date.now()),
+              {
+                addSuffix: true,
+                locale: vi
+              }
+            )}
+          </span>
 
           {/* Quick Actions - Always visible on mobile, hover on desktop */}
           <div className={cn(

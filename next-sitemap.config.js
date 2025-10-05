@@ -68,13 +68,8 @@ module.exports = {
     }
     // Itineraries - Nội dung quan trọng
     else if (path.startsWith('/itineraries')) {
-      if (path === '/itineraries/builder') {
-        priority = 0.8;
-        changefreq = 'monthly';
-      } else {
-        priority = 0.7;
-        changefreq = 'weekly';
-      }
+      priority = 0.7;
+      changefreq = 'weekly';
     }
     // Contribute pages
     else if (path.startsWith('/contribute')) {

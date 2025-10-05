@@ -31,7 +31,6 @@ import { NotificationBell } from "@/components/notifications/notification-bell"
 const navigation = [
   { name: "Trang chủ", href: "/" },
   { name: "Địa điểm", href: "/places" },
-  { name: "Lịch trình", href: "/itineraries/builder" },
   { name: "Trợ lý AI", href: "/ai-assistant/chat" },
   { name: "Cộng đồng", href: "/community" },
   { name: "Tài nguyên", href: "/resources" },
