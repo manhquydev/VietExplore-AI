@@ -84,7 +84,7 @@ const SitemapTreeViewer: React.FC<SitemapTreeViewerProps> = ({ routes, sitemapUr
     <div className="space-y-8 p-6 bg-white rounded-lg shadow-lg">
       <div>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">🌳 Sitemap Tree Viewer</h2>
-        <p className="text-gray-600 mb-6">Chi tiết cấu trúc routes và URLs của dự án VietExplore-AI</p>
+        <p className="text-gray-600 mb-6">Chi tiết cấu trúc routes và URLs của dự án Du Lịch Việt-AI</p>
       </div>
 
       {/* App Directory Routes */}

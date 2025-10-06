@@ -548,9 +548,9 @@ export function PlaceDetailTemplate2({ place }: { place: PlaceData }) {
                   />
                 </div>
                 <p className="text-gray-600 leading-relaxed">
-                  {place.authorRole === 'partner' && 'Đối tác chính thức của VietExplore, chuyên cung cấp thông tin du lịch chính xác và cập nhật.'}
-                  {place.authorRole === 'contributor' && 'Cộng tác viên tài năng của VietExplore, đam mê khám phá và chia sẻ những điểm đến tuyệt vời.'}
-                  {place.authorRole === 'admin' && 'Biên tập viên VietExplore, đảm bảo chất lượng nội dung và trải nghiệm người dùng.'}
+                  {place.authorRole === 'partner' && 'Đối tác chính thức của Du Lịch Việt, chuyên cung cấp thông tin du lịch chính xác và cập nhật.'}
+                  {place.authorRole === 'contributor' && 'Cộng tác viên tài năng của Du Lịch Việt, đam mê khám phá và chia sẻ những điểm đến tuyệt vời.'}
+                  {place.authorRole === 'admin' && 'Biên tập viên Du Lịch Việt, đảm bảo chất lượng nội dung và trải nghiệm người dùng.'}
                 </p>
                 <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
                   <span>Đăng: {new Date(place.createdAt).toLocaleDateString('vi-VN')}</span>

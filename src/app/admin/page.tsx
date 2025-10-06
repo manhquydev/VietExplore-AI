@@ -62,7 +62,7 @@ export default function AdminOverviewPage() {
             <h1 className="text-3xl font-bold mb-2">{getGreeting()}</h1>
             <p className="text-green-50 flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              Dashboard quản trị VietExplore AI
+              Dashboard quản trị Du Lịch Việt AI
             </p>
           </div>
           <div className="flex items-center gap-6">

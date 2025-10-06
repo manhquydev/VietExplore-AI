@@ -543,15 +543,15 @@ export default function ReportsHandlingPage() {
                                 </div>
                               )}
 
-                              {/* Reviewer Info - Enhanced */}
-                              {report.reviewerInfo && (
+                              {/* Reviewer Info - Enhanced (only show for in_review status) */}
+                              {report.status === 'in_review' && report.reviewerInfo && (
                                 <div className="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-100">
                                   <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                       <div className="text-sm flex items-center flex-wrap gap-2">
                                         <span className="font-medium text-blue-800">Đang được điều tra bởi:</span>
                                         <span className="text-blue-700">{report.reviewerInfo.name}</span>
-                                        <UserRoleDisplay 
+                                        <UserRoleDisplay
                                           role={report.reviewerInfo.role}
                                           variant="compact"
                                         />
@@ -567,7 +567,7 @@ export default function ReportsHandlingPage() {
                                         </p>
                                       )}
                                     </div>
-                                    
+
                                     {/* Show lock icon if claimed by someone else */}
                                     {report.reviewerInfo.id !== user?.id && (
                                       <div className="flex items-center text-blue-600 ml-2">

@@ -25,9 +25,9 @@ import {
   Award,
   BarChart3,
   Heart,
-  BookOpen,
+  MessageSquare,
   Plus,
-  TrendingUp,
+  Bookmark,
   Users,
   Globe,
   Upload,
@@ -38,9 +38,11 @@ import { UserRoleDisplay } from "@/components/ui/role-badge"
 import { validateImageFile } from "@/lib/client/firebase-storage"
 import { auth } from "@/lib/firebase"
 import { toastService } from "@/lib/ui/toast-service"
+import { useUserContributions } from "@/hooks/use-user-contributions"
 
 export default function ProfilePage() {
   const { user, isAuthenticated, updateUser } = useAuth()
+  const contributions = useUserContributions()
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false)
@@ -423,15 +425,12 @@ export default function ProfilePage() {
           <div className="glass-card p-0 overflow-hidden bg-white shadow-xl rounded-2xl border-0">
             <Tabs defaultValue="stats" className="w-full">
               <div className="px-6 pt-6">
-                <TabsList className="grid w-full grid-cols-4 bg-gray-100">
+                <TabsList className="grid w-full grid-cols-3 bg-gray-100">
                   <TabsTrigger value="stats" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-green data-[state=active]:to-brand-forest data-[state=active]:text-white">
                     Thống kê
                   </TabsTrigger>
                   <TabsTrigger value="contributions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-green data-[state=active]:to-brand-forest data-[state=active]:text-white">
                     Đóng góp
-                  </TabsTrigger>
-                  <TabsTrigger value="itineraries" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-green data-[state=active]:to-brand-forest data-[state=active]:text-white">
-                    Lịch trình
                   </TabsTrigger>
                   <TabsTrigger value="activity" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-green data-[state=active]:to-brand-forest data-[state=active]:text-white">
                     Hoạt động
@@ -452,24 +451,24 @@ export default function ProfilePage() {
                     <div className="text-gray-700 font-medium">Địa điểm đóng góp</div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-2xl text-center shadow-lg border border-amber-100">
-                    <div className="w-12 h-12 bg-brand-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <BookOpen className="w-6 h-6 text-brand-gold" />
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl text-center shadow-lg border border-blue-100">
+                    <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <MessageSquare className="w-6 h-6 text-blue-600" />
                     </div>
-                    <div className="text-3xl font-bold text-brand-gold mb-2">
-                      {user.stats?.itinerariesCreated || 0}
+                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                      {user.stats?.reviewsWritten || 0}
                     </div>
-                    <div className="text-gray-700 font-medium">Lịch trình tạo</div>
+                    <div className="text-gray-700 font-medium">Đánh giá đã viết</div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-2xl text-center shadow-lg border border-rose-100">
-                    <div className="w-12 h-12 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Heart className="w-6 h-6 text-rose-600" />
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-2xl text-center shadow-lg border border-amber-100">
+                    <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Bookmark className="w-6 h-6 text-amber-600" />
                     </div>
-                    <div className="text-3xl font-bold text-rose-600 mb-2">
-                      {user.stats?.helpfulVotes || 0}
+                    <div className="text-3xl font-bold text-amber-600 mb-2">
+                      {user.stats?.savedPlacesCount || 0}
                     </div>
-                    <div className="text-gray-700 font-medium">Lượt thích nhận</div>
+                    <div className="text-gray-700 font-medium">Địa điểm đã lưu</div>
                   </div>
                 </div>
 
@@ -521,58 +520,227 @@ export default function ProfilePage() {
               </TabsContent>
 
               <TabsContent value="contributions" className="p-6">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl text-center border border-green-100">
-                  <div className="w-16 h-16 bg-gradient-to-r from-brand-green to-brand-forest rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-80 shadow-lg">
-                    <MapPin className="w-8 h-8 text-white" />
+                {contributions.isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
+                    <span className="ml-3 text-gray-600">Đang tải...</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Chưa có đóng góp nào</h3>
-                  <p className="text-gray-600 mb-6">Bắt đầu chia sẻ những địa điểm tuyệt vời bạn đã khám phá!</p>
-                  <Button
-                    className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg"
-                    asChild
-                  >
-                    <Link href="/contribute/new-place">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Đóng góp địa điểm mới
-                    </Link>
-                  </Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="itineraries" className="p-6">
-                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-8 rounded-2xl text-center border border-amber-100">
-                  <div className="w-16 h-16 bg-gradient-to-r from-brand-gold to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-80 shadow-lg">
-                    <BookOpen className="w-8 h-8 text-white" />
+                ) : contributions.error ? (
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+                    <p className="text-red-600">{contributions.error}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Chưa có lịch trình nào</h3>
-                  <p className="text-gray-600 mb-6">Tạo lịch trình đầu tiên để lưu kế hoạch du lịch!</p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                ) : contributions.total === 0 ? (
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl text-center border border-green-100">
+                    <div className="w-16 h-16 bg-gradient-to-r from-brand-green to-brand-forest rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-80 shadow-lg">
+                      <MapPin className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Chưa có đóng góp nào</h3>
+                    <p className="text-gray-600 mb-6">Bắt đầu chia sẻ những địa điểm tuyệt vời bạn đã khám phá!</p>
                     <Button
-                      className="bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white shadow-lg"
+                      className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg"
                       asChild
                     >
-                      <Link href="/itineraries/builder">
+                      <Link href="/contribute/new-place">
                         <Plus className="w-4 h-4 mr-2" />
-                        Tạo lịch trình mới
-                      </Link>
-                    </Button>
-                    <Button variant="secondary" className="bg-white border-gray-200 hover:bg-gray-50 shadow-md" asChild>
-                      <Link href="/ai-assistant/plan">
-                        <TrendingUp className="w-4 h-4 mr-2" />
-                        Dùng AI tạo lịch trình
+                        Đóng góp địa điểm mới
                       </Link>
                     </Button>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Drafts Section */}
+                    {contributions.drafts.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <Edit className="w-5 h-5 text-amber-600" />
+                          Bản nháp ({contributions.drafts.length})
+                        </h3>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          {contributions.drafts.slice(0, 4).map(draft => (
+                            <Link
+                              key={draft.id}
+                              href={`/contribute/edit/${draft.id}`}
+                              className="glass-subtle p-4 rounded-xl hover:bg-white transition-colors group"
+                            >
+                              <div className="flex gap-3">
+                                {typeof draft.images?.[0] === 'string' && draft.images[0].trim() && (
+                                  <Image
+                                    src={draft.images[0].trim()}
+                                    alt={draft.name}
+                                    width={80}
+                                    height={80}
+                                    className="w-20 h-20 rounded-lg object-cover"
+                                  />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-gray-900 truncate group-hover:text-brand-green transition-colors">
+                                    {draft.name}
+                                  </h4>
+                                  <Badge className="mt-1" variant={draft.status === 'in_review' ? 'default' : 'outline'}>
+                                    {draft.status === 'draft' && 'Bản nháp'}
+                                    {draft.status === 'submitted' && 'Đã gửi'}
+                                    {draft.status === 'in_review' && 'Đang duyệt'}
+                                    {draft.status === 'rejected' && 'Bị từ chối'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                        {contributions.drafts.length > 4 && (
+                          <Link href="/contribute/my-drafts" className="block mt-4">
+                            <Button variant="outline" className="w-full">
+                              Xem tất cả ({contributions.drafts.length})
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Published Section */}
+                    {contributions.published.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <MapPin className="w-5 h-5 text-brand-green" />
+                          Đã công khai ({contributions.published.length})
+                        </h3>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          {contributions.published.slice(0, 4).map(place => (
+                            <Link
+                              key={place.id}
+                              href={`/places/${place.slug}`}
+                              className="glass-subtle p-4 rounded-xl hover:bg-white transition-colors group"
+                            >
+                              <div className="flex gap-3">
+                                {typeof place.images?.[0] === 'string' && place.images[0].trim() && (
+                                  <Image
+                                    src={place.images[0].trim()}
+                                    alt={place.name}
+                                    width={80}
+                                    height={80}
+                                    className="w-20 h-20 rounded-lg object-cover"
+                                  />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-gray-900 truncate group-hover:text-brand-green transition-colors">
+                                    {place.name}
+                                  </h4>
+                                  <Badge className="mt-1 bg-green-100 text-brand-green">
+                                    Đã công khai
+                                  </Badge>
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      className="w-full bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-lg"
+                      asChild
+                    >
+                      <Link href="/contribute/new-place">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Đóng góp địa điểm mới
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
-              <TabsContent value="activity" className="p-6">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl text-center border border-green-100">
-                  <div className="w-16 h-16 bg-gradient-to-r from-brand-green to-brand-forest rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-80 shadow-lg">
-                    <BarChart3 className="w-8 h-8 text-white" />
+              <TabsContent value="activity" className="p-6 space-y-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Tóm tắt hoạt động</h3>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="glass-subtle p-4 rounded-xl">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-brand-green" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-brand-green">
+                          {user.stats?.placesContributed || 0}
+                        </div>
+                        <div className="text-xs text-gray-600">Địa điểm</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Đã đóng góp</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Chưa có hoạt động nào</h3>
-                  <p className="text-gray-600">Hoạt động của bạn sẽ được hiển thị ở đây</p>
+
+                  <div className="glass-subtle p-4 rounded-xl">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {user.stats?.reviewsWritten || 0}
+                        </div>
+                        <div className="text-xs text-gray-600">Đánh giá</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Đã viết</p>
+                  </div>
+
+                  <div className="glass-subtle p-4 rounded-xl">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <Bookmark className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-amber-600">
+                          {user.stats?.savedPlacesCount || 0}
+                        </div>
+                        <div className="text-xs text-gray-600">Địa điểm</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Đã lưu</p>
+                  </div>
+                </div>
+
+                {/* Recent Activity Timeline */}
+                <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-2xl border border-gray-100">
+                  <h4 className="font-bold text-gray-900 mb-4">Hoạt động gần đây</h4>
+                  <div className="space-y-4">
+                    {contributions.drafts.length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-brand-green" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-900">
+                            Tạo bản nháp <strong>{contributions.drafts[0].name}</strong>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(contributions.drafts[0].createdAt).toLocaleDateString('vi-VN')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {contributions.published.length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Star className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-900">
+                            Địa điểm <strong>{contributions.published[0].name}</strong> đã được công khai
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(contributions.published[0].createdAt).toLocaleDateString('vi-VN')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {contributions.total === 0 && (
+                      <p className="text-sm text-gray-600 text-center py-4">
+                        Chưa có hoạt động nào. Hãy bắt đầu đóng góp!
+                      </p>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { RealtimeService } from '@/lib/firebase/realtime';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // PATCH /api/admin/reports/[reportId] - Update report status (admin/moderator only)
 export async function PATCH(
@@ -89,6 +90,12 @@ export async function PATCH(
       updateData.escalatedReason = notes || 'Cần Admin xem xét';
       // Don't change status, keep as in_review
       updateData.status = 'in_review';
+    }
+
+    // ✅ Clear claim-related fields when resolved or dismissed (prevent stale UI data)
+    if (action === 'resolve' || action === 'dismiss') {
+      updateData.reviewerInfo = FieldValue.delete();
+      updateData.claimedAt = FieldValue.delete();
     }
 
     await adminDb.collection('place_reports').doc(reportId).update(updateData);

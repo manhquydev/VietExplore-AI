@@ -1,5 +1,5 @@
 /**
- * Enhanced Moderation Overview Page 2025 - VietExplore AI Admin
+ * Enhanced Moderation Overview Page 2025 - Du Lịch Việt AI Admin
  * Modern, professional moderation dashboard with enhanced components
  */
 

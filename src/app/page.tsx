@@ -37,17 +37,17 @@ export default function Home() {
         {/* Hero Section */}
         <Hero />
 
-        {/* Quick Search - Window to Discovery */}
-        <section className="container py-20">
+        {/* Quick Search - Window to Discovery - Mobile Optimized */}
+        <section className="container py-8 sm:py-12 md:py-16 lg:py-20">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-text leading-tight">
+            <div className="text-center mb-8 sm:mb-10 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-5 md:mb-6 text-text leading-tight">
                 Cửa sổ{" "}
                 <span className="gradient-text">
                   khám phá
                 </span>
               </h2>
-              <p className="text-lg text-muted leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-muted leading-relaxed px-4 sm:px-0">
                 Mở ra hàng ngàn điểm đến được tin cậy khắp đất nước Việt Nam
               </p>
             </div>
@@ -55,22 +55,22 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Regions - Glass Windows to Vietnam */}
-        <section className="container py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-text leading-tight">
+        {/* Regions - Glass Windows to Vietnam - Mobile Optimized */}
+        <section className="container py-8 sm:py-12 md:py-16 lg:py-20">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-5 md:mb-6 text-text leading-tight px-4 sm:px-0">
               Ba miền{" "}
               <span className="gradient-text">
                 Việt Nam
               </span>
             </h2>
-            <p className="text-lg text-muted max-w-3xl mx-auto leading-relaxed">
-              Mỗi vùng miền là một câu chuyện riêng, mỗi cảnh đẹp là một trang sử. 
+            <p className="text-sm sm:text-base lg:text-lg text-muted max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
+              Mỗi vùng miền là một câu chuyện riêng, mỗi cảnh đẹp là một trang sử.
               Hãy để chúng tôi dẫn lối qua những cửa sổ trong suốt này.
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-10">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
             {homepageLoading ? (
               // Loading skeleton
               Array.from({ length: 3 }).map((_, index) => (
@@ -88,7 +88,7 @@ export default function Home() {
             ) : (
               regions.map((region) => (
                 <div key={region.name} className="glass-card overflow-hidden group motion-gentle hover:scale-105">
-                <div className="aspect-[4/3] relative overflow-hidden">
+                <div className="aspect-[16/9] sm:aspect-[4/3] relative overflow-hidden">
                   <img
                     src={region.image}
                     alt={region.name}
@@ -96,16 +96,16 @@ export default function Home() {
                   />
                   {/* Gentle gradient overlay - not obscuring the beauty */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                  <div className="absolute bottom-6 left-6 text-white space-y-2">
-                    <h3 className="text-2xl font-bold drop-shadow-lg">{region.name}</h3>
-                    <p className="text-sm opacity-90 leading-relaxed drop-shadow-sm">
+                  <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-white space-y-1 sm:space-y-2">
+                    <h3 className="text-xl sm:text-2xl font-bold drop-shadow-lg">{region.name}</h3>
+                    <p className="text-xs sm:text-sm opacity-90 leading-relaxed drop-shadow-sm pr-4">
                       {region.description}
                     </p>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <Link href={`/places?region=${region.href.split('/').pop()}`}>
-                    <button className="w-full glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40">
+                    <button className="w-full glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40 text-sm sm:text-base min-h-[44px]">
                       Khám phá {region.name}
                     </button>
                   </Link>
@@ -116,68 +116,68 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured Places - Elevated Showcase */}
-        <section className="container py-20">
-          <div className="flex items-center justify-between mb-16">
-            <div className="space-y-4">
-              <h2 className="text-4xl lg:text-5xl font-bold text-text leading-tight">
+        {/* Featured Places - Elevated Showcase - Mobile Optimized */}
+        <section className="container py-8 sm:py-12 md:py-16 lg:py-20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 sm:mb-12 md:mb-16">
+            <div className="space-y-2 sm:space-y-4 px-4 sm:px-0">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text leading-tight">
                 Điểm đến{" "}
                 <span className="gradient-text">
                   nổi bật
                 </span>
               </h2>
-              <p className="text-lg text-muted leading-relaxed max-w-2xl">
+              <p className="text-sm sm:text-base lg:text-lg text-muted leading-relaxed max-w-2xl">
                 Những địa điểm được cộng đồng du lịch tin cậy và yêu thích nhất
               </p>
             </div>
-            <Link href="/places">
-              <Button 
-                variant="ghost" 
-                className="glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-3 px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40 hidden lg:flex"
+            <Link href="/places" className="px-4 sm:px-0 w-full sm:w-auto">
+              <Button
+                variant="ghost"
+                className="glass-subtle hover:bg-primary/10 text-primary hover:text-primary font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl motion-soft hover:scale-105 border border-primary/20 hover:border-primary/40 w-full sm:w-auto min-h-[44px] text-sm sm:text-base"
               >
                 Xem tất cả →
               </Button>
             </Link>
           </div>
 
-          <div className="glass-card p-6 lg:p-8">
+          <div className="glass-card p-4 sm:p-6 lg:p-8">
             <DestinationGrid />
           </div>
         </section>
 
-        {/* Trust Indicators - "Sheet of Glass" Principle */}
-        <section className="py-24 relative overflow-hidden">
+        {/* Trust Indicators - "Sheet of Glass" Principle - Mobile Optimized */}
+        <section className="py-12 sm:py-16 md:py-20 lg:py-24 relative overflow-hidden">
           {/* Soft Multi-Layer Gradient - Morning mist effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/6 to-primary/10 opacity-60" />
           <div className="absolute inset-0 bg-gradient-to-tl from-secondary/5 via-transparent to-primary/8" />
-          
+
           <div className="container relative">
             {/* Typography as Voice - Strong hierarchy */}
-            <div className="text-center mb-20">
-              <h2 className="text-4xl lg:text-5xl font-bold mb-8 text-text leading-tight">
+            <div className="text-center mb-10 sm:mb-14 md:mb-16 lg:mb-20 px-4 sm:px-0">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 md:mb-8 text-text leading-tight">
                 Cửa sổ tin cậy
-                <br className="hidden lg:block" />
+                <br className="hidden sm:block" />
                 <span className="text-primary">dẫn lối khám phá</span>
               </h2>
-              <p className="text-lg text-muted max-w-4xl mx-auto leading-relaxed">
-                Từng thông tin được kiểm chứng kỹ lưỡng, từng địa điểm được xác minh bởi cộng đồng chuyên gia. 
+              <p className="text-sm sm:text-base lg:text-lg text-muted max-w-4xl mx-auto leading-relaxed">
+                Từng thông tin được kiểm chứng kỹ lưỡng, từng địa điểm được xác minh bởi cộng đồng chuyên gia.
                 Chúng tôi tạo nên hệ thống uy tín để mỗi hành trình của bạn đều an tâm và trọn vẹn.
               </p>
             </div>
 
-            {/* Glassmorphism Cards - Preserved Trust Badge Icons */}
-            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+            {/* Glassmorphism Cards - Preserved Trust Badge Icons - Mobile Optimized */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto mb-10 sm:mb-14 md:mb-16 lg:mb-20">
               {/* Contributor Badge */}
-              <div className="glass-card p-8 text-center motion-gentle hover:scale-105 group">
-                <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                  <img 
-                    src="/badges/contributor.svg" 
-                    alt="Cộng tác viên đã xác minh" 
-                    className="w-20 h-20 drop-shadow-lg transition-transform group-hover:scale-110"
+              <div className="glass-card p-6 sm:p-8 text-center motion-gentle hover:scale-105 group">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 sm:mb-8 flex items-center justify-center">
+                  <img
+                    src="/badges/contributor.svg"
+                    alt="Cộng tác viên đã xác minh"
+                    className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-lg transition-transform group-hover:scale-110"
                   />
                 </div>
-                <h3 className="text-2xl font-bold mb-6 text-text">Cộng tác viên đã xác minh</h3>
-                <p className="text-muted leading-relaxed mb-8 text-justify">
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-text">Cộng tác viên đã xác minh</h3>
+                <p className="text-sm sm:text-base text-muted leading-relaxed mb-6 sm:mb-8 text-justify px-2 sm:px-0">
                   Những người kể chuyện chuyên nghiệp - blogger du lịch, hướng dẫn viên địa phương,
                   và travel influencer đã được xác minh danh tính và chuyên môn qua quy trình nghiêm ngặt.
                 </p>

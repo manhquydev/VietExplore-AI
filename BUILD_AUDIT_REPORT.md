@@ -1,7 +1,7 @@
-# 🔍 VietExplore AI - Pre-Deployment Build Audit Report
+# 🔍 Du Lịch Việt AI - Pre-Deployment Build Audit Report
 
 **Date:** 2025-10-05
-**Project:** VietExplore AI (Du-Lich-Viet)
+**Project:** Du Lịch Việt AI (Du-Lich-Viet)
 **Version:** 2.1.5
 **Firebase Project:** vietexplore-ai (current)
 **Build Framework:** Next.js 15.3.3

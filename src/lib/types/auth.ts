@@ -28,8 +28,9 @@ export interface User {
   };
   stats?: {
     placesContributed: number;
-    itinerariesCreated: number;
-    helpfulVotes: number;
+    reviewsWritten: number;
+    helpfulVotesReceived: number;
+    savedPlacesCount?: number;
   };
   badges?: string[];
   permissions?: string[];

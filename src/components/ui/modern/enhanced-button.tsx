@@ -1,5 +1,5 @@
 /**
- * Enhanced Modern Button Component 2025 - VietExplore AI Admin
+ * Enhanced Modern Button Component 2025 - Du Lịch Việt AI Admin
  * Professional button design with consistent interactions
  */
 

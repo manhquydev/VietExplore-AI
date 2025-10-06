@@ -1,5 +1,5 @@
 /**
- * VietExplore AI - Admin Icon System
+ * Du Lịch Việt AI - Admin Icon System
  * Minimal, professional icon strategy to reduce visual noise
  * Each icon serves a specific functional purpose
  */

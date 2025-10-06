@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
       stats: {
         placesContributed: 0,
-        itinerariesCreated: 0,
-        helpfulVotes: 0
+        reviewsWritten: 0,
+        helpfulVotesReceived: 0
       }
     };
 

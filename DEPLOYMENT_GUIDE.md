@@ -1,4 +1,4 @@
-# VietExplore AI - Deployment Guide
+# Du Lịch Việt AI - Deployment Guide
 
 ## 🔴 Critical Pre-Deployment Tasks
 

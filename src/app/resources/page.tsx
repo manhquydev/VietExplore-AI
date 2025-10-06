@@ -36,28 +36,28 @@ export default function ResourcesPage() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
       <Header />
       
-      <main className="min-h-screen pt-16">
+      <main className="min-h-screen pt-14 sm:pt-16 md:pt-20">
         {/* Hero Section - Compact & Optimized */}
-        <section className="relative py-8 sm:py-12 overflow-hidden">
+        <section className="relative py-6 sm:py-8 md:py-12 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-50/80 via-green-50/40 to-amber-50/60"></div>
 
           <div className="relative container max-w-7xl">
-            <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-brand-green" />
+            <div className="glass-card max-w-4xl mx-auto text-center p-4 sm:p-6 md:p-8">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-brand-green" />
                 </div>
-                <h1 className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                <h1 className="gradient-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
                   Tài nguyên du lịch
                 </h1>
               </div>
-              <p className="text-base sm:text-lg text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-4 sm:mb-5 md:mb-6 max-w-2xl mx-auto leading-relaxed">
                 Tổng hợp đầy đủ các hướng dẫn, công cụ và thông tin cần thiết<br className="hidden sm:block" />
                 để bạn có chuyến khám phá Việt Nam an toàn và trọn vẹn.
               </p>
 
               {/* Quick access stats */}
-              <div className="flex items-center justify-center gap-6 text-sm text-slate-600">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
                   <span>Hướng dẫn toàn diện</span>
@@ -75,20 +75,20 @@ export default function ResourcesPage() {
           </div>
         </section>
 
-        <section className="container py-8 sm:py-12 max-w-7xl">
+        <section className="container py-6 sm:py-8 md:py-10 lg:py-12 max-w-7xl">
 
         {/* Essential Resources Grid */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10 md:mb-12">
           {/* Travel Planning */}
-          <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-brand-gold" />
+          <div className="glass-card p-5 sm:p-6 md:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold" />
               </div>
               Lập kế hoạch
             </h2>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {[
                 {
                   title: "Mùa du lịch tốt nhất",
@@ -103,10 +103,10 @@ export default function ResourcesPage() {
                   href: "#budget-guide"
                 },
                 {
-                  title: "Lịch trình mẫu",
-                  description: "Gợi ý hành trình cho 3, 7, 14 ngày",
+                  title: "Khám phá địa điểm",
+                  description: "Tìm điểm đến phù hợp với sở thích",
                   icon: MapPin,
-                  href: "/itineraries/builder"
+                  href: "/places"
                 },
                 {
                   title: "Trợ lý AI",
@@ -115,38 +115,38 @@ export default function ResourcesPage() {
                   href: "/ai-assistant/chat"
                 }
               ].map((item, index) => (
-                <Link 
+                <Link
                   key={index}
                   href={item.href}
-                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
+                  className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group min-h-[64px] sm:min-h-[72px]"
                 >
-                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-brand-gold" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold" />
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-slate-900 group-hover:text-brand-gold transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm sm:text-base text-slate-900 group-hover:text-brand-gold transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-xs sm:text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-brand-gold transition-colors" />
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-brand-gold transition-colors flex-shrink-0" />
                 </Link>
               ))}
             </div>
           </div>
 
           {/* Transportation */}
-          <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <Plane className="w-4 h-4 text-emerald-600" />
+          <div className="glass-card p-5 sm:p-6 md:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Plane className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
               </div>
               Di chuyển
             </h2>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-3 sm:space-y-4">
               {[
                 {
                   title: "Vé máy bay",
@@ -176,40 +176,40 @@ export default function ResourcesPage() {
                   href: "#motorbike-guide"
                 }
               ].map((item, index) => (
-                <Link 
+                <Link
                   key={index}
                   href={item.href}
                   target={item.external ? "_blank" : undefined}
                   rel={item.external ? "noopener noreferrer" : undefined}
-                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
+                  className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group min-h-[64px] sm:min-h-[72px]"
                 >
-                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-emerald-600" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm sm:text-base text-slate-900 group-hover:text-emerald-600 transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-xs sm:text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
                 </Link>
               ))}
             </div>
           </div>
 
           {/* Safety & Health */}
-          <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <Shield className="w-4 h-4 text-red-600" />
+          <div className="glass-card p-5 sm:p-6 md:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
               </div>
               An toàn & sức khỏe
             </h2>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-3 sm:space-y-4">
               {[
                 {
                   title: "Số điện thoại khẩn cấp",
@@ -236,23 +236,23 @@ export default function ResourcesPage() {
                   href: "#food-safety"
                 }
               ].map((item, index) => (
-                <Link 
+                <Link
                   key={index}
                   href={item.href}
-                  className="flex items-center gap-3 p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group"
+                  className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group min-h-[64px] sm:min-h-[72px]"
                 >
-                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-4 h-4 text-red-600" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-slate-900 group-hover:text-red-600 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm sm:text-base text-slate-900 group-hover:text-red-600 transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-xs sm:text-sm text-slate-600">
                       {item.description}
                     </div>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" />
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-red-500 transition-colors flex-shrink-0" />
                 </Link>
               ))}
             </div>
@@ -260,15 +260,15 @@ export default function ResourcesPage() {
         </div>
 
         {/* Essential Apps Section */}
-        <div className="glass-card p-8 mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center flex items-center justify-center gap-3">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-brand-green" />
+        <div className="glass-card p-5 sm:p-6 md:p-8 mb-8 sm:mb-10 md:mb-12">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6 sm:mb-7 md:mb-8 text-center flex items-center justify-center gap-2 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-green" />
             </div>
             Ứng dụng thiết yếu
           </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
             {[
               {
                 name: "Google Translate",
@@ -303,13 +303,13 @@ export default function ResourcesPage() {
                 icon: MapPin
               }
             ].map((app, index) => (
-              <div key={index} className="glass-subtle p-6 rounded-xl text-center hover:scale-105 transition-transform duration-200">
-                <div className={`w-12 h-12 ${app.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                  <app.icon className={`w-6 h-6 ${app.colorIcon}`} />
+              <div key={index} className="glass-subtle p-4 sm:p-5 md:p-6 rounded-xl text-center hover:scale-105 transition-transform duration-200 min-h-[160px] sm:min-h-[180px]">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${app.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}>
+                  <app.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${app.colorIcon}`} />
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-2">{app.name}</h3>
-                <p className="text-sm text-slate-600 mb-3">{app.description}</p>
-                <Badge className="bg-green-100 text-brand-green">
+                <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-1.5 sm:mb-2">{app.name}</h3>
+                <p className="text-xs sm:text-sm text-slate-600 mb-2 sm:mb-3">{app.description}</p>
+                <Badge className="bg-green-100 text-brand-green text-xs">
                   {app.category}
                 </Badge>
               </div>
@@ -318,15 +318,15 @@ export default function ResourcesPage() {
         </div>
 
         {/* Emergency Contacts */}
-        <div className="glass-card p-8 mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
+        <div className="glass-card p-5 sm:p-6 md:p-8 mb-8 sm:mb-10 md:mb-12">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5 sm:mb-6 flex items-center gap-2 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
+              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
             </div>
             Số điện thoại khẩn cấp
           </h2>
-          
-          <div className="grid md:grid-cols-3 gap-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             {[
               {
                 service: "Cảnh sát",
@@ -350,33 +350,33 @@ export default function ResourcesPage() {
                 colorIcon: "text-emerald-600"
               }
             ].map((item, index) => (
-              <div key={index} className="glass-subtle p-6 rounded-xl text-center">
-                <div className={`w-16 h-16 ${item.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                  <Phone className={`w-8 h-8 ${item.colorIcon}`} />
+              <div key={index} className="glass-subtle p-5 sm:p-6 rounded-xl text-center">
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 ${item.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}>
+                  <Phone className={`w-7 h-7 sm:w-8 sm:h-8 ${item.colorIcon}`} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{item.service}</h3>
-                <div className="text-3xl font-bold text-red-600 mb-3">{item.number}</div>
-                <p className="text-sm text-slate-600">{item.description}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">{item.service}</h3>
+                <div className="text-2xl sm:text-3xl font-bold text-red-600 mb-2 sm:mb-3">{item.number}</div>
+                <p className="text-xs sm:text-sm text-slate-600">{item.description}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Download Guides */}
-        <div className="glass-card text-center p-8">
-          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Download className="w-8 h-8 text-amber-600" />
+        <div className="glass-card text-center p-5 sm:p-6 md:p-8">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6">
+            <Download className="w-7 h-7 sm:w-8 sm:h-8 text-amber-600" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 sm:mb-4">
             Tải hướng dẫn offline
           </h2>
-          <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-7 md:mb-8 max-w-2xl mx-auto">
             Tải về các hướng dẫn PDF để sử dụng khi không có internet trong chuyến du lịch.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white"
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+            <Button
+              className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white min-h-[44px] text-sm sm:text-base"
               asChild
             >
               <Link href="#guide-download">
@@ -384,13 +384,13 @@ export default function ResourcesPage() {
                 Hướng dẫn tổng quan
               </Link>
             </Button>
-            <Button variant="secondary" className="glass-subtle" asChild>
+            <Button variant="secondary" className="glass-subtle min-h-[44px] text-sm sm:text-base" asChild>
               <Link href="#emergency-guide">
                 <AlertTriangle className="w-4 h-4 mr-2" />
                 Thẻ khẩn cấp
               </Link>
             </Button>
-            <Button variant="secondary" className="glass-subtle" asChild>
+            <Button variant="secondary" className="glass-subtle min-h-[44px] text-sm sm:text-base" asChild>
               <Link href="#phrase-book">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Sổ tay tiếng Việt

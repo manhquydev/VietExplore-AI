@@ -1,5 +1,5 @@
 /**
- * Enhanced Modern Card Component 2025 - VietExplore AI Admin
+ * Enhanced Modern Card Component 2025 - Du Lịch Việt AI Admin
  * Professional card design with advanced states and interactions
  */
 

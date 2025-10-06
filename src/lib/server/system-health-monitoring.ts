@@ -41,7 +41,7 @@ export interface SecurityMetrics {
 }
 
 /**
- * System Health Monitoring Service for VietExplore-AI
+ * System Health Monitoring Service for Du Lịch Việt-AI
  * Proactively monitors system performance and triggers admin notifications
  */
 export class SystemHealthMonitoringService {

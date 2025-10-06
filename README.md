@@ -1,4 +1,4 @@
-# 🇻🇳 VietExplore - Nền Tảng Du Lịch Việt Nam
+# 🇻🇳 Du Lịch Việt - Nền Tảng Du Lịch Việt Nam
 
 <div align="center">
 
@@ -36,7 +36,7 @@
 
 ## 🎯 Tổng Quan
 
-**VietExplore** là nền tảng du lịch cộng đồng cho phép người dùng:
+**Du Lịch Việt** là nền tảng du lịch cộng đồng cho phép người dùng:
 
 - 🗺️ **Khám phá** hàng nghìn địa điểm du lịch khắp Việt Nam
 - ✍️ **Đóng góp** thông tin địa điểm mới với hệ thống kiểm duyệt chuyên nghiệp
@@ -207,7 +207,7 @@ pending → claimed → in_review → approved/rejected/needs_revision
 ### Project Structure
 
 ```
-VietExplore-AI/
+Du Lịch Việt-AI/
 ├── src/
 │   ├── app/                    # Next.js 15 App Router
 │   │   ├── (routes)/          # Page routes
@@ -261,7 +261,7 @@ VietExplore-AI/
 
 ### Overview
 
-VietExplore sử dụng **session-based view tracking** với fingerprinting để đảm bảo tính chính xác.
+Du Lịch Việt sử dụng **session-based view tracking** với fingerprinting để đảm bảo tính chính xác.
 
 ### Cơ Chế Hoạt Động
 
@@ -432,8 +432,8 @@ Yêu cầu hệ thống:
 #### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/VietExplore-AI.git
-cd VietExplore-AI
+git clone https://github.com/your-username/Du Lịch Việt-AI.git
+cd Du Lịch Việt-AI
 ```
 
 #### 2. Install Dependencies
@@ -446,7 +446,7 @@ npm install
 
 **3.1. Create Firebase Project**
 - Go to [Firebase Console](https://console.firebase.google.com/)
-- Create new project: "VietExplore"
+- Create new project: "Du Lịch Việt"
 - Enable Firestore, Storage, Authentication, Realtime Database
 
 **3.2. Get Firebase Config**

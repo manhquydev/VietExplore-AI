@@ -1565,6 +1565,128 @@ const handleReportSubmit = async (reportData: ReportFormData) => {
 - Review modal (working example): [place-detail-content.tsx:568-584](src/components/place-detail-content.tsx#L568-L584)
 ---
 
+### ❌ Lesson 4: Missing Field Cleanup on Status Transitions (2025-01-06)
+
+**Problem:** Reports marked as `resolved` still displayed "Đang được điều tra bởi: [Moderator]" with stale SLA countdown in UI.
+
+**Root Cause:**
+- When resolving/dismissing reports, APIs updated `status` field but **did NOT delete claim-related fields** (`reviewerInfo`, `claimedAt`)
+- UI rendered stale data even though report was no longer `in_review`
+- Similar to race condition pattern (CLAUDE.md:499-592) but for manual actions instead of cron jobs
+
+**Evidence:**
+```typescript
+// ❌ BAD - resolve-with-action/route.ts:88-101
+await adminDb.collection('place_reports').doc(reportId).update({
+  status: 'resolved',  // Changed status
+  reviewedBy: user.id,
+  reviewedAt: now,
+  // BUT reviewerInfo, claimedAt NOT deleted → Stale UI data
+});
+
+// UI still shows (page.tsx:547)
+{report.reviewerInfo && (  // ❌ Never cleared on resolve!
+  <div>Đang được điều tra bởi: {report.reviewerInfo.name}</div>
+  <div>Còn {slaHours}h</div>  // Stale countdown
+)}
+```
+
+**Correct Pattern:**
+
+**1. API - Clean up claim fields when leaving `in_review` state:**
+```typescript
+import { FieldValue } from 'firebase-admin/firestore';
+
+// ✅ CORRECT - Delete fields on status exit
+await adminDb.collection('place_reports').doc(reportId).update({
+  status: 'resolved',
+  reviewedBy: user.id,
+  reviewedAt: now,
+  reviewNotes: action.notes,
+  updatedAt: now,
+  // ✅ Clear claim-related fields (prevent stale UI)
+  reviewerInfo: FieldValue.delete(),
+  claimedAt: FieldValue.delete()
+});
+```
+
+**2. UI - Defensive rendering with status check:**
+```typescript
+// ✅ CORRECT - Only show for in_review status
+{report.status === 'in_review' && report.reviewerInfo && (
+  <div className="bg-blue-50 rounded-lg p-3">
+    <div>Đang được điều tra bởi: {report.reviewerInfo.name}</div>
+    {report.claimedAt && <div>Tiếp nhận lúc: {formatDate(report.claimedAt)}</div>}
+  </div>
+)}
+```
+
+**Prevention Strategies:**
+
+1. ✅ **Field Cleanup Rule:** When transitioning OUT of a state, delete that state's specific fields
+   ```typescript
+   // Pattern for all status transitions:
+   if (newStatus !== 'claimed') {
+     updateData.claimExpiresAt = FieldValue.delete();
+     updateData.claimedBy = FieldValue.delete();
+     updateData.claimedAt = FieldValue.delete();
+   }
+
+   if (newStatus !== 'in_review') {
+     updateData.reviewerInfo = FieldValue.delete();
+     updateData.claimedAt = FieldValue.delete();
+   }
+   ```
+
+2. ✅ **UI Defensive Checks:** Always check status BEFORE rendering state-specific data
+   ```typescript
+   // ❌ BAD - Trusts field existence
+   {item.reviewerInfo && <ReviewerDisplay />}
+
+   // ✅ GOOD - Checks status first
+   {item.status === 'in_review' && item.reviewerInfo && <ReviewerDisplay />}
+   ```
+
+3. ✅ **Checklist for State Transitions:**
+   - [ ] Status field updated? ✅
+   - [ ] Previous state fields deleted? ✅
+   - [ ] New state fields added? ✅
+   - [ ] UI checks status before rendering? ✅
+   - [ ] Tested transition in both directions? ✅
+
+4. ✅ **Common State-Specific Fields to Clean:**
+   - `in_review` → `reviewerInfo`, `claimedAt`, `reviewNotes`
+   - `claimed` → `claimExpiresAt`, `claimedBy`, `claimedAt`
+   - `suspended` → `suspendedAt`, `suspensionReason`, `suspensionExpiresAt`
+   - `escalated` → `escalated`, `escalatedAt`, `escalatedBy`, `escalatedReason`
+
+**Why This Matters:**
+
+**Stale Data Symptoms:**
+- ❌ Resolved reports showing "Đang được điều tra bởi..."
+- ❌ SLA countdown on completed items
+- ❌ Lock icons on available reports
+- ❌ Incorrect moderator workload counts
+
+**Impact:**
+- Confusing UX (users see contradictory statuses)
+- Broken analytics (workload metrics include stale claims)
+- Wasted time debugging "ghost" states
+
+**Files Fixed (2025-01-06):**
+- `src/app/api/admin/reports/[reportId]/resolve-with-action/route.ts` - Added `FieldValue.delete()` for claim fields (lines 103-104)
+- `src/app/api/admin/reports/[reportId]/route.ts` - Added cleanup for resolve/dismiss actions (lines 96-99)
+- `src/app/admin/moderation/reports/page.tsx` - Added `status === 'in_review'` check (line 547)
+
+**Related Patterns:**
+- Cron Job Race Conditions (CLAUDE.md:499-592) - Use transactions + field deletion
+- Moderation Queue State Machine (CLAUDE.md:85-126) - Always clean up on state exit
+
+**Key Takeaway:**
+Status transitions are **TWO-WAY operations**: Update new state AND **delete old state fields**. UI should never trust field existence alone - always verify status first.
+
+---
+
 ## Place-Specific AI Chatbot Implementation (January 2025)
 
 ### ✅ Feature Successfully Implemented
@@ -2332,3 +2454,1073 @@ This bug affected **ALL AI responses** in the project:
 - ✅ Cleaner code (1 line vs 3 lines)
 - ✅ Matches official Genkit 1.0 API patterns
 - ✅ Future-proof (using documented API)
+
+---
+
+## Itinerary Planning Feature Removal (2025-01-06)
+
+### Decision: Complete Removal
+
+**User Request:** "AI Lập kế hoạch Chuyến đi tuy đã chốt phương án clear rồi nhưng vẫn đang tồn tại giao diện ở homepage"
+
+**Problem:** Despite previous decision to disable itinerary AI feature, multiple remnants still existed in the codebase.
+
+### Audit Results
+
+Found **3 separate itinerary-related features**:
+
+**1. AI Planner Component (Homepage)** - Mock UI only
+- `src/components/ai-planner.tsx` - Simple form collecting interests/budget/duration
+- Used in `src/app/page.tsx` lines 11, 42-46
+- No real AI backend, just setTimeout + mock response
+- **Action:** ✅ REMOVED
+
+**2. Itinerary Management System** - Full CRUD but unused
+- Pages: `/itineraries/my`, `/itineraries/[slug]`
+- API routes: `/api/itineraries/*`
+- Hook: `src/hooks/use-itineraries.ts`
+- Types: `src/lib/types/itineraries.ts`
+- Had complete backend but redundant with AI Travel Planner
+- **Action:** ✅ REMOVED
+
+**3. AI Travel Planner** (`/ai-assistant/plan`) - Mock despite having AI flow
+- 609-line page at `src/app/ai-assistant/plan/page.tsx`
+- AI flow existed: `src/ai/flows/generate-travel-itinerary.ts` (Genkit-based)
+- BUT page only used mock data (setTimeout 3s → return mockItinerary)
+- Flow was never called from UI
+- **Action:** ✅ REMOVED
+
+### Files Deleted
+
+**Components:**
+- `src/components/ai-planner.tsx`
+
+**Pages:**
+- `src/app/itineraries/` (entire directory)
+- `src/app/ai-assistant/plan/` (entire directory)
+
+**API Routes:**
+- `src/app/api/itineraries/` (entire directory)
+
+**Types & Hooks:**
+- `src/hooks/use-itineraries.ts`
+- `src/lib/types/itineraries.ts`
+
+**AI Flows:**
+- `src/ai/flows/generate-travel-itinerary.ts` (unused Genkit flow)
+
+**UI Updates:**
+- Removed AI Planner section from homepage (`src/app/page.tsx`)
+- Removed "Lịch trình của tôi" link from user dropdown (`src/components/header.tsx` line 175)
+
+### Build Verification
+
+```bash
+npm run build
+# ✅ Build succeeded
+# Route count: 68 pages (down from 70)
+# Warnings: Pre-existing FieldValue import issue only
+```
+
+### Key Learnings
+
+**❌ Mistake: Incomplete Feature Removal**
+- Previous removal only deleted `/itineraries/builder` but left:
+  - Homepage AI Planner component
+  - Itinerary management pages (`/my`, `/[slug]`)
+  - All API routes
+  - Navigation links
+
+**✅ Correct Approach:**
+1. **Audit thoroughly** - Use grep for all references (keywords: "itinerary", "lịch trình", etc.)
+2. **Check all layers:**
+   - UI components
+   - Page routes
+   - API routes
+   - Types/hooks
+   - Navigation/links
+   - AI flows
+3. **Verify implementation** - Don't assume AI flow exists means it's used (check actual calls)
+4. **Test build** - Ensure no import errors
+
+**Pattern for Future Feature Removal:**
+```bash
+# 1. Find all references
+grep -r "feature-name" src/
+
+# 2. Check pages
+ls src/app/*feature*
+
+# 3. Check APIs
+ls src/app/api/*feature*
+
+# 4. Check components
+grep -r "FeatureName" src/components/
+
+# 5. Check hooks/types
+ls src/hooks/*feature* src/lib/types/*feature*
+
+# 6. Check navigation
+grep -r "/feature" src/components/header.tsx
+
+# 7. Delete systematically
+rm -rf src/app/feature-name
+rm -rf src/app/api/feature-name
+rm src/hooks/use-feature.ts
+rm src/lib/types/feature.ts
+
+# 8. Build verification
+npm run build
+```
+
+### Why This Matters
+
+**Cost Savings:**
+- Removed ~1,500 lines of dead code
+- Reduced bundle size
+- Eliminated maintenance burden
+
+**Clarity:**
+- No confusing mock features
+- Clear project scope
+- Honest UX (no fake AI)
+
+---
+
+## ❌ Lesson Learned: API Response Structure Mismatch (2025-01-06)
+
+### Problem: `TypeError: Cannot read properties of undefined (reading 'map')`
+
+**Error Location:** `src/hooks/use-user-contributions.ts:64`
+
+**Root Cause:**
+- **Assumed API structure:** `{success: true, data: {drafts: [...]}}`
+- **Actual API structure:** `{success: true, data: [...]}`
+- Code tried to access `draftsResponse.data.drafts` but `data` was already the array
+
+**Evidence from logs:**
+```
+API Response for /places/my-drafts:
+{success: true, data: [], stats: {...}, total: 0}
+                      ^^^ Already array, not {drafts: []}
+```
+
+**Wrong Code:**
+```typescript
+const draftsResponse = await callApi<{success: boolean, data: {drafts: any[]}}>('/places/my-drafts')
+const drafts = draftsResponse.success ? draftsResponse.data.drafts : []  // ❌ .drafts undefined
+```
+
+**Fixed Code:**
+```typescript
+const draftsResponse = await callApi<{success: boolean, data: any[]}>('/places/my-drafts')
+const drafts = (draftsResponse.success && Array.isArray(draftsResponse.data))
+  ? draftsResponse.data
+  : []
+```
+
+### Prevention Strategies:
+
+1. **✅ Always Check API Response in Browser DevTools First**
+   - Open Network tab
+   - Check actual JSON response structure
+   - Don't assume structure based on API name
+
+2. **✅ Add Defensive Type Guards**
+   ```typescript
+   // ❌ BAD - Assumes structure
+   const items = response.data.items
+
+   // ✅ GOOD - Validates structure
+   const items = Array.isArray(response.data) ? response.data : []
+   ```
+
+3. **✅ Log Response in Development**
+   ```typescript
+   if (process.env.NODE_ENV === 'development') {
+     console.log('[Hook] API response:', response)
+   }
+   ```
+
+4. **✅ Use Zod/Type Validation for Critical APIs**
+   ```typescript
+   import { z } from 'zod'
+
+   const ResponseSchema = z.object({
+     success: z.boolean(),
+     data: z.array(z.any())
+   })
+
+   const validated = ResponseSchema.parse(response)
+   ```
+
+5. **✅ Check API Implementation**
+   - Read `src/app/api/places/my-drafts/route.ts`
+   - See actual `return NextResponse.json({...})` structure
+   - Match hook expectations with API reality
+
+### Common Pitfall Pattern:
+
+**Nested vs Flat Data Structure:**
+```typescript
+// Pattern 1: Nested (some APIs)
+{success: true, data: {items: [], total: 10}}
+
+// Pattern 2: Flat (other APIs)
+{success: true, data: [], total: 10}
+
+// Pattern 3: Paginated
+{success: true, data: {results: [], pagination: {}}}
+```
+
+**Always verify which pattern the API uses!**
+
+### Files Fixed:
+- `src/hooks/use-user-contributions.ts` - Added `Array.isArray()` check before `.map()`
+
+---
+
+## ❌ Lesson Learned: Empty/Whitespace Image URLs (2025-01-06)
+
+### Problem: `An empty string ("") was passed to the src attribute of <img>`
+
+**Error Location:** `src/app/profile/me/page.tsx:616-617`
+
+**Root Cause:**
+- Image URLs from API can be empty strings `""` or whitespace `" "`
+- Conditional check `images?.[0] &&` doesn't handle whitespace strings
+- Whitespace string `" "` is truthy → Image renders with invalid src
+- Browser downloads entire page when `src=""` or `src=" "`
+
+**Evidence:**
+```
+Error: An empty string ("") was passed to src attribute
+Location: page.tsx:616 (Image component in published places section)
+```
+
+**Why This Happens:**
+```javascript
+// API returns
+{images: [""]}      // Empty string
+{images: [" "]}     // Whitespace (TRUTHY!)
+{images: ["  \n"]}  // Whitespace with newline (TRUTHY!)
+
+// Conditional fails
+" " && <Image src=" " />  // ✅ Renders (whitespace is truthy)
+"" && <Image src="" />    // ❌ Doesn't render (empty is falsy)
+```
+
+**Wrong Code:**
+```typescript
+{draft.images?.[0] && (
+  <Image
+    src={draft.images[0]}  // ❌ Could be "", " ", or other whitespace
+    alt={draft.name}
+  />
+)}
+```
+
+**Fixed Code (Iteration 1 - Insufficient):**
+```typescript
+{draft.images?.[0]?.trim() && (
+  <Image
+    src={draft.images[0].trim()}  // ✅ Trim whitespace first
+    alt={draft.name}
+  />
+)}
+```
+
+**Issue with Fix #1:** Still failed! Error persisted because React might render with stale/partial data during hydration, causing timing issues where the conditional evaluates correctly but Image still receives empty src.
+
+**Fixed Code (Iteration 2 - Robust):**
+```typescript
+{draft.images?.[0]?.trim() && draft.images[0].trim().length > 0 && (
+  <Image
+    src={draft.images[0].trim()}  // ✅ Triple-validated: optional chaining + truthy + explicit length
+    alt={draft.name}
+  />
+)}
+
+// Why this works:
+// 1. draft.images?.[0] - Handles undefined/null array or element
+// 2. .trim() - Removes whitespace
+// 3. .trim().length > 0 - Explicit non-empty string check (not just truthy)
+```
+
+### Prevention Strategies:
+
+1. **✅ Always `.trim()` User-Generated URLs**
+   ```typescript
+   // ❌ BAD - Whitespace passes check
+   {imageUrl && <Image src={imageUrl} />}
+
+   // ✅ GOOD - Trim and check
+   {imageUrl?.trim() && <Image src={imageUrl.trim()} />}
+   ```
+
+2. **✅ Create Utility Function for Safe Image URLs**
+   ```typescript
+   function getSafeImageUrl(url: string | undefined | null): string | null {
+     if (!url) return null
+     const trimmed = url.trim()
+     if (!trimmed) return null
+     if (!trimmed.startsWith('http')) return null  // Extra safety
+     return trimmed
+   }
+
+   // Usage
+   const safeUrl = getSafeImageUrl(place.images?.[0])
+   {safeUrl && <Image src={safeUrl} alt={...} />}
+   ```
+
+3. **✅ Validate in Data Mapping Layer**
+   ```typescript
+   // In useUserContributions hook
+   images: (d.images || [])
+     .map(url => url?.trim())
+     .filter(url => url && url.length > 0)
+   ```
+
+4. **✅ Add Image Error Handling**
+   ```typescript
+   <Image
+     src={url}
+     alt={name}
+     onError={(e) => {
+       e.currentTarget.style.display = 'none'  // Hide broken images
+     }}
+   />
+   ```
+
+### Common Pitfall: Truthy vs Valid
+
+**Truthy doesn't mean valid!**
+```javascript
+// All TRUTHY but INVALID for Image src:
+" " → truthy
+"   \n  " → truthy
+"undefined" → truthy (string!)
+"null" → truthy (string!)
+
+// Solution: Explicit validation
+function isValidUrl(url: any): url is string {
+  return typeof url === 'string'
+    && url.trim().length > 0
+    && (url.startsWith('http') || url.startsWith('/'))
+}
+```
+
+### Files Fixed:
+- `src/app/profile/me/page.tsx` - Added robust validation (`.trim()` + `.length > 0`) for draft and published images (lines 566, 615)
+- `CLAUDE.md` - Documented iteration 1 failure and robust fix pattern
+
+---
+
+### ❌ Lesson 3: Type Mismatch - PlaceImage[] vs string[] (2025-01-06)
+
+**Problem:** `TypeError: place.images[0].trim is not a function` at `src/app/profile/me/page.tsx:615`
+
+**Root Cause Analysis:**
+
+1. **Schema Definition Mismatch:**
+   - Type definition: `Place.images: PlaceImage[]` (array of objects)
+   - `PlaceImage` structure: `{id, url, alt, caption, isPrimary, uploadedBy, createdAt, order?}`
+   - Component expected: `string[]` (array of URLs)
+
+2. **Data Flow Problem:**
+   ```typescript
+   // API returns:
+   {images: [{id: "...", url: "https://...", alt: "..."}, ...]}
+
+   // Hook mapped as-is:
+   images: p.images || []  // Still PlaceImage[]
+
+   // Component tried to call:
+   place.images[0].trim()  // ❌ PlaceImage object doesn't have .trim()
+   ```
+
+3. **Previous Fix Insufficient:**
+   - Iteration 1: Added `.trim()` and `.length > 0` checks
+   - Iteration 2: Still failed because checking `.trim()` on object = TypeError
+   - Root issue: **Type mismatch**, not empty string validation
+
+**Correct Fix Applied:**
+
+**1. Data Mapping Layer** (`src/hooks/use-user-contributions.ts`)
+```typescript
+// Helper function to extract image URLs from PlaceImage objects or string arrays
+const extractImageUrls = (images: any): string[] => {
+  if (!images || !Array.isArray(images)) return []
+
+  return images
+    .map((img: any) => {
+      // If already string (legacy data or draft), return as-is
+      if (typeof img === 'string') {
+        return img.trim()
+      }
+      // If PlaceImage object, extract url field
+      if (typeof img === 'object' && img !== null && typeof img.url === 'string') {
+        return img.url.trim()
+      }
+      return null
+    })
+    .filter((url): url is string => url !== null && url.length > 0)
+}
+
+// Usage in mapping:
+published: published.map((p: any) => ({
+  ...p,
+  images: extractImageUrls(p.images)  // ✅ Always returns string[]
+}))
+```
+
+**2. Component Layer** (`src/app/profile/me/page.tsx`)
+```typescript
+// BEFORE (Iteration 2 - Still failed):
+{place.images?.[0]?.trim() && place.images[0].trim().length > 0 && (
+  <Image src={place.images[0].trim()} />
+)}
+
+// AFTER (Type-safe):
+{typeof place.images?.[0] === 'string' && place.images[0].trim() && (
+  <Image src={place.images[0].trim()} />
+)}
+```
+
+**Why This Pattern Works:**
+
+1. **Data Layer Normalization:**
+   - Handles both `PlaceImage[]` (published places) and `string[]` (drafts)
+   - Extracts URL from objects, validates strings
+   - Filters out null/empty values upfront
+   - Returns consistent `string[]` type
+
+2. **Type-Safe Component Check:**
+   - `typeof place.images?.[0] === 'string'` - Explicit type guard
+   - Only calls `.trim()` if confirmed string type
+   - Prevents calling string methods on objects
+
+3. **Backward Compatible:**
+   - Works with legacy `string[]` data
+   - Works with new `PlaceImage[]` schema
+   - Gracefully handles mixed or malformed data
+
+**Key Lessons:**
+
+1. ✅ **Always verify data types match schema definitions**
+   - Check type definitions in `src/lib/types/*.ts`
+   - Verify API response structure matches component expectations
+   - Don't assume primitives - objects are common in normalized data
+
+2. ✅ **Normalize complex types at data layer, not UI layer**
+   - Extract primitive values (URLs, IDs) in hooks/services
+   - Keep component logic simple with primitives
+   - One source of truth for data transformation
+
+3. ✅ **Use explicit type guards before calling methods**
+   ```typescript
+   // ❌ BAD - Assumes type
+   value?.trim()
+
+   // ✅ GOOD - Verifies type first
+   typeof value === 'string' && value.trim()
+   ```
+
+4. ✅ **Helper functions for complex transformations**
+   - Encapsulate type checking + extraction logic
+   - Reusable across multiple mapping operations
+   - Document edge cases (legacy vs new schema)
+
+5. ✅ **Test with real API data, not mocks**
+   - Mocks hide schema mismatches
+   - Real data reveals object vs primitive issues
+   - Check browser console for actual response structure
+
+**Common Patterns to Avoid:**
+
+```typescript
+// ❌ Assuming primitive when schema says object
+interface Place {
+  images: PlaceImage[]  // Array of objects!
+}
+// Then doing:
+place.images[0].startsWith('http')  // ❌ Objects don't have .startsWith()
+
+// ✅ Extract primitive first
+const imageUrls = place.images.map(img => img.url)
+imageUrls[0].startsWith('http')  // ✅ Now it's a string
+```
+
+**Files Changed:**
+- `src/hooks/use-user-contributions.ts` - Added `extractImageUrls()` helper (lines 63-80)
+- `src/app/profile/me/page.tsx` - Type-safe conditionals (lines 566, 615)
+- `CLAUDE.md` - Documented type mismatch lesson
+
+**Prevention Checklist:**
+- [ ] Check type definitions before mapping API data
+- [ ] Add helper functions for object → primitive extraction
+- [ ] Use `typeof` guards before calling type-specific methods
+- [ ] Test with real API responses (check DevTools Network tab)
+- [ ] Handle both legacy and new schemas gracefully
+
+**Related Errors:**
+- `x.toUpperCase is not a function` → x is not a string
+- `x.map is not a function` → x is not an array
+- `x.url is undefined` → Forgot to extract from object
+
+**Quick Debug Pattern:**
+```typescript
+console.log('Type:', typeof value)
+console.log('Is array:', Array.isArray(value))
+console.log('Keys:', value && typeof value === 'object' ? Object.keys(value) : 'N/A')
+```
+
+---
+
+## ❌ Lesson Learned: Systematic Branding Update Across Codebase (2025-01-06)
+
+### Problem: Inconsistent Brand Name "VietExplore" vs "Du Lịch Việt"
+
+**User Request:** "trang địa điểm chi tiết đang hiển thị tiêu đề trang web, hiển thị trên tab của trình duyệt có 'VietExplore' nhưng hiện tôi đã đồng bộ dự án là 'Du Lịch Việt'. hãy sửa lại giúp tôi đồng thời tôi cần rà soát dự án sửa lại toàn bộ chỗ nào đang hiển thị là VietExplore thành Du Lịch Việt"
+
+**Root Cause:**
+- Project was initially developed with English branding "VietExplore"
+- Brand name appeared in 103 files across the codebase
+- Inconsistent branding affects SEO, user experience, and brand identity
+
+### Systematic Approach Applied:
+
+**1. Comprehensive Search (Find All Occurrences)**
+```bash
+# Find all source files containing old brand name
+grep -r "VietExplore" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"
+
+# Result: 49 source files found
+# Also checked: package.json, config files, markdown docs
+```
+
+**2. Bulk Replacement Strategy**
+```bash
+# Replace in all source files at once
+find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) -exec sed -i 's/VietExplore/Du Lịch Việt/g' {} \;
+
+# Replace in root markdown files
+find . -maxdepth 1 -type f -name "*.md" -exec sed -i 's/VietExplore/Du Lịch Việt/g' {} \;
+
+# Replace in scripts folder
+find scripts -type f \( -name "*.md" -o -name "*.js" \) -exec sed -i 's/VietExplore/Du Lịch Việt/g' {} \;
+```
+
+**3. Critical Files Manually Updated:**
+
+**a. Page Metadata** (`src/app/places/[...slug]/page.tsx`):
+```typescript
+// BEFORE:
+title: `${place.name} - ${place.province} | VietExplore`
+siteName: 'VietExplore'
+
+// AFTER:
+title: `${place.name} - ${place.province} | Du Lịch Việt`
+siteName: 'Du Lịch Việt'
+```
+
+**b. Share Functionality** (`src/components/place-detail-content.tsx`):
+```typescript
+// BEFORE:
+const shareData = {
+  title: `${place.name} - VietExplore`,
+  text: place.shortDescription,
+  url: window.location.href
+}
+
+// AFTER:
+const shareData = {
+  title: `${place.name} - Du Lịch Việt`,
+  text: place.shortDescription,
+  url: window.location.href
+}
+```
+
+**c. Sitemap Configuration** (`next-sitemap.config.js`):
+```javascript
+// BEFORE:
+siteUrl: process.env.SITE_URL || 'https://viet-explore-ai.vercel.app'
+alternateRefs: [
+  { href: 'https://viet-explore-ai.vercel.app', hreflang: 'vi' }
+]
+
+// AFTER:
+siteUrl: process.env.SITE_URL || 'https://www.dulichviet.tech'
+alternateRefs: [
+  { href: 'https://www.dulichviet.tech', hreflang: 'vi' }
+]
+```
+
+**d. Root Layout** (`src/app/layout.tsx`):
+```typescript
+// Already correct - verified:
+export const metadata: Metadata = {
+  title: 'Du Lịch Việt - Khám phá Việt Nam với trí tuệ nhân tạo',
+  description: 'Nền tảng du lịch thông minh, khám phá văn hóa Việt Nam với công nghệ AI tiên tiến',
+  authors: [{ name: 'Du Lịch Việt Team' }],
+  openGraph: {
+    title: 'Du Lịch Việt - Khám phá Việt Nam với trí tuệ nhân tạo',
+    // ...
+  }
+}
+```
+
+**4. Verification Steps:**
+```bash
+# Verify no more old branding in source
+grep -r "VietExplore" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"
+# Result: 0 matches
+
+# Count new branding occurrences
+grep -r "Du Lịch Việt" src/ --include="*.tsx" --include="*.ts" | wc -l
+# Result: 175 occurrences
+
+# Test production build
+npm run build
+# Result: ✓ Compiled successfully
+# Sitemap generated with new URLs: https://www.dulichviet.tech/sitemap-0.xml
+```
+
+### Files Changed Summary:
+
+**Source Files (49 files):**
+- Page metadata (places, admin, auth, etc.)
+- Components (notifications, modals, templates)
+- Utility libraries (URL helpers, design tokens, theme providers)
+- Server utilities (notification service, system health monitoring)
+- Test files (notification tests, test utils)
+- API routes (admin settings, address conversion, etc.)
+
+**Configuration Files:**
+- `next-sitemap.config.js` - Updated siteUrl and alternateRefs
+- `package.json` - Already correct ("Du-Lich-Viet")
+
+**Documentation Files:**
+- Root markdown files (README.md, DEPLOYMENT_GUIDE.md, etc.)
+- Scripts documentation
+
+### Key Lessons:
+
+1. ✅ **Use Bulk Operations for Systematic Changes:**
+   - `find` + `sed` is efficient for mass replacements
+   - Always verify with grep before and after
+   - Test build immediately after changes
+
+2. ✅ **Critical Metadata Locations to Check:**
+   - Page metadata (`generateMetadata()` functions)
+   - Share/social media data (Web Share API, Open Graph)
+   - Sitemap configuration (affects SEO indexing)
+   - Root layout metadata (default site-wide title)
+
+3. ✅ **Brand Consistency Checklist:**
+   - [ ] Browser tab title (`<title>` tag)
+   - [ ] Open Graph metadata (Facebook, LinkedIn)
+   - [ ] Twitter cards
+   - [ ] Share functionality text
+   - [ ] Sitemap URLs
+   - [ ] Error messages and notifications
+   - [ ] Email templates (if any)
+   - [ ] Documentation files
+
+4. ✅ **Testing After Branding Update:**
+   - Production build successful
+   - Sitemap regenerated with correct URLs
+   - Dev server running (verify tab title)
+   - Check browser DevTools for metadata
+   - Test Web Share API (mobile)
+
+### Prevention Strategy:
+
+**When Starting New Projects:**
+1. ✅ Define brand name in central config file (e.g., `src/config/branding.ts`)
+2. ✅ Import from config instead of hardcoding strings
+3. ✅ Use environment variables for URLs
+
+**Example Best Practice:**
+```typescript
+// src/config/branding.ts
+export const BRANDING = {
+  name: process.env.NEXT_PUBLIC_BRAND_NAME || 'Du Lịch Việt',
+  shortName: 'DLV',
+  tagline: 'Khám phá Việt Nam với trí tuệ nhân tạo',
+  siteUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://www.dulichviet.tech',
+  author: 'Du Lịch Việt Team'
+} as const;
+
+// Usage in components:
+import { BRANDING } from '@/config/branding';
+
+const shareData = {
+  title: `${place.name} - ${BRANDING.name}`,
+  url: window.location.href
+};
+```
+
+### Build Output:
+
+```
+✓ Generating static pages (68/68)
+✅ [next-sitemap] Generation completed
+
+SITEMAP INDICES
+   ○ https://www.dulichviet.tech/sitemap.xml
+
+SITEMAPS
+   ○ https://www.dulichviet.tech/sitemap-0.xml
+```
+
+**Result:**
+- ✅ All 103 files updated successfully
+- ✅ Production build passes (68 static pages)
+- ✅ Sitemap generated with new brand URLs
+- ✅ Dev server running on http://localhost:9004
+- ✅ Browser tab now shows "Du Lịch Việt" correctly
+
+---
+
+## ✅ Best Practice: Display Real Contributor Information (2025-01-07)
+
+### Problem Statement
+
+Place detail pages showed generic "Cộng đồng" contributor label instead of actual user data, hiding valuable information about who contributed the content.
+
+### Root Cause
+
+**Data Flow Gap:**
+1. **API Layer:** `/api/places/[id]` returned place data but didn't fetch author user info
+2. **SSR Layer:** `page.tsx` fetched place from Firestore but didn't join with users collection
+3. **UI Layer:** Component had contributor card but received no real user data
+4. **Fallback Logic:** Used `place.source.partnerName || 'Cộng đồng'` which rarely had data
+
+**Why This Matters:**
+- Contributors deserve recognition for their work
+- Users want to know source credibility
+- Trust signals (verified badges, contribution stats) were hidden
+- No way to view contributor's profile or other contributions
+
+### Solution Architecture
+
+**Three-Layer Enhancement:**
+
+**1. API Data Enrichment** (`src/app/api/places/[id]/route.ts`)
+```typescript
+// Fetch author user data
+let authorInfo = null;
+if (placeData.createdBy) {
+  try {
+    const userDoc = await adminDb.collection('users').doc(placeData.createdBy).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      authorInfo = {
+        id: userDoc.id,
+        fullName: userData?.fullName || 'Người đóng góp',
+        username: userData?.username || `user_${userDoc.id.slice(0, 8)}`,
+        avatar: userData?.avatar || null,
+        role: userData?.role || 'contributor',
+        verified: userData?.verified || false,
+        emailVerified: userData?.emailVerified || false,
+        badges: userData?.badges || [],
+        stats: {
+          placesContributed: userData?.stats?.placesContributed || 0,
+          reviewsWritten: userData?.stats?.reviewsWritten || 0,
+          helpfulVotesReceived: userData?.stats?.helpfulVotesReceived || 0
+        }
+      };
+    }
+  } catch (error) {
+    console.error('[API] Error fetching author info:', error);
+    // Continue without author info - will use fallback in UI
+  }
+}
+
+return NextResponse.json({
+  success: true,
+  data: {
+    ...placeData,
+    authorInfo: authorInfo  // ✅ Added
+  }
+});
+```
+
+**2. SSR Data Fetching** (`src/app/places/[...slug]/page.tsx`)
+```typescript
+// Same user fetch logic in getPlaceData()
+// Ensures SSR pages have author info for SEO
+const userDoc = await adminDb.collection('users').doc(place.createdBy).get();
+// ... build authorInfo object
+
+return {
+  ...placeData,
+  authorInfo: authorInfo,  // ✅ Added
+  authorName: authorInfo?.fullName || 'Cộng đồng',
+  authorRole: authorInfo?.role || 'contributor'
+};
+```
+
+**3. UI Component Enhancement** (`src/components/place-detail-content.tsx`)
+```typescript
+{place.authorInfo ? (
+  <>
+    <Link href={`/profile/${place.authorInfo.username}`} className="...">
+      <Avatar className="h-12 w-12 border-2 border-purple-200">
+        {place.authorInfo.avatar ? (
+          <AvatarImage src={place.authorInfo.avatar} alt={place.authorInfo.fullName} />
+        ) : null}
+        <AvatarFallback className="bg-purple-100 text-purple-700">
+          {place.authorInfo.fullName.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{place.authorInfo.fullName}</span>
+          {place.authorInfo.verified && (
+            <CheckCircle className="h-4 w-4 text-blue-500" title="Đã xác thực" />
+          )}
+        </div>
+        <ProfessionalRoleBadge role={place.authorInfo.role} />
+        <div className="text-xs text-gray-500 flex gap-3">
+          <span>{place.authorInfo.stats.placesContributed} địa điểm</span>
+          <span>{place.authorInfo.stats.reviewsWritten} đánh giá</span>
+        </div>
+      </div>
+    </Link>
+
+    {/* Badges display */}
+    {place.authorInfo.badges?.length > 0 && (
+      <div className="flex flex-wrap gap-1">
+        {place.authorInfo.badges.map((badge) => (
+          <Badge variant="secondary" className="text-xs">
+            <Award className="h-3 w-3 mr-1" />
+            {badge}
+          </Badge>
+        ))}
+      </div>
+    )}
+  </>
+) : (
+  // Fallback for missing/deleted users
+  <div className="flex items-center gap-3">
+    <div className="h-10 w-10 bg-purple-100 rounded-full">
+      <User className="h-5 w-5 text-purple-600" />
+    </div>
+    <div>
+      <div className="font-medium">{place.authorName}</div>
+      <div className="text-sm text-gray-500">{place.authorRole}</div>
+    </div>
+  </div>
+)}
+```
+
+### TypeScript Interface Updates
+
+**Extended PlaceData Interface:**
+```typescript
+interface PlaceData {
+  // ... existing fields
+  authorRole: "contributor" | "partner" | "admin" | "moderator"  // ✅ Extended
+  authorName: string
+  authorInfo?: {  // ✅ NEW
+    id: string
+    fullName: string
+    username: string
+    avatar: string | null
+    role: "contributor" | "partner" | "admin" | "moderator" | "traveler"
+    verified: boolean
+    emailVerified: boolean
+    badges: string[]
+    stats: {
+      placesContributed: number
+      reviewsWritten: number
+      helpfulVotesReceived: number
+    }
+  } | null
+}
+```
+
+### UX Improvements Delivered
+
+**Before:**
+- Generic "Cộng đồng" label
+- Static purple icon
+- No user identification
+- No trust signals
+
+**After:**
+- ✅ **Real Avatar:** User photo or fallback initials
+- ✅ **Full Name:** Clickable link to profile
+- ✅ **Role Badge:** Visual indicator (Contributor/Partner/Admin)
+- ✅ **Verification Badge:** Blue checkmark for verified users
+- ✅ **Contribution Stats:** "X địa điểm • Y đánh giá"
+- ✅ **Achievements:** Badge display (if user has earned any)
+- ✅ **Profile Link:** Navigate to user's full profile page
+- ✅ **Hover Effect:** Purple background on link hover
+
+### Error Handling & Edge Cases
+
+**Graceful Degradation:**
+```typescript
+// User deleted/not found
+if (!userDoc.exists) {
+  authorInfo = null;  // Falls back to generic UI
+}
+
+// Missing avatar
+<AvatarFallback>
+  {fullName.charAt(0).toUpperCase()}  // Show initials
+</AvatarFallback>
+
+// No stats
+stats: {
+  placesContributed: userData?.stats?.placesContributed || 0,  // Default to 0
+  reviewsWritten: userData?.stats?.reviewsWritten || 0,
+  helpfulVotesReceived: userData?.stats?.helpfulVotesReceived || 0
+}
+
+// Missing badges
+{place.authorInfo.badges && place.authorInfo.badges.length > 0 && (
+  // Only render if badges exist
+)}
+```
+
+### Performance Considerations
+
+**Additional Query Cost:**
+- **+1 Firestore read** per place view (users collection)
+- **Caching opportunity:** User data changes infrequently → can cache for 1 hour
+- **SSR benefit:** User info included in initial HTML → no client-side fetch needed
+
+**Optimization Strategies:**
+```typescript
+// Future enhancement: Add caching layer
+const cachedUser = await cache.get(`user:${userId}`);
+if (cachedUser) return cachedUser;
+
+const userDoc = await adminDb.collection('users').doc(userId).get();
+await cache.set(`user:${userId}`, userData, { ttl: 3600 }); // 1 hour
+```
+
+### Testing Checklist
+
+**User Role Scenarios:**
+- [x] Place created by contributor → Shows Contributor badge
+- [x] Place created by partner → Shows Partner badge
+- [x] Place created by admin → Shows Admin badge
+- [x] Place created by verified user → Shows blue checkmark
+- [x] Place created by deleted user → Shows generic fallback
+
+**UI/UX Tests:**
+- [x] Avatar renders correctly (photo or initials)
+- [x] Username link navigates to `/profile/{username}`
+- [x] Stats count accurately (places, reviews)
+- [x] Badges display when present
+- [x] Hover effect on contributor card works
+- [x] Responsive layout on mobile
+
+**Data Integrity:**
+- [x] SSR includes author info (view page source)
+- [x] API returns authorInfo field
+- [x] No TypeScript errors in modified files
+- [x] Build completes successfully
+
+### Key Lessons Learned
+
+**✅ Data Joining Best Practices:**
+1. **Join at API/SSR layer** - Don't expose raw Firestore queries to client
+2. **Enrich before returning** - Transform data to include related entities
+3. **Graceful fallbacks** - Always handle missing/deleted related data
+4. **Type safety** - Define clear interfaces for joined data
+
+**✅ User Attribution Pattern:**
+```typescript
+// Standard pattern for content with authors:
+1. Store userId in content document (createdBy field)
+2. Fetch user data when fetching content
+3. Include user info in response (authorInfo object)
+4. Display with Avatar, role badge, stats
+5. Link to user profile for full details
+```
+
+**✅ UI Component Structure:**
+```typescript
+// Conditional rendering pattern:
+{richDataAvailable ? (
+  <EnhancedDisplay with={richData} />
+) : (
+  <SimpleDisplay with={fallbackData} />
+)}
+
+// Never assume data exists - always check
+place.authorInfo?.stats?.placesContributed || 0
+```
+
+**❌ Common Pitfalls to Avoid:**
+
+1. **Don't fetch in component** - Do it in API/SSR layer
+   ```typescript
+   // ❌ BAD - Client-side fetch creates loading states
+   useEffect(() => {
+     fetch(`/api/users/${place.createdBy}`)
+   }, [])
+
+   // ✅ GOOD - Server-side join
+   const placeData = await getPlace(id);  // Already has authorInfo
+   ```
+
+2. **Don't assume user exists** - Always use optional chaining
+   ```typescript
+   // ❌ BAD - Crashes if user deleted
+   <Avatar src={place.authorInfo.avatar} />
+
+   // ✅ GOOD - Graceful fallback
+   {place.authorInfo ? <Avatar src={place.authorInfo.avatar} /> : <DefaultIcon />}
+   ```
+
+3. **Don't skip SSR enrichment** - Breaks SEO
+   ```typescript
+   // ❌ BAD - Only enriches in API, not SSR
+   // User sees "Cộng đồng" on first load
+
+   // ✅ GOOD - Enrich in both API and SSR
+   // User sees real name immediately, search engines index it
+   ```
+
+### Files Modified
+
+- `src/app/api/places/[id]/route.ts` - Added user data fetch (lines 61-88)
+- `src/app/places/[...slug]/page.tsx` - Added user data fetch in SSR (lines 118-145), updated interface (lines 47-61)
+- `src/components/place-detail-content.tsx` - Enhanced contributor card UI (lines 1357-1450), updated interface (lines 115-129), imported Avatar components (line 75)
+
+### Future Enhancements
+
+**Phase 2 Ideas:**
+- Add caching layer for user data (reduce Firestore reads)
+- Show "Top Contributor" badge for users with 50+ places
+- Display recent activity ("Last active: 2 days ago")
+- Add "Follow" button on contributor card
+- Show contributor's other places in this region
+- Implement contributor leaderboard
+
+**Analytics Tracking:**
+- Track profile link clicks from place pages
+- Measure contributor attribution impact on trust signals
+- A/B test: Generic vs Real contributor display
+
+### Related Patterns
+
+**Similar Features Using This Pattern:**
+- Review author attribution (already implemented)
+- Report submitter info (for moderators only)
+- Edit request creator display
+- Comment author display (future)
+
+**Reusable Components Created:**
+- Avatar with fallback initials
+- ProfessionalRoleBadge
+- User stats display pattern
+
+---

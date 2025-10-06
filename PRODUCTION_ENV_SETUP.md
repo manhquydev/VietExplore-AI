@@ -1,7 +1,7 @@
 # 🔐 Production Environment Variables Setup Guide
 
 **Date:** 2025-10-05
-**Project:** VietExplore AI
+**Project:** Du Lịch Việt AI
 **Status:** ✅ Firebase Rules Deployed | ⚠️ Credentials Need Rotation
 
 ---

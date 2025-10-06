@@ -86,25 +86,27 @@ export function PlaceClassificationBadge({
         return {
           label: 'Miền Bắc',
           bgColor: 'bg-gradient-to-r from-red-500 to-red-600',
-          textColor: 'text-red-900'
+          textColor: 'text-white'
         }
       case 'trung-bo':
         return {
           label: 'Miền Trung',
           bgColor: 'bg-gradient-to-r from-yellow-500 to-amber-500',
-          textColor: 'text-yellow-900'
+          textColor: 'text-white'
         }
       case 'nam-bo':
         return {
           label: 'Miền Nam',
           bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
-          textColor: 'text-green-900'
+          textColor: 'text-white'
         }
       default:
         return {
           label: 'Việt Nam',
-          bgColor: 'bg-gradient-to-r from-gray-500 to-gray-600',
-          textColor: 'text-gray-900'
+          // Inspired by Vietnamese national flag (red background + golden star)
+          // and traditional lacquer art (cinnabar red + gold leaf)
+          bgColor: 'bg-gradient-to-r from-red-600 via-red-500 to-amber-500',
+          textColor: 'text-white'
         }
     }
   }
@@ -152,12 +154,19 @@ export function PlaceClassificationBadge({
 
       {/* Region Badge */}
       <div className={cn(
-        "inline-flex items-center font-semibold rounded-full text-white shadow-md transition-all duration-300 hover:shadow-lg",
+        "inline-flex items-center font-semibold rounded-full shadow-md transition-all duration-300 hover:shadow-lg",
         regionInfo.bgColor,
-        sizeClasses.container
+        regionInfo.textColor,
+        sizeClasses.container,
+        // Special gold shimmer effect for Vietnam badge
+        regionInfo.label === 'Việt Nam' && "hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105"
       )}>
         {showIcons && (
-          <Navigation className={sizeClasses.icon} />
+          <Navigation className={cn(
+            sizeClasses.icon,
+            // Gold glow for Vietnam badge icon
+            regionInfo.label === 'Việt Nam' && "text-amber-200"
+          )} />
         )}
         <span className="font-semibold tracking-wide">
           {regionInfo.label}

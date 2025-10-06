@@ -1,5 +1,5 @@
 /**
- * Enhanced Places Management Page 2025 - VietExplore AI Admin
+ * Enhanced Places Management Page 2025 - Du Lịch Việt AI Admin
  * Modern places management with advanced filtering and data table
  */
 

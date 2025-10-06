@@ -439,7 +439,7 @@ export default function TemplateDemoPage() {
               Sẵn sàng áp dụng vào dự án?
             </h2>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Tất cả 3 template đều được thiết kế theo chuẩn của VietExplore-AI và sẵn sàng tích hợp
+              Tất cả 3 template đều được thiết kế theo chuẩn của Du Lịch Việt-AI và sẵn sàng tích hợp
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">

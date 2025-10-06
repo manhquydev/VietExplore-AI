@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://viet-explore-ai.vercel.app',
+  siteUrl: process.env.SITE_URL || 'https://www.dulichviet.tech',
   generateRobotsTxt: true,
   changefreq: 'daily',
   priority: 0.7,
@@ -23,11 +23,11 @@ module.exports = {
   // Cấu hình đa ngôn ngữ
   alternateRefs: [
     {
-      href: 'https://viet-explore-ai.vercel.app',
+      href: 'https://www.dulichviet.tech',
       hreflang: 'vi',
     },
     {
-      href: 'https://viet-explore-ai.vercel.app/en',
+      href: 'https://www.dulichviet.tech/en',
       hreflang: 'en',
     },
   ],
@@ -386,7 +386,7 @@ module.exports = {
     ],
     additionalSitemaps: [
       // Có thể thêm sitemap cho images, videos sau này
-      // 'https://viet-explore-ai.vercel.app/sitemap-images.xml'
+      // 'https://www.dulichviet.tech/sitemap-images.xml'
     ],
   },
 }

@@ -31,8 +31,8 @@ const db = admin.firestore();
 // Default admin configuration
 const defaultAdminConfig = {
   email: 'admin@vietexplore.ai',
-  password: 'VietExplore2024!Admin',
-  fullName: 'VietExplore Admin',
+  password: 'Du Lịch Việt2024!Admin',
+  fullName: 'Du Lịch Việt Admin',
   username: 'admin'
 };
 
@@ -68,7 +68,7 @@ async function createSingleAdmin(customConfig = {}) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       profile: {
-        bio: 'Administrator of VietExplore AI platform',
+        bio: 'Administrator of Du Lịch Việt AI platform',
         location: 'Vietnam'
       },
       stats: {
@@ -157,7 +157,7 @@ function getAdminConfigFromArgs() {
 
 // Run the script
 if (require.main === module) {
-  console.log('👤 VietExplore AI - Create Single Admin User');
+  console.log('👤 Du Lịch Việt AI - Create Single Admin User');
   console.log('==========================================');
   
   const customConfig = getAdminConfigFromArgs();

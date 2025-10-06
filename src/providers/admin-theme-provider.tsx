@@ -1,5 +1,5 @@
 /**
- * Admin-Scoped Theme Provider 2025 - VietExplore AI Admin
+ * Admin-Scoped Theme Provider 2025 - Du Lịch Việt AI Admin
  * Theme provider chỉ áp dụng cho admin area, không ảnh hưởng homepage
  */
 

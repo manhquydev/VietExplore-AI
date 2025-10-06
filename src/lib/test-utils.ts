@@ -1,5 +1,5 @@
 /**
- * Test utilities for VietExplore-AI backend testing
+ * Test utilities for Du Lịch Việt-AI backend testing
  */
 
 export const TEST_CONFIG = {

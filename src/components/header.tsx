@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoginModal } from "@/components/auth/login-modal"
@@ -82,23 +82,23 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95  border-b border-slate-200  shadow-soft">
       <div className="container mx-auto">
-        <div className="flex h-16 sm:h-20 items-center justify-between">
-          {/* New Bánh Chưng Logo */}
+        <div className="flex h-14 sm:h-16 md:h-20 items-center justify-between">
+          {/* New Bánh Chưng Logo - Mobile Optimized */}
           <Link href="/" className="flex items-center hover:scale-105 transition-all duration-200 group">
-            <div className="relative p-1 sm:p-2">
-              <Logo variant="horizontal" size="md" className="h-10 sm:h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" priority />
+            <div className="relative p-1 sm:p-1.5 md:p-2">
+              <Logo variant="horizontal" size="md" className="h-8 sm:h-10 md:h-12 lg:h-16 drop-shadow-sm group-hover:drop-shadow-md transition-all duration-200" priority />
               <div className="absolute inset-0 bg-gradient-to-r from-brand-green/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10"></div>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+          <nav className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-[15px] font-medium transition-colors hover:text-slate-900 ",
+                  "text-sm md:text-[15px] font-medium transition-colors hover:text-slate-900 ",
                   pathname === item.href
                     ? "text-slate-900  font-semibold"
                     : "text-slate-600 "
@@ -110,30 +110,30 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Notification Bell */}
             {isAuthenticated && user && <NotificationBell />}
             
-            {/* Enhanced Authenticated User Menu */}
+            {/* Enhanced Authenticated User Menu - Mobile Optimized */}
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 hover:scale-105 transition-all duration-200">
+                  <Button variant="ghost" className="relative h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 rounded-full p-0 hover:scale-105 transition-all duration-200">
                     <div className="relative">
-                      <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200">
+                      <Avatar className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200">
                         <AvatarImage src={user.avatar} alt={user.fullName || "User Avatar"} />
-                        <AvatarFallback className="bg-gradient-to-br from-green-700 to-amber-600 text-white font-semibold shadow-inner">
+                        <AvatarFallback className="bg-gradient-to-br from-green-700 to-amber-600 text-white font-semibold text-xs sm:text-sm shadow-inner">
                           {getInitials(user.fullName, user.email)}
                         </AvatarFallback>
                       </Avatar>
-                      {/* Online status indicator */}
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
+                      {/* Online status indicator - Slightly smaller on mobile */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  className="w-80 p-0 glass-card border-slate-200/50 shadow-xl" 
-                  align="end" 
+                <DropdownMenuContent
+                  className="w-72 sm:w-80 p-0 glass-card border-slate-200/50 shadow-xl"
+                  align="end"
                   forceMount
                   sideOffset={8}
                 >
@@ -304,20 +304,24 @@ export const Header: React.FC = () => {
                   />
                 </div>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-white/95  backdrop-blur-md border-slate-200/50 /50">
-                <div className="flex flex-col gap-4 mt-8">
-                  {/* Mobile Navigation */}
-                  <nav className="flex flex-col gap-4">
+              <SheetContent side="right" className="w-[280px] sm:w-[320px] bg-white/95  backdrop-blur-md border-slate-200/50 /50">
+                <SheetTitle className="sr-only">Menu điều hướng</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Truy cập các trang chính và quản lý tài khoản của bạn
+                </SheetDescription>
+                <div className="flex flex-col gap-4 mt-6">
+                  {/* Mobile Navigation - Touch-friendly */}
+                  <nav className="flex flex-col gap-2">
                     {navigation.map((item) => (
                       <Link
                         key={item.name}
                         href={item.href}
                         onClick={() => setIsOpen(false)}
                         className={cn(
-                          "text-base font-medium transition-colors hover:text-slate-900  py-2",
+                          "text-base font-medium transition-colors hover:text-slate-900 min-h-[44px] flex items-center px-3 py-2.5 rounded-lg",
                           pathname === item.href
-                            ? "text-slate-900  font-semibold"
-                            : "text-slate-600 "
+                            ? "text-slate-900 font-semibold bg-primary/10"
+                            : "text-slate-600 hover:bg-slate-100/50"
                         )}
                       >
                         {item.name}
@@ -346,9 +350,9 @@ export const Header: React.FC = () => {
                             />
                           </div>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          className="w-full glass-subtle hover:bg-red-50" 
+                        <Button
+                          variant="outline"
+                          className="w-full glass-subtle hover:bg-red-50 min-h-[44px]"
                           onClick={handleLogout}
                         >
                           <LogOut className="w-4 h-4 mr-2" />
@@ -357,10 +361,10 @@ export const Header: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Button className="w-full bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white shadow-lg" onClick={openLoginModal}>
+                        <Button className="w-full bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white shadow-lg min-h-[44px]" onClick={openLoginModal}>
                           Bắt đầu với AI
                         </Button>
-                        <Button variant="outline" className="w-full glass-subtle" onClick={openRegisterModal}>
+                        <Button variant="outline" className="w-full glass-subtle min-h-[44px]" onClick={openRegisterModal}>
                           Tạo tài khoản
                         </Button>
                       </>

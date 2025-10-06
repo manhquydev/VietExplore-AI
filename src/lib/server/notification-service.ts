@@ -688,7 +688,7 @@ export class NotificationService {
       userId,
       'place_published',
       '🎉 Địa điểm của bạn đã được xuất bản',
-      `"${placeName}" hiện đã có mặt trên VietExplore và mọi người có thể khám phá!`,
+      `"${placeName}" hiện đã có mặt trên Du Lịch Việt và mọi người có thể khám phá!`,
       {
         placeId,
         placeName,

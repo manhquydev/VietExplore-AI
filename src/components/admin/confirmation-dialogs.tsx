@@ -1,5 +1,5 @@
 /**
- * VietExplore AI - Professional Admin Confirmation Dialogs
+ * Du Lịch Việt AI - Professional Admin Confirmation Dialogs
  * Replace prompt() with proper modal confirmations
  */
 

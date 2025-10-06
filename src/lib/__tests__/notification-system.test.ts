@@ -1,5 +1,5 @@
 /**
- * Comprehensive Test Suite for VietExplore-AI Notification System
+ * Comprehensive Test Suite for Du Lịch Việt-AI Notification System
  * Tests both Phase 1 (User Interactions) and Phase 2 (Admin/Moderator) notifications
  */
 
@@ -34,7 +34,7 @@ jest.mock('../server/firebaseAdmin', () => ({
   })
 }));
 
-describe('VietExplore-AI Notification System Tests', () => {
+describe('Du Lịch Việt-AI Notification System Tests', () => {
   
   // =====================================================================
   // PHASE 1: USER INTERACTION NOTIFICATIONS TESTS

@@ -64,7 +64,7 @@ export const logoColorPalettes = {
     }
   },
 
-  // Logo 3: Minimal Tech Style - "VietExplore.AI"
+  // Logo 3: Minimal Tech Style - "Du Lịch Việt.AI"
   minimal: {
     primary: {
       techBlue: '#3B82F6',       // Clean tech primary

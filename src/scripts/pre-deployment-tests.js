@@ -398,7 +398,7 @@ class TestSuite {
   }
 
   async run() {
-    console.log('🚀 VietExplore AI - Pre-deployment Test Suite');
+    console.log('🚀 Du Lịch Việt AI - Pre-deployment Test Suite');
     console.log('==============================================');
     console.log(`Started at: ${new Date().toISOString()}\n`);
     

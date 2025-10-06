@@ -128,7 +128,7 @@ Các hoạt động phổ biến tại đây bao gồm tắm biển, lướt só
   ],
   trustLevel: "verified",
   authorRole: "admin",
-  authorName: "VietExplore Team",
+  authorName: "Du Lịch Việt Team",
   createdAt: "2024-01-15",
   updatedAt: "2024-12-01",
   stats: {

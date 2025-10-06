@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       // Tạo settings mặc định nếu chưa có
       const defaultSettings: SystemSettings = {
         general: {
-          siteName: 'VietExplore AI',
+          siteName: 'Du Lịch Việt AI',
           siteDescription: 'Discover beautiful địa điểm across Vietnam with AI-powered recommendations',
           maintenanceMode: false,
           registrationEnabled: true

@@ -25,7 +25,7 @@ Allow: /
 Crawl-delay: 1
 
 # Host
-Host: https://viet-explore-ai.vercel.app
+Host: https://www.dulichviet.tech
 
 # Sitemaps
-Sitemap: https://viet-explore-ai.vercel.app/sitemap.xml
+Sitemap: https://www.dulichviet.tech/sitemap.xml

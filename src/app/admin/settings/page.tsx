@@ -230,7 +230,7 @@ export default function AdminSettingsPage() {
                     </Label>
                     <Input
                       id="siteName"
-                      value={settings?.general?.siteName || 'VietExplore AI'}
+                      value={settings?.general?.siteName || 'Du Lịch Việt AI'}
                       onChange={(e) => handleSettingChange('general', 'siteName', e.target.value)}
                       placeholder="Nhập tên trang web của bạn"
                     />

@@ -1,5 +1,5 @@
 /**
- * VietExplore AI - Professional Admin Loading States
+ * Du Lịch Việt AI - Professional Admin Loading States
  * Elegant loading components to replace spinners and improve UX
  */
 

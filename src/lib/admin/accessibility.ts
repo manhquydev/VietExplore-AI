@@ -1,5 +1,5 @@
 /**
- * VietExplore AI - Admin Accessibility Utilities
+ * Du Lịch Việt AI - Admin Accessibility Utilities
  * WCAG 2.1 AA compliance helpers and focus management
  */
 

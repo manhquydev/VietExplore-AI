@@ -114,23 +114,23 @@ export default function Error({
                         Tiếp tục hành trình khám phá Việt Nam
                       </p>
                       <div className="space-y-2">
-                        <Link 
-                          href="/places" 
+                        <Link
+                          href="/places"
                           className="block text-sm text-muted hover:text-primary transition-colors py-1"
                         >
-                          Tất cả địa điểm
+                          Khám phá địa điểm
                         </Link>
-                        <Link 
-                          href="/itineraries/builder" 
+                        <Link
+                          href="/ai-assistant/chat"
                           className="block text-sm text-muted hover:text-primary transition-colors py-1"
                         >
-                          Tạo lịch trình
+                          Trò chuyện với AI
                         </Link>
-                        <Link 
-                          href="/ai-assistant/chat" 
+                        <Link
+                          href="/community"
                           className="block text-sm text-muted hover:text-primary transition-colors py-1"
                         >
-                          AI trợ lý
+                          Cộng đồng
                         </Link>
                       </div>
                     </CardContent>

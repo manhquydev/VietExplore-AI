@@ -3,6 +3,7 @@ import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { RealtimeService } from '@/lib/firebase/realtime';
 import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-service';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // POST /api/admin/reports/[reportId]/resolve-with-action
 // Resolve report + Execute action on place (atomic operation)
@@ -97,7 +98,10 @@ export async function POST(
           executedAt: now,
           executedBy: user.id,
           ...(action.suspendDuration && { suspendDuration: action.suspendDuration })
-        }
+        },
+        // ✅ Clear claim-related fields when resolved (prevent stale UI data)
+        reviewerInfo: FieldValue.delete(),
+        claimedAt: FieldValue.delete()
       });
 
       console.log(`[RESOLVE-WITH-ACTION] Report ${reportId} marked as resolved`);

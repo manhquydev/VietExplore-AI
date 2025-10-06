@@ -1,5 +1,5 @@
 /**
- * Enhanced Theme Provider 2025 - VietExplore AI Admin
+ * Enhanced Theme Provider 2025 - Du Lịch Việt AI Admin
  * Advanced theme management with design tokens integration
  * Supports multiple color schemes, animations, and accessibility features
  */

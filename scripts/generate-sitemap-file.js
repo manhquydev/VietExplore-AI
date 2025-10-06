@@ -155,7 +155,7 @@ function printTreeToArray(tree, output, prefix = '', isLast = true, level = 0) {
 function generateSitemapTreeFile() {
   const output = [];
   
-  output.push('🌳 VietExplore-AI Sitemap Tree Generator');
+  output.push('🌳 Du Lịch Việt-AI Sitemap Tree Generator');
   output.push('==================================================');
   output.push('');
   

@@ -1,5 +1,5 @@
 /**
- * Enhanced Color System 2025 - VietExplore AI Admin
+ * Enhanced Color System 2025 - Du Lịch Việt AI Admin
  * Inspired by Stripe, Linear, and modern design systems
  * Optimized for admin productivity and accessibility
  */

@@ -127,123 +127,126 @@ export default function PlacesPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/50 to-teal-50 ">
       <Header />
       
-      <main className="min-h-screen pt-16">
-        {/* Compact Hero Section */}
-        <section className="relative py-8 sm:py-12 overflow-hidden">
+      <main className="min-h-screen pt-14 sm:pt-16 md:pt-20">
+        {/* Compact Hero Section - Mobile Optimized */}
+        <section className="relative py-6 sm:py-8 md:py-12 overflow-hidden">
           {/* Background with subtle gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-teal-50/40 to-blue-50/60 "></div>
 
           {/* Compact glass morphism container */}
           <div className="relative container">
-            <div className="glass-card max-w-4xl mx-auto text-center p-6 sm:p-8">
-              <h1 className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+            <div className="glass-card max-w-4xl mx-auto text-center p-4 sm:p-6 md:p-8">
+              <h1 className="gradient-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
                 Khám Phá Việt Nam
               </h1>
-              <p className="text-base sm:text-lg text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-4 sm:mb-6 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0">
                 Hành trình qua hàng nghìn địa điểm tuyệt vời<br className="hidden sm:block" />
                 được cộng đồng tin tưởng và xác minh
               </p>
 
               {/* Enhanced Search Bar - More compact */}
-              <div className="glass-subtle p-4 rounded-2xl backdrop-blur-sm">
+              <div className="glass-subtle p-3 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-sm">
                 <SearchBar
                   onSearch={handleSearch}
                   placeholder="Tìm kiếm địa điểm, tỉnh thành, trải nghiệm..."
                 />
               </div>
 
-              {/* Quick access stats - New addition */}
-              <div className="flex items-center justify-center gap-6 mt-4 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
+              {/* Quick access stats - Mobile responsive */}
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <span>1000+ địa điểm</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-                  <span>Cộng đồng tin tưởng</span>
+                  <span className="hidden sm:inline">Cộng đồng tin tưởng</span>
+                  <span className="sm:hidden">Tin cậy</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <div className="w-2 h-2 bg-blue-700 rounded-full animate-pulse"></div>
-                  <span>Cập nhật thường xuyên</span>
+                  <span className="hidden sm:inline">Cập nhật thường xuyên</span>
+                  <span className="sm:hidden">Mới nhất</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Results Section */}
-        <section className="container py-8 relative">
+        {/* Results Section - Mobile Optimized */}
+        <section className="container py-6 sm:py-8 relative">
           {/* Filter Bar with glassmorphism */}
-          <div className="glass-card p-6 mb-8">
-            <FilterBar 
+          <div className="glass-card p-4 sm:p-6 mb-6 sm:mb-8">
+            <FilterBar
               onFiltersChange={handleFiltersChange}
               initialFilters={filters}
             />
           </div>
 
-          {/* Results Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div className="flex items-center gap-4">
-              <p className="text-slate-600 ">
-                Hiển thị <strong className="text-slate-900 ">{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPlaces.length)}</strong> trong tổng số <strong className="text-slate-900 ">{filteredPlaces.length}</strong> kết quả
+          {/* Results Header - Mobile Optimized */}
+          <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">
+            {/* Count and Filters Row */}
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+              <p className="text-xs sm:text-sm text-slate-600 px-1 sm:px-0">
+                Hiển thị <strong className="text-slate-900">{startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPlaces.length)}</strong> / <strong className="text-slate-900">{filteredPlaces.length}</strong>
               </p>
-              
-              {/* Active Filters - Enhanced styling */}
-              {(searchQuery || Object.values(filters).some(Boolean)) && (
-                <div className="flex flex-wrap gap-2">
-                  {searchQuery && (
-                    <Badge variant="outline" className="glass-subtle border-teal-200 ">
-                      Tìm kiếm: "{searchQuery}"
-                    </Badge>
-                  )}
-                  {filters.region && (
-                    <Badge variant="outline" className="glass-subtle border-emerald-200 ">
-                      Miền: {filters.region === 'bac-bo' ? 'Miền Bắc' : 
-                             filters.region === 'trung-bo' ? 'Miền Trung' : 
-                             filters.region === 'nam-bo' ? 'Miền Nam' : filters.region}
-                    </Badge>
-                  )}
-                  {filters.type && (
-                    <Badge variant="outline" className="glass-subtle border-sky-200 ">
-                      Loại: {filters.type}
-                    </Badge>
-                  )}
-                  {filters.province && (
-                    <Badge variant="outline" className="glass-subtle border-blue-200 ">
-                      Tỉnh: {filters.province}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </div>
 
-            {/* View Mode Toggle - Glass effect */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600  mr-2">Hiển thị:</span>
-              <div className="glass-subtle flex rounded-xl border border-white/20  overflow-hidden backdrop-blur-sm">
-                <Button
-                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-                  size="sm"
-                  className={viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/50' : 'hover:bg-white/10  border-0'}
-                  onClick={() => setViewMode('grid')}
-                >
-                  Lưới
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
-                  size="sm"
-                  className={viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/50' : 'hover:bg-white/10  border-0'}
-                  onClick={() => setViewMode('list')}
-                >
-                  Danh sách
-                </Button>
+              {/* View Mode Toggle - Mobile Responsive */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <span className="text-xs sm:text-sm text-slate-600 hidden sm:inline">Hiển thị:</span>
+                <div className="glass-subtle flex rounded-lg border border-white/20 overflow-hidden backdrop-blur-sm w-full sm:w-auto">
+                  <Button
+                    variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                    size="sm"
+                    className={`flex-1 sm:flex-none min-h-[40px] sm:min-h-[36px] text-xs sm:text-sm ${viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/50' : 'hover:bg-white/10 border-0'}`}
+                    onClick={() => setViewMode('grid')}
+                  >
+                    Lưới
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                    size="sm"
+                    className={`flex-1 sm:flex-none min-h-[40px] sm:min-h-[36px] text-xs sm:text-sm ${viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/50' : 'hover:bg-white/10 border-0'}`}
+                    onClick={() => setViewMode('list')}
+                  >
+                    Danh sách
+                  </Button>
+                </div>
               </div>
             </div>
+
+            {/* Active Filters - Mobile Friendly */}
+            {(searchQuery || Object.values(filters).some(Boolean)) && (
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                {searchQuery && (
+                  <Badge variant="outline" className="glass-subtle border-teal-200 text-xs">
+                    Tìm: "{searchQuery}"
+                  </Badge>
+                )}
+                {filters.region && (
+                  <Badge variant="outline" className="glass-subtle border-emerald-200 text-xs">
+                    {filters.region === 'bac-bo' ? 'Miền Bắc' :
+                     filters.region === 'trung-bo' ? 'Miền Trung' :
+                     filters.region === 'nam-bo' ? 'Miền Nam' : filters.region}
+                  </Badge>
+                )}
+                {filters.type && (
+                  <Badge variant="outline" className="glass-subtle border-sky-200 text-xs">
+                    {filters.type}
+                  </Badge>
+                )}
+                {filters.province && (
+                  <Badge variant="outline" className="glass-subtle border-blue-200 text-xs">
+                    {filters.province}
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Results Content */}
+          {/* Results Content - Mobile Optimized Grid */}
           {loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <BrandedCardSkeleton 
                   key={`loading-${i}`} 
@@ -282,7 +285,7 @@ export default function PlacesPage() {
           ) : (
             <>
               {viewMode === 'grid' && (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {paginatedPlaces.map((place) => (
                     <PlaceCard
                       key={place.id}

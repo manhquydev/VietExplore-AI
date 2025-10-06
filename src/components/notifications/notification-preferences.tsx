@@ -172,7 +172,7 @@ export function NotificationPreferences() {
             Cài đặt Thông báo
           </CardTitle>
           <CardDescription>
-            Quản lý cách bạn nhận thông báo từ VietExplore
+            Quản lý cách bạn nhận thông báo từ Du Lịch Việt
           </CardDescription>
         </CardHeader>
       </Card>

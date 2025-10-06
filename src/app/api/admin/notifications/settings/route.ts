@@ -72,7 +72,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   emailProvider: 'smtp',
   emailConfig: {
     fromEmail: 'noreply@vietexplore.ai',
-    fromName: 'VietExplore AI',
+    fromName: 'Du Lịch Việt AI',
     replyTo: 'support@vietexplore.ai'
   },
   
@@ -81,10 +81,10 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   templates: {
     welcome: {
       enabled: true,
-      subject: 'Chào mừng bạn đến với VietExplore AI!',
+      subject: 'Chào mừng bạn đến với Du Lịch Việt AI!',
       template: `
         <h2>Xin chào {{userName}}!</h2>
-        <p>Chào mừng bạn đến với VietExplore AI - nền tảng khám phá du lịch Việt Nam được hỗ trợ bởi AI.</p>
+        <p>Chào mừng bạn đến với Du Lịch Việt AI - nền tảng khám phá du lịch Việt Nam được hỗ trợ bởi AI.</p>
         <p>Hãy bắt đầu khám phá những điểm đến tuyệt vời nhất của Việt Nam!</p>
       `
     },
@@ -118,7 +118,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
     },
     dailyDigest: {
       enabled: true,
-      subject: 'Báo cáo hàng ngày - VietExplore AI',
+      subject: 'Báo cáo hàng ngày - Du Lịch Việt AI',
       template: `
         <h2>Báo cáo hoạt động hàng ngày</h2>
         <p><strong>Người dùng mới:</strong> {{newUsers}}</p>

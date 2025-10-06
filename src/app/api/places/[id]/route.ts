@@ -44,17 +44,46 @@ export async function GET(
     }
 
     const placeData = placeDoc.data() as Place;
-    
+
     // Only return published places to public, or owned places to creator
     if (placeData.status !== 'published') {
       const authResult = await verifyAuthToken(request);
-      if (!authResult.success || 
-          (authResult.user?.id !== placeData.createdBy && 
+      if (!authResult.success ||
+          (authResult.user?.id !== placeData.createdBy &&
            !['moderator', 'admin'].includes(authResult.user?.role || ''))) {
         return NextResponse.json(
           { error: 'Địa điểm không tồn tại hoặc chưa được xuất bản' },
           { status: 404 }
         );
+      }
+    }
+
+    // Fetch author user data
+    let authorInfo = null;
+    if (placeData.createdBy) {
+      try {
+        const userDoc = await adminDb.collection('users').doc(placeData.createdBy).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          authorInfo = {
+            id: userDoc.id,
+            fullName: userData?.fullName || userData?.displayName || 'Người đóng góp',
+            username: userData?.username || `user_${userDoc.id.slice(0, 8)}`,
+            avatar: userData?.avatar || null,
+            role: userData?.role || 'contributor',
+            verified: userData?.verified || false,
+            emailVerified: userData?.emailVerified || false,
+            badges: userData?.badges || [],
+            stats: {
+              placesContributed: userData?.stats?.placesContributed || 0,
+              reviewsWritten: userData?.stats?.reviewsWritten || 0,
+              helpfulVotesReceived: userData?.stats?.helpfulVotesReceived || 0
+            }
+          };
+        }
+      } catch (error) {
+        console.error('[API_PLACES_GET] Error fetching author info:', error);
+        // Continue without author info - will use fallback in UI
       }
     }
 
@@ -76,7 +105,8 @@ export async function GET(
       data: {
         id: placeId,
         ...placeData,
-        viewCount: viewResult.viewCount
+        viewCount: viewResult.viewCount,
+        authorInfo: authorInfo
       }
     });
 

@@ -241,7 +241,7 @@ export default function ModerationDashboard() {
                 </h1>
                 <p className="text-lg text-green-700 font-medium flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Bảng điều khiển Kiểm duyệt - VietExplore AI 🇻🇳
+                  Bảng điều khiển Kiểm duyệt - Du Lịch Việt AI 🇻🇳
                 </p>
               </div>
             </div>

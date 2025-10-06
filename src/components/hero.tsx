@@ -51,21 +51,21 @@ export const Hero: React.FC = () => {
 
           {/* Gentle, refined CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Link href="/ai-assistant/plan">
-              <Button 
-                size="lg" 
+            <Link href="/places">
+              <Button
+                size="lg"
                 className="motion-gentle w-full sm:w-auto text-base sm:text-lg px-6 sm:px-10 py-4 sm:py-6 h-auto rounded-xl bg-primary hover:bg-primary-700 text-white shadow-lg hover:shadow-xl hover:scale-105 font-semibold"
               >
-                Bắt đầu hành trình →
+                Khám phá ngay →
               </Button>
             </Link>
-            <Link href="/places">
-              <Button 
-                variant="secondary" 
-                size="lg" 
+            <Link href="/ai-assistant/chat">
+              <Button
+                variant="secondary"
+                size="lg"
                 className="motion-gentle w-full sm:w-auto text-base sm:text-lg px-6 sm:px-10 py-4 sm:py-6 h-auto rounded-xl border-2 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 font-semibold backdrop-blur-sm"
               >
-                Khám phá địa điểm
+                Trò chuyện với AI
               </Button>
             </Link>
           </div>

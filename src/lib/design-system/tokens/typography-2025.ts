@@ -1,5 +1,5 @@
 /**
- * Enhanced Typography System 2025 - VietExplore AI Admin  
+ * Enhanced Typography System 2025 - Du Lịch Việt AI Admin  
  * Fluid typography with optimal readability for admin interfaces
  * Based on Inter font family with system fallbacks
  */

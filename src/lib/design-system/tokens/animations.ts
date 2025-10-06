@@ -1,5 +1,5 @@
 /**
- * Modern Animation System 2025 - VietExplore AI Admin
+ * Modern Animation System 2025 - Du Lịch Việt AI Admin
  * Purposeful animations that enhance UX without being distracting
  * Optimized for admin productivity workflows
  */

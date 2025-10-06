@@ -54,7 +54,47 @@ html {
   --space-2xl: 64px;
   --space-3xl: 96px;
   --space-4xl: 128px;
-  
+
+  /* Mobile Design Tokens (2025 UX Best Practices) */
+  /* Touch Target Standards (Apple HIG + Material Design) */
+  --touch-min: 44px;                    /* Minimum touch target (Apple HIG) */
+  --touch-comfortable: 48px;            /* Comfortable touch target (Material Design 3) */
+  --touch-icon: 40px;                   /* Icon-only button size */
+
+  /* Mobile Typography Scale - Progressive Enhancement */
+  --text-mobile-xs: 10px;               /* Smallest readable size */
+  --text-mobile-sm: 12px;               /* Small labels */
+  --text-mobile-base: 14px;             /* Body text mobile */
+  --text-mobile-lg: 16px;               /* Emphasized text */
+  --text-mobile-xl: 18px;               /* Subheadings */
+  --text-mobile-2xl: 20px;              /* Section titles */
+  --text-mobile-3xl: 24px;              /* Page titles */
+  --text-mobile-4xl: 28px;              /* Hero text */
+
+  /* Mobile Spacing - Compact Layout */
+  --mobile-space-xs: 4px;               /* Minimal gap */
+  --mobile-space-sm: 8px;               /* Tight spacing */
+  --mobile-space-md: 12px;              /* Standard gap */
+  --mobile-space-lg: 16px;              /* Section spacing */
+  --mobile-space-xl: 24px;              /* Large section spacing */
+  --mobile-space-2xl: 32px;             /* Hero spacing */
+
+  /* Safe Area Insets (iOS Notch Support) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Mobile Header Heights */
+  --header-mobile: 56px;                /* 14 (h-14) */
+  --header-tablet: 64px;                /* 16 (h-16) */
+  --header-desktop: 80px;               /* 20 (h-20) */
+
+  /* Mobile Card Dimensions */
+  --card-mobile-padding: 16px;          /* p-4 */
+  --card-tablet-padding: 20px;          /* p-5 */
+  --card-desktop-padding: 24px;         /* p-6 */
+
   /* Keep existing shadcn variables for compatibility */
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;

@@ -37,7 +37,7 @@ export default function MaintenancePage() {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 shadow-lg">
               <Image
                 src="/logo-horizontal.svg"
-                alt="VietExplore AI"
+                alt="Du Lịch Việt AI"
                 width={200}
                 height={60}
                 className="h-12 w-auto"
@@ -123,7 +123,7 @@ export default function MaintenancePage() {
           {/* Footer */}
           <div className="mt-12 pt-8 border-t border-gray-200">
             <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
-              <span>© 2024 VietExplore AI</span>
+              <span>© 2024 Du Lịch Việt AI</span>
               <span>•</span>
               <span>Powered by Next.js & Firebase</span>
             </div>

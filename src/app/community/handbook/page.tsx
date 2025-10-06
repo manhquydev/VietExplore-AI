@@ -45,7 +45,7 @@ export default function CommunityHandbookPage() {
                 <ul className="space-y-2 text-sm text-muted">
                   <li>• Tạo tài khoản miễn phí</li>
                   <li>• Khám phá địa điểm yêu thích</li>
-                  <li>• Tạo lịch trình đầu tiên với AI</li>
+                  <li>• Trò chuyện với AI về điểm đến</li>
                   <li>• Tham gia thảo luận cộng đồng</li>
                 </ul>
               </div>
@@ -180,64 +180,33 @@ export default function CommunityHandbookPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-semibold text-text mb-4">Đóng góp địa điểm</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary text-xs font-bold">1</span>
-                    </div>
-                    <p className="text-muted">Điền thông tin cơ bản (tên, mô tả, loại hình)</p>
+            <div className="max-w-md mx-auto">
+              <h3 className="font-semibold text-text mb-4">Đóng góp địa điểm</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary text-xs font-bold">1</span>
                   </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary text-xs font-bold">2</span>
-                    </div>
-                    <p className="text-muted">Chọn vị trí địa lý (vùng, tỉnh/thành)</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary text-xs font-bold">3</span>
-                    </div>
-                    <p className="text-muted">Tải ảnh chất lượng cao và ghi nguồn</p>
-                  </div>
+                  <p className="text-muted">Điền thông tin cơ bản (tên, mô tả, loại hình)</p>
                 </div>
-                <Button className="mt-4 w-full" asChild>
-                  <Link href="/contribute/new-place">
-                    Bắt đầu đóng góp
-                  </Link>
-                </Button>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-text mb-4">Chia sẻ lịch trình</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-secondary text-xs font-bold">1</span>
-                    </div>
-                    <p className="text-muted">Tạo lịch trình với AI hoặc tự thiết kế</p>
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary text-xs font-bold">2</span>
                   </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-secondary text-xs font-bold">2</span>
-                    </div>
-                    <p className="text-muted">Thêm ghi chú, mẹo hay và ước tính chi phí</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-secondary text-xs font-bold">3</span>
-                    </div>
-                    <p className="text-muted">Chia sẻ công khai để giúp cộng đồng</p>
-                  </div>
+                  <p className="text-muted">Chọn vị trí địa lý (vùng, tỉnh/thành)</p>
                 </div>
-                <Button variant="outline" className="mt-4 w-full" asChild>
-                  <Link href="/itineraries/builder">
-                    Tạo lịch trình
-                  </Link>
-                </Button>
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary text-xs font-bold">3</span>
+                  </div>
+                  <p className="text-muted">Tải ảnh chất lượng cao và ghi nguồn</p>
+                </div>
               </div>
+              <Button className="mt-4 w-full" asChild>
+                <Link href="/contribute/new-place">
+                  Bắt đầu đóng góp
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -251,14 +220,10 @@ export default function CommunityHandbookPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="grid grid-cols-3 gap-6 text-center max-w-2xl mx-auto">
               <div>
                 <div className="text-2xl font-bold text-primary">1,247</div>
                 <div className="text-sm text-muted">Địa điểm</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-primary">8,934</div>
-                <div className="text-sm text-muted">Lịch trình</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-primary">156</div>

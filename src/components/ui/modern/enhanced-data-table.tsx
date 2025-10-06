@@ -1,5 +1,5 @@
 /**
- * Enhanced Data Table Component - VietExplore AI Admin
+ * Enhanced Data Table Component - Du Lịch Việt AI Admin
  * Advanced data table with sorting, filtering, pagination
  */
 

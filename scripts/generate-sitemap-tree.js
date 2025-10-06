@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Sitemap Tree Generator for VietExplore-AI
+ * Sitemap Tree Generator for Du Lịch Việt-AI
  * Tạo sitemap dạng tree từ app directory và sitemap.xml
  */
 
@@ -186,7 +186,7 @@ function generateSitemapTree(outputToFile = false) {
   const output = [];
   const log = outputToFile ? (text) => output.push(text) : console.log;
   
-  log(colors.bright + colors.green + '🌳 VietExplore-AI Sitemap Tree Generator' + colors.reset);
+  log(colors.bright + colors.green + '🌳 Du Lịch Việt-AI Sitemap Tree Generator' + colors.reset);
   log('='.repeat(50));
   
   const appDirPath = path.join(process.cwd(), 'src', 'app');

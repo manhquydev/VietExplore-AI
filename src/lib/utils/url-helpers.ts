@@ -1,5 +1,5 @@
 /**
- * Professional URL Management System for VietExplore
+ * Professional URL Management System for Du Lịch Việt
  * Hybrid approach: slug + short ID for uniqueness and SEO
  */
 

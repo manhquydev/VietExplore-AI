@@ -1,5 +1,5 @@
 /**
- * Firestore Database Schema for VietExplore-AI
+ * Firestore Database Schema for Du Lịch Việt-AI
  * Based on role-badge-logic.md and project requirements
  */
 

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'VietExplore-AI/1.0'
+        'User-Agent': 'Du Lịch Việt-AI/1.0'
       },
       cache: 'force-cache',
       next: { revalidate: 86400 }
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'VietExplore-AI/1.0'
+        'User-Agent': 'Du Lịch Việt-AI/1.0'
       },
       cache: 'force-cache',
       next: { revalidate: 86400 } // Cache 1 ngày

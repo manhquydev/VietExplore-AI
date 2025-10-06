@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
         
         setVerificationResult({
           status: 'success',
-          message: 'Email của bạn đã được xác minh thành công! Bạn có thể sử dụng đầy đủ các tính năng của VietExplore AI.'
+          message: 'Email của bạn đã được xác minh thành công! Bạn có thể sử dụng đầy đủ các tính năng của Du Lịch Việt AI.'
         });
 
         // Start countdown for redirect

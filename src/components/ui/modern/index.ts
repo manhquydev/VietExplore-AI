@@ -1,5 +1,5 @@
 /**
- * Enhanced Modern UI Components Library 2025 - VietExplore AI Admin
+ * Enhanced Modern UI Components Library 2025 - Du Lịch Việt AI Admin
  * Professional component exports for consistent admin interface
  */
 

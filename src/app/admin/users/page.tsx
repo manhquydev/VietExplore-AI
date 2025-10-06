@@ -1,5 +1,5 @@
 /**
- * Enhanced User Management Page 2025 - VietExplore AI Admin
+ * Enhanced User Management Page 2025 - Du Lịch Việt AI Admin
  * Modern user management with advanced data table and enhanced UI
  */
 

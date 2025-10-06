@@ -1,8 +1,8 @@
-# VietExplore AI - Reset Scripts
+# Du Lịch Việt AI - Reset Scripts
 
 ## 📋 Tổng quan
 
-Bộ scripts này giúp bạn reset và làm sạch dữ liệu trong dự án VietExplore AI. Rất hữu ích khi:
+Bộ scripts này giúp bạn reset và làm sạch dữ liệu trong dự án Du Lịch Việt AI. Rất hữu ích khi:
 
 - Bạn muốn bắt đầu lại từ đầu với dữ liệu sạch
 - Có quá nhiều dữ liệu test/spam cần xóa
@@ -134,8 +134,8 @@ node scripts/create-single-admin.js \
 
 **Thông tin mặc định:**
 - **Email:** `admin@vietexplore.ai`
-- **Password:** `VietExplore2024!Admin`
-- **Name:** `VietExplore Admin`
+- **Password:** `Du Lịch Việt2024!Admin`
+- **Name:** `Du Lịch Việt Admin`
 - **Username:** `admin`
 
 **Chức năng:**
@@ -378,5 +378,5 @@ Nếu gặp vấn đề:
 
 ---
 
-**Created by:** VietExplore AI Team  
+**Created by:** Du Lịch Việt AI Team  
 **Last updated:** December 2024

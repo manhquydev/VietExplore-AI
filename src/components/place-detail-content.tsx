@@ -62,6 +62,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
 import Link from "next/link"
+import Image from "next/image"
 import { usePlaceInteractions } from "@/hooks/use-place-interactions"
 import { callApi } from "@/lib/client/api"
 import { usePlaceReviews } from "@/hooks/use-place-reviews"
@@ -71,6 +72,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useViewTracking } from "@/hooks/use-place-stats"
 import { ReportFormData } from "@/lib/types/reports"
 import { PlaceChatWidget } from "@/components/place-chat-widget"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface PlaceData {
   id: string
@@ -109,8 +111,23 @@ interface PlaceData {
     description: string
   }>
   trustLevel: "community" | "contributor" | "partner" | "verified"
-  authorRole: "contributor" | "partner" | "admin"
+  authorRole: "contributor" | "partner" | "admin" | "moderator"
   authorName: string
+  authorInfo?: {
+    id: string
+    fullName: string
+    username: string
+    avatar: string | null
+    role: "contributor" | "partner" | "admin" | "moderator" | "traveler"
+    verified: boolean
+    emailVerified: boolean
+    badges: string[]
+    stats: {
+      placesContributed: number
+      reviewsWritten: number
+      helpfulVotesReceived: number
+    }
+  } | null
   createdAt: string
   updatedAt: string
   stats: {
@@ -344,16 +361,20 @@ function ReviewItem({ review }: { review: any }) {
       {review.images && review.images.length > 0 && (
         <div className="flex gap-2 mb-3 overflow-x-auto">
           {review.images.slice(0, 4).map((img: string, idx: number) => (
-            <img
-              key={idx}
-              src={img}
-              alt={`Review image ${idx + 1}`}
-              className="h-20 w-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => window.open(img, '_blank')}
-            />
+            <div key={idx} className="relative h-20 w-20 flex-shrink-0">
+              <Image
+                src={img}
+                alt={`Review image ${idx + 1}`}
+                fill
+                sizes="80px"
+                className="object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => window.open(img, '_blank')}
+                loading="lazy"
+              />
+            </div>
           ))}
           {review.images.length > 4 && (
-            <div className="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 text-sm">
+            <div className="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 text-sm flex-shrink-0">
               +{review.images.length - 4}
             </div>
           )}
@@ -546,6 +567,8 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [showReviewModal, setShowReviewModal] = React.useState(false)
   const [showReportModal, setShowReportModal] = React.useState(false)
   const [reviewSortBy, setReviewSortBy] = React.useState<'newest' | 'oldest' | 'highest_rating' | 'lowest_rating' | 'most_helpful'>('newest')
+  const [showAddressConversion, setShowAddressConversion] = React.useState(false)
+  const [isSharing, setIsSharing] = React.useState(false)
 
   // Use centralized view tracking hook
   const { viewCount } = useViewTracking(place.id, place.stats.views || 0)
@@ -628,40 +651,82 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
     }
   }
 
+  const handleShare = async () => {
+    setIsSharing(true)
+
+    try {
+      const shareData = {
+        title: `${place.name} - Du Lịch Việt`,
+        text: place.shortDescription,
+        url: window.location.href
+      }
+
+      // Check if Web Share API is supported (mobile browsers)
+      if (navigator.share) {
+        await navigator.share(shareData)
+        toast({
+          title: "Đã chia sẻ",
+          description: "Cảm ơn bạn đã chia sẻ địa điểm này!"
+        })
+      } else {
+        // Fallback: Copy link to clipboard (desktop)
+        await navigator.clipboard.writeText(window.location.href)
+        toast({
+          title: "Đã sao chép liên kết",
+          description: "Bạn có thể chia sẻ địa điểm này qua mạng xã hội hoặc tin nhắn!"
+        })
+      }
+    } catch (error: any) {
+      // User cancelled share or error occurred
+      if (error.name !== 'AbortError') {
+        toast({
+          title: "Không thể chia sẻ",
+          description: "Vui lòng thử lại hoặc sao chép link thủ công.",
+          variant: "destructive"
+        })
+      }
+    } finally {
+      setIsSharing(false)
+    }
+  }
+
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pb-[env(safe-area-inset-bottom)]">
         {/* Hero Section - Modern Card Design */}
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8">
-            <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-2">
-              <Home className="h-4 w-4" />
+          <nav className="flex items-center gap-2 md:gap-3 text-base md:text-sm text-gray-600 mb-6 md:mb-8" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-2 min-h-[44px] py-2">
+              <Home className="h-4 w-4 md:h-4 md:w-4" />
               <span>Trang chủ</span>
             </Link>
-            <ChevronRightIcon className="h-4 w-4" />
-            <Link href="/places" className="hover:text-blue-600 transition-colors">
+            <ChevronRightIcon className="h-4 w-4 flex-shrink-0" />
+            <Link href="/places" className="hover:text-blue-600 transition-colors min-h-[44px] py-2">
               Địa điểm
             </Link>
-            <ChevronRightIcon className="h-4 w-4" />
-            <span className="text-gray-900 font-medium">{place.name}</span>
+            <ChevronRightIcon className="h-4 w-4 flex-shrink-0" />
+            <span className="text-gray-900 font-medium truncate">{place.name}</span>
           </nav>
 
           {/* Main Hero Card */}
           <Card className="overflow-hidden border-0 shadow-2xl bg-white/80 backdrop-blur-sm mb-8">
-            <div className="grid lg:grid-cols-2 gap-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
               {/* Image Gallery Side */}
               <div className="relative">
                 {place.images && place.images.length > 0 ? (
                   <div className="aspect-[4/3] lg:aspect-auto lg:h-full relative overflow-hidden">
-                    <img
-                      src={place.images[currentImageIndex]?.url}
+                    <Image
+                      src={place.images[currentImageIndex]?.url || ''}
                       alt={place.images[currentImageIndex]?.alt || place.name}
-                      className="absolute inset-0 w-full h-full object-cover cursor-pointer transition-transform duration-700 hover:scale-105"
+                      fill
+                      priority={currentImageIndex === 0}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw"
+                      className="object-cover cursor-pointer transition-transform duration-700 hover:scale-105"
                       onClick={() => openImageModal(currentImageIndex)}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
 
                     {/* Navigation Controls */}
                     {place.images.length > 1 && (
@@ -669,18 +734,20 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30 rounded-full"
+                          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30 rounded-full h-12 w-12 min-h-[48px] min-w-[48px] touch-target-44"
                           onClick={prevImage}
+                          aria-label="Previous image"
                         >
-                          <ChevronLeft className="h-5 w-5" />
+                          <ChevronLeft className="h-6 w-6" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30 rounded-full"
+                          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30 rounded-full h-12 w-12 min-h-[48px] min-w-[48px] touch-target-44"
                           onClick={nextImage}
+                          aria-label="Next image"
                         >
-                          <ChevronRight className="h-5 w-5" />
+                          <ChevronRight className="h-6 w-6" />
                         </Button>
                       </>
                     )}
@@ -717,7 +784,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
               <div className="p-8 lg:p-12 flex flex-col justify-center">
                 {/* Place Type and Trust Badges */}
                 <div className="flex flex-wrap items-center gap-3 mb-6">
-                  <PlaceClassificationBadge type={place.type} variant="primary" size="lg" />
+                  <PlaceClassificationBadge type={place.type} region={place.region} size="lg" />
                   <ProfessionalRoleBadge
                     role={place.authorRole}
                     size="md"
@@ -731,22 +798,23 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 </div>
 
                 {/* Place Name */}
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                   {place.name}
                 </h1>
 
-                <div className="flex items-center gap-2 text-gray-600 mb-6">
-                  <MapPin className="h-5 w-5" />
-                  <span className="text-lg">{place.address}</span>
+                <div className="flex items-start md:items-center gap-2 text-gray-600 mb-6">
+                  <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5 md:mt-0" />
+                  <span className="text-base md:text-lg">{place.address}</span>
                 </div>
 
                 {/* Description */}
-                <p className="text-xl text-gray-700 leading-relaxed mb-8">
+                <p className="text-base md:text-lg lg:text-xl text-gray-700 leading-relaxed mb-8 text-justify">
                   {place.shortDescription}
                 </p>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4">
+                {/* Action Buttons - Optimized Layout */}
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Primary engagement actions */}
                   <Button
                     onClick={() => toggleLike()}
                     variant={interactions.isLiked ? "default" : "outline"}
@@ -754,7 +822,8 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     className="flex items-center gap-2"
                   >
                     <Heart className={cn("h-5 w-5", interactions.isLiked && "fill-current")} />
-                    <span>Yêu thích ({interactions.likeCount})</span>
+                    <span className="hidden sm:inline">Yêu thích</span>
+                    <span>({interactions.likeCount})</span>
                   </Button>
 
                   <Button
@@ -764,12 +833,34 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     className="flex items-center gap-2"
                   >
                     <Bookmark className={cn("h-5 w-5", interactions.isSaved && "fill-current")} />
-                    <span>Lưu ({interactions.saveCount})</span>
+                    <span className="hidden sm:inline">Lưu</span>
+                    <span>({interactions.saveCount})</span>
                   </Button>
 
-                  <Button variant="outline" size="lg" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex items-center gap-2"
+                    onClick={handleShare}
+                    disabled={isSharing}
+                  >
                     <Share2 className="h-5 w-5" />
-                    <span>Chia sẻ</span>
+                    <span className="hidden sm:inline">{isSharing ? 'Đang chia sẻ...' : 'Chia sẻ'}</span>
+                  </Button>
+
+                  {/* Visual separator - hidden on mobile */}
+                  <div className="hidden md:block h-8 w-px bg-gray-300 mx-1" aria-hidden="true" />
+
+                  {/* Secondary/negative action */}
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex items-center gap-2 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+                    onClick={() => setShowReportModal(true)}
+                    title="Báo cáo sai phạm hoặc thông tin không chính xác"
+                  >
+                    <Flag className="h-5 w-5" />
+                    <span className="hidden md:inline">Báo cáo</span>
                   </Button>
                 </div>
 
@@ -806,7 +897,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-lg max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line text-justify">
                       {place.description}
                     </p>
                   </div>
@@ -1076,15 +1167,28 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                         {/* Address Conversion Info - Clean & Refined Design */}
                         {place.addressConversion && place.addressConversion.hasChanges && (
                           <div className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-lg p-4 shadow-soft">
-                            <div className="flex items-center gap-3 mb-4">
-                              <AlertTriangle className="h-5 w-5 text-primary" />
-                              <div>
-                                <h4 className="text-sm font-medium text-slate-900">Cập nhật địa giới hành chính</h4>
-                                <p className="text-xs text-slate-600">Theo sắp xếp đơn vị hành chính 2025</p>
+                            {/* Collapsible Header */}
+                            <button
+                              onClick={() => setShowAddressConversion(!showAddressConversion)}
+                              className="w-full text-left flex items-center justify-between gap-3 min-h-[44px]"
+                              aria-expanded={showAddressConversion}
+                              aria-controls="address-conversion-details"
+                            >
+                              <div className="flex items-center gap-3">
+                                <AlertTriangle className="h-5 w-5 text-primary flex-shrink-0" />
+                                <div>
+                                  <h4 className="text-sm font-medium text-slate-900">Cập nhật địa giới hành chính</h4>
+                                  <p className="text-xs text-slate-600">Theo sắp xếp đơn vị hành chính 2025</p>
+                                </div>
                               </div>
-                            </div>
+                              <ChevronRight className={cn(
+                                "h-5 w-5 text-slate-400 transition-transform flex-shrink-0",
+                                showAddressConversion && "rotate-90"
+                              )} />
+                            </button>
 
-                            <div className="space-y-4">
+                            {showAddressConversion && (
+                            <div className="space-y-4 mt-4" id="address-conversion-details">
                               {/* Address Comparison */}
                               <div className="space-y-3">
                                 {/* Previous Address */}
@@ -1163,6 +1267,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                                 </div>
                               )}
                             </div>
+                            )}
                           </div>
                         )}
 
@@ -1222,7 +1327,9 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                 </CardContent>
               </Card>
 
-              {/* Map Card */}
+              {/* Map Card - Only show if coordinates exist and are valid */}
+              {place.coordinates && place.coordinates.lat && place.coordinates.lng &&
+               (place.coordinates.lat !== 0 || place.coordinates.lng !== 0) && (
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1245,6 +1352,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   </Button>
                 </CardContent>
               </Card>
+              )}
 
               {/* Author Info */}
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
@@ -1255,31 +1363,91 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-purple-600" />
+                  {place.authorInfo ? (
+                    <>
+                      <Link
+                        href={`/profile/${place.authorInfo.username}`}
+                        className="flex items-center gap-3 mb-4 hover:bg-purple-50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                      >
+                        <Avatar className="h-12 w-12 border-2 border-purple-200">
+                          {place.authorInfo.avatar ? (
+                            <AvatarImage
+                              src={place.authorInfo.avatar}
+                              alt={place.authorInfo.fullName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-purple-100 text-purple-700 font-semibold">
+                            {place.authorInfo.fullName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900">
+                              {place.authorInfo.fullName}
+                            </span>
+                            {place.authorInfo.verified && (
+                              <CheckCircle className="h-4 w-4 text-blue-500" title="Đã xác thực" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <ProfessionalRoleBadge role={place.authorInfo.role} />
+                          </div>
+                          {place.authorInfo.stats && (
+                            <div className="text-xs text-gray-500 mt-1 flex items-center gap-3">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {place.authorInfo.stats.placesContributed} địa điểm
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Star className="h-3 w-3" />
+                                {place.authorInfo.stats.reviewsWritten} đánh giá
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+
+                      {place.authorInfo.badges && place.authorInfo.badges.length > 0 && (
+                        <div className="mb-4 flex flex-wrap gap-1">
+                          {place.authorInfo.badges.map((badge, index) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs bg-amber-100 text-amber-700 border-amber-200"
+                            >
+                              <Award className="h-3 w-3 mr-1" />
+                              {badge}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">{place.authorName}</div>
+                        <div className="text-sm text-gray-500 capitalize">{place.authorRole}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{place.authorName}</div>
-                      <div className="text-sm text-gray-500 capitalize">{place.authorRole}</div>
-                    </div>
-                  </div>
+                  )}
+
+                  <Separator className="my-3" />
+
                   <div className="text-xs text-gray-500 space-y-1">
-                    <p>Tạo: {new Date(place.createdAt).toLocaleDateString('vi-VN')}</p>
-                    <p>Cập nhật: {new Date(place.updatedAt).toLocaleDateString('vi-VN')}</p>
+                    <p className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3" />
+                      Tạo: {new Date(place.createdAt).toLocaleDateString('vi-VN')}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      Cập nhật: {new Date(place.updatedAt).toLocaleDateString('vi-VN')}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Report Button */}
-              <Button
-                variant="outline"
-                className="w-full text-red-600 border-red-200 hover:bg-red-50"
-                onClick={() => setShowReportModal(true)}
-              >
-                <Flag className="h-4 w-4 mr-2" />
-                Báo cáo vấn đề
-              </Button>
               </div>
             </div>
           </div>
@@ -1287,38 +1455,46 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
 
         {/* Image Modal */}
         {showImageModal && place.images && (
-          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Image gallery">
             <div className="relative max-w-4xl max-h-full">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-4 right-4 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white"
+                className="absolute top-4 right-4 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
                 onClick={() => setShowImageModal(false)}
+                aria-label="Close gallery"
               >
                 <X className="h-6 w-6" />
               </Button>
 
-              <img
-                src={place.images[modalImageIndex]?.url}
-                alt={place.images[modalImageIndex]?.alt || place.name}
-                className="max-w-full max-h-full object-contain"
-              />
+              <div className="relative w-full h-[80vh]">
+                <Image
+                  src={place.images[modalImageIndex]?.url || ''}
+                  alt={place.images[modalImageIndex]?.alt || place.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 80vw"
+                  className="object-contain"
+                  quality={90}
+                />
+              </div>
 
               {place.images.length > 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white"
+                    className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
                     onClick={() => setModalImageIndex((prev) => (prev - 1 + place.images.length) % place.images.length)}
+                    aria-label="Previous image"
                   >
                     <ChevronLeft className="h-6 w-6" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white"
+                    className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
                     onClick={() => setModalImageIndex((prev) => (prev + 1) % place.images.length)}
+                    aria-label="Next image"
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>

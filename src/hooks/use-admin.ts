@@ -164,7 +164,7 @@ export function useAdminStats() {
 export function useSystemSettings() {
   const [settings, setSettings] = useState({
     general: {
-      siteName: 'VietExplore AI',
+      siteName: 'Du Lịch Việt AI',
       siteDescription: 'Discover beautiful địa điểm across Vietnam with AI-powered recommendations',
       maintenanceMode: false,
       registrationEnabled: true

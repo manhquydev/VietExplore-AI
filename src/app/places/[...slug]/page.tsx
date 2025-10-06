@@ -42,8 +42,23 @@ interface PlaceData {
     description: string
   }>
   trustLevel: "community" | "contributor" | "partner" | "verified"
-  authorRole: "contributor" | "partner" | "admin"
+  authorRole: "contributor" | "partner" | "admin" | "moderator"
   authorName: string
+  authorInfo?: {
+    id: string
+    fullName: string
+    username: string
+    avatar: string | null
+    role: "contributor" | "partner" | "admin" | "moderator" | "traveler"
+    verified: boolean
+    emailVerified: boolean
+    badges: string[]
+    stats: {
+      placesContributed: number
+      reviewsWritten: number
+      helpfulVotesReceived: number
+    }
+  } | null
   createdAt: string
   updatedAt: string
   stats: {
@@ -115,6 +130,35 @@ async function getPlaceData(id: string): Promise<PlaceData | null> {
       return null;
     }
 
+    // Fetch author user data
+    let authorInfo = null;
+    if (place.createdBy) {
+      try {
+        const userDoc = await adminDb.collection('users').doc(place.createdBy).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          authorInfo = {
+            id: userDoc.id,
+            fullName: userData?.fullName || userData?.displayName || 'Người đóng góp',
+            username: userData?.username || `user_${userDoc.id.slice(0, 8)}`,
+            avatar: userData?.avatar || null,
+            role: userData?.role || 'contributor',
+            verified: userData?.verified || false,
+            emailVerified: userData?.emailVerified || false,
+            badges: userData?.badges || [],
+            stats: {
+              placesContributed: userData?.stats?.placesContributed || 0,
+              reviewsWritten: userData?.stats?.reviewsWritten || 0,
+              helpfulVotesReceived: userData?.stats?.helpfulVotesReceived || 0
+            }
+          };
+        }
+      } catch (error) {
+        console.error('[SSR] Error fetching author info:', error);
+        // Continue without author info - will use fallback in UI
+      }
+    }
+
     // Transform Firestore data to PlaceData format
     return {
       id: placeDoc.id,
@@ -144,8 +188,9 @@ async function getPlaceData(id: string): Promise<PlaceData | null> {
         description: s.description || ''
       })) : [],
       trustLevel: place.trustLabel || 'community',
-      authorRole: place.source?.type === 'partner' ? 'partner' : 'contributor',
-      authorName: place.source?.partnerName || 'Cộng đồng',
+      authorRole: authorInfo?.role || (place.source?.type === 'partner' ? 'partner' : 'contributor'),
+      authorName: authorInfo?.fullName || place.source?.partnerName || 'Cộng đồng',
+      authorInfo: authorInfo,
       createdAt: place.createdAt,
       updatedAt: place.updatedAt,
       stats: {
@@ -261,8 +306,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   if (!placeId) {
     return {
-      title: 'Địa điểm không tồn tại - VietExplore',
-      description: 'Không tìm thấy địa điểm này trên VietExplore'
+      title: 'Địa điểm không tồn tại - Du Lịch Việt',
+      description: 'Không tìm thấy địa điểm này trên Du Lịch Việt'
     };
   }
   
@@ -270,8 +315,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   if (!place) {
     return {
-      title: 'Địa điểm không tồn tại - VietExplore',
-      description: 'Không tìm thấy địa điểm này trên VietExplore'
+      title: 'Địa điểm không tồn tại - Du Lịch Việt',
+      description: 'Không tìm thấy địa điểm này trên Du Lịch Việt'
     };
   }
 
@@ -284,7 +329,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }, baseUrl);
   
   return {
-    title: `${place.name} - ${place.province} | VietExplore`,
+    title: `${place.name} - ${place.province} | Du Lịch Việt`,
     description: place.shortDescription,
     alternates: {
       canonical: canonicalUrl
@@ -293,7 +338,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: place.name,
       description: place.shortDescription,
       url: canonicalUrl,
-      siteName: 'VietExplore',
+      siteName: 'Du Lịch Việt',
       images: place.images.length > 0 ? [
         {
           url: place.images[0].url,

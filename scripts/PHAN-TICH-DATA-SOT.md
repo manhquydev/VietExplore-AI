@@ -313,4 +313,4 @@ Luôn chạy `--status` trước để kiểm tra, sau đó mới `--confirm` đ
 ---
 
 **Cập nhật:** December 2024
-**Tác giả:** VietExplore AI Team
+**Tác giả:** Du Lịch Việt AI Team

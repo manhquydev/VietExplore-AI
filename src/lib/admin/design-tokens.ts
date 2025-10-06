@@ -1,5 +1,5 @@
 /**
- * VietExplore AI - Admin Design System Tokens
+ * Du Lịch Việt AI - Admin Design System Tokens
  * Professional color palette, typography, and spacing system
  * Designed to reduce visual noise and enhance productivity
  */

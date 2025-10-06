@@ -1,5 +1,5 @@
 /**
- * VietExplore AI - Admin Theme Utilities
+ * Du Lịch Việt AI - Admin Theme Utilities
  * Helper functions and classes for consistent admin styling
  */
 

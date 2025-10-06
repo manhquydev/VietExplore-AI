@@ -426,7 +426,7 @@ export default function RegisterPage() {
 
             {/* Community Benefits - Social Proof */}
             <div className="glass-card mt-8 p-6 text-center space-y-4">
-              <h3 className="font-semibold text-foreground">Tại sao chọn VietExplore?</h3>
+              <h3 className="font-semibold text-foreground">Tại sao chọn Du Lịch Việt?</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5">
                   <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />

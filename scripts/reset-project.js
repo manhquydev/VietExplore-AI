@@ -5,13 +5,13 @@ const { createSingleAdmin } = require('./create-single-admin');
 // Default admin configuration for reset
 const defaultResetAdminConfig = {
   email: 'admin@vietexplore.ai',
-  password: 'VietExplore2024!Reset',
-  fullName: 'VietExplore Admin',
+  password: 'Du Lịch Việt2024!Reset',
+  fullName: 'Du Lịch Việt Admin',
   username: 'admin'
 };
 
 async function resetProject(customAdminConfig = {}) {
-  console.log('🔄 VietExplore AI - Project Reset');
+  console.log('🔄 Du Lịch Việt AI - Project Reset');
   console.log('=================================');
   console.log('');
   console.log('⚠️  WARNING: This will COMPLETELY RESET the project!');
@@ -213,7 +213,7 @@ if (require.main === module) {
   }
   
   if (!options.confirm) {
-    console.log('🔄 VietExplore AI - Project Reset Tool');
+    console.log('🔄 Du Lịch Việt AI - Project Reset Tool');
     console.log('====================================');
     console.log('');
     console.log('This tool will help you reset your project to a clean state.');

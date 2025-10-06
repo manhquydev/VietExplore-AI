@@ -20,15 +20,15 @@ export async function POST(request: NextRequest) {
     const [provincesRes, districtsRes, wardsRes] = await Promise.all([
       fetch('https://tailieu365.com/api/address/province?mode=0', {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'User-Agent': 'VietExplore-AI/1.0' }
+        headers: { 'Accept': 'application/json', 'User-Agent': 'Du Lịch Việt-AI/1.0' }
       }),
       districtId ? fetch(`https://tailieu365.com/api/address/district?provinceId=${provinceId}`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'User-Agent': 'VietExplore-AI/1.0' }
+        headers: { 'Accept': 'application/json', 'User-Agent': 'Du Lịch Việt-AI/1.0' }
       }) : Promise.resolve(null),
       wardId ? fetch(`https://tailieu365.com/api/address/ward?districtId=${districtId}`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'User-Agent': 'VietExplore-AI/1.0' }
+        headers: { 'Accept': 'application/json', 'User-Agent': 'Du Lịch Việt-AI/1.0' }
       }) : Promise.resolve(null)
     ]);
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         if (currentWard) {
           // Tìm xã/phường mới trong tỉnh mới bằng cách check newId hoặc tên tương tự
           const newProvinceWards = await fetch(`https://tailieu365.com/api/address/ward?provinceId=${newProvince.id}`, {
-            headers: { 'Accept': 'application/json', 'User-Agent': 'VietExplore-AI/1.0' }
+            headers: { 'Accept': 'application/json', 'User-Agent': 'Du Lịch Việt-AI/1.0' }
           }).then(res => res.json());
           
           // Tìm ward có newId mapping hoặc tên giống
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     // Kiểm tra sáp nhập ward (chỉ khi không có sáp nhập tỉnh)
     if (currentWard && currentWard.newId && currentWard.newId !== currentWard.id && !newAddress) {
       const allWards = await fetch(`https://tailieu365.com/api/address/ward?provinceId=${provinceId}`, {
-        headers: { 'Accept': 'application/json', 'User-Agent': 'VietExplore-AI/1.0' }
+        headers: { 'Accept': 'application/json', 'User-Agent': 'Du Lịch Việt-AI/1.0' }
       }).then(res => res.json());
       
       const newWard = allWards.find((w: any) => w.id === currentWard.newId);
