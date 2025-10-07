@@ -3524,3 +3524,167 @@ place.authorInfo?.stats?.placesContributed || 0
 - User stats display pattern
 
 ---
+
+## ❌ Lesson Learned: Missing Import After Adding Component Usage (2025-01-07)
+
+### Problem: Runtime Error - Component Not Defined
+
+**Error:** `ReferenceError: BrandedCardSkeleton is not defined`
+
+**Location:** `src/app/places/saved/page.tsx:327`
+
+**Context:** During UI/UX optimization of `/places/saved` page, added skeleton loading states but forgot to import the component.
+
+### Root Cause Analysis
+
+**What Happened:**
+1. Added `BrandedCardSkeleton` component usage in JSX (lines 327, 354)
+2. Component was used inside loading state conditionals
+3. **Forgot to add import statement** at top of file
+4. TypeScript/build passed (component exists in codebase)
+5. Runtime error occurred when loading state triggered
+
+**Code Pattern:**
+```typescript
+// ❌ WRONG - Used component without import
+{isLoading ? (
+  <div className={...}>
+    {Array.from({ length: 6 }).map((_, i) => (
+      <BrandedCardSkeleton key={i} />  // ← Component not imported!
+    ))}
+  </div>
+) : ...}
+```
+
+**Correct Pattern:**
+```typescript
+// ✅ CORRECT - Import before use
+import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
+
+// Then use in JSX:
+{isLoading ? (
+  <div className={...}>
+    {Array.from({ length: 6 }).map((_, i) => (
+      <BrandedCardSkeleton key={i} />  // ✅ Works correctly
+    ))}
+  </div>
+) : ...}
+```
+
+### Why This Happened
+
+**Common Pitfall Pattern:**
+1. **Mental Model Error:** Focused on JSX logic, assumed component was already imported
+2. **No IDE Warning:** If using auto-import disabled or missed the suggestion
+3. **Build Passed:** TypeScript doesn't catch runtime errors for missing imports in some cases
+4. **Late Detection:** Error only appears when that code path executes (loading state)
+
+**Similar to previous lesson (Type Mismatch - CLAUDE.md:3470):**
+- Both involve assumptions about data/components being available
+- Both caught at runtime, not build time
+- Both require defensive thinking about what's actually imported/defined
+
+### Prevention Strategies
+
+**✅ Checklist When Adding New Components:**
+1. **Before writing JSX:**
+   - [ ] Check if component is imported
+   - [ ] If not, add import statement immediately
+   - [ ] Verify import path is correct
+
+2. **IDE Setup:**
+   - [ ] Enable auto-import suggestions
+   - [ ] Use ESLint rule: `no-undef` (catches undefined variables)
+   - [ ] Enable TypeScript strict mode
+
+3. **Testing Pattern:**
+   - [ ] Test all code paths (loading states, error states, empty states)
+   - [ ] Don't just test happy path
+   - [ ] Use dev tools to force loading states
+
+4. **Code Review Pattern:**
+   ```typescript
+   // When reviewing PRs, check:
+   // 1. Every JSX component tag has corresponding import
+   // 2. No orphaned JSX without imports
+   // 3. Conditional renders have all dependencies imported
+   ```
+
+### Quick Fix Commands
+
+**Find all component usages without imports:**
+```bash
+# Search for component usage
+grep -r "BrandedCardSkeleton" src/
+
+# Check if imported in that file
+grep "import.*BrandedCardSkeleton" src/app/places/saved/page.tsx
+# If empty → Missing import!
+```
+
+**Verify all imports match usage:**
+```bash
+# List all imported components
+grep "^import.*from.*components" src/app/places/saved/page.tsx
+
+# List all JSX component tags
+grep -o "<[A-Z][a-zA-Z]*" src/app/places/saved/page.tsx | sort -u
+```
+
+### Related Patterns
+
+**Other cases where this happens:**
+- Adding hooks: `usePlaces()` without importing `@/hooks/use-places`
+- Adding utilities: `cn()` without importing `@/lib/utils`
+- Adding icons: `<Heart />` without importing from `lucide-react`
+- Adding types: `PlaceData` without importing from `@/lib/types/places`
+
+**Prevention Mantra:**
+> **"Import first, use second. Never assume it's there."**
+
+### Files Fixed
+
+- `src/app/places/saved/page.tsx` - Added missing import (line 15)
+
+### Key Takeaway
+
+**Rule:** Every time you type `<ComponentName />` in JSX:
+1. ✅ Check imports at top of file
+2. ✅ Add import if missing
+3. ✅ Test the code path immediately
+
+**Why Important:**
+- Runtime errors break user experience
+- Hard to debug (error message doesn't always point to root cause)
+- Can slip through build process
+- Only caught when specific UI state triggers
+
+**Remember:** TypeScript catches type errors, not missing imports for components that exist elsewhere in the codebase. Always verify imports manually.
+
+---
+
+## ❌ Lesson Learned: FormData Upload - Content-Type Header Conflict (2025-01-07)
+
+### Problem
+Upload file bị lỗi 500: `Content-Type was not one of "multipart/form-data"...`
+
+### Root Cause
+`callApi()` luôn set `'Content-Type': 'application/json'` mặc định. Khi upload FormData, header này KHÔNG được ghi đè vì `headers: {}` không có key `'Content-Type'` để override.
+
+### Solution
+```typescript
+// Check if body is FormData before setting Content-Type
+if (!(options.body instanceof FormData)) {
+  headers['Content-Type'] = 'application/json';
+}
+// Browser will auto-set: multipart/form-data; boundary=...
+```
+
+### Key Takeaway
+**NEVER manually set Content-Type for FormData.** Browser MUST set it with boundary parameter.
+
+**Files:** `src/lib/client/api.ts:22-24`, `src/hooks/use-team-members.ts:273-277`
+
+**Full Documentation:** [docs/lessons/formdata-upload-content-type.md](docs/lessons/formdata-upload-content-type.md)
+
+---

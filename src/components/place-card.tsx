@@ -7,13 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Place } from "@/lib/types/places"
 import { generatePlaceUrl } from "@/lib/utils/url-helpers"
-import { Eye } from "lucide-react"
+import { Eye, Share2 } from "lucide-react"
+import { usePlaceInteractions } from "@/hooks/use-place-interactions"
 
 interface PlaceCardProps {
   place: Place
   showCTA?: boolean
   className?: string
-  onAddToItinerary?: (placeId: string) => void
   realtimeStats?: {
     views?: number
     likes?: number
@@ -27,17 +27,56 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   place,
   showCTA = true,
   className,
-  onAddToItinerary,
   realtimeStats,
 }) => {
+  // Use centralized hook for place interactions (auto-fetches initial state)
+  const { interactions, toggleSave, isLoading } = usePlaceInteractions(
+    place.id,
+    place.likeCount || 0,
+    place.stats?.saves || 0
+  )
+
   const primaryImage = place.images?.find(img => img.isPrimary) || place.images?.[0]
-  
+
   // Always generate compound URL (slug-shortId format) for consistency
   const placeUrl = generatePlaceUrl({
     id: place.id,
     name: place.name,
     slug: place.slug
   })
+
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    await toggleSave()
+  }
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const shareData = {
+      title: `${place.name} - Du Lịch Việt`,
+      text: place.shortDescription,
+      url: `${window.location.origin}${placeUrl}`
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareData.url)
+        toast({
+          title: "Đã sao chép",
+          description: "Đường dẫn đã được sao chép vào clipboard",
+        })
+      }
+    } catch (error) {
+      // User cancelled share or clipboard failed
+      console.log('Share cancelled or failed')
+    }
+  }
 
   return (
     <Link href={placeUrl} className="block">
@@ -197,21 +236,58 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
         )}
       </CardContent>
 
-      {/* CTA Button - Text only, professional */}
+      {/* Quick Actions Bar */}
       {showCTA && (
         <CardFooter className="p-3 sm:p-4 pt-0">
-          <Button
-            size="sm"
-            variant="secondary"
-            className="w-full min-h-[44px] text-sm"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onAddToItinerary?.(place.id);
-            }}
-          >
-            Thêm vào lịch trình
-          </Button>
+          <div className="flex items-center gap-2 w-full">
+            {/* Save Button */}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="hover:bg-primary-50 hover:text-primary transition-colors"
+              onClick={handleSave}
+              disabled={isLoading}
+              title={interactions.isSaved ? "Bỏ lưu" : "Lưu địa điểm"}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill={interactions.isSaved ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span className="hidden sm:inline ml-1.5">Lưu</span>
+            </Button>
+
+            {/* Share Button */}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="hover:bg-primary-50 hover:text-primary transition-colors"
+              onClick={handleShare}
+              title="Chia sẻ"
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1.5">Chia sẻ</span>
+            </Button>
+
+            {/* View Details - Primary CTA */}
+            <Button
+              size="sm"
+              variant="default"
+              className="flex-1 ml-auto bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white shadow-sm hover:shadow-md transition-all duration-300"
+              asChild
+            >
+              <span>Xem chi tiết</span>
+            </Button>
+          </div>
         </CardFooter>
       )}
       </Card>

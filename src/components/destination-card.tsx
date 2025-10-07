@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { generatePlaceUrl } from '@/lib/utils/url-helpers';
+import { usePlaceInteractions } from '@/hooks/use-place-interactions';
 
 import {
   Card,
@@ -35,10 +36,16 @@ interface DestinationCardProps {
 }
 
 export default function DestinationCard({ destination }: DestinationCardProps) {
-  const [isSaved, setIsSaved] = useState(false);
+  // Use centralized hook for place interactions (auto-fetches initial state)
+  const { interactions, toggleLike, isLoading } = usePlaceInteractions(
+    destination.id,
+    0, // likeCount not provided in Destination type
+    0  // saveCount not provided
+  );
+
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  
+
   // Always generate compound URL (slug-shortId format)
   // Even if slug is missing, we'll generate one from name
   const placeUrl = generatePlaceUrl({
@@ -46,6 +53,12 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
     name: destination.name,
     slug: destination.slug // Can be undefined, generatePlaceUrl will handle it
   });
+
+  const handleFavoriteToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await toggleLike();
+  };
 
   const renderBadge = () => {
     // Chỉ có Contributor và Partner mới có thể đăng địa điểm
@@ -188,7 +201,7 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
                 setImageError(true);
                 setIsImageLoading(false);
               }}
-              priority={destination.id <= 3} // Load first 3 images with priority
+              priority={false}
             />
           )}
           
@@ -243,24 +256,26 @@ export default function DestinationCard({ destination }: DestinationCardProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsSaved(!isSaved)}
+          onClick={handleFavoriteToggle}
+          disabled={isLoading}
           className={cn(
             "glass-subtle motion-gentle hover:scale-105 p-2 rounded-lg touch-target-44",
-            isSaved 
-              ? "text-danger hover:text-danger" 
+            interactions.isLiked
+              ? "text-danger hover:text-danger"
               : "text-muted hover:text-primary"
           )}
-          aria-label={isSaved ? "Bỏ lưu địa điểm" : "Lưu địa điểm"}
+          aria-label={interactions.isLiked ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+          title={interactions.isLiked ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="18" 
-            height="18" 
-            viewBox="0 0 24 24" 
-            fill={isSaved ? "currentColor" : "none"} 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill={interactions.isLiked ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
             strokeLinejoin="round"
             className="transition-all duration-200 sm:w-5 sm:h-5"
           >

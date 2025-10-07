@@ -26,7 +26,8 @@ import {
   ChevronDown,
   ChevronRight,
   Megaphone,
-  MessageSquare
+  MessageSquare,
+  UsersRound
 } from 'lucide-react'
 
 interface VietnamTravelSidebarProps {
@@ -114,6 +115,14 @@ const navigationSections: NavSection[] = [
         icon: MapPin,
         description: 'Quản lý địa điểm',
         roles: ['moderator', 'admin']
+      },
+      {
+        id: 'team',
+        title: 'Đội ngũ',
+        href: '/admin/team',
+        icon: UsersRound,
+        description: 'Quản lý đội ngũ lãnh đạo',
+        roles: ['admin']
       },
       {
         id: 'announcements',

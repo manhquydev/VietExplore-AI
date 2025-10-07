@@ -8,15 +8,20 @@ import { PlaceFilters, PlaceFormData } from '@/lib/types/places';
 // It handles authentication token and makes requests to our Next.js API routes.
 
 async function callApi<T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; error?: string; message?: string; pagination?: any }> {
   try {
     const user = auth.currentUser;
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...options.headers,
     };
+
+    // Only set Content-Type if body is not FormData
+    // Browser will automatically set correct Content-Type with boundary for FormData
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (user) {
       const token = await user.getIdToken();

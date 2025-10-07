@@ -8,6 +8,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { TeamSection } from "@/components/team/team-section"
 import {
   Heart,
   Users,
@@ -25,26 +26,8 @@ import {
   Lightbulb
 } from "lucide-react"
 
-const teamMembers = [
-  {
-    name: "Nguyễn Minh Hoàng",
-    role: "Founder & Product Lead",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    description: "Passionate về việc xây dựng nền tảng du lịch bền vững cho Việt Nam"
-  },
-  {
-    name: "Trần Thị Lan",
-    role: "Community Manager",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b332c5cd?w=150&h=150&fit=crop&crop=face",
-    description: "Kết nối và phát triển cộng đồng du lịch Việt Nam"
-  },
-  {
-    name: "Lê Văn Đức",
-    role: "Technical Lead",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    description: "Phát triển công nghệ AI và platform architecture"
-  }
-]
+// Team members are now managed dynamically via /admin/team
+// and fetched from Firestore in the TeamSection component
 
 const milestones = [
   {
@@ -318,44 +301,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team - Typography as Voice with Personal Touch */}
-        <section className="container py-20">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16 space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-bold">
-                <span className="gradient-text">Đội ngũ</span> <span className="text-foreground">sáng lập</span>
-              </h2>
-              <p className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-                Những người tiên phong với đam mê xây dựng cửa sổ kỹ thuật số mở ra vẻ đẹp Việt Nam
-              </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {teamMembers.map((member, index) => (
-                <div key={index} className="group">
-                  <div className="glass-card p-6 lg:p-8 text-center h-full motion-gentle hover:scale-105">
-                    {/* Avatar with glass effect */}
-                    <div className="relative w-24 h-24 mx-auto mb-6">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-full h-full rounded-full object-cover shadow-soft"
-                      />
-                      <div className="absolute inset-0 rounded-full ring-4 ring-white/20 group-hover:ring-primary/30 transition-all duration-300"></div>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></div>
-                    </div>
-                    
-                    {/* Typography hierarchy */}
-                    <h3 className="text-lg font-bold text-foreground mb-2">{member.name}</h3>
-                    <p className="text-primary text-sm font-medium mb-4">{member.role}</p>
-                    <p className="text-muted text-sm leading-relaxed">{member.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Team - Dynamic Team Section from Firestore */}
+        <TeamSection />
 
         {/* Contact Section - Clean Call to Action */}
         <section className="container py-20">
@@ -372,25 +319,25 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-secondary/80"></div>
               
               {/* Content */}
-              <div className="relative glass-card border-0 p-8 sm:p-12 text-center text-white">
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+              <div className="relative p-8 sm:p-10 text-center text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4">
                   Cùng tạo nên <span className="text-white/90">cửa sổ Việt Nam</span>
                 </h2>
-                <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-                  Có câu hỏi, góp ý hoặc muốn hợp tác? Hãy liên hệ với chúng tôi. 
+                <p className="text-base sm:text-lg text-white/90 mb-6 max-w-2xl mx-auto leading-relaxed">
+                  Có câu hỏi, góp ý hoặc muốn hợp tác? Hãy liên hệ với chúng tôi.
                   Mỗi ý kiến đóng góp đều giúp chúng tôi hoàn thiện hơn.
                 </p>
 
-                <div className="grid sm:grid-cols-2 gap-6 mb-8">
-                  <div className="glass-subtle p-6 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
-                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="grid sm:grid-cols-2 gap-4 mb-6 max-w-3xl mx-auto">
+                  <div className="glass-subtle p-5 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <Mail className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="font-bold text-white mb-2">Email chúng tôi</h3>
-                    <p className="text-white/80 text-sm mb-4">Gửi thắc mắc hoặc ý kiến góp ý</p>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <h3 className="font-bold text-white mb-1.5">Email chúng tôi</h3>
+                    <p className="text-white/80 text-sm mb-3">Gửi thắc mắc hoặc ý kiến góp ý</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="bg-white/20 hover:bg-white/30 text-white border-white/20"
                       asChild
                     >
@@ -400,15 +347,15 @@ export default function AboutPage() {
                     </Button>
                   </div>
 
-                  <div className="glass-subtle p-6 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
-                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="glass-subtle p-5 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <Github className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="font-bold text-white mb-2">Mã nguồn mở</h3>
-                    <p className="text-white/80 text-sm mb-4">Tham gia phát triển dự án</p>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <h3 className="font-bold text-white mb-1.5">Mã nguồn mở</h3>
+                    <p className="text-white/80 text-sm mb-3">Tham gia phát triển dự án</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="bg-white/20 hover:bg-white/30 text-white border-white/20"
                       asChild
                     >
@@ -419,8 +366,8 @@ export default function AboutPage() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <Button 
+                <div className="space-y-3">
+                  <Button
                     size="lg"
                     className="bg-white text-primary hover:bg-white/90 shadow-soft motion-gentle hover:scale-105"
                     asChild
@@ -430,7 +377,7 @@ export default function AboutPage() {
                       Liên hệ chi tiết
                     </Link>
                   </Button>
-                  
+
                   <p className="text-white/70 text-sm">
                     Hoặc tham gia{" "}
                     <Link href="/community" className="text-white hover:text-white/90 underline">

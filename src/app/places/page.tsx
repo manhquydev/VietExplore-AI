@@ -13,7 +13,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { usePlaces } from "@/hooks/use-places"
-import { Eye, Star } from "lucide-react"
+import { Eye, Star, MapPin } from "lucide-react"
+import Link from "next/link"
+import { generatePlaceUrl } from "@/lib/utils/url-helpers"
 import RealtimeService from "@/lib/firebase/realtime"
 import { PlaceRegion } from "@/lib/types/places"
 
@@ -69,11 +71,6 @@ export default function PlacesPage() {
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters)
-  }
-
-  const handleAddToItinerary = (placeId: string) => {
-    console.log('Adding place to itinerary:', placeId)
-    // Will implement add to itinerary logic later
   }
 
   // Subscribe to real-time stats for current places
@@ -290,7 +287,6 @@ export default function PlacesPage() {
                     <PlaceCard
                       key={place.id}
                       place={place}
-                      onAddToItinerary={handleAddToItinerary}
                       realtimeStats={realtimeStats[place.id]}
                     />
                   ))}
@@ -299,59 +295,80 @@ export default function PlacesPage() {
 
               {viewMode === 'list' && (
                 <div className="space-y-4">
-                  {paginatedPlaces.map((place) => (
-                    <div key={place.id} className="glass-card p-6 flex gap-6 hover:shadow-lg transition-all duration-300">
-                      <div className="w-32 h-24 rounded-xl overflow-hidden flex-shrink-0">
-                        <img
-                          src={place.images[0]?.url}
-                          alt={place.images[0]?.alt}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-xl mb-2 text-slate-900 ">{place.name}</h3>
-                        <p className="text-slate-600  text-sm mb-2">{place.province} • {place.type}</p>
-                        <p className="text-slate-600  text-sm mb-4 line-clamp-2">{place.shortDescription}</p>
-                        
-                        {/* Stats Row */}
-                        <div className="flex items-center gap-4 mb-4 text-sm text-slate-600">
-                          {place.rating && place.rating.average > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                              <span>{place.rating.average.toFixed(1)}</span>
-                              <span className="text-slate-400">({place.rating.count})</span>
-                            </div>
-                          )}
-                          {(() => {
-                            const viewCount = Math.max(realtimeStats[place.id]?.views || 0, place.viewCount || 0);
-                            return viewCount > 0 ? (
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-4 w-4" />
-                                <span>{viewCount.toLocaleString('vi-VN')}</span>
+                  {paginatedPlaces.map((place) => {
+                    const placeUrl = generatePlaceUrl({
+                      id: place.id,
+                      name: place.name,
+                      slug: place.slug
+                    })
+
+                    return (
+                      <Link key={place.id} href={placeUrl} className="block">
+                        <div className="glass-card p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                          <div className="w-full sm:w-32 h-48 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-surface">
+                            {place.images[0]?.url ? (
+                              <img
+                                src={place.images[0].url}
+                                alt={place.images[0].alt || place.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-primary-50 flex items-center justify-center">
+                                <MapPin className="w-8 h-8 text-gray-400" />
                               </div>
-                            ) : null;
-                          })()}
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex gap-2">
-                            {place.tags?.slice(0, 2).map((tag, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs glass-subtle">
-                                {tag}
-                              </Badge>
-                            ))}
+                            )}
                           </div>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleAddToItinerary(place.id)}
-                            className="bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-600 hover:to-teal-600"
-                          >
-                            Thêm vào lịch trình
-                          </Button>
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-lg sm:text-xl mb-2 text-slate-900 group-hover:text-primary transition-colors line-clamp-1">
+                              {place.name}
+                            </h3>
+                            <p className="text-slate-600 text-sm mb-2">
+                              {place.province}
+                              {place.type && <span> • {place.type}</span>}
+                            </p>
+                            <p className="text-slate-600 text-sm mb-3 sm:mb-4 line-clamp-2 leading-relaxed">
+                              {place.shortDescription}
+                            </p>
+
+                            {/* Stats Row */}
+                            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 text-xs sm:text-sm text-slate-600">
+                              {place.rating && place.rating.average > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400 fill-yellow-400" />
+                                  <span className="font-medium">{place.rating.average.toFixed(1)}</span>
+                                  <span className="text-slate-400">({place.rating.count})</span>
+                                </div>
+                              )}
+                              {(() => {
+                                const viewCount = Math.max(realtimeStats[place.id]?.views || 0, place.viewCount || 0);
+                                return viewCount > 0 ? (
+                                  <div className="flex items-center gap-1">
+                                    <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    <span>{viewCount.toLocaleString('vi-VN')}</span>
+                                  </div>
+                                ) : null;
+                              })()}
+                            </div>
+
+                            {/* Tags */}
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                              {place.tags?.slice(0, 3).map((tag, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs glass-subtle">
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {place.tags && place.tags.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{place.tags.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
 

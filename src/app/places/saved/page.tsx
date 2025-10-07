@@ -12,11 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useUserCollections } from "@/hooks/use-user-collections"
 import { useToast } from "@/hooks/use-toast"
 import RealtimeService from "@/lib/firebase/realtime"
-import { Heart, Bookmark, Search, Calendar, MapPin, Star, Trash2, Eye, Filter, Grid, List } from "lucide-react"
+import { Heart, Bookmark, Search, Calendar, MapPin, Star, Trash2, Eye, Filter, Grid, List, X } from "lucide-react"
 import { redirect } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -205,15 +206,13 @@ export default function SavedPlacesPage() {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
         <div className="container mx-auto px-4 py-8">
           {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-green to-brand-gold blur-3xl opacity-10 rounded-full"></div>
-              <h1 className="relative text-4xl md:text-5xl font-bold bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent mb-4">
-                Bộ Sưu Tập Của Bạn
-              </h1>
-            </div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Quản lý các địa điểm yêu thích và đã lưu để lên kế hoạch du lịch hoàn hảo
+          <div className="glass-card max-w-4xl mx-auto text-center p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 md:mb-12">
+            <h1 className="gradient-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
+              Bộ Sưu Tập Của Bạn
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-0 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0">
+              Quản lý các địa điểm yêu thích và đã lưu<br className="hidden sm:block" />
+              để lên kế hoạch cho chuyến du lịch tiếp theo
             </p>
           </div>
 
@@ -224,17 +223,23 @@ export default function SavedPlacesPage() {
                 <TabsList className="grid w-full lg:w-auto grid-cols-2 bg-white shadow-lg border-0 p-1 rounded-2xl h-auto min-h-14">
                   <TabsTrigger
                     value="favorites"
-                    className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-rose-600 data-[state=active]:text-white data-[state=active]:shadow-xl"
+                    className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-rose-600 data-[state=active]:text-white data-[state=active]:shadow-xl"
                   >
                     <Heart className="h-5 w-5" />
-                    Yêu Thích ({favorites.length})
+                    <span className="hidden sm:inline">Yêu Thích</span>
+                    <Badge className="ml-1 sm:ml-2 bg-white/20 text-current border-0 data-[state=active]:bg-white/30">
+                      {favorites.length}
+                    </Badge>
                   </TabsTrigger>
                   <TabsTrigger
                     value="saved"
-                    className="flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-gold data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-xl"
+                    className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-gold data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-xl"
                   >
                     <Bookmark className="h-5 w-5" />
-                    Đã Lưu ({savedPlaces.length})
+                    <span className="hidden sm:inline">Đã Lưu</span>
+                    <Badge className="ml-1 sm:ml-2 bg-white/20 text-current border-0 data-[state=active]:bg-white/30">
+                      {savedPlaces.length}
+                    </Badge>
                   </TabsTrigger>
                 </TabsList>
 
@@ -272,23 +277,36 @@ export default function SavedPlacesPage() {
               </div>
 
               {/* Search and Filter Bar */}
-              <div className="flex flex-col lg:flex-row gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
+                    aria-label="Tìm kiếm địa điểm"
                     placeholder={`Tìm kiếm trong ${activeTab === "favorites" ? "yêu thích" : "đã lưu"}...`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 pr-4 py-3 text-base border-gray-300 rounded-xl focus:border-blue-500 focus:ring-blue-500 bg-white shadow-sm"
+                    className="pl-12 pr-10 py-3 text-base border-gray-300 rounded-xl focus:border-blue-500 focus:ring-blue-500 bg-white shadow-sm"
                   />
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Xóa tìm kiếm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </Button>
+                  )}
                 </div>
-                
+
                 <div className="flex items-center gap-3">
-                  <Filter className="h-5 w-5 text-gray-500" />
+                  <Filter className="h-5 w-5 text-gray-500 hidden sm:block" />
                   <select
+                    aria-label="Lọc theo loại địa điểm"
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="px-4 py-3 border border-gray-300 rounded-xl bg-white text-base focus:border-blue-500 focus:ring-blue-500 shadow-sm min-w-[150px]"
+                    className="flex-1 sm:flex-initial sm:min-w-[150px] px-4 py-3 border border-gray-300 rounded-xl bg-white text-base focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                   >
                     <option value="all">Tất cả loại hình</option>
                     {getUniqueTypes().map(type => (
@@ -301,17 +319,23 @@ export default function SavedPlacesPage() {
               {/* Content */}
               <TabsContent value="favorites" className="space-y-6">
                 {isLoading ? (
-                  <div className="flex justify-center py-12">
-                    <LoadingSpinner size="lg" />
+                  <div className={cn(
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+                      : "space-y-4 sm:space-y-6"
+                  )}>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <BrandedCardSkeleton key={i} />
+                    ))}
                   </div>
                 ) : favorites.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
-                      <Heart className="h-12 w-12 text-red-400" />
+                  <div className="text-center py-12 sm:py-16 px-4">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
+                      <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-red-400" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Chưa có địa điểm yêu thích</h3>
-                    <p className="text-gray-600 mb-8 text-lg">Hãy khám phá và thêm các địa điểm yêu thích vào bộ sưu tập!</p>
-                    <Button asChild className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Chưa có địa điểm yêu thích</h3>
+                    <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">Hãy khám phá và thêm các địa điểm yêu thích vào bộ sưu tập!</p>
+                    <Button asChild className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                       <Link href="/places">Khám phá địa điểm</Link>
                     </Button>
                   </div>
@@ -322,17 +346,23 @@ export default function SavedPlacesPage() {
 
               <TabsContent value="saved" className="space-y-6">
                 {isLoading ? (
-                  <div className="flex justify-center py-12">
-                    <LoadingSpinner size="lg" />
+                  <div className={cn(
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+                      : "space-y-4 sm:space-y-6"
+                  )}>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <BrandedCardSkeleton key={i} />
+                    ))}
                   </div>
                 ) : savedPlaces.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
-                      <Bookmark className="h-12 w-12 text-blue-400" />
+                  <div className="text-center py-12 sm:py-16 px-4">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+                      <Bookmark className="h-10 w-10 sm:h-12 sm:w-12 text-blue-400" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Chưa có địa điểm đã lưu</h3>
-                    <p className="text-gray-600 mb-8 text-lg">Lưu các địa điểm để lên kế hoạch cho chuyến du lịch tiếp theo!</p>
-                    <Button asChild className="bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Chưa có địa điểm đã lưu</h3>
+                    <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">Lưu các địa điểm để lên kế hoạch cho chuyến du lịch tiếp theo!</p>
+                    <Button asChild className="bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                       <Link href="/places">Khám phá địa điểm</Link>
                     </Button>
                   </div>
@@ -372,17 +402,17 @@ function PlaceGrid({ places, viewMode, onRemove, type, realtimeStats }: PlaceGri
 
   return (
     <div className={cn(
-      viewMode === "grid" 
-        ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8" 
-        : "space-y-6"
+      viewMode === "grid"
+        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+        : "space-y-4 sm:space-y-6"
     )}>
       {places.map((item) => (
-        <PlaceCard 
-          key={item.id} 
-          item={item} 
-          viewMode={viewMode} 
-          onRemove={onRemove} 
-          type={type} 
+        <PlaceCard
+          key={item.id}
+          item={item}
+          viewMode={viewMode}
+          onRemove={onRemove}
+          type={type}
           realtimeStats={realtimeStats}
         />
       ))}
@@ -408,11 +438,12 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
       <Link href={`/places/${item.place.id}`} className="block">
         <Card className="bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer">
           <CardContent className="p-0">
-            <div className="flex h-48 md:h-32">
-            <div className="relative w-48 md:w-64 shrink-0">
+            <div className="flex flex-col sm:flex-row h-auto sm:h-32">
+            <div className="relative w-full sm:w-48 md:w-64 h-48 sm:h-full shrink-0">
               <img
                 src={primaryImage?.url || '/placeholder-image.jpg'}
                 alt={item.place.name}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
@@ -456,9 +487,10 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
                       e.stopPropagation();
                       onRemove(item.id);
                     }}
+                    aria-label="Xóa khỏi bộ sưu tập"
                     className="ml-4 text-gray-500 hover:text-red-500 hover:bg-red-50 border-gray-300 hover:border-red-300 transition-all duration-200"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
                 
@@ -505,6 +537,7 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
               <img
                 src={primaryImage?.url || '/placeholder-image.jpg'}
                 alt={item.place.name}
+                loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
             </div>
@@ -526,9 +559,10 @@ function PlaceCard({ item, viewMode, onRemove, type, realtimeStats }: PlaceCardP
                 e.stopPropagation();
                 onRemove(item.id);
               }}
+              aria-label="Xóa khỏi bộ sưu tập"
               className="bg-white/90 text-gray-600 hover:text-red-500 hover:bg-red-50 border-0 backdrop-blur-sm transition-all duration-200 shadow-lg"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
           
