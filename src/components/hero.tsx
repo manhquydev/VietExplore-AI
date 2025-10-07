@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { apiClient } from "@/lib/client/api"
+import { generatePlaceUrl } from "@/lib/utils/url-helpers"
 import type { Place } from "@/lib/types/places"
 
 const REGION_LABELS: Record<string, string> = {
@@ -120,7 +121,11 @@ export const Hero: React.FC = () => {
         REGION_LABELS[randomPlace.region] ||
         DEFAULT_HERO_CONTENT.location,
       image: primaryImage,
-      href: randomPlace.slug ? `/places/${randomPlace.slug}` : `/places/${randomPlace.id}`,
+      href: generatePlaceUrl({
+        slug: randomPlace.slug,
+        name: randomPlace.name,
+        id: randomPlace.id,
+      }),
       rating: randomPlace.rating,
       trustLabel: randomPlace.trustLabel,
       isFallback: false,
