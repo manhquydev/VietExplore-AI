@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PlaceChatWidgetProps {
   placeId: string;
@@ -34,6 +35,7 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   const {
     messages,
@@ -130,9 +132,25 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
         )}
       </div>
 
+      {/* Mobile overlay */}
+      {isOpen && isMobile && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40 sm:hidden"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Chat Panel - Glassmorphism Style */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-full max-w-md h-[600px] bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden border border-green-100/50">
+        <div
+          className={cn(
+            "fixed z-50 flex flex-col overflow-hidden border border-green-100/50 bg-white/80 backdrop-blur-sm shadow-2xl transition-all duration-300 rounded-3xl sm:rounded-2xl",
+            isMobile
+              ? "left-4 right-4 bottom-4 h-[min(90vh,36rem)] max-h-[90vh]"
+              : "bottom-6 right-6 w-full max-w-md h-[600px]"
+          )}
+        >
 
           {/* Header - Vietnamese Green Gradient */}
           <div className="p-4 bg-gradient-to-r from-green-600 to-emerald-500 text-white">
@@ -329,7 +347,14 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-white border-t border-green-100">
+          <div
+            className={cn(
+              "p-4 bg-white border-t border-green-100",
+              isMobile
+                ? "pb-[calc(env(safe-area-inset-bottom)+1rem)]"
+                : "pb-4"
+            )}
+          >
             {/* Rate Limited Warning */}
             {isRateLimited && (
               <div className="mb-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-amber-200 rounded-lg flex items-start gap-2">
