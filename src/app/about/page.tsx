@@ -305,30 +305,47 @@ export default function AboutPage() {
         <TeamSection />
 
         {/* Contact Section - Clean Call to Action */}
-        <section className="container py-20">
+        <section className="container py-12 sm:py-16">
           <div className="max-w-4xl mx-auto">
             {/* Glass card with background imagery */}
-            <div className="relative overflow-hidden rounded-3xl">
+            <div className="relative overflow-hidden rounded-3xl min-h-[400px] flex items-center">
               {/* Background with Vietnam scenery */}
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
                   backgroundImage: `url('https://images.unsplash.com/photo-1559592413-7cec4d0d5d2d?q=80&w=2069')`
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-secondary/80"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-secondary/90"></div>
               
               {/* Content */}
-              <div className="relative p-8 sm:p-10 text-center text-white">
+              <div className="relative p-8 sm:p-10 text-center text-white w-full">
                 <h2 className="text-3xl sm:text-4xl font-bold mb-4">
                   Cùng tạo nên <span className="text-white/90">cửa sổ Việt Nam</span>
                 </h2>
-                <p className="text-base sm:text-lg text-white/90 mb-6 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
                   Có câu hỏi, góp ý hoặc muốn hợp tác? Hãy liên hệ với chúng tôi.
                   Mỗi ý kiến đóng góp đều giúp chúng tôi hoàn thiện hơn.
                 </p>
 
-                <div className="grid sm:grid-cols-2 gap-4 mb-6 max-w-3xl mx-auto">
+                {/* Quick Stats */}
+                <div className="grid grid-cols-3 gap-4 mb-8 max-w-2xl mx-auto">
+                  <div className="glass-subtle p-4 rounded-xl border border-white/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-white mb-1">24/7</div>
+                    <div className="text-xs sm:text-sm text-white/70">Hỗ trợ</div>
+                  </div>
+                  <div className="glass-subtle p-4 rounded-xl border border-white/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-white mb-1">&lt;2h</div>
+                    <div className="text-xs sm:text-sm text-white/70">Phản hồi</div>
+                  </div>
+                  <div className="glass-subtle p-4 rounded-xl border border-white/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-white mb-1">100%</div>
+                    <div className="text-xs sm:text-sm text-white/70">Miễn phí</div>
+                  </div>
+                </div>
+
+                {/* Contact Methods */}
+                <div className="grid sm:grid-cols-2 gap-4 mb-8 max-w-3xl mx-auto">
                   <div className="glass-subtle p-5 rounded-2xl border border-white/20 motion-gentle hover:scale-105">
                     <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <Mail className="w-6 h-6 text-white" />
@@ -366,7 +383,8 @@ export default function AboutPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                {/* Call to Action */}
+                <div className="space-y-4">
                   <Button
                     size="lg"
                     className="bg-white text-primary hover:bg-white/90 shadow-soft motion-gentle hover:scale-105"
@@ -378,12 +396,19 @@ export default function AboutPage() {
                     </Link>
                   </Button>
 
-                  <p className="text-white/70 text-sm">
-                    Hoặc tham gia{" "}
-                    <Link href="/community" className="text-white hover:text-white/90 underline">
-                      cộng đồng Du Lịch Việt
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-white/70">
+                    <Link href="/community" className="text-white hover:text-white/90 underline flex items-center gap-1">
+                      Tham gia cộng đồng
                     </Link>
-                  </p>
+                    <span className="hidden sm:inline">•</span>
+                    <Link href="/contribute" className="text-white hover:text-white/90 underline flex items-center gap-1">
+                      Đóng góp địa điểm
+                    </Link>
+                    <span className="hidden sm:inline">•</span>
+                    <Link href="/admin" className="text-white hover:text-white/90 underline flex items-center gap-1">
+                      Quản trị viên
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
