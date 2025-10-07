@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/firebase';
 import { UserRole } from '@/lib/types/auth';
-import { PlaceFilters, PlaceFormData } from '@/lib/types/places';
+import { Place, PlaceFilters, PlaceFormData } from '@/lib/types/places';
 
 // This is a client-side safe API client.
 // It handles authentication token and makes requests to our Next.js API routes.
@@ -125,6 +125,16 @@ export const apiClient = {
         }
       });
       return callApi(`/places?${params.toString()}`);
+    },
+    random: (filters: { region?: string; type?: string; trustLabel?: string; featured?: boolean; pool?: number } = {}) => {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, value.toString());
+        }
+      });
+      const queryString = params.toString();
+      return callApi<Place>(`/places/random${queryString ? `?${queryString}` : ''}`);
     },
     getById: (id: string) => callApi(`/places/${id}`),
     create: (data: PlaceFormData) => callApi('/places', {

@@ -111,6 +111,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",
+    "eslint": "9.37.0",
+    "eslint-config-next": "15.5.4",
     "genkit-cli": "^1.14.1",
     "jest": "^30.0.5",
     "png-to-ico": "^3.0.1",

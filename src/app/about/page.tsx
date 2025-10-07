@@ -313,10 +313,11 @@ export default function AboutPage() {
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1559592413-7cec4d0d5d2d?q=80&w=2069')`
+                  backgroundImage: `url('https://images.unsplash.com/photo-1559592413-7cec4d0d5d2d?q=80&w=2069')`,
+                  backgroundColor: "#064e3b"
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-secondary/90"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/90 via-emerald-900/85 to-amber-800/80 pointer-events-none"></div>
               
               {/* Content */}
               <div className="relative p-8 sm:p-10 text-center text-white w-full">
