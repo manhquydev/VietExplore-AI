@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { usePlaceChat, usePlaceQuickQuestions } from '@/hooks/use-place-chat';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Button } from '@/components/ui/button';
@@ -32,10 +33,12 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [redirectPath, setRedirectPath] = useState('/');
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
+  const isGuest = !isAuthenticated;
 
   const {
     messages,
@@ -48,6 +51,16 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
   } = usePlaceChat(placeId);
 
   const quickQuestions = usePlaceQuickQuestions(placeType);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname + window.location.search;
+      setRedirectPath(currentPath || '/');
+    }
+  }, []);
+
+  const loginUrl = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
+  const registerUrl = `/auth/register?redirect=${encodeURIComponent(redirectPath)}`;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -75,6 +88,7 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
   }, [error]);
 
   const handleSend = async () => {
+    if (isGuest) return;
     if (!input.trim() || isLoading || isRateLimited) return;
 
     await sendMessage(input);
@@ -82,6 +96,7 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
   };
 
   const handleQuickQuestion = (question: string) => {
+    if (isGuest) return;
     setInput(question);
     // Auto-send after short delay
     setTimeout(() => {
@@ -103,13 +118,10 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      if (isGuest) return;
       handleSend();
     }
   };
-
-  if (!isAuthenticated) {
-    return null; // Don't show chat widget for unauthenticated users
-  }
 
   return (
     <>
@@ -167,7 +179,19 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {messages.length > 0 && (
+                {isGuest && (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="secondary"
+                    className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                  >
+                    <Link href={loginUrl}>
+                      Đăng nhập
+                    </Link>
+                  </Button>
+                )}
+                {!isGuest && messages.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -190,7 +214,7 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
             </div>
 
             {/* Rate Limit Info */}
-            {rateLimit && (
+            {rateLimit && !isGuest && (
               <div className="mt-3 text-xs opacity-90 flex items-center gap-1">
                 <Info className="w-3 h-3" />
                 <span>
@@ -198,8 +222,16 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
                 </span>
               </div>
             )}
+            {isGuest && (
+              <div className="mt-3 text-xs opacity-90 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                <span>Đăng nhập để sử dụng Trợ lý AI</span>
+              </div>
+            )}
           </div>
 
+          {!isGuest ? (
+            <>
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 via-white to-green-50/30">
             {messages.length === 0 && (
@@ -405,6 +437,39 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
               Thông tin do AI cung cấp, vui lòng kiểm tra nguồn chính thức
             </p>
           </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col justify-between bg-gradient-to-br from-gray-50 via-white to-green-50/30">
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-8 py-10 space-y-6">
+                <div className="w-16 h-16 bg-white/70 border border-green-100 rounded-full flex items-center justify-center shadow-md">
+                  <Sparkles className="w-8 h-8 text-green-600" />
+                </div>
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-gray-900">
+                    Mở khóa Trợ lý AI
+                  </h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Đăng nhập để nhận gợi ý cá nhân hóa và lập kế hoạch cho {placeName}.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <Button asChild className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white">
+                    <Link href={loginUrl}>
+                      Đăng nhập để bắt đầu
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full sm:w-auto border-green-300 text-green-700 hover:bg-green-50">
+                    <Link href={registerUrl}>
+                      Tạo tài khoản miễn phí
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="p-4 border-t border-green-100 text-xs text-gray-500 text-center">
+                Sau khi đăng nhập, bạn sẽ nhận Trợ lý AI cho địa điểm này và các gợi ý nổi bật.
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

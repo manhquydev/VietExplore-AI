@@ -3,13 +3,15 @@
 export const dynamic = 'force-dynamic'
 
 import * as React from "react"
+import Link from "next/link"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Send, Bot, User, Loader2, Copy, ThumbsUp, ThumbsDown, Lightbulb, ArrowUp,
-  MapPin, Calendar, DollarSign, Camera, MessageCircle, Sparkles, Clock, Star
+  MapPin, Calendar, DollarSign, Camera, MessageCircle, Sparkles, Clock, Star,
+  Lock, LogIn, UserPlus
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -98,7 +100,7 @@ const samplePrompts = [
 const initialMessages: Message[] = []
 
 export default function AIChatPage() {
-  const { user } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [messages, setMessages] = React.useState<Message[]>(initialMessages)
   const [showWelcome, setShowWelcome] = React.useState(true)
   const [inputValue, setInputValue] = React.useState("")
@@ -237,6 +239,64 @@ export default function AIChatPage() {
   const rateMessage = (messageId: string, rating: 'up' | 'down') => {
     console.log('Rating message:', messageId, rating)
   }
+
+  const loginRedirect = `/auth/login?redirect=${encodeURIComponent('/ai-assistant/chat')}`
+  const registerRedirect = `/auth/register?redirect=${encodeURIComponent('/ai-assistant/chat')}`
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-bg">
+        <Header />
+        <main className="min-h-screen pt-16">
+          <div className="container max-w-xl mx-auto">
+            <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 text-muted text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p>Đang kiểm tra trạng thái đăng nhập...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-bg">
+        <Header />
+        <main className="min-h-screen pt-16">
+          <div className="container max-w-2xl mx-auto">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center gap-6 bg-surface border border rounded-3xl p-10 shadow-lg">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <Lock className="w-8 h-8" />
+              </div>
+              <div className="space-y-3">
+                <h1 className="text-2xl font-semibold text">Đăng nhập để sử dụng Trợ lý AI</h1>
+                <p className="text-muted text-base leading-relaxed max-w-lg">
+                  Trợ lý AI của Du Lịch Việt giúp bạn lập kế hoạch chuyến đi thông minh, nhận gợi ý cá nhân hóa và khám phá những trải nghiệm phải làm. Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <Link href={loginRedirect} className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto gap-2">
+                    <LogIn className="w-4 h-4" />
+                    Đăng nhập
+                  </Button>
+                </Link>
+                <Link href={registerRedirect} className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto gap-2">
+                    <UserPlus className="w-4 h-4" />
+                    Đăng ký
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+
 
   return (
     <div className="min-h-screen bg-bg">
