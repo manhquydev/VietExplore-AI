@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { TeamMember, DEPARTMENT_CONFIG } from '@/lib/types/team';
+import { cn } from '@/lib/utils';
 
 interface TeamMemberPageProps {
   params: {
@@ -78,6 +79,11 @@ export default async function TeamMemberPage({ params }: TeamMemberPageProps) {
     notFound();
   }
 
+  const departmentConfig = member.department
+    ? DEPARTMENT_CONFIG[member.department]
+    : null;
+  const DepartmentIcon = departmentConfig?.icon;
+
   return (
     <>
       <Header />
@@ -135,10 +141,27 @@ export default async function TeamMemberPage({ params }: TeamMemberPageProps) {
                     <p className="text-xl text-primary font-semibold mb-4">{member.title}</p>
 
                     <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                      {member.department && (
-                        <Badge variant={member.department === 'leadership' ? 'default' : 'outline'} className="text-sm">
-                          {DEPARTMENT_CONFIG[member.department].icon}{' '}
-                          {DEPARTMENT_CONFIG[member.department].label}
+                      {departmentConfig && DepartmentIcon && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "inline-flex items-center rounded-full px-3 h-7 text-sm font-medium transition-colors gap-2",
+                            member.department === 'leadership'
+                              ? departmentConfig.badge.solid
+                              : departmentConfig.badge.subtle
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r text-white shadow-sm",
+                              departmentConfig.color,
+                              member.department === 'leadership' && "shadow-[0_0_0_1px_rgba(255,255,255,0.35)]"
+                            )}
+                            aria-hidden="true"
+                          >
+                            <DepartmentIcon className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          </span>
+                          <span className="font-medium leading-none">{departmentConfig.label}</span>
                         </Badge>
                       )}
                       {member.joinedDate && (

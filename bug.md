@@ -1,69 +1,622 @@
-  GET http://localhost:9002/ai-assistant/chat 500 (Internal Server Error)
-performFullReload @ webpack-internal:///…oader-client.js:379
-handleApplyUpdates @ webpack-internal:///…oader-client.js:341
-eval @ webpack-internal:///…oader-client.js:368
-Promise.then
-tryApplyUpdatesWebpack @ webpack-internal:///…oader-client.js:365
-handleSuccess @ webpack-internal:///…oader-client.js:114
-processMessage @ webpack-internal:///…oader-client.js:240
-eval @ webpack-internal:///…loader-client.js:71
-handleMessage @ webpack-internal:///…ges/websocket.js:65
-main.js:2435 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
-index.js:640 Uncaught ModuleBuildError: Module build failed (from ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js):
-Error:   × Unexpected token `div`. Expected jsx identifier
-     ╭─[C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\ai-assistant\chat\page.tsx:264:1]
- 261 │ 
- 262 │   if (!isAuthenticated) {
- 263 │     return (
- 264 │       <div className="min-h-screen bg-bg">
-     ·        ───
- 265 │         <Header />
- 266 │         <main className="min-h-screen pt-16">
- 267 │           <div className="container max-w-2xl mx-auto">
-     ╰────
+main-app.js?v=1759900834609:2282 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\ui\toast-service.ts:238 [ToastService] Initialized and ready
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\ui\toast-provider-bridge.tsx:34 [ToastProviderBridge] Subscribed to toast service
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\lib\client\api.ts:39 API Response for /team?status=active&featured=true&orderBy=displayOrder&orderDirection=asc: {status: 200, text: '{"success":true,"data":[{"id":"0dAiuOZFkIDQ875wrsQ…edBy":"8VosajKv0GQ9rCM0a6pRYWVR54N2"}],"total":1}'}
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\team\team-section.tsx:104 React has detected a change in the order of Hooks called by TeamSection. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
 
+   Previous render            Next render
+   ------------------------------------------------------
+1. useMemo                    useMemo
+2. useState                   useState
+3. useState                   useState
+4. useState                   useState
+5. useCallback                useCallback
+6. useEffect                  useEffect
+7. undefined                  useMemo
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Caused by:
-    Syntax Error
-    at processResult (file://C:\Users\manhq\Downloads\da2\VietExplore-AI\node_modules\next\dist\compiled\webpack\bundle5.js:29:407111)
-    at <unknown> (file://C:\Users\manhq\Downloads\da2\VietExplore-AI\node_modules\next\dist\compiled\webpack\bundle5.js:29:408906)
-    at <unknown> (file://C:\Users\manhq\Downloads\da2\VietExplore-AI\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js:1:8645)
-    at <unknown> (file://C:\Users\manhq\Downloads\da2\VietExplore-AI\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js:1:5019)
-    at r.callback (file://C:\Users\manhq\Downloads\da2\VietExplore-AI\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js:1:4039)
-getServerError @ node-stack-frames.js:49
-eval @ index.js:640
-setTimeout
-hydrate @ index.js:618
-await in hydrate
-pageBootstrap @ page-bootstrap.js:29
-eval @ next-dev.js:24
-Promise.then
-eval @ next-dev.js:22
-(pages-dir-browser)/./node_modules/next/dist/client/next-dev.js @ main.js:1491
-options.factory @ webpack.js:693
-__webpack_require__ @ webpack.js:37
-__webpack_exec__ @ main.js:2549
-(anonymous) @ main.js:2550
-webpackJsonpCallback @ webpack.js:1369
-(anonymous) @ main.js:9
-websocket.js:42 [HMR] connected
-client.js:82 ./src/app/ai-assistant/chat/page.tsx
-Error:   × Unexpected token `div`. Expected jsx identifier
-     ╭─[C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\ai-assistant\chat\page.tsx:264:1]
- 261 │ 
- 262 │   if (!isAuthenticated) {
- 263 │     return (
- 264 │       <div className="min-h-screen bg-bg">
-     ·        ───
- 265 │         <Header />
- 266 │         <main className="min-h-screen pt-16">
- 267 │           <div className="container max-w-2xl mx-auto">
-     ╰────
+error @ intercept-console-error.js:50
+updateHookTypesDev @ react-dom-client.development.js:6574
+useMemo @ react-dom-client.development.js:23518
+exports.useMemo @ react.development.js:1219
+TeamSection @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\team\team-section.tsx:104
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooks @ react-dom-client.development.js:6667
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14526
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<TeamSection>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+AboutPage @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\about\page.tsx:305
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<AboutPage>
+exports.jsx @ react-jsx-runtime.development.js:339
+ClientPageRoot @ client-page.js:20
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10505
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+"use client"
+eval @ react-server-dom-webpack-client.browser.development.js:2354
+initializeModelChunk @ react-server-dom-webpack-client.browser.development.js:1054
+resolveModelChunk @ react-server-dom-webpack-client.browser.development.js:1031
+resolveModel @ react-server-dom-webpack-client.browser.development.js:1599
+processFullStringRow @ react-server-dom-webpack-client.browser.development.js:2288
+processFullBinaryRow @ react-server-dom-webpack-client.browser.development.js:2233
+progress @ react-server-dom-webpack-client.browser.development.js:2479
+"use server"
+ResponseInstance @ react-server-dom-webpack-client.browser.development.js:1587
+createResponseFromOptions @ react-server-dom-webpack-client.browser.development.js:2396
+exports.createFromReadableStream @ react-server-dom-webpack-client.browser.development.js:2717
+eval @ app-index.js:132
+(app-pages-browser)/./node_modules/next/dist/client/app-index.js @ main-app.js?v=1759900834609:149
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+fn @ webpack.js?v=1759900834609:369
+eval @ app-next-dev.js:11
+eval @ app-bootstrap.js:62
+loadScriptsInSequence @ app-bootstrap.js:23
+appBootstrap @ app-bootstrap.js:56
+eval @ app-next-dev.js:10
+(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js @ main-app.js?v=1759900834609:171
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+__webpack_exec__ @ main-app.js?v=1759900834609:2802
+(anonymous) @ main-app.js?v=1759900834609:2803
+webpackJsonpCallback @ webpack.js?v=1759900834609:1388
+(anonymous) @ main-app.js?v=1759900834609:9
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\about\page.tsx:305 Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (react-dom-client.development.js:6853:17)
+    at updateMemo (react-dom-client.development.js:7757:18)
+    at Object.useMemo (react-dom-client.development.js:23522:18)
+    at exports.useMemo (react.development.js:1219:34)
+    at TeamSection (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\team\team-section.tsx:104:26)
+    at react-stack-bottom-frame (react-dom-client.development.js:22974:20)
+    at renderWithHooks (react-dom-client.development.js:6667:22)
+    at updateFunctionComponent (react-dom-client.development.js:8931:19)
+    at beginWork (react-dom-client.development.js:10556:18)
+    at runWithFiberInDEV (react-dom-client.development.js:845:30)
+    at performUnitOfWork (react-dom-client.development.js:15258:22)
+    at workLoopSync (react-dom-client.development.js:15078:41)
+    at renderRootSync (react-dom-client.development.js:15058:11)
+    at performWorkOnRoot (react-dom-client.development.js:14569:44)
+    at performWorkOnRootViaSchedulerTask (react-dom-client.development.js:16350:7)
+    at MessagePort.performWorkUntilDeadline (scheduler.development.js:45:48)
 
-Caused by:
-    Syntax Error
-nextJsHandleConsoleError @ client.js:82
-handleErrors @ hot-reloader-client.js:163
-processMessage @ hot-reloader-client.js:224
-eval @ hot-reloader-client.js:71
-handleMessage @ websocket.js:65
+The above error occurred in the <TeamSection> component. It was handled by the <ErrorBoundaryHandler> error boundary.
+onCaughtError @ error-boundary-callbacks.js:67
+logCaughtError @ react-dom-client.development.js:8401
+runWithFiberInDEV @ react-dom-client.development.js:845
+update.callback @ react-dom-client.development.js:8434
+callCallback @ react-dom-client.development.js:6429
+commitCallbacks @ react-dom-client.development.js:6449
+runWithFiberInDEV @ react-dom-client.development.js:845
+commitClassCallbacks @ react-dom-client.development.js:12140
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12764
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12803
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12803
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12692
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12687
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12867
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13673
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12769
+flushLayoutEffects @ react-dom-client.development.js:15687
+commitRoot @ react-dom-client.development.js:15528
+commitRootWhenReady @ react-dom-client.development.js:14759
+performWorkOnRoot @ react-dom-client.development.js:14682
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<TeamSection>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:346
+AboutPage @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\about\page.tsx:305
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<AboutPage>
+exports.jsx @ react-jsx-runtime.development.js:339
+ClientPageRoot @ client-page.js:20
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10505
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+"use client"
+eval @ react-server-dom-webpack-client.browser.development.js:2354
+initializeModelChunk @ react-server-dom-webpack-client.browser.development.js:1054
+resolveModelChunk @ react-server-dom-webpack-client.browser.development.js:1031
+resolveModel @ react-server-dom-webpack-client.browser.development.js:1599
+processFullStringRow @ react-server-dom-webpack-client.browser.development.js:2288
+processFullBinaryRow @ react-server-dom-webpack-client.browser.development.js:2233
+progress @ react-server-dom-webpack-client.browser.development.js:2479
+"use server"
+ResponseInstance @ react-server-dom-webpack-client.browser.development.js:1587
+createResponseFromOptions @ react-server-dom-webpack-client.browser.development.js:2396
+exports.createFromReadableStream @ react-server-dom-webpack-client.browser.development.js:2717
+eval @ app-index.js:132
+(app-pages-browser)/./node_modules/next/dist/client/app-index.js @ main-app.js?v=1759900834609:149
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+fn @ webpack.js?v=1759900834609:369
+eval @ app-next-dev.js:11
+eval @ app-bootstrap.js:62
+loadScriptsInSequence @ app-bootstrap.js:23
+appBootstrap @ app-bootstrap.js:56
+eval @ app-next-dev.js:10
+(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js @ main-app.js?v=1759900834609:171
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+__webpack_exec__ @ main-app.js?v=1759900834609:2802
+(anonymous) @ main-app.js?v=1759900834609:2803
+webpackJsonpCallback @ webpack.js?v=1759900834609:1388
+(anonymous) @ main-app.js?v=1759900834609:9
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20 Application error: Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (react-dom-client.development.js:6853:17)
+    at updateMemo (react-dom-client.development.js:7757:18)
+    at Object.useMemo (react-dom-client.development.js:23522:18)
+    at exports.useMemo (react.development.js:1219:34)
+    at TeamSection (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\team\team-section.tsx:104:26)
+    at react-stack-bottom-frame (react-dom-client.development.js:22974:20)
+    at renderWithHooks (react-dom-client.development.js:6667:22)
+    at updateFunctionComponent (react-dom-client.development.js:8931:19)
+    at beginWork (react-dom-client.development.js:10556:18)
+    at runWithFiberInDEV (react-dom-client.development.js:845:30)
+    at performUnitOfWork (react-dom-client.development.js:15258:22)
+    at workLoopSync (react-dom-client.development.js:15078:41)
+    at renderRootSync (react-dom-client.development.js:15058:11)
+    at performWorkOnRoot (react-dom-client.development.js:14569:44)
+    at performWorkOnRootViaSchedulerTask (react-dom-client.development.js:16350:7)
+    at MessagePort.performWorkUntilDeadline (scheduler.development.js:45:48)
+error @ intercept-console-error.js:50
+Error.useEffect @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20
+react-stack-bottom-frame @ react-dom-client.development.js:23055
+runWithFiberInDEV @ react-dom-client.development.js:845
+commitHookEffectListMount @ react-dom-client.development.js:11978
+commitHookPassiveMountEffects @ react-dom-client.development.js:12099
+commitPassiveMountOnFiber @ react-dom-client.development.js:13929
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13932
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13922
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:14048
+recursivelyTraversePassiveMountEffects @ react-dom-client.development.js:13902
+commitPassiveMountOnFiber @ react-dom-client.development.js:13941
+flushPassiveEffects @ react-dom-client.development.js:15869
+flushPendingEffects @ react-dom-client.development.js:15830
+performSyncWorkOnRoot @ react-dom-client.development.js:16362
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+flushSpawnedWork @ react-dom-client.development.js:15805
+commitRoot @ react-dom-client.development.js:15529
+commitRootWhenReady @ react-dom-client.development.js:14759
+performWorkOnRoot @ react-dom-client.development.js:14682
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<Error>
+exports.jsx @ react-jsx-runtime.development.js:339
+render @ error-boundary.js:112
+react-stack-bottom-frame @ react-dom-client.development.js:22987
+updateClassComponent @ react-dom-client.development.js:9488
+beginWork @ react-dom-client.development.js:10570
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14569
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<ErrorBoundaryHandler>
+exports.jsx @ react-jsx-runtime.development.js:339
+ErrorBoundary @ error-boundary.js:184
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<ErrorBoundary>
+exports.jsx @ react-jsx-runtime.development.js:339
+OuterLayoutRouter @ layout-router.js:447
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10505
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+"use client"
+eval @ react-server-dom-webpack-client.browser.development.js:2354
+initializeModelChunk @ react-server-dom-webpack-client.browser.development.js:1054
+getOutlinedModel @ react-server-dom-webpack-client.browser.development.js:1327
+parseModelString @ react-server-dom-webpack-client.browser.development.js:1540
+eval @ react-server-dom-webpack-client.browser.development.js:2294
+initializeModelChunk @ react-server-dom-webpack-client.browser.development.js:1054
+resolveModelChunk @ react-server-dom-webpack-client.browser.development.js:1031
+resolveModel @ react-server-dom-webpack-client.browser.development.js:1599
+processFullStringRow @ react-server-dom-webpack-client.browser.development.js:2288
+processFullBinaryRow @ react-server-dom-webpack-client.browser.development.js:2233
+progress @ react-server-dom-webpack-client.browser.development.js:2479
+"use server"
+ResponseInstance @ react-server-dom-webpack-client.browser.development.js:1587
+createResponseFromOptions @ react-server-dom-webpack-client.browser.development.js:2396
+exports.createFromReadableStream @ react-server-dom-webpack-client.browser.development.js:2717
+eval @ app-index.js:132
+(app-pages-browser)/./node_modules/next/dist/client/app-index.js @ main-app.js?v=1759900834609:149
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+fn @ webpack.js?v=1759900834609:369
+eval @ app-next-dev.js:11
+eval @ app-bootstrap.js:62
+loadScriptsInSequence @ app-bootstrap.js:23
+appBootstrap @ app-bootstrap.js:56
+eval @ app-next-dev.js:10
+(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js @ main-app.js?v=1759900834609:171
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+__webpack_exec__ @ main-app.js?v=1759900834609:2802
+(anonymous) @ main-app.js?v=1759900834609:2803
+webpackJsonpCallback @ webpack.js?v=1759900834609:1388
+(anonymous) @ main-app.js?v=1759900834609:9
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20 Application error: Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (react-dom-client.development.js:6853:17)
+    at updateMemo (react-dom-client.development.js:7757:18)
+    at Object.useMemo (react-dom-client.development.js:23522:18)
+    at exports.useMemo (react.development.js:1219:34)
+    at TeamSection (C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\team\team-section.tsx:104:26)
+    at react-stack-bottom-frame (react-dom-client.development.js:22974:20)
+    at renderWithHooks (react-dom-client.development.js:6667:22)
+    at updateFunctionComponent (react-dom-client.development.js:8931:19)
+    at beginWork (react-dom-client.development.js:10556:18)
+    at runWithFiberInDEV (react-dom-client.development.js:845:30)
+    at performUnitOfWork (react-dom-client.development.js:15258:22)
+    at workLoopSync (react-dom-client.development.js:15078:41)
+    at renderRootSync (react-dom-client.development.js:15058:11)
+    at performWorkOnRoot (react-dom-client.development.js:14569:44)
+    at performWorkOnRootViaSchedulerTask (react-dom-client.development.js:16350:7)
+    at MessagePort.performWorkUntilDeadline (scheduler.development.js:45:48)
+error @ intercept-console-error.js:50
+Error.useEffect @ C:\Users\manhq\Downloads\da2\VietExplore-AI\src\app\error.tsx:20
+react-stack-bottom-frame @ react-dom-client.development.js:23055
+runWithFiberInDEV @ react-dom-client.development.js:845
+commitHookEffectListMount @ react-dom-client.development.js:11978
+commitHookPassiveMountEffects @ react-dom-client.development.js:12099
+reconnectPassiveEffects @ react-dom-client.development.js:14097
+doubleInvokeEffectsOnFiber @ react-dom-client.development.js:16100
+runWithFiberInDEV @ react-dom-client.development.js:845
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16060
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16067
+commitDoubleInvokeEffectsInDEV @ react-dom-client.development.js:16109
+flushPassiveEffects @ react-dom-client.development.js:15879
+flushPendingEffects @ react-dom-client.development.js:15830
+performSyncWorkOnRoot @ react-dom-client.development.js:16362
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16211
+flushSpawnedWork @ react-dom-client.development.js:15805
+commitRoot @ react-dom-client.development.js:15529
+commitRootWhenReady @ react-dom-client.development.js:14759
+performWorkOnRoot @ react-dom-client.development.js:14682
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<Error>
+exports.jsx @ react-jsx-runtime.development.js:339
+render @ error-boundary.js:112
+react-stack-bottom-frame @ react-dom-client.development.js:22987
+updateClassComponent @ react-dom-client.development.js:9488
+beginWork @ react-dom-client.development.js:10570
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopSync @ react-dom-client.development.js:15078
+renderRootSync @ react-dom-client.development.js:15058
+performWorkOnRoot @ react-dom-client.development.js:14569
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<ErrorBoundaryHandler>
+exports.jsx @ react-jsx-runtime.development.js:339
+ErrorBoundary @ error-boundary.js:184
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10556
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+<ErrorBoundary>
+exports.jsx @ react-jsx-runtime.development.js:339
+OuterLayoutRouter @ layout-router.js:447
+react-stack-bottom-frame @ react-dom-client.development.js:22974
+renderWithHooksAgain @ react-dom-client.development.js:6767
+renderWithHooks @ react-dom-client.development.js:6679
+updateFunctionComponent @ react-dom-client.development.js:8931
+beginWork @ react-dom-client.development.js:10505
+runWithFiberInDEV @ react-dom-client.development.js:845
+performUnitOfWork @ react-dom-client.development.js:15258
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15252
+renderRootConcurrent @ react-dom-client.development.js:15227
+performWorkOnRoot @ react-dom-client.development.js:14525
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16350
+performWorkUntilDeadline @ scheduler.development.js:45
+"use client"
+eval @ react-server-dom-webpack-client.browser.development.js:2354
+initializeModelChunk @ react-server-dom-webpack-client.browser.development.js:1054
+getOutlinedModel @ react-server-dom-webpack-client.browser.development.js:1327
+parseModelString @ react-server-dom-webpack-client.browser.development.js:1540
+eval @ react-server-dom-webpack-client.browser.development.js:2294
+initializeModelChunk @ react-server-dom-webpack-client.browser.development.js:1054
+resolveModelChunk @ react-server-dom-webpack-client.browser.development.js:1031
+resolveModel @ react-server-dom-webpack-client.browser.development.js:1599
+processFullStringRow @ react-server-dom-webpack-client.browser.development.js:2288
+processFullBinaryRow @ react-server-dom-webpack-client.browser.development.js:2233
+progress @ react-server-dom-webpack-client.browser.development.js:2479
+"use server"
+ResponseInstance @ react-server-dom-webpack-client.browser.development.js:1587
+createResponseFromOptions @ react-server-dom-webpack-client.browser.development.js:2396
+exports.createFromReadableStream @ react-server-dom-webpack-client.browser.development.js:2717
+eval @ app-index.js:132
+(app-pages-browser)/./node_modules/next/dist/client/app-index.js @ main-app.js?v=1759900834609:149
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+fn @ webpack.js?v=1759900834609:369
+eval @ app-next-dev.js:11
+eval @ app-bootstrap.js:62
+loadScriptsInSequence @ app-bootstrap.js:23
+appBootstrap @ app-bootstrap.js:56
+eval @ app-next-dev.js:10
+(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js @ main-app.js?v=1759900834609:171
+options.factory @ webpack.js?v=1759900834609:712
+__webpack_require__ @ webpack.js?v=1759900834609:37
+__webpack_exec__ @ main-app.js?v=1759900834609:2802
+(anonymous) @ main-app.js?v=1759900834609:2803
+webpackJsonpCallback @ webpack.js?v=1759900834609:1388
+(anonymous) @ main-app.js?v=1759900834609:9
+C:\Users\manhq\Downloads\da2\VietExplore-AI\src\components\auth\auth-provider.tsx:301 [Redirect] No pending redirect result

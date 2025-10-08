@@ -260,11 +260,25 @@ export default function AdminTeamPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả</SelectItem>
-                  {Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.icon} {config.label}
-                    </SelectItem>
-                  ))}
+                  {Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => {
+                    const Icon = config.icon;
+                    return (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r text-white",
+                              config.color
+                            )}
+                            aria-hidden="true"
+                          >
+                            <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          </span>
+                          <span>{config.label}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -313,8 +327,14 @@ export default function AdminTeamPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {members.map((member, index) => (
-                  <TableRow key={member.id}>
+                {members.map((member) => {
+                  const departmentConfig = member.department
+                    ? DEPARTMENT_CONFIG[member.department]
+                    : null;
+                  const DepartmentIcon = departmentConfig?.icon;
+
+                  return (
+                    <TableRow key={member.id}>
                     <TableCell className="font-medium">{member.displayOrder}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -330,10 +350,24 @@ export default function AdminTeamPage() {
                     </TableCell>
                     <TableCell>{member.title}</TableCell>
                     <TableCell>
-                      {member.department && (
-                        <Badge variant="outline">
-                          {DEPARTMENT_CONFIG[member.department].icon}{' '}
-                          {DEPARTMENT_CONFIG[member.department].label}
+                      {departmentConfig && DepartmentIcon && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "inline-flex items-center rounded-full px-3 h-7 text-sm font-medium transition-colors gap-2",
+                            departmentConfig.badge.subtle
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r text-white shadow-sm",
+                              departmentConfig.color
+                            )}
+                            aria-hidden="true"
+                          >
+                            <DepartmentIcon className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          </span>
+                          <span className="font-medium leading-none">{departmentConfig.label}</span>
                         </Badge>
                       )}
                     </TableCell>
@@ -376,8 +410,9 @@ export default function AdminTeamPage() {
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -780,11 +815,25 @@ function TeamMemberDialog({
                     <SelectValue placeholder="Chọn bộ phận" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => (
-                      <SelectItem key={key} value={key}>
-                        {config.icon} {config.label}
-                      </SelectItem>
-                    ))}
+                    {Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                "inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r text-white",
+                                config.color
+                              )}
+                              aria-hidden="true"
+                            >
+                              <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            </span>
+                            <span>{config.label}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

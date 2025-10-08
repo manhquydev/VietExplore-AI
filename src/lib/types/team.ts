@@ -3,6 +3,16 @@
  * For managing team/founder profiles in the About page and admin panel
  */
 
+import {
+  ShieldCheck,
+  LayoutDashboard,
+  Cpu,
+  Megaphone,
+  Workflow,
+  UsersRound,
+  type LucideIcon
+} from "lucide-react";
+
 export type TeamMemberStatus = 'active' | 'inactive';
 
 export type TeamMemberDepartment =
@@ -145,37 +155,72 @@ export interface TeamAvatarUploadResponse {
 export const DEPARTMENT_CONFIG: Record<TeamMemberDepartment, {
   label: string;
   color: string;
-  icon?: string;
+  initials: string;
+  icon: LucideIcon;
+  badge: {
+    subtle: string;
+    solid: string;
+  };
 }> = {
   leadership: {
     label: 'Ban Lãnh Đạo',
     color: 'from-purple-500 to-pink-500',
-    icon: '👑'
+    initials: 'LD',
+    icon: ShieldCheck,
+    badge: {
+      subtle: 'bg-purple-50 text-purple-700 border border-purple-200',
+      solid: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm border-transparent'
+    }
   },
   product: {
     label: 'Sản Phẩm',
     color: 'from-blue-500 to-cyan-500',
-    icon: '🎨'
+    initials: 'SP',
+    icon: LayoutDashboard,
+    badge: {
+      subtle: 'bg-blue-50 text-blue-700 border border-blue-200',
+      solid: 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm border-transparent'
+    }
   },
   engineering: {
     label: 'Kỹ Thuật',
     color: 'from-emerald-500 to-teal-500',
-    icon: '⚙️'
+    initials: 'KT',
+    icon: Cpu,
+    badge: {
+      subtle: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+      solid: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm border-transparent'
+    }
   },
   marketing: {
     label: 'Marketing',
     color: 'from-amber-500 to-orange-500',
-    icon: '📢'
+    initials: 'MK',
+    icon: Megaphone,
+    badge: {
+      subtle: 'bg-amber-50 text-amber-700 border border-amber-200',
+      solid: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm border-transparent'
+    }
   },
   operations: {
     label: 'Vận Hành',
     color: 'from-slate-500 to-gray-500',
-    icon: '📋'
+    initials: 'VH',
+    icon: Workflow,
+    badge: {
+      subtle: 'bg-slate-50 text-slate-700 border border-slate-200',
+      solid: 'bg-gradient-to-r from-slate-600 to-gray-600 text-white shadow-sm border-transparent'
+    }
   },
   community: {
     label: 'Cộng Đồng',
     color: 'from-rose-500 to-pink-500',
-    icon: '❤️'
+    initials: 'CD',
+    icon: UsersRound,
+    badge: {
+      subtle: 'bg-rose-50 text-rose-700 border border-rose-200',
+      solid: 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-sm border-transparent'
+    }
   }
 };
 
