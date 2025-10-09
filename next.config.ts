@@ -1,4 +1,5 @@
 import type {NextConfig} from 'next';
+import withSerwistInit from '@serwist/next';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -76,4 +77,13 @@ const nextConfig: NextConfig = {
   compress: true,
 };
 
-export default nextConfig;
+// Configure Serwist PWA
+const withSerwist = withSerwistInit({
+  swSrc: 'src/app/sw.ts',
+  swDest: 'public/sw.js',
+  cacheOnNavigation: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === 'development', // Disable in dev for easier debugging
+});
+
+export default withSerwist(nextConfig);
