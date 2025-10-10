@@ -1,22 +1,18 @@
- ○ Compiling /api/address/provinces ...
- ✓ Compiled /api/address/provinces in 922ms (2715 modules)
-Error fetching provinces: TypeError: Cannot convert argument to a ByteString because the character at index 4 has a value of 7883 which is greater than 255.
-    at GET (src\app\api\address\provinces\route.ts:9:27)
-   7 |     const mode = searchParams.get('mode') || '0'; // Default lấy tất cả (cũ và mới)
-   8 |
->  9 |     const response = await fetch(`https://tailieu365.com/api/address/province?mode=${mode}`, {   
-     |                           ^
-  10 |       method: 'GET',
-  11 |       headers: {
-  12 |         'Accept': 'application/json',
- GET /api/address/provinces 500 in 1316ms
-Error fetching provinces: TypeError: Cannot convert argument to a ByteString because the character at index 4 has a value of 7883 which is greater than 255.
-    at GET (src\app\api\address\provinces\route.ts:9:27)
-   7 |     const mode = searchParams.get('mode') || '0'; // Default lấy tất cả (cũ và mới)
-   8 |
->  9 |     const response = await fetch(`https://tailieu365.com/api/address/province?mode=${mode}`, {   
-     |                           ^
-  10 |       method: 'GET',
-  11 |       headers: {
-  12 |         'Accept': 'application/json',
- GET /api/address/provinces 500 in 256ms
+ Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+  Server   ⚠ Unsupported metadata themeColor is configured in metadata export in /places/vinh-ha-long-3KJgZI. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+react-stack-bottom-frame @ webpack-internal:///…development.js:2669
+  Server   ⚠ Unsupported metadata viewport is configured in metadata export in /places/vinh-ha-long-3KJgZI. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+react-stack-bottom-frame @ webpack-internal:///…development.js:2669
+ [ToastService] Initialized and ready
+ [ToastProviderBridge] Subscribed to toast service
+ [PWA] Service Worker disabled in development mode
+ [Redirect] No pending redirect result
+ [PWA] Install prompt available
+ An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+error @ webpack-internal:///…console-error.js:50
+ Image is missing required "src" property: 
+error @ webpack-internal:///…console-error.js:50
+ Image is missing required "src" property: 
+error @ webpack-internal:///…console-error.js:50

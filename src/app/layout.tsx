@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -18,6 +18,15 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 // Force dynamic rendering for all pages to support useSearchParams in client components
 export const dynamic = 'force-dynamic'
 
+// Viewport configuration (Next.js 15+)
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#16A34A',
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ||
     (process.env.NODE_ENV === 'production' ? 'https://www.dulichviet.tech' : 'http://localhost:9002')),
@@ -28,13 +37,6 @@ export const metadata: Metadata = {
 
   // PWA Configuration
   manifest: '/manifest.json',
-  themeColor: '#16A34A',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
 
   // Icons - Updated for PWA
   icons: {

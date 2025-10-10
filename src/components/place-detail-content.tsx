@@ -558,6 +558,18 @@ function ReviewReportModal({
   )
 }
 
+// Media item type for combined image/video gallery
+interface MediaItem {
+  type: 'image' | 'video'
+  id: string
+  url: string
+  alt?: string
+  caption?: string
+  thumbnail?: string
+  duration?: number
+  isPrimary?: boolean
+}
+
 export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const { user, isAuthenticated } = useAuth()
   const { toast } = useToast()
@@ -570,6 +582,37 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const [showAddressConversion, setShowAddressConversion] = React.useState(false)
   const [isSharing, setIsSharing] = React.useState(false)
 
+  // Combine images and video into unified media array
+  const mediaItems = React.useMemo<MediaItem[]>(() => {
+    const items: MediaItem[] = []
+
+    // Add all images
+    if (place.images && place.images.length > 0) {
+      items.push(...place.images.map(img => ({
+        type: 'image' as const,
+        id: img.id,
+        url: img.url,
+        alt: img.alt,
+        caption: img.caption,
+        isPrimary: img.isPrimary
+      })))
+    }
+
+    // Add video at the end
+    if (place.video) {
+      items.push({
+        type: 'video' as const,
+        id: place.video.id,
+        url: place.video.url,
+        thumbnail: place.video.thumbnail,
+        duration: place.video.duration,
+        alt: `Video: ${place.name}`
+      })
+    }
+
+    return items
+  }, [place.images, place.video, place.name])
+
   // Use centralized view tracking hook
   const { viewCount } = useViewTracking(place.id, place.stats.views || 0)
 
@@ -578,11 +621,11 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
   const { reviews, stats, submitReview, refresh: refreshReviews, error: reviewError, hasUserReviewed, userReview, loadMore, hasMore, isLoading: reviewsLoading } = usePlaceReviews(place.id, { limit: 3, sortBy: reviewSortBy })
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % place.images.length)
+    setCurrentImageIndex((prev) => (prev + 1) % mediaItems.length)
   }
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + place.images.length) % place.images.length)
+    setCurrentImageIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length)
   }
 
   const openImageModal = (index: number) => {
@@ -713,30 +756,47 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
           {/* Main Hero Card */}
           <Card className="overflow-hidden border-0 shadow-2xl bg-white/80 backdrop-blur-sm mb-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-              {/* Image Gallery Side */}
+              {/* Media Gallery Side (Images + Video) */}
               <div className="relative">
-                {place.images && place.images.length > 0 ? (
-                  <div className="aspect-[4/3] lg:aspect-auto lg:h-full relative overflow-hidden">
-                    <Image
-                      src={place.images[currentImageIndex]?.url || ''}
-                      alt={place.images[currentImageIndex]?.alt || place.name}
-                      fill
-                      priority={currentImageIndex === 0}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw"
-                      className="object-cover cursor-pointer transition-transform duration-700 hover:scale-105"
-                      onClick={() => openImageModal(currentImageIndex)}
-                    />
+                {mediaItems && mediaItems.length > 0 ? (
+                  <div className="aspect-[4/3] lg:aspect-auto lg:h-full relative overflow-hidden bg-black">
+                    {/* Current media item - Image or Video */}
+                    {mediaItems[currentImageIndex]?.type === 'image' ? (
+                      <Image
+                        src={mediaItems[currentImageIndex]?.url || ''}
+                        alt={mediaItems[currentImageIndex]?.alt || place.name}
+                        fill
+                        priority={currentImageIndex === 0}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw"
+                        className="object-cover cursor-pointer transition-transform duration-700 hover:scale-105"
+                        onClick={() => openImageModal(currentImageIndex)}
+                      />
+                    ) : (
+                      <video
+                        src={mediaItems[currentImageIndex]?.url || ''}
+                        poster={mediaItems[currentImageIndex]?.thumbnail}
+                        controls
+                        className="w-full h-full object-contain"
+                        preload="metadata"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openImageModal(currentImageIndex)
+                        }}
+                      >
+                        Trình duyệt không hỗ trợ video.
+                      </video>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
 
                     {/* Navigation Controls */}
-                    {place.images.length > 1 && (
+                    {mediaItems.length > 1 && (
                       <>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30 rounded-full h-12 w-12 min-h-[48px] min-w-[48px] touch-target-44"
                           onClick={prevImage}
-                          aria-label="Previous image"
+                          aria-label="Previous media"
                         >
                           <ChevronLeft className="h-6 w-6" />
                         </Button>
@@ -745,17 +805,20 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                           size="icon"
                           className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/30 rounded-full h-12 w-12 min-h-[48px] min-w-[48px] touch-target-44"
                           onClick={nextImage}
-                          aria-label="Next image"
+                          aria-label="Next media"
                         >
                           <ChevronRight className="h-6 w-6" />
                         </Button>
                       </>
                     )}
 
-                    {/* Image Counter */}
-                    {place.images.length > 1 && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
-                        {currentImageIndex + 1} / {place.images.length}
+                    {/* Media Counter with Type Badge */}
+                    {mediaItems.length > 1 && (
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                        {mediaItems[currentImageIndex]?.type === 'video' && (
+                          <Play className="h-3 w-3" />
+                        )}
+                        <span>{currentImageIndex + 1} / {mediaItems.length}</span>
                       </div>
                     )}
 
@@ -767,14 +830,81 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                       onClick={() => openImageModal(currentImageIndex)}
                     >
                       <Grid3X3 className="h-4 w-4 mr-2" />
-                      <span>Xem tất cả</span>
+                      <span>Xem tất cả ({mediaItems.length})</span>
                     </Button>
                   </div>
                 ) : (
                   <div className="aspect-[4/3] lg:aspect-auto lg:h-full bg-gray-100 flex items-center justify-center">
                     <div className="text-center text-gray-500">
                       <Camera className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                      <p>Chưa có hình ảnh</p>
+                      <p>Chưa có hình ảnh hoặc video</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Thumbnail Navigation - Show all media items */}
+                {mediaItems && mediaItems.length > 1 && (
+                  <div className="absolute bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 w-full max-w-md px-4">
+                    <div className="bg-black/40 backdrop-blur-md rounded-lg p-2">
+                      <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                        {mediaItems.map((item, idx) => (
+                          <button
+                            key={item.id}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            className={cn(
+                              "relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all",
+                              currentImageIndex === idx
+                                ? "border-white scale-105"
+                                : "border-white/30 hover:border-white/60 opacity-70 hover:opacity-100"
+                            )}
+                            aria-label={item.type === 'video' ? 'Xem video' : `Xem ảnh ${idx + 1}`}
+                          >
+                            {item.type === 'image' ? (
+                              item.url && item.url.trim() ? (
+                                <Image
+                                  src={item.url}
+                                  alt={item.alt || `Thumbnail ${idx + 1}`}
+                                  fill
+                                  sizes="64px"
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                  <Camera className="h-6 w-6 text-gray-400" />
+                                </div>
+                              )
+                            ) : (
+                              <>
+                                {item.thumbnail && item.thumbnail.trim() ? (
+                                  <Image
+                                    src={item.thumbnail}
+                                    alt="Video thumbnail"
+                                    fill
+                                    sizes="64px"
+                                    className="object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                                    <Play className="h-6 w-6 text-white/80" />
+                                  </div>
+                                )}
+                                {/* Play icon overlay for video */}
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                  <div className="bg-white/90 rounded-full p-1.5">
+                                    <Play className="h-4 w-4 text-black fill-black" />
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                            {/* Type badge */}
+                            {item.type === 'video' && (
+                              <div className="absolute top-1 left-1 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">
+                                Video
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1454,7 +1584,7 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
         </div>
 
         {/* Image Modal */}
-        {showImageModal && place.images && (
+        {showImageModal && mediaItems && mediaItems.length > 0 && (
           <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Image gallery">
             <div className="relative max-w-4xl max-h-full">
               <Button
@@ -1468,24 +1598,43 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
               </Button>
 
               <div className="relative w-full h-[80vh]">
-                <Image
-                  src={place.images[modalImageIndex]?.url || ''}
-                  alt={place.images[modalImageIndex]?.alt || place.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 80vw"
-                  className="object-contain"
-                  quality={90}
-                />
+                {mediaItems[modalImageIndex]?.type === 'image' ? (
+                  mediaItems[modalImageIndex]?.url && mediaItems[modalImageIndex]?.url.trim() ? (
+                    <Image
+                      src={mediaItems[modalImageIndex].url}
+                      alt={mediaItems[modalImageIndex].alt || place.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 80vw"
+                      className="object-contain"
+                      quality={90}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Camera className="h-24 w-24 text-gray-400" />
+                    </div>
+                  )
+                ) : (
+                  <video
+                    src={mediaItems[modalImageIndex]?.url || ''}
+                    poster={mediaItems[modalImageIndex]?.thumbnail}
+                    controls
+                    className="w-full h-full object-contain"
+                    preload="auto"
+                    autoPlay
+                  >
+                    Trình duyệt không hỗ trợ video.
+                  </video>
+                )}
               </div>
 
-              {place.images.length > 1 && (
+              {mediaItems.length > 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
-                    onClick={() => setModalImageIndex((prev) => (prev - 1 + place.images.length) % place.images.length)}
-                    aria-label="Previous image"
+                    onClick={() => setModalImageIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length)}
+                    aria-label="Previous media"
                   >
                     <ChevronLeft className="h-6 w-6" />
                   </Button>
@@ -1493,14 +1642,17 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     variant="ghost"
                     size="icon"
                     className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
-                    onClick={() => setModalImageIndex((prev) => (prev + 1) % place.images.length)}
-                    aria-label="Next image"
+                    onClick={() => setModalImageIndex((prev) => (prev + 1) % mediaItems.length)}
+                    aria-label="Next media"
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>
 
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full">
-                    {modalImageIndex + 1} / {place.images.length}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center gap-2">
+                    {mediaItems[modalImageIndex]?.type === 'video' && (
+                      <Play className="h-4 w-4" />
+                    )}
+                    <span>{modalImageIndex + 1} / {mediaItems.length}</span>
                   </div>
                 </>
               )}
