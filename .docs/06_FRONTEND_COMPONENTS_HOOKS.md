@@ -1,7 +1,7 @@
 # 06. Frontend Components & Hooks - React Architecture
 
-> **Cập nhật:** 2025-10-10
-> **Trạng thái:** Production Active
+> **Cập nhật:** 2025-10-11
+> **Trạng thái:** Production Active - 30 custom hooks implemented
 
 ---
 
@@ -21,14 +21,14 @@
 
 ## 1. Custom Hooks Overview
 
-Dự án có **28 custom React hooks** được tổ chức trong `src/hooks/`:
+Dự án có **30 custom React hooks** được tổ chức trong `src/hooks/`:
 
 | Category | Hooks | Purpose |
 |----------|-------|---------|
 | **Authentication** | useAuth, useFirebaseAuth | User authentication & management |
 | **Data Fetching** | usePlaces, usePlace, useUserDrafts, useUserContributions, useUserCollections | Fetch places, drafts, user data |
 | **Real-time** | useRealtimeNotifications, useUserPresence, useModeratorNotifications, useRealtimeAuditLogs, useAdminRealtime | Firebase Realtime DB subscriptions |
-| **Admin** | useAdmin, useAdminPlaces, useAdminReports, useHomepageSettings | Admin management operations |
+| **Admin** | useAdmin, useAdminPlaces, useAdminPlacesSimple, useAdminPlacesStable, useAdminReports, useHomepageSettings | Admin management operations |
 | **Reviews** | usePlaceReviews | Review data fetching |
 | **Interactions** | usePlaceInteractions, usePlaceStats, usePlaceChat | User interactions với places |
 | **Community** | useCommunityStats, useTopContributors | Public community data |
@@ -36,7 +36,7 @@ Dự án có **28 custom React hooks** được tổ chức trong `src/hooks/`:
 | **UI** | useToast, useDebounce, useLocalStorage, useNetworkStatus | UI utilities |
 | **Announcements** | useAnnouncements | System announcements |
 
-**Total:** 28 hooks
+**Total:** 30 hooks
 
 ---
 

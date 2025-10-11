@@ -12,9 +12,9 @@
 
 | Technology | Version | Purpose |
 |-----------|---------|---------|
-| **Next.js** | 15.1.5 | React framework với App Router |
-| **React** | 19.0.0 | UI library |
-| **TypeScript** | 5.x | Type-safe development |
+| **Next.js** | 15.3.3 | React framework với App Router |
+| **React** | 18.3.1 | UI library |
+| **TypeScript** | 5.9.2 | Type-safe development |
 | **Tailwind CSS** | 3.x | Utility-first CSS framework |
 | **Radix UI** | Latest | Headless UI components |
 | **Lucide React** | Latest | Icon system |

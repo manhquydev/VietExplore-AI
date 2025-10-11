@@ -395,17 +395,17 @@ npm run genkit:dev       # Genkit dev server
 
 | Tài liệu | Số dòng | Sections | Ước tính thời gian đọc |
 |----------|---------|----------|----------------------|
-| **01. System Architecture** | ~900 | 9 sections | 45 phút |
-| **02. RBAC & Permissions** | ~1100 | 10 sections | 60 phút |
-| **03. Database Schema** | ~800 | 7 sections | 50 phút |
-| **04. Workflows** | ~900 | 8 sections | 55 phút |
-| **05. API Reference** | ~13000 | 12 sections | 120 phút |
-| **06. Frontend Components & Hooks** | ~10000 | 11 sections | 90 phút |
-| **07. Notification System** | ~12000 | 10 sections | 100 phút |
-| **08. Security & Access Control** | ~24000 | 12 sections | 150 phút |
-| **09. Testing Infrastructure** | ~20000 | 14 sections | 130 phút |
-| **10. Scripts & Maintenance** | ~25000 | 8 sections | 140 phút |
-| **TOTAL** | **~107,700 dòng** | **111 sections** | **~15.5 giờ** |
+| **01. System Architecture** | 642 | 9 sections | 30 phút |
+| **02. RBAC & Permissions** | 688 | 10 sections | 35 phút |
+| **03. Database Schema** | 1,065 | 7 sections | 50 phút |
+| **04. Workflows** | 862 | 8 sections | 40 phút |
+| **05. API Reference** | 2,678 | 12 sections | 90 phút |
+| **06. Frontend Components & Hooks** | 1,891 | 11 sections | 60 phút |
+| **07. Notification System** | 1,378 | 10 sections | 45 phút |
+| **08. Security & Access Control** | 1,831 | 12 sections | 60 phút |
+| **09. Testing Infrastructure** | 1,734 | 14 sections | 60 phút |
+| **10. Scripts & Maintenance** | 1,670 | 8 sections | 55 phút |
+| **TOTAL** | **14,986 dòng** | **111 sections** | **~8.5 giờ** |
 
 **Khuyến nghị:** Đọc từng tài liệu trong nhiều sessions, tập trung 1-2 sections/lần để hiểu sâu.
 
@@ -514,11 +514,11 @@ A: Check 3 layers: Firestore Rules → API Middleware → UI Conditional. Xem [0
 
 | Field | Value |
 |-------|-------|
-| **Version** | 2.0 |
+| **Version** | 2.1 |
 | **Created** | 2025-01-09 |
-| **Last Updated** | 2025-10-10 |
+| **Last Updated** | 2025-10-11 |
 | **Total Files** | 10 documents |
-| **Total Size** | ~107,700 lines |
+| **Total Size** | 14,986 lines |
 | **Language** | Vietnamese + English (code) |
 | **Format** | Markdown |
 

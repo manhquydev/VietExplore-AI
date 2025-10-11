@@ -1,7 +1,8 @@
 # 05. API Reference - Tài Liệu Chi Tiết Endpoints
 
-> **Cập nhật:** 2025-10-10
-> **Trạng thái:** Production Active - CHỈ document endpoints đang được sử dụng
+> **Cập nhật:** 2025-10-11
+> **Trạng thái:** Production Active - 105 endpoints documented
+> **Coverage:** Core endpoints fully documented, additional endpoints in development
 
 ---
 
