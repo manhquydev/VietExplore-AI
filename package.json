@@ -2,6 +2,26 @@
   "name": "Du-Lich-Viet",
   "version": "3.0.0",
   "private": true,
+  "author": {
+    "name": "Nguyễn Mạnh Quý",
+    "email": "support@dulichviet.tech",
+    "url": "https://www.dulichviet.tech"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/VietExplore-AI.git"
+  },
+  "description": "Nền tảng chia sẻ và khám phá địa điểm du lịch Việt Nam với AI Trip Planner",
+  "keywords": [
+    "vietnam-travel",
+    "tourism",
+    "travel-platform",
+    "ai-trip-planner",
+    "nextjs",
+    "firebase",
+    "typescript"
+  ],
   "scripts": {
     "dev": "node scripts/start-dev.js",
     "dev:9002": "next dev --port 9002",

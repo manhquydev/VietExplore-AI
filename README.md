@@ -2,15 +2,20 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-2.1.5-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue?logo=typescript)
-![Firebase](https://img.shields.io/badge/Firebase-11.10.0-orange?logo=firebase)
+![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?logo=typescript&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-11.10.0-FFCA28?logo=firebase&logoColor=black)
+![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=black)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4.1-06B6D4?logo=tailwindcss&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)
+![Production](https://img.shields.io/badge/Status-Production-success)
 
 **Nền tảng chia sẻ và khám phá địa điểm du lịch Việt Nam với AI Trip Planner**
 
-[🌐 Live Demo](https://www.dulichviet.tech) · [🐛 Report Bug](https://github.com/your-repo/issues)
+[🌐 Live Demo](https://www.dulichviet.tech) · [🐛 Report Bug](https://github.com/manhquydev/VietExplore-AI/issues) · [💡 Request Feature](https://github.com/manhquydev/VietExplore-AI)
 
 </div>
 
@@ -51,6 +56,34 @@
 - **AI-Powered**: Tích hợp Google Genkit cho trip planning thông minh
 - **Mobile-First**: Responsive design hoàn hảo trên mọi thiết bị
 - **SEO Optimized**: SSR với Next.js 15 App Router, compound URLs
+- **PWA Support**: Progressive Web App với offline capability
+- **Real-time**: Firebase Realtime Database cho notifications
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### Homepage
+![Homepage](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=Du+Lich+Viet+Homepage)
+*Trang chủ với featured places và AI chatbot*
+
+### Place Detail
+![Place Detail](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=Place+Detail+Page)
+*Chi tiết địa điểm với hình ảnh, reviews và AI assistant*
+
+### Admin Dashboard
+![Admin Dashboard](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=Admin+Dashboard)
+*Dashboard quản trị với analytics và moderation tools*
+
+### AI Trip Planner
+![AI Trip Planner](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=AI+Trip+Planner)
+*AI-powered trip planning với personalized recommendations*
+
+</div>
+
+> 📝 **Note**: Screenshots sẽ được cập nhật khi có UI mới. Xem [Live Demo](https://www.dulichviet.tech) để trải nghiệm thực tế.
 
 ---
 
@@ -679,7 +712,9 @@ Update place (Owner/Moderator/Admin only)
 #### `DELETE /api/places/[id]`
 Soft delete place (Owner/Moderator/Admin only)
 
-### Full API docs: See [CLAUDE.md](./CLAUDE.md)
+### Full API Documentation
+
+Xem thêm API documentation chi tiết trong thư mục `.docs/` của dự án.
 
 ---
 
@@ -733,21 +768,80 @@ Full deployment guide: See [Deployment section](#deployment)
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [Contributing Guidelines](#contributing).
+We welcome contributions from the community! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+
+### Quick Start
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Guidelines
+
+- Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification
+- Write clear, concise commit messages
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+**Please read our [Contributing Guide](./CONTRIBUTING.md) for detailed information.**
 
 ---
 
 ## 📄 License
 
-MIT License - See [LICENSE](#license)
+This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 Nguyễn Mạnh Quý
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+### What this means
+
+✅ **You can:**
+- Use this software for commercial purposes
+- Modify and distribute the source code
+- Use this software privately
+- Sublicense this software
+
+❌ **You cannot:**
+- Hold the authors liable for damages
+- Use the authors' names for endorsement without permission
+
+📋 **You must:**
+- Include the copyright notice and license in all copies
+- State significant changes made to the software
 
 ---
 
 ## 📞 Contact
 
+- **Author**: Nguyễn Mạnh Quý
 - **Website**: [dulichviet.tech](https://www.dulichviet.tech)
-- **Email**: support@dulichviet.tech
-- **Documentation**: [CLAUDE.md](./CLAUDE.md)
+- **Email**: manhquydev@gmail.com
+
+---
+
+## 👨‍💻 Author
+
+**Nguyễn Mạnh Quý**
+- 🌐 Website: [dulichviet.tech](https://www.dulichviet.tech)
+- 📧 Email: manhquydev@gmail.com
+- 💼 Project: Du Lịch Việt - Vietnam Travel Platform
 
 ---
 
@@ -755,6 +849,8 @@ MIT License - See [LICENSE](#license)
 
 **Made with ❤️ for Vietnam Tourism Community**
 
-[⭐ Star on GitHub](https://github.com/your-repo) · [🐛 Report Bug](https://github.com/your-repo/issues) · [💡 Request Feature](https://github.com/your-repo/issues)
+**© 2025 Nguyễn Mạnh Quý. All rights reserved.**
+
+[⭐ Star on GitHub](https://github.com/manhquydev/VietExplore-AI) · [🐛 Report Bug](https://github.com/manhquydev/VietExplore-AI/issues) · [💡 Request Feature](https://github.com/manhquydev/VietExplore-AI/issues)
 
 </div>
