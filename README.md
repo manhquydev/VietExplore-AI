@@ -841,7 +841,7 @@ copies or substantial portions of the Software.
 **Nguyễn Mạnh Quý**
 - 🌐 Website: [dulichviet.tech](https://www.dulichviet.tech)
 - 📧 Email: manhquydev@gmail.com
-- 💼 Project: Du Lịch Việt - Vietnam Travel Platform
+- 💼 Project: Du Lịch Việt
 
 ---
 
