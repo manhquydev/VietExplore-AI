@@ -52,3 +52,7 @@ docs/
 
 # MCP configuration (contains sensitive paths)
 .claude/
+
+# Project documentation (not for public repo)
+CLAUDE.md
+.docs/
