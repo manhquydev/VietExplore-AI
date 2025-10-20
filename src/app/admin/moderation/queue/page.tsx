@@ -360,18 +360,45 @@ export default function NewPlaceQueuePage() {
         {actions}
       </div>
       <div className="space-y-6">
-        {/* Status Tabs */}
+        {/* Status Tabs - Mobile Optimized */}
         <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
           <div className="admin-card p-2">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 bg-admin-neutral-50 p-1 rounded-lg">
+            {/* Mobile: Scrollable horizontal tabs */}
+            <div className="md:hidden">
+              <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory -mx-2 px-2">
+                {Object.entries(statusConfig).map(([status, config]) => (
+                  <button
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2.5 rounded-lg whitespace-nowrap snap-start flex-shrink-0 transition-all duration-200 min-w-[120px] justify-center",
+                      selectedStatus === status
+                        ? "bg-white shadow-md border-2 border-green-500 text-green-700 font-semibold"
+                        : "bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100"
+                    )}
+                  >
+                    <config.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-xs font-medium">{config.label}</span>
+                    {statusCounts[status] > 0 && (
+                      <Badge className={cn("text-xs px-1.5 py-0.5 h-5 rounded-full font-semibold ml-1", config.color)}>
+                        {statusCounts[status]}
+                      </Badge>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tablet & Desktop: Grid layout */}
+            <TabsList className="hidden md:grid w-full md:grid-cols-3 lg:grid-cols-6 bg-admin-neutral-50 p-1 rounded-lg">
               {Object.entries(statusConfig).map(([status, config]) => (
-                <TabsTrigger 
-                  key={status} 
+                <TabsTrigger
+                  key={status}
                   value={status}
                   className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-admin-primary-200 text-xs md:text-sm font-medium px-3 py-2 rounded-md transition-all duration-200"
                 >
-                  <config.icon className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden sm:inline">{config.label}</span>
+                  <config.icon className="h-4 w-4" />
+                  <span>{config.label}</span>
                   {statusCounts[status] > 0 && (
                     <Badge className={cn("ml-1 text-xs px-2 py-0.5 h-5 rounded-full font-semibold", config.color)}>
                       {statusCounts[status]}
@@ -475,38 +502,38 @@ export default function NewPlaceQueuePage() {
                                   )}
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-2 ml-4">
-                                  <Badge className={cn("text-xs font-semibold shadow-md px-3 py-1.5", statusInfo?.color)}>
+                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 sm:ml-4">
+                                  <Badge className={cn("text-xs font-semibold shadow-md px-2.5 sm:px-3 py-1 sm:py-1.5", statusInfo?.color)}>
                                     {statusInfo && <statusInfo.icon className="w-3 h-3 mr-1" />}
                                     {statusInfo?.label}
                                   </Badge>
-                                  <Badge className="text-xs font-semibold shadow-md px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white border-0">
+                                  <Badge className="text-xs font-semibold shadow-md px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white border-0">
                                     ✨ Địa điểm mới
                                   </Badge>
                                   {item.priority && (
-                                    <Badge className={cn("text-xs font-semibold shadow-md px-3 py-1.5", priorityConfig[item.priority as keyof typeof priorityConfig]?.color)}>
+                                    <Badge className={cn("text-xs font-semibold shadow-md px-2.5 sm:px-3 py-1 sm:py-1.5", priorityConfig[item.priority as keyof typeof priorityConfig]?.color)}>
                                       {priorityConfig[item.priority as keyof typeof priorityConfig]?.label}
                                     </Badge>
                                   )}
                                 </div>
                               </div>
 
-                              {/* Meta Info */}
-                              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-4 w-4" />
-                                  <span>{item.submitter?.fullName || 'Không rõ'}</span>
-                                  <UserRoleDisplay 
+                              {/* Meta Info - Responsive Stack */}
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mb-4">
+                                <div className="flex items-center gap-1.5">
+                                  <Users className="h-3.5 w-3.5 flex-shrink-0" />
+                                  <span className="truncate">{item.submitter?.fullName || 'Không rõ'}</span>
+                                  <UserRoleDisplay
                                     role={item.submitter?.role || 'contributor'}
                                     variant="compact"
                                   />
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
                                   <span>{formatDate(item.submittedAt)}</span>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
+                                <div className="flex items-center gap-1.5">
+                                  <Clock className="h-3.5 w-3.5 flex-shrink-0" />
                                   <span>{getTimeAgo(item.submittedAt)}</span>
                                 </div>
                               </div>

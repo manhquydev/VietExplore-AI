@@ -245,7 +245,7 @@ export function VietnamTravelSidebar({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-200 ease-in-out lg:translate-x-0 border-r border-gray-200 flex flex-col",
+          "fixed inset-y-0 left-0 z-50 w-72 sm:w-64 bg-white shadow-xl transform transition-transform duration-200 ease-in-out lg:translate-x-0 border-r border-gray-200 flex flex-col",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           className
         )}
@@ -373,11 +373,12 @@ export function VietnamTravelSidebar({
         </div>
       </div>
 
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-40">
+      {/* Mobile menu button - Positioned to avoid header conflict */}
+      <div className="lg:hidden fixed top-20 left-4 z-40">
         <button
           onClick={() => setMobileOpen(true)}
-          className="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-green-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 bg-white shadow-md"
+          className="inline-flex items-center justify-center p-2.5 rounded-xl text-gray-600 hover:text-green-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 bg-white shadow-lg border border-gray-200"
+          aria-label="Mở menu"
         >
           <Menu className="h-6 w-6" />
         </button>

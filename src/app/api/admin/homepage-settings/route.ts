@@ -114,16 +114,29 @@ export async function PUT(request: NextRequest) {
 
     // Update settings in Firestore
     const settingsRef = adminDb.collection('admin_settings').doc(ADMIN_SETTINGS_DOC)
-    
-    await settingsRef.set({
+
+    const updateData = {
       homepage,
       updatedAt: new Date().toISOString(),
-      updatedBy: auth.user.uid
-    }, { merge: true })
+      updatedBy: auth.user.id || auth.user.uid // Use id (from auth middleware) or uid as fallback
+    }
 
+    await settingsRef.set(updateData, { merge: true })
+
+    console.log('[API] Homepage settings saved to Firestore:', {
+      regions: Object.keys(homepage.regions),
+      updatedBy: auth.user.uid,
+      timestamp: updateData.updatedAt
+    })
+
+    // Return updated data to ensure client has latest version
     return NextResponse.json({
       success: true,
-      message: 'Homepage settings updated successfully'
+      message: 'Homepage settings updated successfully',
+      data: {
+        homepage,
+        updatedAt: updateData.updatedAt
+      }
     })
 
   } catch (error) {

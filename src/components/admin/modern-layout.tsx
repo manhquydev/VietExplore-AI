@@ -57,32 +57,37 @@ export function ModernAdminLayout({ children }: ModernAdminLayoutProps) {
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
-        sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+        sidebarCollapsed ? 'lg:pl-16' : 'pl-0 lg:pl-64'
       }`}>
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white border-b border-neutral-200 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             {/* Left side - could add breadcrumbs here */}
-            <div className="flex-1">
-              <div className="text-sm text-neutral-600 ">
-                Chào mừng trở lại, <span className="font-medium text-neutral-900 ">{user.fullName || user.email}</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs sm:text-sm text-neutral-600 truncate">
+                <span className="hidden sm:inline">Chào mừng trở lại, </span>
+                <span className="font-medium text-neutral-900">{user.fullName || user.email}</span>
               </div>
             </div>
 
             {/* Right side - actions */}
-            <div className="flex items-center gap-4">
-              {/* Theme Label */}
-              <AdminThemeLabel />
-              
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+              {/* Theme Label - Hidden on mobile */}
+              <div className="hidden md:block">
+                <AdminThemeLabel />
+              </div>
+
               {/* Notifications */}
               <NotificationBell />
 
-              {/* Home Link */}
-              <a 
+              {/* Home Link - Icon only on mobile */}
+              <a
                 href="/"
-                className="text-sm text-gray-800 hover:text-white font-medium px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                className="text-xs sm:text-sm text-gray-800 hover:text-white font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-1"
+                aria-label="Về trang chủ"
               >
-                ← Về trang chủ
+                <span>←</span>
+                <span className="hidden sm:inline">Về trang chủ</span>
               </a>
             </div>
           </div>
@@ -90,7 +95,7 @@ export function ModernAdminLayout({ children }: ModernAdminLayoutProps) {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          <div className="p-6">
+          <div className="p-4 sm:p-5 md:p-6">
             {children}
           </div>
         </main>

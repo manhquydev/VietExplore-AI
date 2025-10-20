@@ -757,6 +757,8 @@ export function useHomepageSettings() {
       formData.append('file', file);
       formData.append('region', region);
 
+      console.log('[useHomepageSettings] Uploading image for region:', region);
+
       const response = await fetch('/api/admin/homepage-settings/upload-region-image', {
         method: 'POST',
         headers: {
@@ -768,33 +770,72 @@ export function useHomepageSettings() {
       const result = await response.json();
 
       if (result.success) {
+        console.log('[useHomepageSettings] Image uploaded successfully:', result.data.imageUrl);
+
         // Update the settings with new image URL
-        setHomepageSettings(prev => ({
-          ...prev,
+        const newSettings = {
+          ...homepageSettings,
           regions: {
-            ...prev.regions,
+            ...homepageSettings.regions,
             [region]: {
-              ...prev.regions[region as keyof typeof prev.regions],
+              ...homepageSettings.regions[region as keyof typeof homepageSettings.regions],
               imageUrl: result.data.imageUrl
             }
           }
-        }));
-
-        return { 
-          success: true, 
-          imageUrl: result.data.imageUrl, 
-          message: result.message 
         };
+
+        // Auto-save to Firestore immediately after upload
+        console.log('[useHomepageSettings] Auto-saving settings to Firestore...');
+        setSaving(true);
+        try {
+          const saveResponse = await fetch('/api/admin/homepage-settings', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await getAuthToken()}`
+            },
+            body: JSON.stringify({ homepage: newSettings })
+          });
+
+          const saveResult = await saveResponse.json();
+
+          if (saveResult.success) {
+            console.log('[useHomepageSettings] Settings saved to Firestore successfully');
+            // Update local state after successful save
+            setHomepageSettings(newSettings);
+
+            return {
+              success: true,
+              imageUrl: result.data.imageUrl,
+              message: 'Ảnh đã được tải lên và lưu thành công'
+            };
+          } else {
+            console.error('[useHomepageSettings] Failed to save settings:', saveResult.error);
+            return {
+              success: false,
+              error: `Tải ảnh thành công nhưng lưu thất bại: ${saveResult.error}`
+            };
+          }
+        } catch (saveError) {
+          console.error('[useHomepageSettings] Error saving settings:', saveError);
+          return {
+            success: false,
+            error: 'Tải ảnh thành công nhưng không thể lưu cài đặt'
+          };
+        } finally {
+          setSaving(false);
+        }
       } else {
+        console.error('[useHomepageSettings] Upload failed:', result.error);
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Error uploading region image:', error);
+      console.error('[useHomepageSettings] Error uploading region image:', error);
       return { success: false, error: 'Có lỗi xảy ra khi tải ảnh lên' };
     } finally {
       setUploading(null);
     }
-  }, [user]);
+  }, [user, homepageSettings]);
 
   // Update region settings
   const updateRegionSettings = useCallback((region: string, updates: Partial<{

@@ -71,10 +71,12 @@ export default function AdminSettingsPage() {
   const handleImageUpload = async (region: string, file: File) => {
     const result = await uploadRegionImage(region, file)
     if (result.success) {
-      console.log('Image uploaded successfully:', result.imageUrl)
+      console.log('[AdminSettings] Image uploaded and saved successfully:', result.imageUrl)
+      // Show success notification
+      alert(`✅ Thành công!\n\nẢnh đã được tải lên và lưu vào hệ thống.\n\nThay đổi sẽ có hiệu lực ngay lập tức trên trang chủ.`)
     } else {
-      console.error('Failed to upload image:', result.error)
-      alert(`Lỗi khi tải ảnh lên: ${result.error}`)
+      console.error('[AdminSettings] Failed to upload image:', result.error)
+      alert(`❌ Lỗi!\n\n${result.error}\n\nVui lòng thử lại hoặc liên hệ quản trị viên.`)
     }
   }
 
@@ -584,7 +586,10 @@ export default function AdminSettingsPage() {
                     </Button>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mt-2">Tùy chỉnh ảnh và nội dung phần "Ba miền Việt Nam"</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Tùy chỉnh ảnh và nội dung phần "Ba miền Việt Nam".
+                  <span className="font-semibold text-green-600"> Ảnh sẽ được lưu tự động ngay sau khi tải lên.</span>
+                </p>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-6">
@@ -703,10 +708,13 @@ export default function AdminSettingsPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
                   <Info className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
                   <div className="text-sm">
-                    <p className="font-semibold text-blue-900">Lưu ý quan trọng</p>
-                    <p className="text-blue-800 mt-1 leading-relaxed">
-                      Thay đổi ảnh sẽ có hiệu lực ngay lập tức trên trang chủ. Hãy đảm bảo ảnh có chất lượng tốt và phù hợp với nội dung của từng vùng miền.
-                    </p>
+                    <p className="font-semibold text-blue-900">Hướng dẫn sử dụng</p>
+                    <ul className="text-blue-800 mt-2 space-y-2 list-disc list-inside leading-relaxed">
+                      <li><strong>Thay đổi ảnh:</strong> Chọn ảnh mới → Hệ thống tự động tải lên và lưu ngay lập tức</li>
+                      <li><strong>Thay đổi tên/mô tả:</strong> Chỉnh sửa text → Nhấn nút "Lưu giao diện" ở góc trên</li>
+                      <li><strong>Hiệu lực:</strong> Tất cả thay đổi sẽ xuất hiện ngay trên trang chủ sau vài giây</li>
+                      <li><strong>Khuyến nghị ảnh:</strong> Kích thước 800x500px, định dạng JPG/PNG/WebP, dung lượng dưới 5MB</li>
+                    </ul>
                   </div>
                 </div>
               </CardContent>

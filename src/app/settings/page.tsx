@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -36,12 +37,14 @@ import {
   Award,
   TrendingUp,
   Heart,
-  Calendar
+  Calendar,
+  Loader2
 } from "lucide-react"
 import { EmailVerificationService } from "@/lib/auth/email-verification"
 import { auth } from "@/lib/firebase"
 import { User as FirebaseUser, sendEmailVerification } from "firebase/auth"
 import { toastService } from "@/lib/ui/toast-service"
+import { validateImageFile } from "@/lib/client/firebase-storage"
 import { cn } from "@/lib/utils"
 
 interface EmailVerificationResult {
@@ -53,8 +56,11 @@ interface EmailVerificationResult {
 type SettingsSection = 'profile' | 'security' | 'notifications' | 'appearance' | 'privacy' | 'danger'
 
 export default function SettingsPage() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, updateUser } = useAuth()
   const [isSaving, setIsSaving] = React.useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false)
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [activeSection, setActiveSection] = React.useState<SettingsSection>('profile')
   const [notifications, setNotifications] = React.useState({
     email: true,
@@ -67,6 +73,26 @@ export default function SettingsPage() {
     allowMessages: true
   })
   const [theme, setTheme] = React.useState('system')
+
+  // Form data state
+  const [formData, setFormData] = React.useState({
+    fullName: user?.fullName || "",
+    bio: user?.profile?.bio || "",
+    location: user?.profile?.location || "",
+    website: user?.profile?.website || ""
+  })
+
+  // Update form data when user changes
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        bio: user.profile?.bio || "",
+        location: user.profile?.location || "",
+        website: user.profile?.website || ""
+      })
+    }
+  }, [user])
 
   // Email verification state
   const [firebaseUser, setFirebaseUser] = React.useState<FirebaseUser | null>(null)
@@ -108,17 +134,131 @@ export default function SettingsPage() {
     return () => clearInterval(interval);
   }, [rateLimitExpiry, isResendingEmail])
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file
+    const validation = validateImageFile(file)
+    if (!validation.valid) {
+      toastService.error('File không hợp lệ', validation.error || 'Vui lòng chọn file ảnh hợp lệ')
+      return
+    }
+
+    // Show preview
+    const previewUrl = URL.createObjectURL(file)
+    setAvatarPreview(previewUrl)
+
+    // Upload avatar
+    await uploadAvatar(file)
+  }
+
+  const uploadAvatar = async (file: File) => {
+    setIsUploadingAvatar(true)
+    try {
+      const token = await auth.currentUser?.getIdToken()
+      if (!token) {
+        throw new Error('Không tìm thấy token xác thực')
+      }
+
+      const formDataUpload = new FormData()
+      formDataUpload.append('avatar', file)
+
+      const response = await fetch('/api/users/avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formDataUpload
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Không thể tải lên ảnh')
+      }
+
+      // Update user context with new avatar
+      updateUser({
+        avatar: result.avatarUrl,
+        photoURL: result.avatarUrl
+      })
+
+      // Clear preview
+      setAvatarPreview(null)
+
+      toastService.success('Thành công', 'Cập nhật ảnh đại diện thành công')
+    } catch (error: any) {
+      console.error('Avatar upload error:', error)
+      toastService.error('Lỗi tải ảnh', error.message || 'Không thể tải lên ảnh đại diện')
+      setAvatarPreview(null)
+    } finally {
+      setIsUploadingAvatar(false)
+    }
+  }
+
   const handleSaveSettings = async () => {
     setIsSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const token = await auth.currentUser?.getIdToken()
+      if (!token) {
+        throw new Error('Không tìm thấy token xác thực')
+      }
+
+      const response = await fetch('/api/users/profile', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          profile: {
+            bio: formData.bio,
+            location: formData.location,
+            website: formData.website
+          }
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Không thể cập nhật profile')
+      }
+
+      // Update user context
+      updateUser({
+        fullName: formData.fullName,
+        profile: {
+          ...user?.profile,
+          bio: formData.bio,
+          location: formData.location,
+          website: formData.website
+        }
+      })
+
       toastService.success("Thành công", "Đã lưu cài đặt của bạn!")
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save failed:', error)
-      toastService.error("Lỗi", "Không thể lưu cài đặt")
+      toastService.error("Lỗi", error.message || "Không thể lưu cài đặt")
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const getInitials = (name: string | undefined, email: string | undefined) => {
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return 'U';
   }
 
   const handleResendEmailVerification = async (): Promise<EmailVerificationResult> => {
@@ -328,22 +468,56 @@ export default function SettingsPage() {
                   {/* Avatar Upload Section */}
                   <div className="mb-8 p-6 bg-gradient-to-br from-green-50 to-amber-50 rounded-xl">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
-                      <div className="relative group">
-                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-green to-brand-gold flex items-center justify-center text-3xl text-white font-bold shadow-lg">
-                          {user?.fullName?.[0]?.toUpperCase() || 'U'}
-                        </div>
-                        <button className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <Camera className="w-6 h-6 text-white" />
-                        </button>
+                      <div className="relative">
+                        <Avatar className="w-24 h-24 ring-4 ring-brand-green/20 shadow-lg">
+                          <AvatarImage src={avatarPreview || user?.avatar} alt={user?.fullName || "User Avatar"} />
+                          <AvatarFallback className="text-3xl bg-gradient-to-r from-brand-green to-brand-gold text-white">
+                            {getInitials(user?.fullName, user?.email)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          onChange={handleAvatarChange}
+                          className="hidden"
+                        />
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handleAvatarClick}
+                          disabled={isUploadingAvatar}
+                          className="absolute -bottom-2 -right-2 h-10 w-10 p-0 rounded-full bg-white hover:bg-gray-50 border-2 border-brand-green/20 shadow-lg disabled:opacity-50"
+                        >
+                          {isUploadingAvatar ? (
+                            <Loader2 className="w-5 h-5 text-brand-green animate-spin" />
+                          ) : (
+                            <Camera className="w-5 h-5 text-brand-green" />
+                          )}
+                        </Button>
                       </div>
                       <div className="flex-1 text-center sm:text-left">
                         <h3 className="text-lg font-semibold text-slate-900 mb-1">Ảnh đại diện</h3>
                         <p className="text-sm text-slate-600 mb-3">
-                          JPG, PNG hoặc GIF. Tối đa 5MB.
+                          JPG, PNG, WebP. Tối đa 5MB. Sẽ tự động resize thành 400x400px.
                         </p>
-                        <Button size="sm" className="bg-gradient-to-r from-brand-green to-brand-gold hover:from-green-700 hover:to-amber-600 text-white shadow-md">
-                          <Camera className="w-4 h-4 mr-2" />
-                          Tải ảnh lên
+                        <Button
+                          size="sm"
+                          onClick={handleAvatarClick}
+                          disabled={isUploadingAvatar}
+                          className="bg-gradient-to-r from-brand-green to-brand-gold hover:from-green-700 hover:to-amber-600 text-white shadow-md disabled:opacity-50"
+                        >
+                          {isUploadingAvatar ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Đang tải lên...
+                            </>
+                          ) : (
+                            <>
+                              <Camera className="w-4 h-4 mr-2" />
+                              Tải ảnh lên
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -355,7 +529,8 @@ export default function SettingsPage() {
                         <Label htmlFor="fullName" className="text-slate-700 font-medium">Họ và tên *</Label>
                         <Input
                           id="fullName"
-                          defaultValue={user?.fullName}
+                          value={formData.fullName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                           placeholder="Nhập họ và tên"
                           className="glass-subtle border-white/20 h-12"
                         />
@@ -364,10 +539,12 @@ export default function SettingsPage() {
                         <Label htmlFor="username" className="text-slate-700 font-medium">Tên người dùng *</Label>
                         <Input
                           id="username"
-                          defaultValue={user?.username}
+                          value={user?.username || ""}
                           placeholder="Nhập tên người dùng"
                           className="glass-subtle border-white/20 h-12"
+                          disabled
                         />
+                        <p className="text-xs text-slate-500">Username không thể thay đổi</p>
                       </div>
                     </div>
 
@@ -377,7 +554,7 @@ export default function SettingsPage() {
                         <Input
                           id="email"
                           type="email"
-                          defaultValue={user?.email}
+                          value={user?.email || ""}
                           placeholder="Nhập địa chỉ email"
                           className="glass-subtle border-white/20 h-12 pr-24"
                           disabled
@@ -391,33 +568,52 @@ export default function SettingsPage() {
                           </div>
                         )}
                       </div>
+                      <p className="text-xs text-slate-500">Email không thể thay đổi</p>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="bio" className="text-slate-700 font-medium">Giới thiệu bản thân</Label>
                       <Textarea
                         id="bio"
-                        defaultValue={user?.profile?.bio}
+                        value={formData.bio}
+                        onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                         placeholder="Viết vài dòng về bản thân..."
                         rows={4}
+                        maxLength={500}
                         className="glass-subtle border-white/20 resize-none"
                       />
                       <p className="text-xs text-slate-500">
-                        {user?.profile?.bio?.length || 0}/500 ký tự
+                        {formData.bio?.length || 0}/500 ký tự
                       </p>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="location" className="text-slate-700 font-medium">
-                        <MapPin className="w-4 h-4 inline mr-1" />
-                        Địa điểm
-                      </Label>
-                      <Input
-                        id="location"
-                        defaultValue={user?.profile?.location}
-                        placeholder="Thành phố, quốc gia"
-                        className="glass-subtle border-white/20 h-12"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="location" className="text-slate-700 font-medium">
+                          <MapPin className="w-4 h-4 inline mr-1" />
+                          Địa điểm
+                        </Label>
+                        <Input
+                          id="location"
+                          value={formData.location}
+                          onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                          placeholder="Thành phố, quốc gia"
+                          className="glass-subtle border-white/20 h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="website" className="text-slate-700 font-medium">
+                          <Globe className="w-4 h-4 inline mr-1" />
+                          Website
+                        </Label>
+                        <Input
+                          id="website"
+                          value={formData.website}
+                          onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                          placeholder="https://yourwebsite.com"
+                          className="glass-subtle border-white/20 h-12"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

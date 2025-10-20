@@ -442,30 +442,47 @@ export default function EnhancedUserManagementPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      
-      {/* Enhanced Header */}
-      <div className="relative px-6 pt-6 pb-8">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-info-500/3 to-success-500/5 rounded-b-3xl"></div>
-        
+
+      {/* Enhanced Header - Mobile Optimized */}
+      <div className="relative px-4 sm:px-6 pt-4 sm:pt-6 pb-6 sm:pb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-info-500/3 to-success-500/5 rounded-b-2xl sm:rounded-b-3xl"></div>
+
         <div className="relative max-w-7xl mx-auto">
           <CardHeader
             title="Quản lý Người dùng"
             subtitle="Quản lý tài khoản, quyền và hoạt động của người dùng"
             icon={<Users className="h-6 w-6" />}
             action={
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <EnhancedButton
                   variant="outline"
                   leftIcon={<Download className="h-4 w-4" />}
+                  className="hidden sm:flex"
                 >
                   Xuất Excel
                 </EnhancedButton>
+                {/* Mobile: Icon only */}
+                <button
+                  className="sm:hidden p-2.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors"
+                  title="Xuất Excel"
+                >
+                  <Download className="h-4 w-4 text-neutral-600" />
+                </button>
+
                 <EnhancedButton
                   variant="primary"
                   leftIcon={<UserPlus className="h-4 w-4" />}
+                  className="hidden sm:flex"
                 >
                   Thêm người dùng
                 </EnhancedButton>
+                {/* Mobile: Icon only */}
+                <button
+                  className="sm:hidden p-2.5 rounded-lg bg-primary-600 hover:bg-primary-700 transition-colors"
+                  title="Thêm người dùng"
+                >
+                  <UserPlus className="h-4 w-4 text-white" />
+                </button>
               </div>
             }
           />
@@ -473,10 +490,10 @@ export default function EnhancedUserManagementPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8">
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           <EnhancedCard variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between">
@@ -611,8 +628,158 @@ export default function EnhancedUserManagementPage() {
           </CardContent>
         </EnhancedCard>
 
-        {/* Enhanced Data Table */}
-        <EnhancedCard variant="elevated" size="lg">
+        {/* Mobile Search & Filters */}
+        <div className="block md:hidden mb-4">
+          <EnhancedCard variant="elevated" size="sm">
+            <CardContent className="p-3 space-y-3">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Filters */}
+              <div className="flex gap-2">
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="flex-1 text-sm">
+                    <SelectValue placeholder="Quyền" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    {Object.entries(roleConfig).map(([key, config]) => (
+                      <SelectItem key={key} value={key}>
+                        {config.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="flex-1 text-sm">
+                    <SelectValue placeholder="Trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="active">Hoạt động</SelectItem>
+                    <SelectItem value="disabled">Bị khóa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </EnhancedCard>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="block md:hidden space-y-3">
+          {filteredUsers && filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => {
+              const roleConf = roleConfig[user.role as keyof typeof roleConfig]
+              const statusConf = statusConfig[user.disabled ? 'disabled' : 'active']
+              const RoleIcon = roleConf?.icon || Users
+              const StatusIcon = statusConf.icon
+
+              return (
+                <EnhancedCard key={user.id} variant="elevated" size="sm">
+                  <CardContent className="p-4">
+                    {/* User Header */}
+                    <div className="flex items-start gap-3 mb-3">
+                      <Avatar className="h-12 w-12 flex-shrink-0">
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.fullName}`} />
+                        <AvatarFallback className="bg-gradient-to-br from-green-400 to-yellow-400 text-white font-semibold">
+                          {user.fullName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{user.fullName}</h3>
+                        <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge className={cn('inline-flex items-center gap-1 rounded-full h-6 px-2.5 py-1 text-xs font-semibold border', roleConf?.color)}>
+                            {roleConf?.badgeSvg ? (
+                              <Image
+                                src={roleConf.badgeSvg}
+                                alt={user.role}
+                                width={12}
+                                height={12}
+                                className="w-3 h-3 object-contain"
+                              />
+                            ) : (
+                              <RoleIcon className="h-2.5 w-2.5" />
+                            )}
+                            {roleConf?.label || user.role}
+                          </Badge>
+                          <Badge className={cn('px-2.5 py-1 text-xs font-semibold border', statusConf.color)}>
+                            <div className={cn('h-1.5 w-1.5 rounded-full mr-1', statusConf.dotColor)}></div>
+                            {statusConf.label}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="bg-gray-50 rounded-lg p-2 text-center">
+                        <div className="text-xs text-gray-600 mb-0.5">Địa điểm</div>
+                        <div className="text-sm font-semibold text-gray-900">{user.stats?.placesSubmitted || 0}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2 text-center">
+                        <div className="text-xs text-gray-600 mb-0.5">Đánh giá</div>
+                        <div className="text-sm font-semibold text-gray-900">{user.stats?.reviewsWritten || 0}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2 text-center">
+                        <div className="text-xs text-gray-600 mb-0.5">Tham gia</div>
+                        <div className="text-xs font-semibold text-gray-900">{formatDate(user.createdAt)}</div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => openRoleDialog(user)}
+                        title="Thay đổi quyền"
+                      >
+                        <UserCog className="h-3.5 w-3.5" />
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleSendPasswordReset(user.email)}
+                        title="Gửi email đặt lại mật khẩu"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleStatusToggle(user.id, user.disabled)}
+                        title={user.disabled ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                      >
+                        {user.disabled ? <CheckCircle className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+                      </EnhancedButton>
+                    </div>
+                  </CardContent>
+                </EnhancedCard>
+              )
+            })
+          ) : (
+            <EnhancedCard variant="elevated" size="sm">
+              <CardContent className="p-8 text-center">
+                <Users className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <p className="text-gray-600">Không tìm thấy người dùng</p>
+              </CardContent>
+            </EnhancedCard>
+          )}
+        </div>
+
+        {/* Desktop Data Table */}
+        <EnhancedCard variant="elevated" size="lg" className="hidden md:block">
           <EnhancedDataTable
             data={filteredUsers || []}
             columns={tableColumns}

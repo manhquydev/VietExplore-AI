@@ -564,7 +564,7 @@ export default function AdminAnalyticsPage() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             {/* Key Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -783,7 +783,7 @@ export default function AdminAnalyticsPage() {
                 <CardTitle>Hiệu suất hệ thống</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">{analytics.systemHealth.uptime}</div>
                     <div className="text-sm text-green-600">Uptime</div>
@@ -811,7 +811,7 @@ export default function AdminAnalyticsPage() {
                 <CardTitle>Phân tích người dùng</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 text-center">
                   <div>
                     <div className="text-2xl font-bold">{analytics.overview.activeUsers}</div>
                     <div className="text-sm text-gray-600">Đang hoạt động</div>

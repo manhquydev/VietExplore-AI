@@ -220,7 +220,7 @@ export default function AdminOverviewPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="p-4 bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl border border-teal-200">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-teal-200 rounded-lg">
@@ -362,7 +362,7 @@ export default function AdminOverviewPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
             <div className="flex items-center gap-2 mb-2">
               <UserPlus className="h-4 w-4 text-blue-600" />
