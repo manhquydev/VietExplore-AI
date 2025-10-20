@@ -14,6 +14,7 @@ import { LightOnlyThemeProvider } from "@/providers/light-only-theme-provider";
 import { TopLoadingBar } from "@/components/ui/top-loading-bar";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { MicrosoftClarity } from "@/components/analytics/microsoft-clarity";
 
 // Force dynamic rendering for all pages to support useSearchParams in client components
 export const dynamic = 'force-dynamic'
@@ -121,6 +122,8 @@ export default function RootLayout({
                   {/* PWA Components */}
                   <ServiceWorkerRegistration />
                   <InstallPrompt />
+                  {/* Analytics */}
+                  <MicrosoftClarity />
                 </AuthProvider>
               </ToastProvider>
             </NotificationProvider>
