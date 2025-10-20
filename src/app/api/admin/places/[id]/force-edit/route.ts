@@ -3,6 +3,7 @@ import { verifyAuthToken } from '@/lib/server/auth-middleware'
 import { getAdminDb } from '@/lib/server/firebaseAdmin'
 import { Place, PlaceFormData } from '@/lib/types/places'
 import { RealtimeService } from '@/lib/firebase/realtime'
+import { generatePlaceUrl } from '@/lib/utils/url-helpers'
 
 export async function GET(
   request: NextRequest,
@@ -144,7 +145,7 @@ export async function PUT(
         type: 'place_force_edited',
         title: 'Địa điểm được chỉnh sửa bởi Admin',
         body: `Địa điểm "${currentPlace.name}" đã được Admin chỉnh sửa trực tiếp`,
-        actionUrl: `/places/${currentPlace.slug}`,
+        actionUrl: generatePlaceUrl({ slug: currentPlace.slug, name: currentPlace.name, id: placeId }),
         data: {
           placeId: placeId,
           previousStatus: currentPlace.status,

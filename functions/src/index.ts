@@ -660,7 +660,123 @@ export const scheduledArchiveModerationQueue = functions
   });
 
 /**
- * SCHEDULED FUNCTION 3: Moderation Health Check
+ * SCHEDULED FUNCTION 3: Cleanup Deleted Places
+ *
+ * Schedule: Daily at 3:00 AM (Vietnam time)
+ * Purpose: Permanently delete places that have been in trash for > 120 days
+ *
+ * Replaces: Vercel cron /api/cron/cleanup-deleted-places
+ */
+export const scheduledCleanupDeletedPlaces = functions
+  .runWith({
+    timeoutSeconds: 540, // 9 minutes
+    memory: '1GB',
+  })
+  .pubsub.schedule('0 3 * * *') // Daily at 3 AM
+  .timeZone('Asia/Ho_Chi_Minh')
+  .onRun(async (context) => {
+    console.log('='.repeat(60));
+    console.log('🗑️  SCHEDULED: Cleanup Deleted Places');
+    console.log('Triggered at:', new Date().toISOString());
+    console.log('='.repeat(60));
+
+    try {
+      const db = admin.firestore();
+      const now = new Date();
+      const nowISO = now.toISOString();
+
+      const results = {
+        scanned: 0,
+        deleted: 0,
+        errors: 0,
+        errorDetails: [] as string[],
+        deletedPlaces: [] as { id: string; name: string; deletedAt: string }[],
+      };
+
+      // Find deleted places where autoDeleteAt has passed
+      const expiredQuery = await db.collection('deleted_places')
+        .where('autoDeleteAt', '<=', nowISO)
+        .get();
+
+      results.scanned = expiredQuery.size;
+      console.log(`📊 Found ${results.scanned} places to permanently delete`);
+
+      // Process each expired place
+      const processPromises = expiredQuery.docs.map(async (doc) => {
+        const place = doc.data();
+        const placeId = doc.id;
+
+        try {
+          // Log before permanent deletion
+          await db.collection('moderation_logs').add({
+            action: 'auto_permanent_delete_place',
+            placeId: placeId,
+            placeName: place.name || 'Unknown',
+            performedBy: 'system_cron',
+            performedAt: nowISO,
+            reason: 'Auto-deleted after 120 days in trash',
+            deletedAt: place.deletedAt,
+            deletedBy: place.deletedBy,
+            autoDeleteAt: place.autoDeleteAt,
+          });
+
+          // Permanently delete from deleted_places
+          await db.collection('deleted_places').doc(placeId).delete();
+
+          results.deleted++;
+          results.deletedPlaces.push({
+            id: placeId,
+            name: place.name || 'Unknown',
+            deletedAt: place.deletedAt,
+          });
+
+          console.log(`✅ Permanently deleted: ${place.name} (ID: ${placeId})`);
+
+        } catch (error: any) {
+          results.errors++;
+          const errorMsg = `Failed to delete ${placeId}: ${error.message}`;
+          results.errorDetails.push(errorMsg);
+          console.error(`❌ ${errorMsg}`);
+        }
+      });
+
+      await Promise.all(processPromises);
+
+      // Log results
+      await db.collection('admin_logs').add({
+        type: 'deleted_places_cleanup',
+        timestamp: nowISO,
+        results,
+      });
+
+      console.log('='.repeat(60));
+      console.log('📈 CLEANUP SUMMARY:');
+      console.log(`   Scanned: ${results.scanned}`);
+      console.log(`   Deleted: ${results.deleted}`);
+      console.log(`   Errors: ${results.errors}`);
+      console.log('='.repeat(60));
+
+      return {
+        success: true,
+        message: `Cleanup completed: ${results.deleted} places permanently deleted`,
+        stats: {
+          scanned: results.scanned,
+          deleted: results.deleted,
+          errors: results.errors,
+        },
+        deletedPlaces: results.deletedPlaces,
+        ...(results.errors > 0 && { errorDetails: results.errorDetails }),
+        executedAt: nowISO,
+      };
+
+    } catch (error) {
+      console.error('❌ Error in cleanup deleted places:', error);
+      throw error;
+    }
+  });
+
+/**
+ * SCHEDULED FUNCTION 4: Moderation Health Check
  *
  * Schedule: Every 6 hours
  * Purpose: Monitor queue health and detect issues

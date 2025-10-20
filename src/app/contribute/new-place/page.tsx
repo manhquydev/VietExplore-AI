@@ -35,7 +35,7 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { auth } from "@/lib/firebase"
 import { ImageUpload, type ImageData } from "@/components/image-upload"
 import { BrandedLoading, PageLoadingOverlay } from "@/components/ui/branded-loading"
-import { PlacePreviewProfessional } from "@/components/place-preview-professional"
+import { PlaceDetailContent } from "@/components/place-detail-content"
 import { apiClient } from "@/lib/client/api"
 
 interface PlaceFormData {
@@ -230,7 +230,15 @@ export default function NewPlacePage() {
       router.push('/auth/login?redirect=/contribute/new-place')
     }
   }, [isAuthenticated, router])
-  
+
+  // Scroll to top when step changes - ensures smooth navigation UX
+  React.useEffect(() => {
+    // Use requestAnimationFrame to ensure DOM has updated before scrolling
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  }, [currentStep])
+
   // Load provinces on component mount
   React.useEffect(() => {
     loadProvinces()
@@ -498,15 +506,13 @@ export default function NewPlacePage() {
   const nextStep = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, 3))
-      // Scroll to top when moving to next step
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Scroll handled by useEffect on currentStep change
     }
   }
 
   const prevStep = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1))
-    // Scroll to top when moving to previous step
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Scroll handled by useEffect on currentStep change
   }
 
   // Video upload handler
@@ -591,11 +597,70 @@ export default function NewPlacePage() {
     updateFormData("tags", formData.tags.filter(tag => tag !== tagToRemove))
   }
 
+  // Transform form data to Place format for REAL preview
+  const transformFormToPlaceData = (): any => {
+    return {
+      id: 'preview-' + Date.now(), // Temporary ID for preview
+      name: formData.name || 'Tên địa điểm',
+      shortDescription: formData.shortDescription || 'Mô tả ngắn',
+      description: formData.description || 'Mô tả chi tiết',
+      type: formData.type as "bien" | "nui" | "van-hoa" | "am-thuc" | "check-in" || "check-in",
+      region: formData.region as "bac-bo" | "trung-bo" | "nam-bo" || "nam-bo",
+      province: formData.vietnamAddress.provinceName || formData.province || 'Tỉnh/Thành phố',
+      address: formData.address || 'Địa chỉ',
+      coordinates: {
+        lat: formData.coordinates.lat || 10.762622,
+        lng: formData.coordinates.lng || 106.660172
+      },
+      images: formData.images.map((img, index) => ({
+        id: img.id || `preview-img-${index}`,
+        url: img.url,
+        alt: img.alt || formData.name,
+        caption: img.caption,
+        isPrimary: index === 0
+      })),
+      openingHours: formData.openingHours,
+      entryFee: formData.entryFee,
+      bestTimeToVisit: formData.bestTimeToVisit,
+      facilities: formData.facilities || [],
+      tags: formData.tags || [],
+      sources: formData.sources.filter(s => s.url.trim()),
+      trustLevel: "community" as const,
+      authorRole: user?.role as any || "contributor",
+      authorName: user?.fullName || user?.username || 'Người đóng góp',
+      authorInfo: user ? {
+        id: user.uid,
+        fullName: user.fullName || '',
+        username: user.username || '',
+        avatar: user.avatar || null,
+        role: user.role as any,
+        verified: user.verified || false,
+        emailVerified: user.emailVerified || false,
+        badges: user.badges || [],
+        stats: {
+          placesContributed: user.stats?.placesContributed || 0,
+          reviewsWritten: user.stats?.reviewsWritten || 0,
+          helpfulVotesReceived: user.stats?.helpfulVotesReceived || 0
+        }
+      } : null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      stats: {
+        views: 0,
+        likes: 0,
+        saves: 0,
+        reviews: 0
+      },
+      vietnamAddress: formData.vietnamAddress,
+      addressConversion: addressConversion
+    }
+  }
+
   // Quick validation for submit button - không throw error
   const canSubmit = () => {
     return (
-      formData.name.trim() && 
-      formData.shortDescription.trim() && 
+      formData.name.trim() &&
+      formData.shortDescription.trim() &&
       formData.description.trim() &&
       formData.type &&
       formData.region &&
@@ -1215,64 +1280,35 @@ export default function NewPlacePage() {
               </svg>
             </div>
 
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
-              {isAdmin ? '⚡ Đăng địa điểm mới (Admin)' : 'Đóng góp địa điểm mới'}
-            </h1>
-            <p className="text-muted mb-4">
-              Chia sẻ những địa điểm tuyệt vời mà bạn đã khám phá với cộng đồng
-            </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
+                  {isAdmin ? '⚡ Đăng địa điểm mới (Admin)' : 'Đóng góp địa điểm mới'}
+                </h1>
+                <p className="text-muted">
+                  Chia sẻ những địa điểm tuyệt vời mà bạn đã khám phá với cộng đồng
+                </p>
+              </div>
 
-            {/* Ba hành động khả dụng theo tài liệu 2.1.1 */}
-            <div className="bg-gradient-to-r from-brand-primary-50 to-brand-cream border-l-4 border-brand-green rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-brand-green rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-brand-forest">Ba hành động khả dụng</span>
-                  </div>
-                  <div className="text-xs text-brand-primary-700 italic">
-                    Theo tài liệu 2.1.1 - Luôn accessible trong quá trình tạo địa điểm
-                  </div>
-                </div>
-
-                {/* Ba nút hành động chính - Luôn hiển thị */}
-                <div className="flex gap-2">
-                  {/* 1. Lưu nháp - Luôn khả dụng */}
-                  <Button
-                    variant="outline"
-                    onClick={saveDraft}
-                    disabled={isSubmitting}
-                    size="sm"
-                    className="text-brand-primary-700 border-brand-primary-300 bg-brand-primary-50 hover:bg-brand-primary-100 transition-all hover:scale-105"
-                  >
-                    <Save className="w-4 h-4 mr-1" />
-                    Lưu nháp
-                  </Button>
-
-                  {/* 2. Hủy bỏ - Luôn khả dụng */}
-                  <Button
-                    variant="outline"
-                    onClick={cancelDraft}
-                    disabled={isSubmitting}
-                    size="sm"
-                    className="text-neutral-700 border-neutral-300 bg-neutral-50 hover:bg-neutral-100 transition-all hover:scale-105"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Hủy bỏ
-                  </Button>
-
-                  {/* 3. Gửi kiểm duyệt - Luôn khả dụng nhưng có thể disabled */}
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting || !canSubmit()}
-                    size="sm"
-                    className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white disabled:bg-gray-400 transition-all hover:scale-105 shadow-md hover:shadow-lg"
-                    title={!canSubmit() ? "Vui lòng điền đầy đủ thông tin bắt buộc" : ""}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Gửi kiểm duyệt
-                  </Button>
-                </div>
+              {/* Preview and Cancel actions - Secondary actions at top */}
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsPreviewMode(!isPreviewMode)}
+                  className="text-sm"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  {isPreviewMode ? "Thoát xem trước" : "Xem trước"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={cancelDraft}
+                  disabled={isSubmitting}
+                  className="text-sm text-muted hover:text-danger"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Hủy
+                </Button>
               </div>
             </div>
           </div>
@@ -1338,10 +1374,35 @@ export default function NewPlacePage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {isPreviewMode ? (
-                <PlacePreviewProfessional 
-                  data={formData} 
-                  addressConversion={addressConversion}
-                />
+                <div className="relative">
+                  {/* Exit Preview Button - Sticky at top */}
+                  <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brand-primary-200 p-4 mb-4 -mx-6 -mt-6">
+                    <div className="flex items-center justify-between max-w-4xl mx-auto">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-primary-100 border border-brand-green rounded-lg">
+                          <Eye className="w-4 h-4 text-brand-green" />
+                          <span className="text-sm font-medium text-brand-forest">Chế độ xem trước</span>
+                        </div>
+                        <p className="text-sm text-muted hidden sm:block">
+                          Đây là giao diện thật sẽ hiển thị khi địa điểm được duyệt
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setIsPreviewMode(false)}
+                        className="hover:bg-brand-primary-100"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Thoát xem trước
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* REAL Place Detail Component - Same as production */}
+                  <div className="-mx-6 -mb-6">
+                    <PlaceDetailContent place={transformFormToPlaceData()} />
+                  </div>
+                </div>
               ) : (
                 <>
                 {/* Original form content starts here */}
@@ -2111,43 +2172,104 @@ export default function NewPlacePage() {
             </CardContent>
           </Card>
 
-          {/* Navigation */}
-          <div className="flex justify-between mt-8">
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 1}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Quay lại
-            </Button>
+          {/* Spacer for sticky navigation */}
+          <div className="h-20"></div>
+        </div>
 
-            <div className="flex gap-3">
-              <Button 
-                variant="ghost"
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                {isPreviewMode ? "Thoát xem trước" : "Xem trước"}
-              </Button>
-              
-              {/* Navigation flow - Ba hành động chính đã có ở header */}
-              {currentStep < 3 ? (
-                <Button onClick={nextStep}>
-                  Tiếp tục
-                  <ArrowRight className="w-4 h-4 ml-2" />
+        {/* Sticky Bottom Navigation Bar - Best Practice for Multi-Step Forms */}
+        {!isPreviewMode && (
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-brand-primary-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+            <div className="container max-w-4xl mx-auto">
+              <div className="flex items-center justify-between py-4 px-4 gap-4">
+                {/* Left: Back button */}
+                <Button
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 1 || isSubmitting}
+                  className="min-w-[100px]"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Quay lại
                 </Button>
-              ) : (
-                /* Final step - Reminder về 3 hành động */
-                !isPreviewMode && (
-                  <div className="text-sm text-muted italic">
-                    💡 Sử dụng 3 nút hành động ở phía trên để: Lưu nháp, Hủy bỏ, hoặc Gửi kiểm duyệt
+
+                {/* Center: Progress indicator */}
+                <div className="flex items-center gap-2 px-4">
+                  <div className="text-sm font-medium text-brand-forest">
+                    Bước {currentStep}/3
                   </div>
-                )
-              )}
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    {steps.map((step) => (
+                      <div
+                        key={step.id}
+                        className={cn(
+                          "w-2 h-2 rounded-full transition-all",
+                          currentStep >= step.id
+                            ? "bg-brand-green w-8"
+                            : "bg-brand-primary-200"
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right: Primary actions */}
+                <div className="flex gap-2">
+                  {/* Save draft - Always available */}
+                  <Button
+                    variant="outline"
+                    onClick={saveDraft}
+                    disabled={isSubmitting}
+                    className="min-w-[100px] border-brand-primary-300 hover:bg-brand-primary-50"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Lưu nháp
+                  </Button>
+
+                  {/* Next or Submit */}
+                  {currentStep < 3 ? (
+                    <Button
+                      onClick={nextStep}
+                      disabled={isSubmitting}
+                      className="min-w-[100px] bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green"
+                    >
+                      Tiếp tục
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={submitForm}
+                      disabled={isSubmitting || !canSubmit()}
+                      className="min-w-[120px] bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green shadow-lg hover:shadow-xl"
+                      title={!canSubmit() ? "Vui lòng điền đầy đủ thông tin bắt buộc" : ""}
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Gửi kiểm duyệt
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Mobile: Compact layout for small screens */}
+              <style jsx>{`
+                @media (max-width: 640px) {
+                  .container > div {
+                    flex-wrap: wrap;
+                    gap: 0.75rem;
+                  }
+                  .container > div > div:first-child,
+                  .container > div > div:last-child {
+                    flex: 1 1 45%;
+                  }
+                  .container > div > div:nth-child(2) {
+                    flex: 1 1 100%;
+                    justify-content: center;
+                    order: -1;
+                  }
+                }
+              `}</style>
             </div>
           </div>
-        </div>
+        )}
         </PageLoadingOverlay>
       </main>
 

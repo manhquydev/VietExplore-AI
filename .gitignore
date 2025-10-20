@@ -47,8 +47,7 @@ docs/sitemap-tree-*.txt
 nul
 NUL
 
-docs/
-.md/
+
 
 # MCP configuration (contains sensitive paths)
 .claude/

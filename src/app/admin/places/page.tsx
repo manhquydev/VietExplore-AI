@@ -25,6 +25,8 @@ import { Place, PlaceType, PlaceRegion, PlaceStatus } from "@/lib/types/places"
 import { toastService } from "@/lib/ui/toast-service"
 import { BrandedLoading } from "@/components/ui/branded-loading"
 import Link from "next/link"
+import { generatePlaceUrl } from "@/lib/utils/url-helpers"
+import { useFirebaseAuth } from "@/hooks/use-firebase-auth"
 
 const PLACE_TYPES = [
   { value: "bien", label: "Biển" },
@@ -62,8 +64,9 @@ interface PlaceFilters {
 
 export default function EnhancedPlacesManagementPage() {
   const { user } = useAuth()
+  const { getIdToken } = useFirebaseAuth()
   const { colors, spacing, animations, isDark } = useAdminTheme()
-  
+
   const [filters, setFilters] = useState<PlaceFilters>({
     search: '',
     status: 'all',
@@ -73,10 +76,11 @@ export default function EnhancedPlacesManagementPage() {
     createdBy: 'all',
     featured: 'all'
   })
-  
+
   const [selectedPlaces, setSelectedPlaces] = useState<Place[]>([])
   const [page, setPage] = useState(1)
   const [pageSize] = useState(50)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Convert filters for hook
   const hookFilters = useMemo(() => {
@@ -93,7 +97,7 @@ export default function EnhancedPlacesManagementPage() {
     return result
   }, [filters, page, pageSize])
 
-  const { places, loading, error, total, mutate } = useAdminPlacesStable(hookFilters)
+  const { places, loading, error, total, refresh } = useAdminPlacesStable(hookFilters)
 
   const updateFilter = useCallback((key: keyof PlaceFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
@@ -104,7 +108,7 @@ export default function EnhancedPlacesManagementPage() {
     try {
       return new Date(dateString).toLocaleDateString('vi-VN', {
         day: '2-digit',
-        month: '2-digit', 
+        month: '2-digit',
         year: 'numeric'
       })
     } catch {
@@ -112,18 +116,136 @@ export default function EnhancedPlacesManagementPage() {
     }
   }
 
-  const handleBulkAction = (action: string, places: Place[]) => {
+  // Delete single place
+  const handleDeletePlace = async (place: Place) => {
+    if (!confirm(`Bạn có chắc muốn xóa địa điểm "${place.name}"?\n\nĐịa điểm sẽ được chuyển vào thùng rác và có thể khôi phục trong vòng 120 ngày.`)) {
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const token = await getIdToken()
+      const response = await fetch(`/api/admin/places/${place.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toastService.success('Đã xóa', result.message)
+        refresh() // Refresh list
+      } else {
+        toastService.error('Lỗi', result.error || 'Không thể xóa địa điểm')
+      }
+    } catch (error) {
+      console.error('Error deleting place:', error)
+      toastService.error('Lỗi', 'Không thể xóa địa điểm')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Toggle visibility (hide/unhide)
+  const handleToggleVisibility = async (place: Place) => {
+    const action = place.status === 'hidden' ? 'unhide' : 'hide'
+    const actionText = action === 'hide' ? 'ẩn' : 'hiển thị lại'
+
+    if (!confirm(`Bạn có chắc muốn ${actionText} địa điểm "${place.name}"?`)) {
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const token = await getIdToken()
+      const response = await fetch(`/api/admin/places/${place.id}/visibility`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action,
+          reason: `Admin ${actionText} từ quản lý địa điểm`
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toastService.success('Thành công', result.message)
+        refresh() // Refresh list
+      } else {
+        toastService.error('Lỗi', result.error || `Không thể ${actionText} địa điểm`)
+      }
+    } catch (error) {
+      console.error('Error toggling visibility:', error)
+      toastService.error('Lỗi', `Không thể ${actionText} địa điểm`)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Bulk actions
+  const handleBulkAction = async (action: string, places: Place[]) => {
     console.log(`Bulk action: ${action} for ${places.length} places`)
-    switch(action) {
-      case 'publish':
-        toastService.success('Thành công', `Đã xuất bản ${places.length} địa điểm`)
-        break
-      case 'hide':
-        toastService.success('Thành công', `Đã ẩn ${places.length} địa điểm`)
-        break
-      case 'delete':
-        toastService.success('Thành công', `Đã xóa ${places.length} địa điểm`)
-        break
+
+    setIsProcessing(true)
+    try {
+      switch(action) {
+        case 'hide':
+          // Hide multiple places
+          for (const place of places) {
+            if (place.status === 'published') {
+              const token = await getIdToken()
+              await fetch(`/api/admin/places/${place.id}/visibility`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  action: 'hide',
+                  reason: 'Bulk hide action'
+                })
+              })
+            }
+          }
+          toastService.success('Thành công', `Đã ẩn ${places.length} địa điểm`)
+          refresh()
+          break
+
+        case 'delete':
+          // Delete multiple places
+          if (!confirm(`Bạn có chắc muốn xóa ${places.length} địa điểm?\n\nCác địa điểm sẽ được chuyển vào thùng rác.`)) {
+            break
+          }
+
+          for (const place of places) {
+            const token = await getIdToken()
+            await fetch(`/api/admin/places/${place.id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            })
+          }
+          toastService.success('Thành công', `Đã xóa ${places.length} địa điểm`)
+          refresh()
+          break
+
+        default:
+          toastService.info('Thông báo', 'Chức năng đang phát triển')
+      }
+
+      setSelectedPlaces([]) // Clear selection
+    } catch (error) {
+      console.error('Bulk action error:', error)
+      toastService.error('Lỗi', 'Không thể thực hiện thao tác hàng loạt')
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -233,25 +355,32 @@ export default function EnhancedPlacesManagementPage() {
       title: 'Thao tác',
       width: '120px',
       render: (value: any, place: Place) => (
-        <div className="flex items-center gap-2">
-          <Link href={`/places/${place.slug}`} target="_blank">
-            <EnhancedButton variant="ghost" size="xs">
+        <div className="flex items-center gap-1">
+          <Link href={generatePlaceUrl(place)} target="_blank">
+            <EnhancedButton variant="ghost" size="xs" title="Xem địa điểm">
               <Eye className="h-3 w-3" />
             </EnhancedButton>
           </Link>
           <Link href={`/admin/places/${place.id}/force-edit`}>
-            <EnhancedButton variant="ghost" size="xs">
+            <EnhancedButton variant="ghost" size="xs" title="Chỉnh sửa">
               <Edit3 className="h-3 w-3" />
             </EnhancedButton>
           </Link>
           <EnhancedButton
             variant="ghost"
             size="xs"
-            onClick={() => {
-              if (confirm('Bạn có chắc muốn xóa địa điểm này?')) {
-                toastService.success('Thành công', 'Đã xóa địa điểm')
-              }
-            }}
+            title={place.status === 'hidden' ? 'Hiển thị lại' : 'Ẩn địa điểm'}
+            onClick={() => handleToggleVisibility(place)}
+            disabled={isProcessing}
+          >
+            <EyeOff className={cn("h-3 w-3", place.status === 'hidden' && "text-red-500")} />
+          </EnhancedButton>
+          <EnhancedButton
+            variant="ghost"
+            size="xs"
+            title="Xóa vào thùng rác"
+            onClick={() => handleDeletePlace(place)}
+            disabled={isProcessing}
           >
             <Trash2 className="h-3 w-3" />
           </EnhancedButton>

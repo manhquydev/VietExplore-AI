@@ -880,12 +880,53 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "deleted_places",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "deletedBy",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "deletedAt",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "deleted_places",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "previousStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "deletedAt",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
     }
   ],
   "fieldOverrides": [
     {
       "collectionGroup": "places",
       "fieldPath": "slug",
+      "ttl": false,
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "deleted_places",
+      "fieldPath": "autoDeleteAt",
       "ttl": false,
       "indexes": [
         {
