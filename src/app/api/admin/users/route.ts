@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: users,
       pagination: {
@@ -81,6 +81,13 @@ export async function GET(request: NextRequest) {
         hasMore: (offset + users.length) < totalUsers
       }
     });
+
+    // Prevent caching to ensure fresh data in production
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
 
   } catch (error) {
     console.error('Error fetching users:', error);

@@ -13,9 +13,22 @@ async function callApi<T>(
 ): Promise<{ success: boolean; data?: T; error?: string; message?: string; pagination?: any }> {
   try {
     const user = auth.currentUser;
-    const headers: Record<string, string> = {
-      ...options.headers,
-    };
+    const headers: Record<string, string> = {};
+
+    // Safely copy existing headers if provided
+    if (options.headers) {
+      if (options.headers instanceof Headers) {
+        options.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+      } else if (Array.isArray(options.headers)) {
+        options.headers.forEach(([key, value]) => {
+          headers[key] = value;
+        });
+      } else {
+        Object.assign(headers, options.headers);
+      }
+    }
 
     // Only set Content-Type if body is not FormData
     // Browser will automatically set correct Content-Type with boundary for FormData

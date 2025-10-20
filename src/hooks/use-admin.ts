@@ -4,7 +4,7 @@ import { User, UserRole } from '@/lib/types/auth';
 import { Place, PlaceFilters } from '@/lib/types/places';
 import { useAuth } from '@/components/auth/auth-provider';
 import { RealtimeService } from '@/lib/firebase/realtime';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 
 // Helper function to get Firebase token
 const getAuthToken = async () => {
@@ -312,6 +312,7 @@ export function useAdminUsers(filters: {
   search?: string;
   limit?: number;
   offset?: number;
+  useRealtime?: boolean; // Option to enable realtime listener
 } = {}) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -324,7 +325,7 @@ export function useAdminUsers(filters: {
 
     try {
       const result = await apiClient.admin.users.list(filters);
-      
+
       if (result.success && result.data) {
         setUsers(Array.isArray(result.data) ? result.data : []);
       } else {
@@ -340,26 +341,121 @@ export function useAdminUsers(filters: {
     }
   }, [JSON.stringify(filters)]);
 
+  // Realtime listener for user updates (optional - enabled by default for admin)
   useEffect(() => {
     if (!user || user.role !== 'admin') {
       setLoading(false);
       return;
     }
-    fetchUsers();
-  }, [fetchUsers, user]);
+
+    // Enable realtime by default if not explicitly disabled
+    const enableRealtime = filters.useRealtime !== false;
+
+    if (!enableRealtime) {
+      // Fallback to regular fetch
+      fetchUsers();
+      return;
+    }
+
+    // Setup Firestore realtime listener using client SDK
+    console.log('[useAdminUsers] Setting up realtime listener for users');
+
+    setLoading(true);
+
+    try {
+      // Import Firestore methods from client SDK
+      const { collection, query: firestoreQuery, where, orderBy, limit: firestoreLimit, onSnapshot } = require('firebase/firestore');
+
+      let q = firestoreQuery(
+        collection(db, 'users'),
+        orderBy('createdAt', 'desc')
+      );
+
+      // Apply role filter if specified
+      if (filters.role) {
+        q = firestoreQuery(
+          collection(db, 'users'),
+          where('role', '==', filters.role),
+          orderBy('createdAt', 'desc')
+        );
+      }
+
+      // Apply limit
+      if (filters.limit) {
+        q = firestoreQuery(
+          collection(db, 'users'),
+          ...(filters.role ? [where('role', '==', filters.role)] : []),
+          orderBy('createdAt', 'desc'),
+          firestoreLimit(filters.limit)
+        );
+      }
+
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot: any) => {
+          console.log('[useAdminUsers] Realtime update received, processing users...');
+          const updatedUsers: User[] = [];
+
+          snapshot.forEach((doc: any) => {
+            const userData = doc.data();
+            const { password, ...userSafeData } = userData;
+
+            // Apply search filter client-side if specified
+            if (filters.search) {
+              const searchTerm = filters.search.toLowerCase();
+              const fullName = userSafeData.fullName?.toLowerCase() || '';
+              const email = userSafeData.email?.toLowerCase() || '';
+
+              if (!fullName.includes(searchTerm) && !email.includes(searchTerm)) {
+                return; // Skip this user
+              }
+            }
+
+            updatedUsers.push({
+              id: doc.id,
+              ...userSafeData
+            } as User);
+          });
+
+          console.log(`[useAdminUsers] Updated users count: ${updatedUsers.length}`);
+          setUsers(updatedUsers);
+          setLoading(false);
+          setError(null);
+        },
+        (err: any) => {
+          console.error('[useAdminUsers] Realtime listener error:', err);
+          setError('Có lỗi xảy ra khi theo dõi dữ liệu realtime');
+          setLoading(false);
+
+          // Fallback to regular fetch on error
+          fetchUsers();
+        }
+      );
+
+      // Cleanup listener on unmount
+      return () => {
+        console.log('[useAdminUsers] Cleaning up realtime listener');
+        unsubscribe();
+      };
+    } catch (err) {
+      console.error('[useAdminUsers] Failed to setup realtime listener:', err);
+      // Fallback to regular fetch
+      fetchUsers();
+    }
+  }, [user, JSON.stringify(filters), fetchUsers]);
 
   const changeUserRole = async (userId: string, newRole: UserRole, reason?: string) => {
     try {
       console.log('useAdminUsers: Calling API to change role:', { userId, newRole, reason });
       const result = await apiClient.admin.users.changeRole(userId, newRole, reason);
       console.log('useAdminUsers: API response for role change:', result);
-      console.log('useAdminUsers: Result type:', typeof result, 'Is null?', result === null, 'Is undefined?', result === undefined);
-      
+
       if (result && result.success) {
-        await fetchUsers(); // Refresh user list
+        // No need to manually refresh - realtime listener will auto-update
+        console.log('useAdminUsers: Role changed successfully, realtime listener will update UI');
         return { success: true, message: result.message };
       }
-      
+
       const errorResponse = { success: false, error: result?.error || 'Không có phản hồi thành công từ server' };
       console.log('useAdminUsers: Returning error response:', errorResponse);
       return errorResponse;
@@ -387,7 +483,8 @@ export function useAdminUsers(filters: {
     try {
       const result = await apiClient.admin.users.toggleUserStatus(userId, disabled);
       if(result.success) {
-        await fetchUsers(); // Refresh user list
+        // No need to manually refresh - realtime listener will auto-update
+        console.log('useAdminUsers: User status toggled successfully, realtime listener will update UI');
         return { success: true, message: result.message };
       }
       return { success: false, error: result.error };
