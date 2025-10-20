@@ -117,8 +117,19 @@ export async function PUT(
       });
 
       console.log('Notification sent successfully to user:', userId);
+
+      // Broadcast user update event to trigger UI refresh for all admins
+      const userUpdatesRef = realtimeDb.ref('admin/user_updates');
+      await userUpdatesRef.set({
+        userId: userId,
+        action: disabled ? 'user_disabled' : 'user_enabled',
+        timestamp: Date.now(),
+        triggeredBy: admin.id
+      });
+
+      console.log('User update event broadcasted to admin/user_updates');
     } catch (notificationError) {
-      console.error('Failed to send notification:', notificationError);
+      console.error('Failed to send notification or broadcast event:', notificationError);
       // Don't fail the status change if notification fails
     }
 
