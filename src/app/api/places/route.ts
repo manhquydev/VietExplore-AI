@@ -28,15 +28,17 @@ export async function GET(request: NextRequest) {
     if (filters.region) {
       query = query.where('region', '==', filters.region);
     }
-    
+
+    // ✅ FIX: Filter by provinceSlug (not province) because FilterBar sends slug values
+    // FilterBar sends: "ha-noi" → Must match provinceSlug field (not province = "Hà Nội")
     if (filters.province) {
-      query = query.where('province', '==', filters.province);
+      query = query.where('provinceSlug', '==', filters.province);
     }
-    
+
     if (filters.type) {
       query = query.where('type', '==', filters.type);
     }
-    
+
     if (filters.trustLabel) {
       query = query.where('trustLabel', '==', filters.trustLabel);
     }

@@ -172,13 +172,11 @@ export default function PlacesPage() {
 
         {/* Results Section - Mobile Optimized */}
         <section className="container py-6 sm:py-8 relative">
-          {/* Filter Bar with glassmorphism */}
-          <div className="glass-card p-4 sm:p-6 mb-6 sm:mb-8">
-            <FilterBar
-              onFiltersChange={handleFiltersChange}
-              initialFilters={filters}
-            />
-          </div>
+          {/* Filter Bar - Self-contained glassmorphism */}
+          <FilterBar
+            onFiltersChange={handleFiltersChange}
+            initialFilters={filters}
+          />
 
           {/* Results Header - Mobile Optimized */}
           <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">

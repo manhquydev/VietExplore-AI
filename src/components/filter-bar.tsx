@@ -38,6 +38,7 @@ const types = [
 ]
 
 const trustLabels = [
+  { value: "special_verified", label: "Xác minh đặc biệt" },
   { value: "verified", label: "Xác minh" },
   { value: "partner", label: "Đối tác" },
   { value: "contributor", label: "Đóng góp" },
@@ -113,9 +114,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     : provinces
 
   return (
-    <div className={cn("sticky top-[64px] sm:top-[72px] z-20 bg-surface border-b border-border", className)}>
-      <div className="container py-3 sm:py-4">
-        <div className="flex flex-col gap-3 sm:gap-4">
+    <div className={cn("glass-card p-4 sm:p-6 mb-6 sm:mb-8", className)}>
+      <div className="flex flex-col gap-3 sm:gap-4">
           {/* Filter Controls - Mobile-first responsive layout */}
           <div className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4">
             {/* Region Filter */}
