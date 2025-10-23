@@ -3,10 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { adminDb } from '@/lib/firebase-admin';
 
-// Rate limiting config
+// Rate limiting config based on user role
 const RATE_LIMIT = {
-  FREE_TIER: 10, // 10 questions per day per place
-  PREMIUM_TIER: 50, // 50 for premium users
+  TRAVELER: 10,      // Free tier - 10 questions per day per place
+  CONTRIBUTOR: 20,   // Contributor tier - 20 questions per day per place
+  PARTNER: 50,       // Partner tier - 50 questions per day per place
+  UNLIMITED: 999999, // Moderator/Admin - unlimited (practically unlimited)
   WINDOW_HOURS: 24
 };
 
@@ -49,8 +51,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Check rate limiting
-    const rateLimitCheck = await checkRateLimit(user.id, placeId);
+    // 3. Check rate limiting (pass full user object for role-based limits)
+    const rateLimitCheck = await checkRateLimit(user, placeId);
 
     if (!rateLimitCheck.allowed) {
       return NextResponse.json({
@@ -160,9 +162,9 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Check if user has exceeded rate limit
+ * Check if user has exceeded rate limit based on their role
  */
-async function checkRateLimit(userId: string, placeId: string): Promise<{
+async function checkRateLimit(user: { id: string; role: string }, placeId: string): Promise<{
   allowed: boolean;
   limit: number;
   remaining: number;
@@ -173,9 +175,39 @@ async function checkRateLimit(userId: string, placeId: string): Promise<{
     const now = new Date();
     const windowStart = new Date(now.getTime() - RATE_LIMIT.WINDOW_HOURS * 60 * 60 * 1000);
 
-    // Query recent chat interactions
+    // Determine rate limit based on user role
+    let limit: number;
+    switch (user.role) {
+      case 'admin':
+      case 'moderator':
+        limit = RATE_LIMIT.UNLIMITED;
+        break;
+      case 'partner':
+        limit = RATE_LIMIT.PARTNER;
+        break;
+      case 'contributor':
+        limit = RATE_LIMIT.CONTRIBUTOR;
+        break;
+      case 'traveler':
+      case 'guest':
+      default:
+        limit = RATE_LIMIT.TRAVELER;
+        break;
+    }
+
+    // For unlimited users, skip the query
+    if (limit === RATE_LIMIT.UNLIMITED) {
+      return {
+        allowed: true,
+        limit,
+        remaining: RATE_LIMIT.UNLIMITED,
+        resetAt: new Date(now.getTime() + RATE_LIMIT.WINDOW_HOURS * 60 * 60 * 1000).toISOString()
+      };
+    }
+
+    // Query recent chat interactions for non-unlimited users
     const snapshot = await adminDb.collection('ai_chat_logs')
-      .where('userId', '==', userId)
+      .where('userId', '==', user.id)
       .where('placeId', '==', placeId)
       .where('timestamp', '>=', windowStart.toISOString())
       .count()
@@ -183,10 +215,16 @@ async function checkRateLimit(userId: string, placeId: string): Promise<{
 
     const count = snapshot.data().count;
 
-    // TODO: Check if user has premium subscription for higher limit
-    const limit = RATE_LIMIT.FREE_TIER;
-
     const resetAt = new Date(now.getTime() + RATE_LIMIT.WINDOW_HOURS * 60 * 60 * 1000).toISOString();
+
+    console.log('[RATE-LIMIT] Check result:', {
+      userId: user.id,
+      role: user.role,
+      limit,
+      count,
+      remaining: Math.max(0, limit - count),
+      allowed: count < limit
+    });
 
     return {
       allowed: count < limit,
@@ -197,11 +235,11 @@ async function checkRateLimit(userId: string, placeId: string): Promise<{
 
   } catch (error) {
     console.error('[RATE-LIMIT] Error checking rate limit:', error);
-    // On error, allow the request (fail open)
+    // On error, allow the request (fail open) with traveler limit
     return {
       allowed: true,
-      limit: RATE_LIMIT.FREE_TIER,
-      remaining: RATE_LIMIT.FREE_TIER,
+      limit: RATE_LIMIT.TRAVELER,
+      remaining: RATE_LIMIT.TRAVELER,
       resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     };
   }

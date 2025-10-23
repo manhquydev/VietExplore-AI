@@ -82,17 +82,18 @@ export const placeChatFlow = ai.defineFlow(
 ${placeContext}
 
 QUY TẮC TRẢ LỜI:
-1. CHỈ dựa vào thông tin trên để trả lời. KHÔNG bịa đặt hoặc đoán mò.
-2. Nếu KHÔNG có thông tin về câu hỏi → Trả lời: "Tôi chưa có dữ liệu về [vấn đề]. Bạn có thể liên hệ trực tiếp địa điểm hoặc kiểm tra website chính thức để biết chính xác."
+1. Dựa vào thông tin trên để trả lời. KHÔNG bịa đặt hoặc đoán mò.
+2. Nếu thông tin = "Chưa cập nhật" hoặc thiếu:
+   - Với câu hỏi quan trọng (giá, giờ, thời gian): Khuyên kiểm tra nguồn chính thức
+   - Với câu hỏi khác: Trả lời dựa trên mô tả chung và đưa gợi ý hữu ích
 3. Trả lời ngắn gọn (2-4 câu), thân thiện, bằng tiếng Việt.
-4. Nếu hỏi về giá/giờ mà data = "Chưa cập nhật" → Khuyên kiểm tra nguồn chính thức.
-5. Đề xuất hoạt động phù hợp dựa trên loại địa điểm:
+4. Đề xuất hoạt động phù hợp dựa trên loại địa điểm:
    - Biển: bơi lội, lặn, chèo thuyền
    - Núi: trekking, ngắm cảnh, camping
    - Văn hóa: tham quan, tìm hiểu lịch sử, chụp ảnh
    - Ẩm thực: thử món đặc sản địa phương
    - Check-in: chụp ảnh, trải nghiệm độc đáo
-6. Luôn lịch sự và hữu ích. Nếu không chắc chắn → Thừa nhận thay vì đoán.
+5. Luôn lịch sự và hữu ích. Tận dụng mô tả chi tiết để đưa câu trả lời có giá trị.
 
 ${conversationHistory}
 
@@ -333,68 +334,126 @@ function getRegionLabel(region: string): string {
 
 /**
  * Detect if question needs web search based on missing data fields
+ * ENHANCED: More flexible detection - prioritizes web search for critical missing data
  */
 function needsWebSearch(place: any, question: string): boolean {
   const questionLower = question.toLowerCase();
 
-  // Best time to visit / Photography timing / Peak season questions
-  if ((questionLower.includes('thời gian')
-      || questionLower.includes('thời điểm')
-      || questionLower.includes('chụp ảnh')
-      || questionLower.includes('bao giờ')
-      || questionLower.includes('đông khách')
-      || questionLower.includes('vắng khách')
-      || questionLower.includes('cao điểm')
-      || questionLower.includes('đẹp nhất')
-      || questionLower.includes('nên đi'))
-      && !place.bestTimeToVisit && !place.bestSeason) {
-    console.log('[NEED-WEB-SEARCH] Best time/peak season - DB missing bestTimeToVisit & bestSeason');
+  // === CRITICAL DATA POINTS - Always search if missing ===
+
+  // Opening hours questions - HIGH PRIORITY
+  if (questionLower.includes('giờ') || questionLower.includes('mở cửa') || questionLower.includes('mở') || questionLower.includes('đóng cửa')) {
+    if (!place.openingHours || place.openingHours === 'Chưa cập nhật') {
+      console.log('[NEED-WEB-SEARCH] Opening hours - DB missing/outdated');
+      return true;
+    }
+  }
+
+  // Price questions - HIGH PRIORITY
+  if (questionLower.includes('giá') || questionLower.includes('vé') || questionLower.includes('tiền') || questionLower.includes('phí') || questionLower.includes('chi phí')) {
+    if (!place.entryFee || place.entryFee === 'Chưa cập nhật') {
+      console.log('[NEED-WEB-SEARCH] Entry fee - DB missing/outdated');
+      return true;
+    }
+  }
+
+  // Best time to visit / Timing questions - HIGH PRIORITY
+  if (questionLower.includes('thời gian') || questionLower.includes('thời điểm') || questionLower.includes('bao giờ')
+      || questionLower.includes('nên đi') || questionLower.includes('tốt nhất') || questionLower.includes('đẹp nhất')
+      || questionLower.includes('chụp ảnh') || questionLower.includes('mùa') || questionLower.includes('tháng')) {
+    if (!place.bestTimeToVisit && !place.bestSeason) {
+      console.log('[NEED-WEB-SEARCH] Best time/season - DB missing');
+      return true;
+    }
+  }
+
+  // === SECONDARY DATA POINTS - Search if question is specific ===
+
+  // Crowd/Peak season questions
+  if (questionLower.includes('đông khách') || questionLower.includes('vắng khách') || questionLower.includes('cao điểm') || questionLower.includes('đông người')) {
+    console.log('[NEED-WEB-SEARCH] Crowd/peak season info - specific question');
     return true;
   }
 
-  // Opening hours questions
-  if ((questionLower.includes('giờ') || questionLower.includes('mở cửa') || questionLower.includes('mở'))
-      && !place.openingHours) {
-    console.log('[NEED-WEB-SEARCH] Opening hours - DB missing openingHours');
-    return true;
-  }
-
-  // Price questions
-  if ((questionLower.includes('giá') || questionLower.includes('vé') || questionLower.includes('tiền') || questionLower.includes('phí'))
-      && !place.entryFee) {
-    console.log('[NEED-WEB-SEARCH] Entry fee - DB missing entryFee');
-    return true;
-  }
-
-  // Weather/Season questions
-  if ((questionLower.includes('thời tiết') || questionLower.includes('mùa') || questionLower.includes('tháng'))
-      && !place.bestTimeToVisit && !place.bestSeason) {
-    console.log('[NEED-WEB-SEARCH] Weather/season - DB missing bestTimeToVisit & bestSeason');
-    return true;
-  }
-
-  // Facilities questions
-  if ((questionLower.includes('tiện ích') || questionLower.includes('dịch vụ') || questionLower.includes('có gì'))
+  // Facilities/Services questions
+  if ((questionLower.includes('tiện ích') || questionLower.includes('dịch vụ') || questionLower.includes('có gì')
+      || questionLower.includes('có không') || questionLower.includes('phòng') || questionLower.includes('wc')
+      || questionLower.includes('nhà vệ sinh') || questionLower.includes('đậu xe'))
       && (!place.facilities || place.facilities.length === 0)) {
-    console.log('[NEED-WEB-SEARCH] Facilities - DB missing facilities');
+    console.log('[NEED-WEB-SEARCH] Facilities - DB missing');
     return true;
   }
 
   // Activities/What to do questions
-  if ((questionLower.includes('hoạt động') || questionLower.includes('làm gì') || questionLower.includes('chơi gì'))
+  if ((questionLower.includes('hoạt động') || questionLower.includes('làm gì') || questionLower.includes('chơi gì')
+      || questionLower.includes('trải nghiệm') || questionLower.includes('vui chơi'))
       && (!place.activities || place.activities.length === 0)) {
-    console.log('[NEED-WEB-SEARCH] Activities - DB missing activities');
+    console.log('[NEED-WEB-SEARCH] Activities - DB missing');
     return true;
   }
 
   // Transportation/How to get there questions
-  if ((questionLower.includes('đến') || questionLower.includes('đi') || questionLower.includes('phương tiện') || questionLower.includes('xe'))
+  if ((questionLower.includes('đến') || questionLower.includes('đi') || questionLower.includes('phương tiện')
+      || questionLower.includes('xe') || questionLower.includes('di chuyển') || questionLower.includes('tới'))
       && !place.transportation) {
-    console.log('[NEED-WEB-SEARCH] Transportation - DB missing transportation');
+    console.log('[NEED-WEB-SEARCH] Transportation - DB missing');
     return true;
   }
 
-  console.log('[NO-WEB-SEARCH] Database has sufficient data');
+  // === NEW: Additional flexible triggers ===
+
+  // Detailed itinerary/schedule questions
+  if (questionLower.includes('lịch trình') || questionLower.includes('chi tiết') || questionLower.includes('từng ngày')
+      || questionLower.includes('kế hoạch') || questionLower.includes('hành trình')) {
+    console.log('[NEED-WEB-SEARCH] Detailed itinerary/schedule - complex query');
+    return true;
+  }
+
+  // Contact/Booking questions
+  if (questionLower.includes('liên hệ') || questionLower.includes('số điện thoại') || questionLower.includes('đặt chỗ')
+      || questionLower.includes('đặt vé') || questionLower.includes('website') || questionLower.includes('booking')) {
+    console.log('[NEED-WEB-SEARCH] Contact/booking info - practical query');
+    return true;
+  }
+
+  // Food/Restaurant nearby questions
+  if (questionLower.includes('ăn') || questionLower.includes('quán') || questionLower.includes('nhà hàng')
+      || questionLower.includes('món') || questionLower.includes('đặc sản')) {
+    if (place.type !== 'am-thuc') { // Only search if place itself is not a restaurant
+      console.log('[NEED-WEB-SEARCH] Food/restaurants nearby');
+      return true;
+    }
+  }
+
+  // Accommodation nearby questions
+  if (questionLower.includes('khách sạn') || questionLower.includes('chỗ ở') || questionLower.includes('homestay')
+      || questionLower.includes('resort') || questionLower.includes('lưu trú')) {
+    console.log('[NEED-WEB-SEARCH] Accommodation nearby');
+    return true;
+  }
+
+  // Weather-specific questions (always search for real-time data)
+  if (questionLower.includes('thời tiết') || questionLower.includes('nắng') || questionLower.includes('mưa')
+      || questionLower.includes('nhiệt độ')) {
+    console.log('[NEED-WEB-SEARCH] Weather info - real-time data needed');
+    return true;
+  }
+
+  // Events/Festivals questions
+  if (questionLower.includes('sự kiện') || questionLower.includes('lễ hội') || questionLower.includes('festival')
+      || questionLower.includes('tổ chức')) {
+    console.log('[NEED-WEB-SEARCH] Events/festivals - time-sensitive data');
+    return true;
+  }
+
+  // General "how" questions often need web search
+  if (questionLower.startsWith('làm sao') || questionLower.startsWith('làm thế nào')
+      || questionLower.includes('cách nào')) {
+    console.log('[NEED-WEB-SEARCH] "How-to" question - likely needs external info');
+    return true;
+  }
+
+  console.log('[NO-WEB-SEARCH] Database has sufficient data for this question');
   return false;
 }
 

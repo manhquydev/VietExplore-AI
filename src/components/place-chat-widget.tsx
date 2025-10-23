@@ -30,7 +30,7 @@ interface PlaceChatWidgetProps {
 }
 
 export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidgetProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [redirectPath, setRedirectPath] = useState('/');
@@ -218,7 +218,7 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
               <div className="mt-3 text-xs opacity-90 flex items-center gap-1">
                 <Info className="w-3 h-3" />
                 <span>
-                  Còn lại: {rateLimit.remaining}/{rateLimit.limit} câu hỏi
+                  Còn lại: {rateLimit.remaining}/{rateLimit.limit === 999999 ? '∞' : rateLimit.limit} câu hỏi
                 </span>
               </div>
             )}
@@ -391,12 +391,19 @@ export function PlaceChatWidget({ placeId, placeName, placeType }: PlaceChatWidg
             {isRateLimited && (
               <div className="mb-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-amber-200 rounded-lg flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-amber-800">
-                  <p className="font-medium">Đã đạt giới hạn</p>
-                  <p className="mt-1">
-                    Bạn đã sử dụng hết {rateLimit?.limit} câu hỏi miễn phí.
-                    Vui lòng thử lại sau 24 giờ.
-                  </p>
+                <div className="text-xs text-amber-800 space-y-1">
+                  <p className="font-medium">⚠️ Đã đạt giới hạn {rateLimit?.limit} câu hỏi</p>
+                  <p>Vui lòng thử lại sau 24 giờ hoặc nâng cấp tài khoản:</p>
+                  {user?.role === 'traveler' && (
+                    <p className="font-medium text-green-700 mt-1">
+                      → Contributor: 20 câu hỏi/ngày | Partner: 50 câu hỏi/ngày
+                    </p>
+                  )}
+                  {user?.role === 'contributor' && (
+                    <p className="font-medium text-green-700 mt-1">
+                      → Partner: 50 câu hỏi/ngày (x2.5 lần hiện tại)
+                    </p>
+                  )}
                 </div>
               </div>
             )}
