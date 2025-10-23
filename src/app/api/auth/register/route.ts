@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
 
-    const { email, password, fullName, acceptTerms, isGoogleAuth, uid } = await request.json();
+    const { email, password, fullName, acceptTerms, isGoogleAuth, uid, photoURL } = await request.json();
 
     if (!email || !fullName) {
       return NextResponse.json(
@@ -49,9 +49,20 @@ export async function POST(request: NextRequest) {
         existingDoc = await userDocRef.get();
 
         if (existingDoc.exists) {
-          // User document already exists - return success with existing data
-          console.log('Google user document already exists, returning existing data');
+          // User document already exists
+          console.log('Google user document already exists');
           const existingData = existingDoc.data();
+
+          // ✅ Update avatar if user doesn't have one but Google provides photoURL
+          if (!existingData?.avatar && photoURL) {
+            console.log('Updating avatar for existing user from Google photoURL');
+            await userDocRef.update({
+              avatar: photoURL,
+              updatedAt: new Date().toISOString()
+            });
+            existingData.avatar = photoURL;
+          }
+
           return NextResponse.json({
             success: true,
             user: {
@@ -90,6 +101,7 @@ export async function POST(request: NextRequest) {
       email: userRecord.email!,
       fullName,
       username,
+      ...(photoURL && { avatar: photoURL }), // ✅ Lưu avatar từ Google photoURL
       role: 'traveler',
       verified: false,
       emailVerified: userRecord.emailVerified || false,

@@ -275,6 +275,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 email: result.user.email,
                 password: 'google-auth-placeholder',
                 fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
+                photoURL: result.user.photoURL, // ✅ Lấy avatar từ Google
                 acceptTerms: true,
                 isGoogleAuth: true
               }),
@@ -435,6 +436,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 email: result.user.email,
                 password: 'google-auth-placeholder',
                 fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
+                photoURL: result.user.photoURL, // ✅ Lấy avatar từ Google
                 acceptTerms: true,
                 isGoogleAuth: true
               }),

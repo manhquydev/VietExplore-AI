@@ -244,6 +244,7 @@ export const useAuth = () => {
             email: result.user.email,
             password: 'google-auth', // placeholder for Google users
             fullName: result.user.displayName || result.user.email?.split('@')[0] || 'User',
+            photoURL: result.user.photoURL, // ✅ Lấy avatar từ Google
             acceptTerms: true,
             isGoogleAuth: true
           }),
