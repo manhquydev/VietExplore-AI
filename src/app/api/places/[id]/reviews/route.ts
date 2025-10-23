@@ -65,9 +65,9 @@ export async function POST(
     let formData: ReviewFormData;
     try {
       formData = await request.json();
-      console.log('Review form data received:', formData);
+      console.log('[REVIEW-API] Form data received:', JSON.stringify(formData, null, 2));
     } catch (parseError) {
-      console.error('Error parsing request JSON:', parseError);
+      console.error('[REVIEW-API] Error parsing request JSON:', parseError);
       return NextResponse.json(
         { success: false, error: 'Dữ liệu gửi lên không hợp lệ' },
         { status: 400 }
@@ -116,13 +116,23 @@ export async function POST(
       updatedAt: new Date().toISOString()
     };
 
-    console.log('Creating review with data:', reviewData);
+    console.log('[REVIEW-API] Creating review with data:', JSON.stringify({
+      ...reviewData,
+      userInfo: { ...reviewData.userInfo, id: 'REDACTED' }
+    }, null, 2));
+    console.log('[REVIEW-API] Review data fields:', Object.keys(reviewData).sort());
+
     let docRef;
     try {
       docRef = await adminDb.collection('place_reviews').add(reviewData);
-      console.log('Review created with ID:', docRef.id);
+      console.log('[REVIEW-API] ✅ Review created successfully with ID:', docRef.id);
     } catch (dbError) {
-      console.error('Error creating review in database:', dbError);
+      console.error('[REVIEW-API] ❌ Database error:', dbError);
+      console.error('[REVIEW-API] Error details:', {
+        message: (dbError as Error).message,
+        code: (dbError as any).code,
+        details: (dbError as any).details
+      });
       return NextResponse.json(
         { success: false, error: 'Lỗi khi lưu đánh giá vào cơ sở dữ liệu' },
         { status: 500 }

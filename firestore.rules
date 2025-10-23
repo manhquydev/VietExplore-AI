@@ -241,12 +241,19 @@ service cloud.firestore {
       allow list: if true;
 
       // Authenticated users can create reviews
+      // ✅ FIXED: Validate individual required fields instead of keys().hasAll()
+      // This allows optional metadata fields (title, images, visitDate, etc.)
       allow create: if emailVerified()
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.keys().hasAll(['placeId', 'placeName', 'userId', 'userInfo', 'rating', 'content', 'isAnonymous', 'status'])
+        && request.resource.data.placeId is string
+        && request.resource.data.placeName is string
+        && request.resource.data.userId is string
+        && request.resource.data.userInfo is map
+        && request.resource.data.rating is int
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && isNonEmptyString(request.resource.data.content)
+        && request.resource.data.isAnonymous is bool
         && request.resource.data.status == 'published'; // Auto-publish for now
 
       // Users can update their own reviews (except rating after creation)

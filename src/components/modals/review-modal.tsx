@@ -37,13 +37,18 @@ export function ReviewModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
+    console.log('[REVIEW-FORM] Submit triggered');
+    console.log('[REVIEW-FORM] Form state:', { rating, hasTitle: !!title.trim(), hasContent: !!content.trim(), hasVisitDate: !!visitDate, isAnonymous });
+
     if (rating === 0) {
+      console.log('[REVIEW-FORM] ❌ Validation failed: No rating');
       alert("Vui lòng chọn số sao đánh giá")
       return
     }
 
     if (!content.trim()) {
+      console.log('[REVIEW-FORM] ❌ Validation failed: No content');
       alert("Vui lòng nhập nội dung đánh giá")
       return
     }
@@ -57,10 +62,15 @@ export function ReviewModal({
       isAnonymous
     }
 
+    console.log('[REVIEW-FORM] ✅ Validation passed');
+    console.log('[REVIEW-FORM] Submitting review data:', JSON.stringify(reviewData, null, 2));
+
     try {
       setIsSubmitting(true)
       await onSubmit(reviewData)
-      
+
+      console.log('[REVIEW-FORM] ✅ Review submitted successfully');
+
       // Reset form
       setRating(0)
       setHoverRating(0)
@@ -68,11 +78,11 @@ export function ReviewModal({
       setContent("")
       setVisitDate("")
       setIsAnonymous(false)
-      
+
       onClose()
     } catch (error) {
       // Error handling is done in the hook
-      console.error('Error submitting review:', error)
+      console.error('[REVIEW-FORM] ❌ Error submitting review:', error)
     } finally {
       setIsSubmitting(false)
     }
