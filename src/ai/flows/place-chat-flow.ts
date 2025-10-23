@@ -167,31 +167,76 @@ CÂU HỎI MỚI CỦA NGƯỜI DÙNG: ${input.message}`;
 
       const genAI = new GoogleGenAI({ apiKey });
 
-      const searchPrompt = `Bạn là trợ lý AI chuyên về du lịch Việt Nam.
+      const searchPrompt = `Bạn là trợ lý AI chuyên về du lịch Việt Nam, chuyên gia lập kế hoạch và tư vấn chi tiết.
 
-THÔNG TIN ĐỊA ĐIỂM:
+THÔNG TIN CƠ BẢN VỀ ĐỊA ĐIỂM:
 ${placeContext}
 
 ${conversationHistory}
 
 NHIỆM VỤ:
 Trả lời câu hỏi sau về "${place.name}" tại ${place.province}, Việt Nam.
-Sử dụng Google Search để tìm thông tin cập nhật và chính xác.
-Trả lời ngắn gọn (2-4 câu), thân thiện, bằng tiếng Việt.
+SỬ DỤNG Google Search để tìm thông tin MỚI NHẤT và CHI TIẾT.
 
-CÂU HỎI: ${input.message}`;
+QUAN TRỌNG:
+- Nếu hỏi về lịch trình: Đề xuất KHUNG GIỜ CỤ THỂ (sáng/trưa/chiều/tối) với HOẠT ĐỘNG CỤ THỂ
+- Nếu hỏi về ăn uống: Gợi ý món ăn, quán ăn GẦN ĐÓ với giá tham khảo
+- Nếu hỏi về chỗ ở: Gợi ý loại hình và khu vực phù hợp
+- Nếu hỏi về di chuyển: Hướng dẫn CỤTHỂ từng phương tiện
+- LUÔN dựa trên kết quả Google Search, KHÔNG đoán mò
+
+Trả lời TỰ NHIÊN, CHI TIẾT (3-5 câu), bằng tiếng Việt.
+
+CÂU HỎI CỦA NGƯỜI DÙNG: ${input.message}`;
+
+      console.log('[PLACE-CHAT] Calling Google Gen AI with search grounding...');
 
       const searchResult = await genAI.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: searchPrompt,
         config: {
           tools: [{ googleSearch: {} }],
-          temperature: 0.3,
-          maxOutputTokens: 500
+          temperature: 1.0,  // Recommended for grounding
+          maxOutputTokens: 800  // Increased for detailed responses
         }
       });
 
-      const responseText = searchResult.text || 'Xin lỗi, tôi không thể tìm thấy thông tin này lúc này.';
+      // Extract response text with multiple fallback strategies
+      let responseText = '';
+
+      // Strategy 1: Direct text property (convenience method)
+      if (searchResult.text && searchResult.text.trim().length > 0) {
+        responseText = searchResult.text;
+        console.log('[PLACE-CHAT] Got text from .text property');
+      }
+      // Strategy 2: Full response path
+      else if (searchResult.candidates?.[0]?.content?.parts?.[0]?.text) {
+        responseText = searchResult.candidates[0].content.parts[0].text;
+        console.log('[PLACE-CHAT] Got text from candidates path');
+      }
+      // Strategy 3: Check if there are multiple parts
+      else if (searchResult.candidates?.[0]?.content?.parts) {
+        const parts = searchResult.candidates[0].content.parts;
+        responseText = parts.map((p: any) => p.text).filter(Boolean).join('\n');
+        console.log('[PLACE-CHAT] Concatenated text from multiple parts');
+      }
+
+      console.log('[PLACE-CHAT] Response extraction:', {
+        hasText: !!searchResult.text,
+        hasCandidates: !!searchResult.candidates,
+        hasGroundingMetadata: !!searchResult.groundingMetadata,
+        responseLength: responseText.length,
+        responsePreview: responseText.substring(0, 150)
+      });
+
+      // Final fallback if still empty
+      if (!responseText || responseText.trim().length === 0) {
+        console.error('[PLACE-CHAT] All extraction strategies failed. Full result:', JSON.stringify(searchResult, null, 2));
+
+        // Fallback: Try to use database context with helpful message
+        responseText = `Xin lỗi, tôi đã tìm kiếm thông tin qua Google nhưng chưa tìm thấy kết quả phù hợp. Dựa trên thông tin có sẵn, ${place.name} là ${getPlaceTypeLabel(place.type).toLowerCase()} tại ${place.province}. Bạn có thể hỏi cụ thể hơn về giờ mở cửa, giá vé, hoặc hoạt động tại đây để tôi tìm kiếm tốt hơn.`;
+      }
+
       const citations = extractCitations(searchResult.groundingMetadata);
 
       const inputTokens = estimateTokens(searchPrompt);
