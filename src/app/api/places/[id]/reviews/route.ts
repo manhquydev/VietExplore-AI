@@ -89,7 +89,9 @@ export async function POST(
       );
     }
 
-    // Create review
+    // Create review - Build object with only defined fields
+    // ✅ CRITICAL: Firebase Admin SDK rejects undefined values
+    // Must explicitly filter out undefined to avoid Firestore error
     const reviewData: Omit<PlaceReview, 'id'> = {
       placeId,
       placeName: place?.name || 'Unknown',
@@ -101,19 +103,20 @@ export async function POST(
         ...(user.avatar && { avatar: user.avatar })
       },
       rating: formData.rating,
-      title: formData.title,
       content: formData.content.trim(),
-      images: Array.isArray(formData.images) 
+      images: Array.isArray(formData.images)
         ? formData.images.filter((img): img is string => typeof img === 'string')
         : [],
-      visitDate: formData.visitDate,
       isAnonymous: formData.isAnonymous || false,
       isVerified: false, // TODO: Implement visit verification
       helpfulCount: 0,
       reportCount: 0,
       status: 'published', // Auto-publish reviews for now
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      // ✅ Only add optional fields if they have values (not undefined)
+      ...(formData.title && formData.title.trim() && { title: formData.title.trim() }),
+      ...(formData.visitDate && { visitDate: formData.visitDate })
     };
 
     console.log('[REVIEW-API] Creating review with data:', JSON.stringify({
