@@ -194,6 +194,50 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
+        {/* Academic Project Copyright Section - Clear & Professional */}
+        <div className="glass-card p-6 sm:p-8 mb-8 sm:mb-10">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary"
+              >
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+              <span className="text-xs sm:text-sm font-semibold text-primary">
+                Đồ Án Tốt Nghiệp
+              </span>
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-2">
+              <p className="text-sm sm:text-base font-medium text-foreground">
+                Hệ thống Khám phá Du lịch Việt Nam tích hợp Trí tuệ Nhân tạo
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">Sinh viên:</span>
+                  <span className="text-primary font-medium">Nguyễn Mạnh Quý</span>
+                </div>
+                <span className="hidden sm:inline text-muted/50">•</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">GVHD:</span>
+                  <span className="text-primary font-medium">TS. An Hồng Sơn</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom Section - Mobile-first responsive layout */}
         <div className="pt-6 sm:pt-8 border-t border-border/30">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6">
@@ -205,17 +249,17 @@ export const Footer: React.FC = () => {
                 Một sản phẩm được tạo ra với tình yêu Việt Nam
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted">
               <span className="glass-subtle px-3 py-1 rounded-lg">Phiên bản 1.0</span>
               <span className="flex items-center gap-2">
                 <span>Made with</span>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
                   stroke="none"
                   className="text-red-500 animate-pulse"
                 >
