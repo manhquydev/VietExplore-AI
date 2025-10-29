@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { 
+import {
   Settings as SettingsIcon,
   Shield,
   Database,
@@ -28,11 +28,13 @@ import {
   Layout,
   Upload,
   Image as ImageIcon,
-  X
+  X,
+  GraduationCap
 } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { cn } from "@/lib/utils"
 import { useSystemSettings, useHomepageSettings } from "@/hooks/use-admin"
+import { useThesisPopupAdmin } from "@/hooks/use-thesis-popup-admin"
 
 export default function AdminSettingsPage() {
   const { user } = useAuth()
@@ -53,10 +55,22 @@ export default function AdminSettingsPage() {
     uploadRegionImage,
     updateRegionSettings
   } = useHomepageSettings()
-  
+
+  const {
+    settings: thesisPopupSettings,
+    loading: thesisPopupLoading,
+    saving: thesisPopupSaving,
+    uploading: thesisLogoUploading,
+    updateSettings: updateThesisPopupSettings,
+    uploadLogo: uploadThesisLogo,
+    deleteLogo: deleteThesisLogo,
+  } = useThesisPopupAdmin()
+
   const [saved, setSaved] = React.useState(false)
   const [homepageSaved, setHomepageSaved] = React.useState(false)
+  const [thesisPopupSaved, setThesisPopupSaved] = React.useState(false)
   const fileInputRefs = React.useRef<{[key: string]: HTMLInputElement | null}>({})
+  const thesisLogoInputRef = React.useRef<HTMLInputElement | null>(null)
   
   const handleHomepageSave = async () => {
     const result = await saveHomepageSettings(homepageSettings)
@@ -96,6 +110,55 @@ export default function AdminSettingsPage() {
         return
       }
       handleImageUpload(region, file)
+    }
+  }
+
+  const handleThesisPopupSave = async () => {
+    const result = await updateThesisPopupSettings(thesisPopupSettings)
+    if (result.success) {
+      setThesisPopupSaved(true)
+      setTimeout(() => setThesisPopupSaved(false), 3000)
+    } else {
+      alert(`Lỗi: ${result.error}`)
+    }
+  }
+
+  const handleThesisLogoUpload = async (file: File) => {
+    const result = await uploadThesisLogo(file)
+    if (result.success) {
+      alert('✅ Logo đã được tải lên thành công!')
+    } else {
+      alert(`❌ Lỗi: ${result.error}`)
+    }
+  }
+
+  const handleThesisLogoSelect = () => {
+    thesisLogoInputRef.current?.click()
+  }
+
+  const handleThesisLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (!['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'].includes(file.type)) {
+        alert('Chỉ hỗ trợ file JPG, PNG, WebP, SVG')
+        return
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File quá lớn (tối đa 5MB)')
+        return
+      }
+      handleThesisLogoUpload(file)
+    }
+  }
+
+  const handleThesisLogoDelete = async () => {
+    if (confirm('Bạn có chắc muốn xóa logo?')) {
+      const result = await deleteThesisLogo()
+      if (result.success) {
+        alert('✅ Logo đã được xóa')
+      } else {
+        alert(`❌ Lỗi: ${result.error}`)
+      }
     }
   }
 
@@ -180,41 +243,48 @@ export default function AdminSettingsPage() {
           </div>
         ) : (
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white border border-gray-200 p-1">
-            <TabsTrigger 
-              value="general" 
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-white border border-gray-200 p-1">
+            <TabsTrigger
+              value="general"
               className="text-gray-700 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
             >
               <SettingsIcon className="h-4 w-4 mr-2" />
               Tổng quan
             </TabsTrigger>
-            <TabsTrigger 
-              value="moderation" 
+            <TabsTrigger
+              value="moderation"
               className="text-gray-700 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
             >
               <Shield className="h-4 w-4 mr-2" />
               Kiểm duyệt
             </TabsTrigger>
-            <TabsTrigger 
-              value="notifications" 
+            <TabsTrigger
+              value="notifications"
               className="text-gray-700 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
             >
               <Bell className="h-4 w-4 mr-2" />
               Thông báo
             </TabsTrigger>
-            <TabsTrigger 
-              value="security" 
+            <TabsTrigger
+              value="security"
               className="text-gray-700 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
             >
               <Database className="h-4 w-4 mr-2" />
               Bảo mật
             </TabsTrigger>
-            <TabsTrigger 
-              value="homepage" 
+            <TabsTrigger
+              value="homepage"
               className="text-gray-700 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
             >
               <Layout className="h-4 w-4 mr-2" />
               Giao diện
+            </TabsTrigger>
+            <TabsTrigger
+              value="thesis-popup"
+              className="text-gray-700 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+            >
+              <GraduationCap className="h-4 w-4 mr-2" />
+              Đồ án
             </TabsTrigger>
           </TabsList>
 
@@ -714,6 +784,365 @@ export default function AdminSettingsPage() {
                       <li><strong>Thay đổi tên/mô tả:</strong> Chỉnh sửa text → Nhấn nút "Lưu giao diện" ở góc trên</li>
                       <li><strong>Hiệu lực:</strong> Tất cả thay đổi sẽ xuất hiện ngay trên trang chủ sau vài giây</li>
                       <li><strong>Khuyến nghị ảnh:</strong> Kích thước 800x500px, định dạng JPG/PNG/WebP, dung lượng dưới 5MB</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="thesis-popup" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <GraduationCap className="h-5 w-5 text-blue-600" />
+                      Popup Thông báo Đồ án Tốt nghiệp
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Quản lý popup giới thiệu đồ án xuất hiện trên trang chủ
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={thesisPopupSettings.enabled ? "default" : "outline"}>
+                      {thesisPopupSettings.enabled ? "Đang bật" : "Đã tắt"}
+                    </Badge>
+                    <Button
+                      onClick={handleThesisPopupSave}
+                      disabled={thesisPopupSaving || thesisPopupLoading}
+                      className={cn(
+                        "transition-all duration-200",
+                        thesisPopupSaved ? "bg-green-600 hover:bg-green-700" : ""
+                      )}
+                    >
+                      {thesisPopupSaving ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Đang lưu...
+                        </>
+                      ) : thesisPopupSaved ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Đã lưu
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Lưu cài đặt
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Enable/Disable Switch */}
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <Label className="text-sm font-medium text-gray-900">Bật/Tắt Popup</Label>
+                      <p className="text-sm text-gray-600">
+                        Hiển thị popup thông báo đồ án trên trang chủ
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={thesisPopupSettings.enabled}
+                    onCheckedChange={(checked) =>
+                      updateThesisPopupSettings({ enabled: checked })
+                    }
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                </div>
+
+                <Separator />
+
+                {/* University Logo Upload */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Logo Trường
+                    </Label>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Logo sẽ hiển thị ở góc trên bên trái popup
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Logo Preview */}
+                    <div className="space-y-3">
+                      <div className="relative group/logo">
+                        <div className="aspect-square max-w-[200px] relative overflow-hidden rounded-lg border-2 border-dashed border-gray-300 group-hover/logo:border-blue-400 transition-colors">
+                          {thesisPopupSettings.universityLogoUrl ? (
+                            <>
+                              <img
+                                src={thesisPopupSettings.universityLogoUrl}
+                                alt={thesisPopupSettings.universityLogoAlt || "Logo trường"}
+                                className="w-full h-full object-contain p-4"
+                              />
+                              {/* Delete overlay */}
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center">
+                                <Button
+                                  onClick={handleThesisLogoDelete}
+                                  disabled={thesisLogoUploading}
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  <X className="w-4 h-4 mr-2" />
+                                  Xóa
+                                </Button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                              <ImageIcon className="w-12 h-12 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Upload Button */}
+                      <Button
+                        onClick={handleThesisLogoSelect}
+                        disabled={thesisLogoUploading}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        {thesisLogoUploading ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                            Đang tải lên...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            {thesisPopupSettings.universityLogoUrl ? "Thay đổi Logo" : "Tải lên Logo"}
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Hidden file input */}
+                      <input
+                        ref={thesisLogoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThesisLogoChange}
+                        className="hidden"
+                      />
+
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>• Khuyến nghị: Logo vuông (1:1)</p>
+                        <p>• Định dạng: JPG, PNG, WebP, SVG</p>
+                        <p>• Kích thước tối đa: 5MB</p>
+                      </div>
+                    </div>
+
+                    {/* Logo Alt Text */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="logoAlt" className="text-sm font-medium text-gray-700">
+                          Mô tả Logo (Alt Text)
+                        </Label>
+                        <Input
+                          id="logoAlt"
+                          value={thesisPopupSettings.universityLogoAlt || ""}
+                          onChange={(e) =>
+                            updateThesisPopupSettings({ universityLogoAlt: e.target.value })
+                          }
+                          placeholder="VD: Logo Đại học ABC"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Văn bản thay thế cho logo (accessibility)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Thesis Information */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-900">Thông tin Đồ án</h4>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Thesis Title */}
+                    <div className="md:col-span-2 space-y-2">
+                      <Label htmlFor="thesisTitle" className="text-sm font-medium text-gray-700">
+                        Tên Đề tài <Badge variant="outline" className="text-xs ml-2">Bắt buộc</Badge>
+                      </Label>
+                      <Textarea
+                        id="thesisTitle"
+                        value={thesisPopupSettings.title}
+                        onChange={(e) =>
+                          updateThesisPopupSettings({ title: e.target.value })
+                        }
+                        rows={3}
+                        className="resize-none"
+                        placeholder="Nhập tên đề tài đồ án tốt nghiệp"
+                      />
+                    </div>
+
+                    {/* Student Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="studentName" className="text-sm font-medium text-gray-700">
+                        Tên Sinh viên <Badge variant="outline" className="text-xs ml-2">Bắt buộc</Badge>
+                      </Label>
+                      <Input
+                        id="studentName"
+                        value={thesisPopupSettings.studentName}
+                        onChange={(e) =>
+                          updateThesisPopupSettings({ studentName: e.target.value })
+                        }
+                        placeholder="VD: Nguyễn Văn A"
+                      />
+                    </div>
+
+                    {/* Student ID */}
+                    <div className="space-y-2">
+                      <Label htmlFor="studentId" className="text-sm font-medium text-gray-700">
+                        MSSV
+                      </Label>
+                      <Input
+                        id="studentId"
+                        value={thesisPopupSettings.studentId}
+                        onChange={(e) =>
+                          updateThesisPopupSettings({ studentId: e.target.value })
+                        }
+                        placeholder="VD: 2101148"
+                      />
+                    </div>
+
+                    {/* Cohort */}
+                    <div className="space-y-2">
+                      <Label htmlFor="cohort" className="text-sm font-medium text-gray-700">
+                        Khóa
+                      </Label>
+                      <Input
+                        id="cohort"
+                        value={thesisPopupSettings.cohort}
+                        onChange={(e) =>
+                          updateThesisPopupSettings({ cohort: e.target.value })
+                        }
+                        placeholder="VD: Khóa 45"
+                      />
+                    </div>
+
+                    {/* Advisor Title */}
+                    <div className="space-y-2">
+                      <Label htmlFor="advisorTitle" className="text-sm font-medium text-gray-700">
+                        Học vị GVHD
+                      </Label>
+                      <Select
+                        value={thesisPopupSettings.advisorTitle}
+                        onValueChange={(value) =>
+                          updateThesisPopupSettings({ advisorTitle: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn học vị" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="GS.">GS. (Giáo sư)</SelectItem>
+                          <SelectItem value="PGS.">PGS. (Phó Giáo sư)</SelectItem>
+                          <SelectItem value="TS.">TS. (Tiến sĩ)</SelectItem>
+                          <SelectItem value="ThS.">ThS. (Thạc sĩ)</SelectItem>
+                          <SelectItem value="CN.">CN. (Cử nhân)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Advisor Name */}
+                    <div className="md:col-span-2 space-y-2">
+                      <Label htmlFor="advisorName" className="text-sm font-medium text-gray-700">
+                        Tên Giảng viên Hướng dẫn
+                      </Label>
+                      <Input
+                        id="advisorName"
+                        value={thesisPopupSettings.advisorName}
+                        onChange={(e) =>
+                          updateThesisPopupSettings({ advisorName: e.target.value })
+                        }
+                        placeholder="VD: Nguyễn Văn B"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Display Settings */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-900">Cài đặt Hiển thị</h4>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Display Mode */}
+                    <div className="space-y-2">
+                      <Label htmlFor="displayMode" className="text-sm font-medium text-gray-700">
+                        Tần suất hiển thị
+                      </Label>
+                      <Select
+                        value={thesisPopupSettings.displayMode}
+                        onValueChange={(value: any) =>
+                          updateThesisPopupSettings({ displayMode: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="once-per-session">
+                            Một lần mỗi phiên (Khuyến nghị)
+                          </SelectItem>
+                          <SelectItem value="once-per-day">
+                            Một lần mỗi ngày
+                          </SelectItem>
+                          <SelectItem value="always">
+                            Luôn hiển thị (Không khuyến nghị)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500">
+                        Chọn tần suất hiển thị popup để không gây phiền nhiễu
+                      </p>
+                    </div>
+
+                    {/* Delay */}
+                    <div className="space-y-2">
+                      <Label htmlFor="delaySeconds" className="text-sm font-medium text-gray-700">
+                        Độ trễ (giây)
+                      </Label>
+                      <Input
+                        id="delaySeconds"
+                        type="number"
+                        min="0"
+                        max="30"
+                        value={thesisPopupSettings.delaySeconds || 2}
+                        onChange={(e) =>
+                          updateThesisPopupSettings({ delaySeconds: parseInt(e.target.value) || 2 })
+                        }
+                      />
+                      <p className="text-xs text-gray-500">
+                        Thời gian trễ trước khi hiển thị popup (0-30 giây)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info Box */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-blue-900">Hướng dẫn sử dụng</p>
+                    <ul className="text-blue-800 mt-2 space-y-2 list-disc list-inside leading-relaxed">
+                      <li><strong>Bật popup:</strong> Toggle switch "Bật/Tắt Popup" để kích hoạt</li>
+                      <li><strong>Upload logo:</strong> Nhấn nút "Tải lên Logo" để chọn file từ máy tính</li>
+                      <li><strong>Chỉnh sửa thông tin:</strong> Điền đầy đủ thông tin đồ án, sinh viên, GVHD</li>
+                      <li><strong>Tần suất hiển thị:</strong> Khuyến nghị chọn "Một lần mỗi phiên" để UX tốt nhất</li>
+                      <li><strong>Lưu thay đổi:</strong> Nhấn "Lưu cài đặt" để áp dụng các thay đổi</li>
+                      <li><strong>Kiểm tra:</strong> Truy cập trang chủ (chế độ ẩn danh/incognito) để xem popup</li>
                     </ul>
                   </div>
                 </div>

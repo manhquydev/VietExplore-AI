@@ -10,11 +10,14 @@ import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
 import DestinationGrid from '@/components/destination-grid';
 import { usePublicHomepageSettings } from '@/hooks/use-homepage-settings';
+import { ThesisAnnouncementPopup } from '@/components/thesis-announcement-popup';
+import { useThesisPopupSettings } from '@/hooks/use-thesis-popup';
 
 // Real featured places are now loaded via the DestinationGrid component
 
 export default function Home() {
   const { homepageSettings, loading: homepageLoading } = usePublicHomepageSettings()
+  const { settings: thesisPopupSettings, loading: thesisPopupLoading } = useThesisPopupSettings()
   
   const handleSearch = (query: string, filters: any) => {
     console.log('Searching:', query, filters)
@@ -32,7 +35,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-bg text-text">
       <Header />
-      
+
+      {/* Thesis Announcement Popup - Only renders if enabled */}
+      {!thesisPopupLoading && thesisPopupSettings.enabled && (
+        <ThesisAnnouncementPopup settings={thesisPopupSettings} />
+      )}
+
       <main>
         {/* Hero Section */}
         <Hero />
