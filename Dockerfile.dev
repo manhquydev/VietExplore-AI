@@ -1,0 +1,99 @@
+# ============================================
+# VietExplore-AI Development Dockerfile
+# ============================================
+# Optimized for local development with hot reload
+# Mounts source code as volume for instant changes
+# Includes all dev tools and debugging utilities
+#
+# Usage:
+#   docker build -f Dockerfile.dev -t vietexplore-ai:dev .
+#   docker run -p 9002:9002 -v $(pwd):/app vietexplore-ai:dev
+#
+# Or use docker-compose.dev.yml:
+#   docker-compose -f docker-compose.dev.yml up
+# ============================================
+
+FROM node:20-alpine
+
+# Install dependencies for development
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    curl \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install ALL dependencies (including devDependencies)
+RUN npm ci && \
+    npm cache clean --force
+
+# Copy application source
+# Note: In dev mode, this will be overridden by volume mount
+COPY . .
+
+# Expose development port (9002 as per project convention)
+EXPOSE 9002
+
+# Set environment to development
+ENV NODE_ENV=development
+ENV PORT=9002
+ENV HOSTNAME="0.0.0.0"
+
+# Health check for dev environment
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:9002/api/health || exit 1
+
+# Start Next.js development server with hot reload
+# Uses port 9002 (project default for dev)
+CMD ["npm", "run", "dev:9002"]
+
+# ============================================
+# Development Features
+# ============================================
+# ✅ Hot reload enabled (watches file changes)
+# ✅ Source maps enabled for debugging
+# ✅ All devDependencies installed
+# ✅ Fast refresh for React components
+# ✅ TypeScript type checking
+# ✅ ESLint on-the-fly
+#
+# Volume Mount (docker-compose.dev.yml):
+#   - ./src:/app/src (source code)
+#   - ./public:/app/public (static assets)
+#   - ./tsconfig.json:/app/tsconfig.json
+#   - ./next.config.ts:/app/next.config.ts
+#   - ./tailwind.config.ts:/app/tailwind.config.ts
+#   - ./.env.local:/app/.env.local (environment)
+#
+# NOT mounted (for performance):
+#   - node_modules (use container's version)
+#   - .next (build cache)
+# ============================================
+
+# ============================================
+# Development Workflow
+# ============================================
+# 1. Start container:
+#    docker-compose -f docker-compose.dev.yml up
+#
+# 2. Access application:
+#    http://localhost:9002
+#
+# 3. Edit files on host:
+#    Changes are instantly reflected (hot reload)
+#
+# 4. View logs:
+#    docker-compose -f docker-compose.dev.yml logs -f
+#
+# 5. Stop container:
+#    docker-compose -f docker-compose.dev.yml down
+#
+# 6. Rebuild (if package.json changed):
+#    docker-compose -f docker-compose.dev.yml up --build
+# ============================================

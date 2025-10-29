@@ -1,0 +1,254 @@
+# ============================================
+# VietExplore-AI Development Docker Compose
+# ============================================
+# Optimized for local development with hot reload
+# Source code mounted as volume for instant changes
+#
+# Usage:
+#   docker-compose -f docker-compose.dev.yml up
+#   docker-compose -f docker-compose.dev.yml down
+#
+# Prerequisites:
+#   - .env.local file with development configuration
+#   - Docker 20.10+ with Compose V2
+# ============================================
+
+services:
+  # ============================================
+  # Development Application Service
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    image: vietexplore-ai:dev
+
+    container_name: vietexplore-ai-dev
+
+    # Port mapping (using project default 9002 for dev)
+    ports:
+      - "9002:9002" # HTTP (Next.js dev server)
+
+    # Volume mounts for hot reload
+    volumes:
+      # Source code (instant updates)
+      - ./src:/app/src:cached
+      - ./public:/app/public:cached
+
+      # Configuration files
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json:ro
+      - ./next.config.ts:/app/next.config.ts:cached
+      - ./tsconfig.json:/app/tsconfig.json:cached
+      - ./tailwind.config.ts:/app/tailwind.config.ts:cached
+      - ./postcss.config.js:/app/postcss.config.js:cached
+
+      # Environment variables
+      - ./.env.local:/app/.env.local:cached
+
+      # IMPORTANT: Exclude these for better performance
+      # node_modules - Use container's version (avoid OS conflicts)
+      # .next - Build cache in container
+      # coverage - Test artifacts
+
+    # Development environment variables
+    environment:
+      NODE_ENV: development
+      PORT: 9002
+      HOSTNAME: "0.0.0.0"
+      WATCHPACK_POLLING: "true" # Enable polling for file changes (Docker volume)
+      CHOKIDAR_USEPOLLING: "true" # Alternative file watcher
+
+    # Load environment from .env.local
+    env_file:
+      - .env.local
+
+    # Restart policy (always restart for dev)
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9002/api/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 15s
+      retries: 3
+
+    # Network
+    networks:
+      - dev-network
+
+    # Labels
+    labels:
+      com.vietexplore.service: "app"
+      com.vietexplore.environment: "development"
+
+    # Interactive terminal (for debugging)
+    stdin_open: true
+    tty: true
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  dev-network:
+    driver: bridge
+    name: vietexplore-dev-network
+
+# ============================================
+# Development Workflow Guide
+# ============================================
+#
+# 1. Start Development Environment:
+#    docker-compose -f docker-compose.dev.yml up
+#
+#    First time (build image):
+#    docker-compose -f docker-compose.dev.yml up --build
+#
+# 2. Access Application:
+#    http://localhost:9002
+#
+# 3. Make Code Changes:
+#    - Edit files in src/ directory
+#    - Changes are automatically detected (hot reload)
+#    - Browser refreshes with new code (~1-2 seconds)
+#
+# 4. View Logs:
+#    docker-compose -f docker-compose.dev.yml logs -f
+#
+# 5. Execute Commands in Container:
+#    docker-compose -f docker-compose.dev.yml exec app sh
+#
+#    Examples:
+#    - npm install <package>
+#    - npm run typecheck
+#    - npm run lint
+#    - npm test
+#
+# 6. Stop Development Environment:
+#    docker-compose -f docker-compose.dev.yml down
+#
+# 7. Rebuild (if package.json changed):
+#    docker-compose -f docker-compose.dev.yml up --build
+#
+# 8. Clean Up:
+#    docker-compose -f docker-compose.dev.yml down -v
+#    (Removes containers and volumes)
+#
+# ============================================
+# Troubleshooting
+# ============================================
+#
+# Issue: Hot reload not working
+# Solution:
+#   - Check WATCHPACK_POLLING=true in environment
+#   - Verify volumes are mounted correctly
+#   - On Windows: Ensure file sharing is enabled in Docker Desktop
+#
+# Issue: Module not found errors
+# Solution:
+#   - Rebuild container: docker-compose -f docker-compose.dev.yml up --build
+#   - npm ci runs during build to install dependencies
+#
+# Issue: Port 9002 already in use
+# Solution:
+#   - Stop other Next.js instances
+#   - Or change port in ports section (e.g., "3000:9002")
+#
+# Issue: Slow file watching (Windows/Mac)
+# Solution:
+#   - Use :cached mount option (already configured)
+#   - Consider native development instead of Docker on Mac/Windows
+#
+# Issue: Permission errors
+# Solution:
+#   - Check file permissions: chmod -R 755 src/
+#   - Or add user mapping in Dockerfile.dev
+#
+# ============================================
+# Performance Tips
+# ============================================
+#
+# 1. Use .dockerignore:
+#    - Excludes node_modules, .next, .git from build context
+#    - Speeds up build time by 5-10x
+#
+# 2. Volume mount strategy:
+#    - :cached option for better performance on Mac/Windows
+#    - Don't mount node_modules (OS binary conflicts)
+#
+# 3. File watching:
+#    - WATCHPACK_POLLING enables change detection in Docker
+#    - May increase CPU usage slightly
+#
+# 4. Resource allocation:
+#    - Docker Desktop → Settings → Resources
+#    - Recommended: 4GB RAM, 2 CPUs minimum
+#
+# 5. Native development (alternative):
+#    - For best performance on Mac/Windows
+#    - Use Docker only for production builds
+#    - Run "npm run dev" locally instead
+#
+# ============================================
+# Advanced: Multi-Service Development
+# ============================================
+#
+# If you need to add services (e.g., local database, Redis):
+#
+# services:
+#   app:
+#     # ... (as above)
+#
+#   # Example: PostgreSQL (if migrating from Firebase)
+#   postgres:
+#     image: postgres:16-alpine
+#     container_name: vietexplore-postgres-dev
+#     environment:
+#       POSTGRES_DB: vietexplore
+#       POSTGRES_USER: dev
+#       POSTGRES_PASSWORD: dev123
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres-data:/var/lib/postgresql/data
+#     networks:
+#       - dev-network
+#
+#   # Example: Redis (for caching)
+#   redis:
+#     image: redis:7-alpine
+#     container_name: vietexplore-redis-dev
+#     ports:
+#       - "6379:6379"
+#     networks:
+#       - dev-network
+#
+# volumes:
+#   postgres-data:
+#
+# ============================================
+# Comparison: Docker Dev vs Native Dev
+# ============================================
+#
+# Docker Development:
+#   ✅ Consistent environment (same as production)
+#   ✅ Easy onboarding (one command to start)
+#   ✅ Isolated dependencies (no conflicts)
+#   ❌ Slower file watching (on Mac/Windows)
+#   ❌ More resource usage (Docker overhead)
+#
+# Native Development:
+#   ✅ Fastest hot reload
+#   ✅ Native file system performance
+#   ✅ Better IDE integration
+#   ❌ Environment drift (dev ≠ prod)
+#   ❌ Manual setup (Node, npm, etc.)
+#
+# Recommendation:
+#   - Native for day-to-day development
+#   - Docker for testing production builds locally
+#   - Docker for consistent team environment
+#
+# ============================================

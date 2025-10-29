@@ -8,6 +8,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-11.10.0-FFCA28?logo=firebase&logoColor=black)
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=black)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4.1-06B6D4?logo=tailwindcss&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 ![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)
@@ -749,7 +750,26 @@ npm run test:coverage
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+### 🐳 Docker (Recommended for Production)
+
+**Quick Start:**
+```bash
+# Development
+docker compose -f docker-compose.dev.yml up
+
+# Production
+docker compose up -d
+```
+
+**Full Docker Documentation**: See [DOCKER.md](./DOCKER.md) for comprehensive guide including:
+- Multi-stage build optimization (~300MB final image)
+- Production and development configurations
+- Health checks and monitoring
+- Deployment to Cloud Run, ECS, Kubernetes, Railway
+- CI/CD integration examples
+- Security best practices
+
+### Vercel
 
 ```bash
 vercel --prod
@@ -762,7 +782,9 @@ npm run build
 firebase deploy --only hosting
 ```
 
-Full deployment guide: See [Deployment section](#deployment)
+**Deployment Guides:**
+- 🐳 **Docker**: [DOCKER.md](./DOCKER.md) - Full containerization guide
+- 📘 **Complete Guide**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - All deployment options
 
 ---
 

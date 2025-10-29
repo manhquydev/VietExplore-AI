@@ -1,0 +1,211 @@
+# ============================================
+# VietExplore-AI Production Docker Compose
+# ============================================
+# Production-ready multi-service stack
+# Optimized for deployment to Docker Swarm, Kubernetes, or standalone
+#
+# Usage:
+#   docker-compose up -d
+#   docker-compose logs -f
+#   docker-compose down
+#
+# Prerequisites:
+#   - .env.production file with all required variables
+#   - Docker 20.10+ with Compose V2
+# ============================================
+
+services:
+  # ============================================
+  # Main Application Service
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Build-time environment variables (embedded in client bundle)
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+        NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${NEXT_PUBLIC_FIREBASE_DATABASE_URL}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
+        NEXT_PUBLIC_CLARITY_PROJECT_ID: ${NEXT_PUBLIC_CLARITY_PROJECT_ID}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_ENABLE_AI_FEATURES: ${NEXT_PUBLIC_ENABLE_AI_FEATURES:-false}
+        NEXT_PUBLIC_ENABLE_ANALYTICS: ${NEXT_PUBLIC_ENABLE_ANALYTICS:-true}
+        SITE_URL: ${SITE_URL}
+      target: runner # Use production runtime stage
+
+    image: vietexplore-ai:latest
+
+    container_name: vietexplore-ai-prod
+
+    # Port mapping
+    ports:
+      - "3000:3000" # HTTP (Next.js)
+
+    # Runtime environment variables (server-side secrets)
+    environment:
+      # Node.js
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+
+      # Firebase Admin SDK
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
+
+      # Google AI / Gemini
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+      # Application URLs
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      SITE_URL: ${SITE_URL}
+
+      # Cron job security
+      CRON_SECRET: ${CRON_SECRET}
+
+      # Feature flags
+      NEXT_PUBLIC_ENABLE_AI_FEATURES: ${NEXT_PUBLIC_ENABLE_AI_FEATURES:-false}
+      NEXT_PUBLIC_ENABLE_ANALYTICS: ${NEXT_PUBLIC_ENABLE_ANALYTICS:-true}
+
+    # Environment file (alternative to individual env vars)
+    env_file:
+      - .env.production
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Network
+    networks:
+      - app-network
+
+    # Labels for monitoring and management
+    labels:
+      com.vietexplore.service: "app"
+      com.vietexplore.version: "3.0.0"
+      com.vietexplore.environment: "production"
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  app-network:
+    driver: bridge
+    name: vietexplore-network
+
+# ============================================
+# Volumes (optional - for future use)
+# ============================================
+# volumes:
+#   app-logs:
+#     driver: local
+
+# ============================================
+# Production Deployment Notes
+# ============================================
+#
+# 1. Environment Variables:
+#    - Create .env.production with all required variables
+#    - Or set via Docker Swarm secrets / Kubernetes ConfigMaps
+#    - NEVER commit .env.production to Git
+#
+# 2. HTTPS/SSL:
+#    - Use reverse proxy (Nginx, Traefik, Caddy)
+#    - Or deploy to managed platform (Vercel, Railway, Cloud Run)
+#
+# 3. Scaling:
+#    - Horizontal: docker-compose up --scale app=3
+#    - Load balancer required for multiple replicas
+#
+# 4. Monitoring:
+#    - Health check endpoint: http://localhost:3000/api/health
+#    - Logs: docker-compose logs -f app
+#    - Metrics: Integrate Prometheus/Grafana
+#
+# 5. Backup Strategy:
+#    - Firebase data: Use Firebase automated backups
+#    - Container state: Stateless (no backup needed)
+#
+# 6. Secrets Management:
+#    - Development: .env.production file
+#    - Production: Docker Swarm secrets, AWS Secrets Manager, etc.
+#    - Example:
+#        echo "$FIREBASE_PRIVATE_KEY" | docker secret create firebase_key -
+#        services:
+#          app:
+#            secrets:
+#              - firebase_key
+#
+# 7. CI/CD Integration:
+#    - Build image in CI pipeline (GitHub Actions, GitLab CI)
+#    - Push to registry (Docker Hub, ECR, GCR, GHCR)
+#    - Deploy via docker-compose, Kubernetes, or managed platform
+#
+# 8. Zero Downtime Deployment:
+#    - Use blue-green deployment pattern
+#    - Or rolling updates in Kubernetes
+#    - Health checks ensure traffic only to healthy containers
+#
+# ============================================
+# Quick Commands
+# ============================================
+#
+# Start production stack:
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f app
+#
+# Restart service:
+#   docker-compose restart app
+#
+# Stop stack:
+#   docker-compose down
+#
+# Rebuild and restart:
+#   docker-compose up -d --build
+#
+# Scale horizontally:
+#   docker-compose up -d --scale app=3
+#
+# Check health:
+#   curl http://localhost:3000/api/health
+#
+# Execute command in container:
+#   docker-compose exec app sh
+#
+# View resource usage:
+#   docker stats vietexplore-ai-prod
+#
+# ============================================
