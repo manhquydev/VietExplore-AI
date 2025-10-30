@@ -1,59 +1,43 @@
-# 🇻🇳 Du Lịch Việt - Nền Tảng Du Lịch Việt Nam
+# Du Lịch Việt - Nền Tảng Du Lịch Việt Nam
 
-<div align="center">
+**Version 3.0.0** | [Xem Demo](https://www.dulichviet.tech) | [Báo Lỗi](https://github.com/manhquydev/VietExplore-AI/issues) | [Đề Xuất Tính Năng](https://github.com/manhquydev/VietExplore-AI/issues)
 
-![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?logo=next.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?logo=typescript&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-11.10.0-FFCA28?logo=firebase&logoColor=black)
-![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=black)
-![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4.1-06B6D4?logo=tailwindcss&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
-![Maintenance](https://img.shields.io/badge/Maintained-yes-green.svg)
-![Production](https://img.shields.io/badge/Status-Production-success)
-
-**Nền tảng chia sẻ và khám phá địa điểm du lịch Việt Nam với AI Trip Planner**
-
-[🌐 Live Demo](https://www.dulichviet.tech) · [🐛 Report Bug](https://github.com/manhquydev/VietExplore-AI/issues) · [💡 Request Feature](https://github.com/manhquydev/VietExplore-AI)
-
-</div>
+Nền tảng chia sẻ và khám phá địa điểm du lịch Việt Nam với AI Trip Planner.
 
 ---
 
-## 📋 Mục Lục
+## Mục Lục
 
-- [Tổng Quan](#-tổng-quan)
-- [Tính Năng Chính](#-tính-năng-chính)
-- [Tech Stack](#-tech-stack)
-- [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống)
-- [Hệ Thống Lượt Xem](#-hệ-thống-lượt-xem)
-- [Cài Đặt](#-cài-đặt)
-- [Development](#-development)
-- [API Documentation](#-api-documentation)
-- [Database Schema](#-database-schema)
-- [Testing](#-testing)
-- [Deployment](#-deployment)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Giới Thiệu](#giới-thiệu)
+- [Tính Năng Chính](#tính-năng-chính)
+- [Tech Stack](#tech-stack)
+- [Kiến Trúc Hệ Thống](#kiến-trúc-hệ-thống)
+- [Hệ Thống Lượt Xem](#hệ-thống-lượt-xem)
+- [Cài Đặt](#cài-đặt)
+- [Development](#development)
+- [API Documentation](#api-documentation)
+- [Database Schema](#database-schema)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 🎯 Tổng Quan
+## Giới Thiệu
 
 **Du Lịch Việt** là nền tảng du lịch cộng đồng cho phép người dùng:
 
-- 🗺️ **Khám phá** hàng nghìn địa điểm du lịch khắp Việt Nam
-- ✍️ **Đóng góp** thông tin địa điểm mới với hệ thống kiểm duyệt chuyên nghiệp
-- 🤖 **Lên kế hoạch** hành trình du lịch với AI Trip Planner
-- 📊 **Theo dõi** thống kê và xu hướng du lịch
-- 🏆 **Xây dựng** uy tín qua hệ thống Role-Based Access Control
+- Khám phá hàng nghìn địa điểm du lịch khắp Việt Nam
+- Đóng góp thông tin địa điểm mới với hệ thống kiểm duyệt chuyên nghiệp
+- Lên kế hoạch hành trình du lịch với AI Trip Planner
+- Theo dõi thống kê và xu hướng du lịch
+- Xây dựng uy tín qua hệ thống phân quyền dựa trên vai trò
 
-### 🌟 Điểm Nổi Bật
+### Điểm Nổi Bật
 
-- **Production-Ready**: Đã deploy và đang hoạt động tại [dulichviet.tech](https://www.dulichviet.tech)
-- **Enterprise-Grade**: Hệ thống moderation workflow chuẩn enterprise
+- **Production-Ready**: Đã deploy và hoạt động tại [dulichviet.tech](https://www.dulichviet.tech)
+- **Enterprise-Grade**: Hệ thống kiểm duyệt workflow chuẩn enterprise
 - **AI-Powered**: Tích hợp Google Genkit cho trip planning thông minh
 - **Mobile-First**: Responsive design hoàn hảo trên mọi thiết bị
 - **SEO Optimized**: SSR với Next.js 15 App Router, compound URLs
@@ -62,99 +46,86 @@
 
 ---
 
-## 📸 Screenshots
+## Tính Năng Chính
 
-<div align="center">
+### Quản Lý Địa Điểm
 
-### Homepage
-![Homepage](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=Du+Lich+Viet+Homepage)
-*Trang chủ với featured places và AI chatbot*
-
-### Place Detail
-![Place Detail](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=Place+Detail+Page)
-*Chi tiết địa điểm với hình ảnh, reviews và AI assistant*
-
-### Admin Dashboard
-![Admin Dashboard](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=Admin+Dashboard)
-*Dashboard quản trị với analytics và moderation tools*
-
-### AI Trip Planner
-![AI Trip Planner](https://via.placeholder.com/800x450/16A34A/FFFFFF?text=AI+Trip+Planner)
-*AI-powered trip planning với personalized recommendations*
-
-</div>
-
-> 📝 **Note**: Screenshots sẽ được cập nhật khi có UI mới. Xem [Live Demo](https://www.dulichviet.tech) để trải nghiệm thực tế.
-
----
-
-## ✨ Tính Năng Chính
-
-### 🏛️ Core Features
-
-#### 1. **Place Management System**
+**Tạo và Quản Lý Địa Điểm Du Lịch**
 - Tạo, chỉnh sửa, quản lý địa điểm du lịch
 - Upload hình ảnh với auto-resize (1200x800px, 80% quality)
 - Cấu trúc địa chỉ hành chính Việt Nam (Tỉnh/Huyện/Xã)
 - Hỗ trợ 5 loại địa điểm: Biển, Núi, Văn hóa, Ẩm thực, Check-in
 - Phân vùng miền: Bắc Bộ, Trung Bộ, Nam Bộ
 
-#### 2. **Content Moderation Workflow**
+### Hệ Thống Kiểm Duyệt Nội Dung
+
+**State Machine Workflow**
+
 State machine với 4 bước kiểm duyệt:
+
 ```
 pending → claimed → in_review → approved/rejected/needs_revision
 ```
+
+**Tính Năng:**
 - Auto-archive sau 30 ngày
-- Rollback capability trong 30 ngày
+- Khả năng rollback trong 30 ngày
 - Priority queue (Partner > Contributor > Traveler)
 - Claim timeout 2 giờ
 
-#### 3. **AI Trip Planner**
-- Powered by Google Genkit + Vertex AI
-- Tự động gợi ý lịch trình dựa trên:
-  - Thời gian du lịch
-  - Sở thích cá nhân
-  - Ngân sách
-  - Số người tham gia
-- Export itinerary sang PDF/Excel
+### AI Trip Planner
 
-#### 4. **Real-time Notifications**
-- Firebase Realtime Database integration
-- 8+ loại thông báo:
-  - Place submission received
-  - Place claimed for review
-  - Place in review
-  - Place approved/rejected
-  - Revision requested
-  - User role changed
-  - Reports resolved
+**Được Hỗ Trợ Bởi Google Genkit + Vertex AI**
+
+Tự động gợi ý lịch trình dựa trên:
+- Thời gian du lịch
+- Sở thích cá nhân
+- Ngân sách
+- Số người tham gia
+
+Export itinerary sang PDF/Excel
+
+### Thông Báo Thời Gian Thực
+
+**Firebase Realtime Database Integration**
+
+8+ loại thông báo:
+- Địa điểm đã tiếp nhận
+- Địa điểm được claim để review
+- Địa điểm đang được kiểm duyệt
+- Địa điểm được duyệt/từ chối
+- Yêu cầu chỉnh sửa
+- Thay đổi vai trò người dùng
+- Báo cáo được giải quyết
 - Push notifications (Desktop + Mobile)
 
-#### 5. **Analytics Dashboard**
-- Real-time statistics
-- Provincial analytics
-- Regional trends
-- Moderator performance metrics
-- SLA compliance tracking
+### Dashboard Phân Tích
 
-### 👥 User Roles & Permissions
+**Thống Kê Thời Gian Thực**
+- Thống kê theo tỉnh thành
+- Xu hướng theo vùng miền
+- Hiệu suất moderator
+- Theo dõi tuân thủ SLA
 
-6 levels phân quyền rõ ràng:
+### Phân Quyền Người Dùng
 
-| Role | Quyền Hạn | Trust Label |
-|------|-----------|-------------|
-| 🔸 **Guest** | Xem nội dung public | - |
-| 🟢 **Traveler** | Tạo itinerary, review | - |
-| 🔵 **Contributor** | Tạo địa điểm, submit review | Contributor |
-| 🟣 **Partner** | Priority queue, verified badge | Partner |
-| 🟠 **Moderator** | Review content, manage reports | Verified |
-| 🔴 **Admin** | Full permissions, system config | Verified |
+**6 Cấp Độ Phân Quyền Rõ Ràng**
+
+| Vai Trò | Quyền Hạn | Trust Label |
+|---------|-----------|-------------|
+| **Guest** | Xem nội dung public | - |
+| **Traveler** | Tạo itinerary, review | - |
+| **Contributor** | Tạo địa điểm, submit review | Contributor |
+| **Partner** | Priority queue, verified badge | Partner |
+| **Moderator** | Review content, quản lý reports | Verified |
+| **Admin** | Full permissions, system config | Verified |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
+
 - **Framework**: Next.js 15.3.3 (App Router)
 - **Language**: TypeScript 5.9.2
 - **Styling**: TailwindCSS 3.4.1 + Tailwind Typography
@@ -165,6 +136,7 @@ pending → claimed → in_review → approved/rejected/needs_revision
 - **Icons**: Lucide React 0.475.0
 
 ### Backend
+
 - **BaaS**: Firebase 11.10.0
   - Authentication (Email/Password, Google OAuth)
   - Firestore (NoSQL Database)
@@ -174,11 +146,13 @@ pending → claimed → in_review → approved/rejected/needs_revision
 - **Admin SDK**: Firebase Admin 13.4.0
 
 ### AI & ML
+
 - **AI Framework**: Google Genkit 1.16.1
 - **LLM**: Google AI + Vertex AI
 - **Use Cases**: Trip planning, content suggestions
 
 ### DevOps & Tools
+
 - **Package Manager**: npm
 - **Linting**: ESLint + Next.js config
 - **Testing**: Jest 30.0.5 + React Testing Library
@@ -187,6 +161,7 @@ pending → claimed → in_review → approved/rejected/needs_revision
 - **Sitemap**: next-sitemap 4.2.3
 
 ### Development Tools
+
 - **Form Handling**: React Hook Form 7.54.2 + Zod 3.25.76
 - **Date Handling**: date-fns 3.6.0
 - **Drag & Drop**: @hello-pangea/dnd 18.0.1
@@ -196,7 +171,7 @@ pending → claimed → in_review → approved/rejected/needs_revision
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống
+## Kiến Trúc Hệ Thống
 
 ### High-Level Architecture
 
@@ -238,10 +213,10 @@ pending → claimed → in_review → approved/rejected/needs_revision
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Project Structure
+### Cấu Trúc Dự Án
 
 ```
-Du Lịch Việt-AI/
+VietExplore-AI/
 ├── src/
 │   ├── app/                    # Next.js 15 App Router
 │   │   ├── (routes)/          # Page routes
@@ -256,12 +231,12 @@ Du Lịch Việt-AI/
 │   │
 │   ├── hooks/                # Custom React hooks
 │   │   ├── use-auth.ts
-│   │   ├── use-place-stats.ts  # ⭐ View tracking hook
+│   │   ├── use-place-stats.ts  # View tracking hook
 │   │   └── ...
 │   │
 │   ├── lib/                  # Core libraries
 │   │   ├── server/          # Server-side utilities
-│   │   │   ├── view-tracker.ts     # ⭐ View count service
+│   │   │   ├── view-tracker.ts     # View count service
 │   │   │   ├── auth-middleware.ts
 │   │   │   └── ...
 │   │   ├── firebase/        # Firebase configs
@@ -291,27 +266,27 @@ Du Lịch Việt-AI/
 
 ---
 
-## 🔢 Hệ Thống Lượt Xem
+## Hệ Thống Lượt Xem
 
-### Overview
+### Tổng Quan
 
 Du Lịch Việt sử dụng **session-based view tracking** với fingerprinting để đảm bảo tính chính xác.
 
 ### Cơ Chế Hoạt Động
 
-#### 1. **Điều Kiện Ghi Nhận View**
+#### Điều Kiện Ghi Nhận View
 
-✅ **1 lượt xem được count khi:**
-- User **chưa** xem địa điểm này trong **1 giờ qua**
+**Một lượt xem được tính khi:**
+- User chưa xem địa điểm này trong 1 giờ qua
 - Địa điểm có status = `published`
 - API call thành công
 
-❌ **KHÔNG được count khi:**
-- User **đã** xem trong 1 giờ qua (duplicate)
+**Không được tính khi:**
+- User đã xem trong 1 giờ qua (duplicate)
 - Refresh trang nhiều lần
 - Cùng IP + User-Agent trong window 1 giờ
 
-#### 2. **Fingerprinting Mechanism**
+#### Fingerprinting Mechanism
 
 ```typescript
 Fingerprint = SHA-256(IP Address + User-Agent)
@@ -326,11 +301,11 @@ Fingerprint: a3f5b8c9d2e1f4a6b7c8d9e0f1a2b3c4
 ```
 
 **Lợi ích:**
-- 🔒 **Privacy**: Không lưu IP plaintext
-- ⚡ **Performance**: Hash cố định 32 chars
-- 🎯 **Accuracy**: Kết hợp IP + UA
+- Privacy: Không lưu IP plaintext
+- Performance: Hash cố định 32 chars
+- Accuracy: Kết hợp IP + UA
 
-#### 3. **Flow Diagram**
+#### Flow Diagram
 
 ```
 User Visit Place
@@ -352,7 +327,7 @@ Check view_cache/{placeId}_{fingerprint}
                        Sync to Realtime DB
 ```
 
-#### 4. **Database Structure**
+#### Database Structure
 
 **Firestore Collection: `places`**
 ```json
@@ -376,7 +351,7 @@ Check view_cache/{placeId}_{fingerprint}
 }
 ```
 
-#### 5. **Implementation Code**
+#### Implementation Code
 
 **Server-Side Service:**
 ```typescript
@@ -402,25 +377,25 @@ function PlaceDetail({ place }) {
 }
 ```
 
-#### 6. **Timeline Example**
+#### Timeline Example
 
 ```
 10:00 AM - User A visits "Hạ Long Bay"
-         ✅ No cache → viewCount: 100 → 101
-         📝 Cache expires at 11:00 AM
+         → No cache → viewCount: 100 → 101
+         → Cache expires at 11:00 AM
 
 10:15 AM - User A refreshes page
-         ❌ Cache valid → viewCount: 101 (NO change)
+         → Cache valid → viewCount: 101 (NO change)
 
 10:30 AM - User B (different IP) visits
-         ✅ No cache → viewCount: 101 → 102
+         → No cache → viewCount: 101 → 102
 
 11:05 AM - User A visits again
-         ✅ Cache expired → viewCount: 102 → 103
-         📝 New cache expires at 12:05 PM
+         → Cache expired → viewCount: 102 → 103
+         → New cache expires at 12:05 PM
 ```
 
-#### 7. **Cache Cleanup**
+#### Cache Cleanup
 
 Auto cleanup expired cache entries:
 
@@ -433,11 +408,11 @@ ViewTracker.cleanupExpiredViewCache()
 
 ### Key Features
 
-- ✅ **Atomic Increment**: `FieldValue.increment()` thread-safe
-- ✅ **Session-Based**: 1-hour window prevents spam
-- ✅ **Privacy-First**: IP hashed, auto-deleted after 1h
-- ✅ **Real-time Sync**: Firestore → Realtime DB (non-blocking)
-- ✅ **Centralized Hooks**: Consistent display across all components
+- Atomic Increment: `FieldValue.increment()` thread-safe
+- Session-Based: 1-hour window prevents spam
+- Privacy-First: IP hashed, auto-deleted after 1h
+- Real-time Sync: Firestore → Realtime DB (non-blocking)
+- Centralized Hooks: Consistent display across all components
 
 ### Files
 
@@ -450,24 +425,22 @@ ViewTracker.cleanupExpiredViewCache()
 
 ---
 
-## 🚀 Cài Đặt
+## Cài Đặt
 
-### Prerequisites
-
-Yêu cầu hệ thống:
+### Yêu Cầu Hệ Thống
 
 - **Node.js**: >= 18.0.0
 - **npm**: >= 9.0.0
 - **Firebase CLI**: >= 13.0.0
 - **Git**: Latest version
 
-### Installation Steps
+### Các Bước Cài Đặt
 
 #### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/Du Lịch Việt-AI.git
-cd Du Lịch Việt-AI
+git clone https://github.com/your-username/VietExplore-AI.git
+cd VietExplore-AI
 ```
 
 #### 2. Install Dependencies
@@ -476,14 +449,14 @@ cd Du Lịch Việt-AI
 npm install
 ```
 
-#### 3. Firebase Setup
+#### 3. Thiết Lập Firebase
 
-**3.1. Create Firebase Project**
-- Go to [Firebase Console](https://console.firebase.google.com/)
-- Create new project: "Du Lịch Việt"
-- Enable Firestore, Storage, Authentication, Realtime Database
+**3.1. Tạo Firebase Project**
+- Vào [Firebase Console](https://console.firebase.google.com/)
+- Tạo project mới: "Du Lịch Việt"
+- Kích hoạt Firestore, Storage, Authentication, Realtime Database
 
-**3.2. Get Firebase Config**
+**3.2. Lấy Firebase Config**
 ```bash
 # Login to Firebase
 firebase login
@@ -496,9 +469,9 @@ firebase init
 - Firebase Console → Project Settings → Service Accounts
 - Generate new private key → Save as `service-account-key.json`
 
-#### 4. Environment Variables
+#### 4. Biến Môi Trường
 
-Create `.env.local` file:
+Tạo file `.env.local`:
 
 ```bash
 # Firebase Web Config (Public)
@@ -525,7 +498,7 @@ NEXT_PUBLIC_BASE_URL=http://localhost:9002
 NODE_ENV=development
 ```
 
-**Important**:
+**Lưu ý quan trọng:**
 - Đảm bảo `FIREBASE_PRIVATE_KEY` có escape `\n` đúng format
 - KHÔNG commit `.env.local` vào Git
 - Add `.env.local` vào `.gitignore`
@@ -561,7 +534,7 @@ node scripts/create-real-moderation-queue.js
 
 ---
 
-## 💻 Development
+## Development
 
 ### Start Development Server
 
@@ -574,7 +547,7 @@ npm run dev:3000
 npm run dev:8080
 ```
 
-Access: `http://localhost:9002`
+Truy cập: `http://localhost:9002`
 
 ### Available Scripts
 
@@ -651,7 +624,7 @@ npm run lighthouse          # Run Lighthouse audit
 
 ---
 
-## 📡 API Documentation
+## API Documentation
 
 ### Authentication
 
@@ -664,7 +637,7 @@ Authorization: Bearer <firebase_id_token>
 ### Places API
 
 #### `GET /api/places`
-Get published places with filters
+Lấy danh sách địa điểm đã published với filters
 
 **Query Parameters:**
 - `region` (optional): `bac-bo` | `trung-bo` | `nam-bo`
@@ -691,7 +664,7 @@ Get published places with filters
 ```
 
 #### `GET /api/places/[id]`
-Get single place + increment view count
+Lấy chi tiết địa điểm + tăng view count
 
 **Response:**
 ```json
@@ -705,21 +678,17 @@ Get single place + increment view count
 ```
 
 #### `POST /api/places`
-Create new place (Contributor+ only)
+Tạo địa điểm mới (Contributor+ only)
 
 #### `PATCH /api/places/[id]`
-Update place (Owner/Moderator/Admin only)
+Cập nhật địa điểm (Owner/Moderator/Admin only)
 
 #### `DELETE /api/places/[id]`
-Soft delete place (Owner/Moderator/Admin only)
-
-### Full API Documentation
-
-Xem thêm API documentation chi tiết trong thư mục `.docs/` của dự án.
+Soft delete địa điểm (Owner/Moderator/Admin only)
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Firestore Collections
 
@@ -728,12 +697,13 @@ Xem thêm API documentation chi tiết trong thư mục `.docs/` của dự án.
 - `moderation_queue` - Content review queue
 - `view_cache` - View tracking cache (TTL: 1h)
 - `notifications` - User notifications
-
-### Full schema: See [Database Schema section](#database-schema)
+- `place_reviews` - User reviews for places
+- `review_reports` - Reports against reviews
+- `place_reports` - Reports against places
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Unit tests
@@ -748,26 +718,7 @@ npm run test:coverage
 
 ---
 
-## 🚀 Deployment
-
-### 🐳 Docker (Recommended for Production)
-
-**Quick Start:**
-```bash
-# Development
-docker compose -f docker-compose.dev.yml up
-
-# Production
-docker compose up -d
-```
-
-**Full Docker Documentation**: See [DOCKER.md](./DOCKER.md) for comprehensive guide including:
-- Multi-stage build optimization (~300MB final image)
-- Production and development configurations
-- Health checks and monitoring
-- Deployment to Cloud Run, ECS, Kubernetes, Railway
-- CI/CD integration examples
-- Security best practices
+## Deployment
 
 ### Vercel
 
@@ -782,39 +733,35 @@ npm run build
 firebase deploy --only hosting
 ```
 
-**Deployment Guides:**
-- 🐳 **Docker**: [DOCKER.md](./DOCKER.md) - Full containerization guide
-- 📘 **Complete Guide**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - All deployment options
+---
+
+## Contributing
+
+Chúng tôi chào đón đóng góp từ cộng đồng! Dù bạn sửa lỗi, thêm tính năng, hoặc cải thiện tài liệu, sự giúp đỡ của bạn đều được trân trọng.
+
+### Bắt Đầu Nhanh
+
+1. Fork repository
+2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit thay đổi (`git commit -m 'feat: add some AmazingFeature'`)
+4. Push lên branch (`git push origin feature/AmazingFeature`)
+5. Mở Pull Request
+
+### Hướng Dẫn
+
+- Tuân theo quy ước [Conventional Commits](https://www.conventionalcommits.org/)
+- Viết commit messages rõ ràng, ngắn gọn
+- Thêm tests cho tính năng mới
+- Cập nhật tài liệu khi cần
+- Đảm bảo tất cả tests pass trước khi submit PR
+
+**Vui lòng đọc [Hướng Dẫn Đóng Góp](./CONTRIBUTING.md) để biết thông tin chi tiết.**
 
 ---
 
-## 🤝 Contributing
+## License
 
-We welcome contributions from the community! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
-
-### Quick Start
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'feat: add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Guidelines
-
-- Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification
-- Write clear, concise commit messages
-- Add tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submitting PR
-
-**Please read our [Contributing Guide](./CONTRIBUTING.md) for detailed information.**
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+Dự án này được cấp phép theo **MIT License** - xem file [LICENSE](./LICENSE) để biết chi tiết.
 
 ```
 MIT License
@@ -832,47 +779,43 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
 
-### What this means
+### Điều Này Có Nghĩa Là Gì
 
-✅ **You can:**
-- Use this software for commercial purposes
-- Modify and distribute the source code
-- Use this software privately
-- Sublicense this software
+**Bạn có thể:**
+- Sử dụng phần mềm này cho mục đích thương mại
+- Chỉnh sửa và phân phối mã nguồn
+- Sử dụng phần mềm này riêng tư
+- Cấp phép lại phần mềm này
 
-❌ **You cannot:**
-- Hold the authors liable for damages
-- Use the authors' names for endorsement without permission
+**Bạn không thể:**
+- Yêu cầu tác giả chịu trách nhiệm về thiệt hại
+- Sử dụng tên tác giả để endorsement mà không có phép
 
-📋 **You must:**
-- Include the copyright notice and license in all copies
-- State significant changes made to the software
+**Bạn phải:**
+- Bao gồm thông báo bản quyền và license trong tất cả bản sao
+- Ghi rõ các thay đổi quan trọng được thực hiện với phần mềm
 
 ---
 
-## 📞 Contact
+## Liên Hệ
 
-- **Author**: Nguyễn Mạnh Quý
+- **Tác giả**: Nguyễn Mạnh Quý
 - **Website**: [dulichviet.tech](https://www.dulichviet.tech)
 - **Email**: manhquydev@gmail.com
 
 ---
 
-## 👨‍💻 Author
+## Tác Giả
 
 **Nguyễn Mạnh Quý**
-- 🌐 Website: [dulichviet.tech](https://www.dulichviet.tech)
-- 📧 Email: manhquydev@gmail.com
-- 💼 Project: Du Lịch Việt
+- Website: [dulichviet.tech](https://www.dulichviet.tech)
+- Email: manhquydev@gmail.com
+- Dự án: Du Lịch Việt
 
 ---
 
-<div align="center">
-
-**Made with ❤️ for Vietnam Tourism Community**
+**Được phát triển với tâm huyết cho cộng đồng du lịch Việt Nam**
 
 **© 2025 Nguyễn Mạnh Quý. All rights reserved.**
 
-[⭐ Star on GitHub](https://github.com/manhquydev/VietExplore-AI) · [🐛 Report Bug](https://github.com/manhquydev/VietExplore-AI/issues) · [💡 Request Feature](https://github.com/manhquydev/VietExplore-AI/issues)
-
-</div>
+[⭐ Star trên GitHub](https://github.com/manhquydev/VietExplore-AI) · [Báo Lỗi](https://github.com/manhquydev/VietExplore-AI/issues) · [Đề Xuất Tính Năng](https://github.com/manhquydev/VietExplore-AI/issues)

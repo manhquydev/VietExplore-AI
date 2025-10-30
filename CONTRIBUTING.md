@@ -1,172 +1,175 @@
-# Contributing to Du Lịch Việt
+# Hướng Dẫn Đóng Góp
 
-Thank you for your interest in contributing to Du Lịch Việt! We welcome contributions from the community.
+Cảm ơn bạn quan tâm đến dự án Du Lịch Việt. Chúng tôi luôn chào đón sự đóng góp từ cộng đồng để cùng xây dựng nền tảng du lịch Việt Nam tốt hơn.
 
-## 📋 Table of Contents
+## Mục Lục
 
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [Development Process](#development-process)
-- [Coding Standards](#coding-standards)
-- [Commit Guidelines](#commit-guidelines)
-- [Pull Request Process](#pull-request-process)
-- [Issue Reporting](#issue-reporting)
-
----
-
-## 🤝 Code of Conduct
-
-### Our Pledge
-
-We are committed to providing a welcoming and inspiring community for all. Please be respectful and constructive in your interactions.
-
-### Expected Behavior
-
-- ✅ Use welcoming and inclusive language
-- ✅ Be respectful of differing viewpoints
-- ✅ Accept constructive criticism gracefully
-- ✅ Focus on what is best for the community
-
-### Unacceptable Behavior
-
-- ❌ Harassment or discriminatory language
-- ❌ Trolling or insulting comments
-- ❌ Publishing others' private information
-- ❌ Unprofessional conduct
+- [Quy Tắc Ứng Xử](#quy-tắc-ứng-xử)
+- [Bắt Đầu](#bắt-đầu)
+- [Quy Trình Phát Triển](#quy-trình-phát-triển)
+- [Chuẩn Mã Nguồn](#chuẩn-mã-nguồn)
+- [Hướng Dẫn Commit](#hướng-dẫn-commit)
+- [Quy Trình Pull Request](#quy-trình-pull-request)
+- [Báo Cáo Lỗi](#báo-cáo-lỗi)
 
 ---
 
-## 🚀 Getting Started
+## Quy Tắc Ứng Xử
 
-### Prerequisites
+### Cam Kết Của Chúng Tôi
 
-Before contributing, ensure you have:
+Chúng tôi cam kết tạo môi trường cộng đồng thân thiện và chuyên nghiệp. Vui lòng tôn trọng và xây dựng trong mọi tương tác.
 
-- **Node.js** >= 18.0.0
-- **npm** >= 9.0.0
-- **Git** installed
-- **Firebase CLI** (for backend changes)
-- Basic knowledge of TypeScript, React, and Next.js
+### Hành Vi Được Khuyến Khích
 
-### Fork and Clone
+- Sử dụng ngôn ngữ thân thiện và hòa nhập
+- Tôn trọng quan điểm khác biệt
+- Chấp nhận phê bình mang tính xây dựng
+- Ưu tiên lợi ích của cộng đồng
 
-1. Fork the repository on GitHub
-2. Clone your fork locally:
+### Hành Vi Không Được Chấp Nhận
+
+- Quấy rối hoặc ngôn từ phân biệt đối xử
+- Bình luận xúc phạm hoặc công kích cá nhân
+- Công khai thông tin riêng tư của người khác
+- Hành vi thiếu chuyên nghiệp
+
+---
+
+## Bắt Đầu
+
+### Yêu Cầu Hệ Thống
+
+Trước khi bắt đầu đóng góp, hãy đảm bảo máy tính của bạn đã cài đặt:
+
+- Node.js phiên bản 18.0.0 trở lên
+- npm phiên bản 9.0.0 trở lên
+- Git
+- Firebase CLI (nếu thay đổi backend)
+- Kiến thức cơ bản về TypeScript, React và Next.js
+
+### Fork và Clone Repository
+
+**Bước 1:** Fork repository trên GitHub
+
+**Bước 2:** Clone repository về máy:
 
 ```bash
 git clone https://github.com/YOUR-USERNAME/VietExplore-AI.git
 cd VietExplore-AI
 ```
 
-3. Add upstream remote:
+**Bước 3:** Thêm remote upstream:
 
 ```bash
-git remote add upstream https://github.com/ORIGINAL-OWNER/VietExplore-AI.git
+git remote add upstream https://github.com/manhquydev/VietExplore-AI.git
 ```
 
-4. Install dependencies:
+**Bước 4:** Cài đặt dependencies:
 
 ```bash
 npm install
 ```
 
-5. Copy environment variables:
+**Bước 5:** Thiết lập biến môi trường:
 
 ```bash
 cp .env.example .env.local
-# Edit .env.local with your Firebase credentials
+# Chỉnh sửa file .env.local với thông tin Firebase của bạn
 ```
 
 ---
 
-## 💻 Development Process
+## Quy Trình Phát Triển
 
-### 1. Create a Branch
+### 1. Tạo Nhánh Mới
 
-Always create a new branch for your work:
+Luôn tạo nhánh mới cho công việc của bạn:
 
 ```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/bug-description
+git checkout -b feature/ten-tinh-nang
+# hoặc
+git checkout -b fix/mo-ta-loi
 ```
 
-**Branch Naming Convention:**
-- `feature/` - New features
-- `fix/` - Bug fixes
-- `docs/` - Documentation changes
-- `refactor/` - Code refactoring
-- `test/` - Adding tests
-- `chore/` - Maintenance tasks
+**Quy Ước Đặt Tên Nhánh:**
+- `feature/` - Tính năng mới
+- `fix/` - Sửa lỗi
+- `docs/` - Thay đổi tài liệu
+- `refactor/` - Tái cấu trúc code
+- `test/` - Thêm tests
+- `chore/` - Công việc bảo trì
 
-### 2. Make Changes
+### 2. Thực Hiện Thay Đổi
 
-- Write clean, readable code
-- Follow existing code style
-- Add comments for complex logic
-- Update documentation if needed
+- Viết code rõ ràng, dễ đọc
+- Tuân theo style code hiện có
+- Thêm comments cho logic phức tạp
+- Cập nhật tài liệu nếu cần thiết
 
-### 3. Test Your Changes
+### 3. Kiểm Tra Thay Đổi
 
 ```bash
-# Run type checking
+# Kiểm tra type
 npm run typecheck
 
-# Run linting
+# Kiểm tra linting
 npm run lint:fix
 
-# Run tests
+# Chạy tests
 npm test
 
-# Test in dev environment
+# Test trong môi trường development
 npm run dev
 ```
 
-### 4. Commit Your Changes
+### 4. Commit Thay Đổi
 
-Follow our [Commit Guidelines](#commit-guidelines).
+Làm theo [Hướng Dẫn Commit](#hướng-dẫn-commit).
 
 ```bash
 git add .
-git commit -m "feat: add user profile page"
+git commit -m "feat: thêm trang hồ sơ người dùng"
 ```
 
 ---
 
-## 📝 Coding Standards
+## Chuẩn Mã Nguồn
 
 ### TypeScript
 
-- ✅ Use TypeScript for all new files
-- ✅ Define proper types/interfaces
-- ✅ Avoid `any` type unless absolutely necessary
-- ✅ Use strict mode
+**Các Nguyên Tắc:**
+- Sử dụng TypeScript cho tất cả file mới
+- Định nghĩa rõ ràng types/interfaces
+- Tránh sử dụng `any` trừ khi thực sự cần thiết
+- Sử dụng strict mode
 
-**Example:**
+**Ví dụ:**
 
 ```typescript
-// ✅ Good
+// Tốt
 interface Place {
   id: string;
   name: string;
   region: 'bac-bo' | 'trung-bo' | 'nam-bo';
 }
 
-// ❌ Bad
+// Không nên
 const place: any = { ... };
 ```
 
 ### React Components
 
-- ✅ Use functional components with hooks
-- ✅ Use TypeScript for props
-- ✅ Extract reusable logic into custom hooks
-- ✅ Use Radix UI components when possible
+**Các Nguyên Tắc:**
+- Sử dụng functional components với hooks
+- Sử dụng TypeScript cho props
+- Tách logic có thể tái sử dụng thành custom hooks
+- Ưu tiên sử dụng Radix UI components
 
-**Example:**
+**Ví dụ:**
 
-```tsx
-// ✅ Good
+```typescript
+// Tốt
 interface PlaceCardProps {
   place: Place;
   onLike: (id: string) => void;
@@ -176,47 +179,48 @@ export function PlaceCard({ place, onLike }: PlaceCardProps) {
   // Component logic
 }
 
-// ❌ Bad
+// Không nên
 export function PlaceCard(props: any) {
   // Component logic
 }
 ```
 
-### File Organization
+### Cấu Trúc Thư Mục
 
 ```
 src/
-├── app/              # Next.js pages and routes
-├── components/       # Reusable React components
+├── app/              # Next.js pages và routes
+├── components/       # React components có thể tái sử dụng
 │   ├── ui/          # UI primitives (buttons, cards, etc.)
-│   └── [feature]/   # Feature-specific components
+│   └── [feature]/   # Components theo từng tính năng
 ├── hooks/           # Custom React hooks
-├── lib/             # Utility functions and helpers
+├── lib/             # Utility functions và helpers
 └── types/           # TypeScript type definitions
 ```
 
 ### Styling
 
-- ✅ Use Tailwind CSS utility classes
-- ✅ Follow mobile-first approach
-- ✅ Use design system colors and spacing
-- ✅ Avoid inline styles unless dynamic
+**Các Nguyên Tắc:**
+- Sử dụng Tailwind CSS utility classes
+- Theo approach mobile-first
+- Sử dụng màu sắc và spacing từ design system
+- Tránh inline styles trừ khi cần dynamic styling
 
 ```tsx
-// ✅ Good
+// Tốt
 <div className="flex items-center gap-4 px-6 py-4 bg-white rounded-lg shadow-sm">
 
-// ❌ Bad
+// Không nên
 <div style={{ display: 'flex', padding: '16px' }}>
 ```
 
 ---
 
-## 📜 Commit Guidelines
+## Hướng Dẫn Commit
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/) specification.
+Chúng tôi tuân theo quy ước [Conventional Commits](https://www.conventionalcommits.org/).
 
-### Format
+### Định Dạng
 
 ```
 <type>(<scope>): <subject>
@@ -226,52 +230,52 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) specifica
 <footer>
 ```
 
-### Types
+### Các Loại Commit (Types)
 
-- `feat` - New feature
-- `fix` - Bug fix
-- `docs` - Documentation changes
-- `style` - Code style changes (formatting, etc.)
-- `refactor` - Code refactoring
-- `test` - Adding or updating tests
-- `chore` - Maintenance tasks
-- `perf` - Performance improvements
+- `feat` - Tính năng mới
+- `fix` - Sửa lỗi
+- `docs` - Thay đổi tài liệu
+- `style` - Thay đổi code style (formatting, etc.)
+- `refactor` - Tái cấu trúc code
+- `test` - Thêm hoặc cập nhật tests
+- `chore` - Công việc bảo trì
+- `perf` - Cải thiện hiệu năng
 
-### Examples
+### Ví Dụ
 
 ```bash
-# Feature
-feat(auth): add Google OAuth login
+# Tính năng mới
+feat(auth): thêm đăng nhập Google OAuth
 
-# Bug fix
-fix(places): resolve image upload error on Safari
+# Sửa lỗi
+fix(places): sửa lỗi upload ảnh trên Safari
 
-# Documentation
-docs(readme): update installation instructions
+# Tài liệu
+docs(readme): cập nhật hướng dẫn cài đặt
 
-# Refactoring
-refactor(api): simplify place fetching logic
+# Tái cấu trúc
+refactor(api): đơn giản hóa logic lấy địa điểm
 
 # Breaking change
-feat(api)!: change place API response structure
+feat(api)!: thay đổi cấu trúc API response
 
-BREAKING CHANGE: Place API now returns `viewCount` instead of `views`
+BREAKING CHANGE: Place API giờ trả về `viewCount` thay vì `views`
 ```
 
 ---
 
-## 🔄 Pull Request Process
+## Quy Trình Pull Request
 
-### Before Submitting
+### Trước Khi Gửi
 
-1. ✅ Update your branch with latest upstream:
+**Bước 1:** Cập nhật nhánh của bạn với upstream mới nhất:
 
 ```bash
 git fetch upstream
 git rebase upstream/main
 ```
 
-2. ✅ Run all checks:
+**Bước 2:** Chạy tất cả kiểm tra:
 
 ```bash
 npm run typecheck
@@ -279,159 +283,158 @@ npm run lint:fix
 npm test
 ```
 
-3. ✅ Update documentation if needed
-4. ✅ Add tests for new features
+**Bước 3:** Cập nhật tài liệu nếu cần
 
-### Submitting PR
+**Bước 4:** Thêm tests cho tính năng mới
 
-1. Push your branch to your fork:
+### Gửi Pull Request
+
+**Bước 1:** Push nhánh của bạn lên fork:
 
 ```bash
-git push origin feature/your-feature-name
+git push origin feature/ten-tinh-nang
 ```
 
-2. Open a Pull Request on GitHub
+**Bước 2:** Mở Pull Request trên GitHub
 
-3. Fill out the PR template:
+**Bước 3:** Điền vào template PR:
 
 ```markdown
-## Description
-Brief description of changes
+## Mô Tả
+Mô tả ngắn gọn về thay đổi
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
+## Loại Thay Đổi
+- [ ] Sửa lỗi
+- [ ] Tính năng mới
 - [ ] Breaking change
-- [ ] Documentation update
+- [ ] Cập nhật tài liệu
 
-## Testing
-- [ ] Tested locally
-- [ ] Added unit tests
-- [ ] All tests passing
+## Kiểm Tra
+- [ ] Đã test locally
+- [ ] Đã thêm unit tests
+- [ ] Tất cả tests đều pass
 
-## Screenshots (if applicable)
-Add screenshots for UI changes
+## Screenshots (nếu có)
+Thêm screenshots cho thay đổi UI
 
 ## Checklist
-- [ ] Code follows project style guidelines
-- [ ] Self-review completed
-- [ ] Documentation updated
-- [ ] No new warnings generated
+- [ ] Code tuân theo style guidelines của dự án
+- [ ] Đã tự review code
+- [ ] Tài liệu đã được cập nhật
+- [ ] Không có warnings mới
 ```
 
-### Review Process
+### Quy Trình Review
 
-- Maintainers will review your PR within 3-5 business days
-- Address any feedback or requested changes
-- Once approved, your PR will be merged
+- Maintainers sẽ review PR của bạn trong vòng 3-5 ngày làm việc
+- Giải quyết feedback hoặc yêu cầu thay đổi
+- Khi được approve, PR sẽ được merge
 
 ---
 
-## 🐛 Issue Reporting
+## Báo Cáo Lỗi
 
-### Before Creating an Issue
+### Trước Khi Tạo Issue
 
-1. Search existing issues to avoid duplicates
-2. Check if the issue is already fixed in latest version
-3. Gather relevant information (browser, OS, screenshots)
+1. Tìm kiếm issues hiện có để tránh trùng lặp
+2. Kiểm tra xem lỗi đã được sửa trong phiên bản mới nhất chưa
+3. Thu thập thông tin liên quan (browser, OS, screenshots)
 
-### Bug Report Template
+### Template Báo Cáo Lỗi
 
 ```markdown
-**Describe the bug**
-A clear description of the bug
+**Mô tả lỗi**
+Mô tả rõ ràng về lỗi
 
-**To Reproduce**
-Steps to reproduce:
-1. Go to '...'
-2. Click on '...'
-3. See error
+**Các bước tái hiện**
+1. Vào trang '...'
+2. Click vào '...'
+3. Thấy lỗi
 
-**Expected behavior**
-What you expected to happen
+**Kết quả mong đợi**
+Điều bạn mong đợi sẽ xảy ra
 
 **Screenshots**
-Add screenshots if applicable
+Thêm screenshots nếu có
 
-**Environment:**
-- Browser: [e.g., Chrome 120]
-- OS: [e.g., macOS 14.0]
-- Version: [e.g., 3.0.0]
+**Môi trường:**
+- Browser: [ví dụ: Chrome 120]
+- OS: [ví dụ: macOS 14.0]
+- Version: [ví dụ: 3.0.0]
 
-**Additional context**
-Any other relevant information
+**Thông tin bổ sung**
+Thông tin liên quan khác
 ```
 
-### Feature Request Template
+### Template Đề Xuất Tính Năng
 
 ```markdown
-**Is your feature request related to a problem?**
-Description of the problem
+**Vấn đề hiện tại**
+Mô tả vấn đề mà tính năng này sẽ giải quyết
 
-**Describe the solution you'd like**
-Clear description of what you want
+**Giải pháp đề xuất**
+Mô tả rõ ràng về tính năng bạn muốn
 
-**Describe alternatives you've considered**
-Alternative solutions or features
+**Các phương án thay thế**
+Các giải pháp hoặc tính năng thay thế khác
 
-**Additional context**
-Mockups, examples, or references
+**Thông tin bổ sung**
+Mockups, ví dụ, hoặc tài liệu tham khảo
 ```
 
 ---
 
-## 🎯 Areas to Contribute
+## Các Lĩnh Vực Có Thể Đóng Góp
 
-### Good First Issues
+### Issues Dành Cho Người Mới
 
-Look for issues labeled `good-first-issue`:
-- Documentation improvements
-- UI/UX enhancements
-- Bug fixes
-- Adding tests
+Tìm issues có nhãn `good-first-issue`:
+- Cải thiện tài liệu
+- Tăng cường UI/UX
+- Sửa lỗi nhỏ
+- Thêm tests
 
-### High Priority
+### Ưu Tiên Cao
 
-- Performance optimizations
-- Accessibility improvements
-- Mobile responsiveness
-- Internationalization (i18n)
-
----
-
-## 📚 Resources
-
-### Documentation
-
-- [README.md](./README.md) - Project overview
-- [Next.js Docs](https://nextjs.org/docs)
-- [Firebase Docs](https://firebase.google.com/docs)
-- [Tailwind CSS Docs](https://tailwindcss.com/docs)
-- [TypeScript Docs](https://www.typescriptlang.org/docs)
-
-### Community
-
-- GitHub Issues - Bug reports and feature requests
-- GitHub Discussions - General questions and ideas
+- Tối ưu hiệu năng
+- Cải thiện khả năng tiếp cận (accessibility)
+- Responsive trên mobile
+- Quốc tế hóa (i18n)
 
 ---
 
-## 📞 Contact
+## Tài Liệu Tham Khảo
 
-Need help? Reach out:
+### Tài Liệu Dự Án
 
-- **Author**: Nguyễn Mạnh Quý
-- **Email**: support@dulichviet.tech
-- **GitHub Issues**: [Create an issue](https://github.com/your-repo/issues)
+- [README.md](./README.md) - Tổng quan dự án
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs)
+
+### Cộng Đồng
+
+- GitHub Issues - Báo cáo lỗi và đề xuất tính năng
+- GitHub Discussions - Câu hỏi chung và ý tưởng
 
 ---
 
-## 👨‍💻 Project Owner
+## Liên Hệ
+
+Cần hỗ trợ? Liên hệ với chúng tôi:
+
+- **Tác giả:** Nguyễn Mạnh Quý
+- **Email:** manhquydev@gmail.com
+
+---
+
+## Tác Giả Dự Án
 
 **Nguyễn Mạnh Quý**
-- Creator and maintainer of Du Lịch Việt
-- © 2025 All rights reserved
+- Người sáng lập và duy trì Du Lịch Việt
+- © 2025 Bản quyền thuộc về tác giả
 
 ---
 
-**Thank you for contributing to Du Lịch Việt! 🇻🇳**
+**Cảm ơn bạn đã đóng góp cho Du Lịch Việt!**
