@@ -14,7 +14,7 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.0.1';
 
 // Custom caching strategies for Du Lich Viet
 const duLichVietCache = [
@@ -57,32 +57,34 @@ const duLichVietCache = [
     },
   },
 
-  // 4. API Routes - Network First Strategy
+  // 4. API Routes - Network First Strategy (GET requests only)
   {
-    urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+    urlPattern: ({ url, request }) =>
+      url.pathname.startsWith('/api/') && request.method === 'GET',
     handler: 'NetworkFirst' as const,
     options: {
       cacheName: `api-cache-${CACHE_VERSION}`,
-      networkTimeoutSeconds: 5, // Fallback to cache after 5s
+      networkTimeoutSeconds: 3, // Reduced from 5s to 3s for faster offline fallback
       expiration: {
-        maxEntries: 100,
+        maxEntries: 150, // Increased from 100
         maxAgeSeconds: 60 * 60, // 1 hour
       },
     },
   },
 
-  // 5. Places Pages - Stale While Revalidate
+  // 5. HTML Pages - Network First (excluding admin/contribute)
   {
-    urlPattern: ({ url }) =>
-      url.pathname.startsWith('/places/') ||
-      url.pathname.startsWith('/explore/') ||
-      url.pathname.startsWith('/profile/'),
-    handler: 'StaleWhileRevalidate' as const,
+    urlPattern: ({ url, request }) =>
+      request.destination === 'document' &&
+      !url.pathname.startsWith('/admin') &&
+      !url.pathname.startsWith('/contribute'),
+    handler: 'NetworkFirst' as const,
     options: {
       cacheName: `pages-${CACHE_VERSION}`,
+      networkTimeoutSeconds: 3, // Fast fallback to cache
       expiration: {
-        maxEntries: 50,
-        maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        maxEntries: 100, // Increased from 50
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days (increased from 24h)
       },
     },
   },
@@ -98,6 +100,20 @@ const duLichVietCache = [
       expiration: {
         maxEntries: 30,
         maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+      },
+    },
+  },
+
+  // 7. Next.js Data - Network First
+  {
+    urlPattern: ({ url }) => url.pathname.startsWith('/_next/data/'),
+    handler: 'NetworkFirst' as const,
+    options: {
+      cacheName: `next-data-${CACHE_VERSION}`,
+      networkTimeoutSeconds: 3,
+      expiration: {
+        maxEntries: 100,
+        maxAgeSeconds: 24 * 60 * 60, // 24 hours
       },
     },
   },
@@ -140,15 +156,20 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames
             .filter((cacheName) => {
-              // Delete old versions
-              return (
+              // Identify our caches
+              const isOurCache =
                 cacheName.startsWith('static-assets-') ||
                 cacheName.startsWith('images-') ||
                 cacheName.startsWith('firebase-images-') ||
                 cacheName.startsWith('api-cache-') ||
                 cacheName.startsWith('pages-') ||
-                cacheName.startsWith('google-fonts-')
-              ) && !cacheName.includes(CACHE_VERSION);
+                cacheName.startsWith('next-data-') ||
+                cacheName.startsWith('google-fonts-');
+
+              const isCurrentVersion = cacheName.includes(CACHE_VERSION);
+
+              // Delete if it's our cache but old version
+              return isOurCache && !isCurrentVersion;
             })
             .map((cacheName) => {
               console.log('[SW] Deleting old cache:', cacheName);
