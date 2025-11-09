@@ -218,9 +218,11 @@ export const Footer: React.FC = () => {
               </span>
             </div>
 
-            <div className="max-w-2xl mx-auto space-y-2">
-              <p className="text-sm sm:text-base font-medium text-foreground">
-                Ứng dụng web “Du lịch Việt” tích hợp Trí tuệ nhân tạo để nâng cao trải nghiệm người dùng
+            <div className="max-w-3xl mx-auto space-y-2">
+              <p className="text-sm sm:text-base font-medium text-foreground leading-relaxed">
+                <span className="inline-block">Ứng dụng web "Du lịch Việt"</span>{" "}
+                <span className="inline-block">tích hợp Trí tuệ nhân tạo</span>{" "}
+                <span className="inline-block">để nâng cao trải nghiệm người dùng</span>
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted">
