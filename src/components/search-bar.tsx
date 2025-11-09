@@ -63,13 +63,10 @@ const provinces = [
   { value: "lam-dong", label: "Lâm Đồng", region: "nam-bo" },
 ]
 
-// ✅ FIX: Only show trustLabels that actually exist in database
-// Database currently has: partner, verified (as of 2025-01-09)
-// Removed: special_verified, contributor, community (not in use yet)
 const trustLabels = [
   { value: "verified", label: "Xác minh" },
   { value: "partner", label: "Đối tác" },
-  { value: "community", label: "Cộng đồng" }, // Kept for future use
+  { value: "contributor", label: "Cộng tác viên" },
 ]
 
 export const SearchBar: React.FC<SearchBarProps> = ({

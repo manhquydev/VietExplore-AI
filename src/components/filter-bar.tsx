@@ -38,11 +38,9 @@ const types = [
 ]
 
 const trustLabels = [
-  { value: "special_verified", label: "Xác minh đặc biệt" },
   { value: "verified", label: "Xác minh" },
   { value: "partner", label: "Đối tác" },
-  { value: "contributor", label: "Đóng góp" },
-  { value: "community", label: "Cộng đồng" },
+  { value: "contributor", label: "Cộng tác viên" },
 ]
 
 const provinces = [

@@ -1586,18 +1586,18 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
         {/* Image Modal */}
         {showImageModal && mediaItems && mediaItems.length > 0 && (
           <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Image gallery">
-            <div className="relative max-w-4xl max-h-full">
+            <div className="relative w-full max-w-7xl h-[85vh]">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-4 right-4 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
+                className="absolute -top-12 right-0 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white h-12 w-12 min-h-[48px] min-w-[48px]"
                 onClick={() => setShowImageModal(false)}
                 aria-label="Close gallery"
               >
                 <X className="h-6 w-6" />
               </Button>
 
-              <div className="relative w-full h-[80vh]">
+              <div className="relative w-full h-full rounded-lg overflow-hidden shadow-2xl bg-gradient-to-br from-slate-50 to-slate-100">
                 {mediaItems[modalImageIndex]?.type === 'image' ? (
                   mediaItems[modalImageIndex]?.url && mediaItems[modalImageIndex]?.url.trim() ? (
                     <Image
@@ -1605,8 +1605,9 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                       alt={mediaItems[modalImageIndex].alt || place.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 80vw"
-                      className="object-contain"
+                      className="object-contain p-4"
                       quality={90}
+                      priority
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -1614,16 +1615,18 @@ export function PlaceDetailContent({ place }: { place: PlaceData }) {
                     </div>
                   )
                 ) : (
-                  <video
-                    src={mediaItems[modalImageIndex]?.url || ''}
-                    poster={mediaItems[modalImageIndex]?.thumbnail}
-                    controls
-                    className="w-full h-full object-contain"
-                    preload="auto"
-                    autoPlay
-                  >
-                    Trình duyệt không hỗ trợ video.
-                  </video>
+                  <div className="relative w-full h-full bg-black">
+                    <video
+                      src={mediaItems[modalImageIndex]?.url || ''}
+                      poster={mediaItems[modalImageIndex]?.thumbnail}
+                      controls
+                      className="w-full h-full object-contain"
+                      preload="auto"
+                      autoPlay
+                    >
+                      Trình duyệt không hỗ trợ video.
+                    </video>
+                  </div>
                 )}
               </div>
 
