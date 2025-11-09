@@ -42,10 +42,29 @@ import {
 } from "lucide-react"
 import { EmailVerificationService } from "@/lib/auth/email-verification"
 import { auth } from "@/lib/firebase"
-import { User as FirebaseUser, sendEmailVerification } from "firebase/auth"
+import {
+  User as FirebaseUser,
+  sendEmailVerification,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  deleteUser,
+  GoogleAuthProvider,
+  reauthenticateWithPopup
+} from "firebase/auth"
 import { toastService } from "@/lib/ui/toast-service"
 import { validateImageFile } from "@/lib/client/firebase-storage"
 import { cn } from "@/lib/utils"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface EmailVerificationResult {
   success: boolean
@@ -73,6 +92,19 @@ export default function SettingsPage() {
     allowMessages: true
   })
   const [theme, setTheme] = React.useState('system')
+
+  // Password change state
+  const [passwordData, setPasswordData] = React.useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false)
+
+  // Delete account state
+  const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false)
+  const [deletePasswordConfirm, setDeletePasswordConfirm] = React.useState('')
+  const [isDeletingAccount, setIsDeletingAccount] = React.useState(false)
 
   // Form data state
   const [formData, setFormData] = React.useState({
@@ -102,6 +134,15 @@ export default function SettingsPage() {
   const [timeUntilCanResend, setTimeUntilCanResend] = React.useState(0)
   const [lastSentTime, setLastSentTime] = React.useState(0)
   const [rateLimitExpiry, setRateLimitExpiry] = React.useState(0)
+
+  // Check login provider (Google vs Email/Password)
+  const isPasswordProvider = React.useMemo(() => {
+    return firebaseUser?.providerData.some(provider => provider.providerId === 'password') ?? false
+  }, [firebaseUser])
+
+  const isGoogleProvider = React.useMemo(() => {
+    return firebaseUser?.providerData.some(provider => provider.providerId === 'google.com') ?? false
+  }, [firebaseUser])
 
   // Listen to Firebase Auth state for email verification status
   React.useEffect(() => {
@@ -184,8 +225,7 @@ export default function SettingsPage() {
 
       // Update user context with new avatar
       updateUser({
-        avatar: result.avatarUrl,
-        photoURL: result.avatarUrl
+        avatar: result.avatarUrl
       })
 
       // Clear preview
@@ -322,6 +362,177 @@ export default function SettingsPage() {
 
     } finally {
       setIsResendingEmail(false);
+    }
+  }
+
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toastService.error('Lỗi', 'Vui lòng điền đầy đủ thông tin')
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toastService.error('Lỗi', 'Mật khẩu mới phải có ít nhất 6 ký tự')
+      return
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toastService.error('Lỗi', 'Mật khẩu xác nhận không khớp')
+      return
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      toastService.error('Lỗi', 'Mật khẩu mới phải khác mật khẩu hiện tại')
+      return
+    }
+
+    setIsChangingPassword(true)
+
+    try {
+      const currentUser = auth.currentUser
+      if (!currentUser || !currentUser.email) {
+        throw new Error('Không tìm thấy thông tin người dùng')
+      }
+
+      // Re-authenticate user with current password
+      const credential = EmailAuthProvider.credential(
+        currentUser.email,
+        passwordData.currentPassword
+      )
+
+      await reauthenticateWithCredential(currentUser, credential)
+
+      // Update password
+      await updatePassword(currentUser, passwordData.newPassword)
+
+      // Clear form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+
+      toastService.success('Thành công', 'Đã cập nhật mật khẩu thành công!')
+
+    } catch (error: any) {
+      console.error('Change password error:', error)
+
+      let errorMessage = 'Không thể thay đổi mật khẩu'
+
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        errorMessage = 'Mật khẩu hiện tại không đúng'
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Mật khẩu mới quá yếu'
+      } else if (error.code === 'auth/requires-recent-login') {
+        errorMessage = 'Vui lòng đăng nhập lại để thay đổi mật khẩu'
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Lỗi kết nối mạng. Vui lòng thử lại'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      toastService.error('Lỗi', errorMessage)
+
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true)
+
+    try {
+      const currentUser = auth.currentUser
+      if (!currentUser || !currentUser.email) {
+        throw new Error('Không tìm thấy thông tin người dùng')
+      }
+
+      // Re-authenticate based on provider type
+      if (isGoogleProvider && !isPasswordProvider) {
+        // Google user: Re-authenticate with popup
+        const provider = new GoogleAuthProvider()
+        await reauthenticateWithPopup(currentUser, provider)
+      } else if (isPasswordProvider) {
+        // Email/Password user: Re-authenticate with password
+        if (!deletePasswordConfirm) {
+          toastService.error('Lỗi', 'Vui lòng nhập mật khẩu để xác nhận')
+          return
+        }
+
+        const credential = EmailAuthProvider.credential(
+          currentUser.email,
+          deletePasswordConfirm
+        )
+
+        await reauthenticateWithCredential(currentUser, credential)
+      } else {
+        throw new Error('Không xác định được phương thức đăng nhập')
+      }
+
+      // Call API to cleanup user data (places, reviews, etc.)
+      try {
+        const token = await currentUser.getIdToken()
+        const response = await fetch('/api/users/delete-account', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          const result = await response.json()
+          throw new Error(result.error || 'Không thể xóa dữ liệu tài khoản')
+        }
+      } catch (apiError: any) {
+        console.error('Delete account API error:', apiError)
+        // Continue with auth deletion even if API fails (user data cleanup can be handled later)
+      }
+
+      // Delete Firebase Auth user
+      await deleteUser(currentUser)
+
+      toastService.success('Thành công', 'Tài khoản đã được xóa vĩnh viễn')
+
+      // Redirect to home
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 1500)
+
+    } catch (error: any) {
+      console.error('Delete account error:', error)
+
+      let errorMessage = 'Không thể xóa tài khoản'
+
+      // Handle popup cancelled
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        // User cancelled, just close dialog silently
+        setIsDeletingAccount(false)
+        setDeleteAccountOpen(false)
+        setDeletePasswordConfirm('')
+        return
+      }
+
+      // Handle other errors
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        errorMessage = 'Mật khẩu không đúng'
+      } else if (error.code === 'auth/requires-recent-login') {
+        errorMessage = 'Vui lòng đăng nhập lại để xóa tài khoản'
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Lỗi kết nối mạng. Vui lòng thử lại'
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Popup bị chặn. Vui lòng cho phép popup từ trang này'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      toastService.error('Lỗi', errorMessage)
+
+    } finally {
+      setIsDeletingAccount(false)
+      setDeleteAccountOpen(false)
+      setDeletePasswordConfirm('')
     }
   }
 
@@ -771,14 +982,42 @@ export default function SettingsPage() {
 
                 {/* Change Password */}
                 <div className="glass-card p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <Key className="w-5 h-5 text-indigo-600" />
+                  <div className="mb-8">
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <h2 className="text-2xl font-bold text-slate-900">Thay đổi mật khẩu</h2>
+                      <span className="text-sm text-slate-500">Bảo mật tài khoản</span>
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900">Thay đổi mật khẩu</h2>
+                    <div className="h-1 w-20 bg-gradient-to-r from-brand-green to-brand-gold rounded-full"></div>
                   </div>
 
-                  <div className="space-y-4">
+                  {/* Google Login Info */}
+                  {isGoogleProvider && !isPasswordProvider && (
+                    <div className="relative p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 mb-6 overflow-hidden">
+                      {/* Subtle pattern overlay */}
+                      <div className="absolute inset-0 opacity-[0.03]" style={{
+                        backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)',
+                        backgroundSize: '32px 32px'
+                      }}></div>
+
+                      <div className="relative">
+                        <div className="mb-4">
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full border border-blue-200">
+                            <span className="text-xs font-medium text-blue-900">Đăng nhập Google</span>
+                          </div>
+                        </div>
+                        <p className="text-slate-700 mb-3 leading-relaxed">
+                          Tài khoản của bạn được quản lý bởi Google. Mật khẩu và bảo mật được xử lý thông qua hệ thống Google Authentication.
+                        </p>
+                        <p className="text-sm text-slate-600">
+                          Nếu bạn cần đổi mật khẩu, vui lòng truy cập <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline font-medium">Cài đặt bảo mật Google</a>.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Password Change Form - Only for Email/Password users */}
+                  {isPasswordProvider && (
+                    <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="currentPassword" className="text-slate-700 font-medium">Mật khẩu hiện tại</Label>
                       <Input
@@ -786,6 +1025,9 @@ export default function SettingsPage() {
                         type="password"
                         placeholder="Nhập mật khẩu hiện tại"
                         className="glass-subtle border-white/20 h-12"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        disabled={isChangingPassword}
                       />
                     </div>
                     <div className="space-y-2">
@@ -793,8 +1035,11 @@ export default function SettingsPage() {
                       <Input
                         id="newPassword"
                         type="password"
-                        placeholder="Nhập mật khẩu mới"
+                        placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                         className="glass-subtle border-white/20 h-12"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                        disabled={isChangingPassword}
                       />
                     </div>
                     <div className="space-y-2">
@@ -804,13 +1049,34 @@ export default function SettingsPage() {
                         type="password"
                         placeholder="Nhập lại mật khẩu mới"
                         className="glass-subtle border-white/20 h-12"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        disabled={isChangingPassword}
                       />
                     </div>
-                    <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md">
-                      <Key className="w-4 h-4 mr-2" />
-                      Cập nhật mật khẩu
+                    <Button
+                      onClick={handleChangePassword}
+                      disabled={isChangingPassword}
+                      className="bg-gradient-to-r from-brand-green to-brand-gold hover:from-green-700 hover:to-amber-600 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      {isChangingPassword ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Đang cập nhật...
+                        </>
+                      ) : (
+                        'Cập nhật mật khẩu'
+                      )}
                     </Button>
-                  </div>
+                    </div>
+                  )}
+
+                  {/* No password account notice */}
+                  {!isPasswordProvider && !isGoogleProvider && (
+                    <div className="p-4 bg-slate-100 rounded-lg text-sm text-slate-600">
+                      Đang tải thông tin đăng nhập...
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -961,25 +1227,58 @@ export default function SettingsPage() {
             {/* Danger Zone */}
             {activeSection === 'danger' && (
               <div className="glass-card p-8 border-2 border-red-200/50 animate-in fade-in slide-in-up duration-300">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <h2 className="text-2xl font-bold text-red-700">Vùng nguy hiểm</h2>
+                    <span className="text-sm text-red-500">Hành động không thể hoàn tác</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-red-700">Vùng nguy hiểm</h2>
+                  <div className="h-1 w-20 bg-gradient-to-r from-red-600 to-rose-600 rounded-full"></div>
                 </div>
 
-                <div className="p-6 bg-red-50/50 rounded-xl border border-red-200/50">
-                  <h3 className="font-medium text-red-900 mb-2">Xóa tài khoản</h3>
-                  <p className="text-sm text-red-700 mb-4">
-                    Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.
-                  </p>
-                  <Button
-                    variant="destructive"
-                    className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md"
-                  >
-                    <AlertTriangle className="w-4 h-4 mr-2" />
-                    Xóa tài khoản vĩnh viễn
-                  </Button>
+                <div className="relative p-8 bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl border-2 border-red-100 overflow-hidden">
+                  {/* Warning pattern overlay */}
+                  <div className="absolute inset-0 opacity-[0.02]" style={{
+                    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 11px)',
+                  }}></div>
+
+                  <div className="relative">
+                    <div className="mb-4">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full border-2 border-red-200">
+                        <span className="text-sm font-bold text-red-700">CẢNH BÁO</span>
+                      </div>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-red-900 mb-3">Xóa tài khoản vĩnh viễn</h3>
+                    <p className="text-slate-700 mb-6 leading-relaxed">
+                      Hành động này sẽ xóa vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn. Quá trình này không thể hoàn tác sau khi hoàn thành.
+                    </p>
+
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 mb-6 border border-red-100">
+                      <p className="text-sm font-medium text-slate-900 mb-2">Các dữ liệu sẽ bị xóa:</p>
+                      <ul className="space-y-1.5 text-sm text-slate-600">
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                          Thông tin cá nhân và hồ sơ
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                          Địa điểm đã tạo và đánh giá
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                          Danh sách yêu thích và lưu trữ
+                        </li>
+                      </ul>
+                    </div>
+
+                    <Button
+                      onClick={() => setDeleteAccountOpen(true)}
+                      variant="destructive"
+                      className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-lg transition-all duration-200"
+                    >
+                      Xóa tài khoản của tôi
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1018,6 +1317,120 @@ export default function SettingsPage() {
           </div>
         </div>
       </main>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader className="space-y-4">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 rounded-full">
+                <span className="text-xs font-bold text-red-700">XÁC NHẬN XÓA TÀI KHOẢN</span>
+              </div>
+              <AlertDialogTitle className="text-2xl font-bold text-slate-900">
+                Bạn có chắc chắn muốn tiếp tục?
+              </AlertDialogTitle>
+            </div>
+
+            <AlertDialogDescription className="space-y-5">
+              <div className="p-4 bg-red-50 rounded-xl border-l-4 border-red-500">
+                <p className="text-sm font-medium text-red-900">
+                  Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn:
+                </p>
+              </div>
+
+              <ul className="space-y-3 text-sm text-slate-700">
+                <li className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2"></div>
+                  <span>Tài khoản và thông tin cá nhân của bạn</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2"></div>
+                  <span>Tất cả địa điểm và đánh giá bạn đã đóng góp</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2"></div>
+                  <span>Danh sách địa điểm yêu thích và đã lưu</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2"></div>
+                  <span>Toàn bộ lịch sử hoạt động trên hệ thống</span>
+                </li>
+              </ul>
+
+              <div className="space-y-3 pt-4 border-t">
+                {/* Google User: No password needed */}
+                {isGoogleProvider && !isPasswordProvider && (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                      <p className="text-sm font-medium text-blue-900 mb-2">
+                        Xác thực với Google
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        Bạn sẽ được yêu cầu đăng nhập lại với Google để xác nhận việc xóa tài khoản. Đây là bước bảo mật quan trọng.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Email/Password User: Password confirmation */}
+                {isPasswordProvider && (
+                  <div className="space-y-3">
+                    <Label htmlFor="deletePasswordConfirm" className="text-sm font-semibold text-slate-900">
+                      Nhập mật khẩu của bạn để xác nhận
+                    </Label>
+                    <Input
+                      id="deletePasswordConfirm"
+                      type="password"
+                      placeholder="••••••••"
+                      value={deletePasswordConfirm}
+                      onChange={(e) => setDeletePasswordConfirm(e.target.value)}
+                      disabled={isDeletingAccount}
+                      className="h-12 text-base"
+                      autoFocus
+                    />
+                    <p className="text-xs text-slate-500">
+                      Việc xác nhận này giúp đảm bảo chỉ bạn mới có thể xóa tài khoản.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="gap-3 sm:gap-3">
+            <AlertDialogCancel
+              onClick={() => {
+                setDeleteAccountOpen(false)
+                setDeletePasswordConfirm('')
+              }}
+              disabled={isDeletingAccount}
+              className="flex-1"
+            >
+              Hủy bỏ
+            </AlertDialogCancel>
+            <Button
+              onClick={handleDeleteAccount}
+              disabled={
+                isDeletingAccount ||
+                (isPasswordProvider && !deletePasswordConfirm) // Only require password for email/password users
+              }
+              variant="destructive"
+              className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:opacity-50"
+            >
+              {isDeletingAccount ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {isGoogleProvider ? 'Đang xác thực...' : 'Đang xóa...'}
+                </>
+              ) : (
+                <>
+                  {isGoogleProvider && !isPasswordProvider ? 'Xác nhận với Google' : 'Xóa tài khoản'}
+                </>
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>
