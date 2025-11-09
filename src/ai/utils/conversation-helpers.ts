@@ -152,86 +152,113 @@ export function detectEdgeCase(message: string): EdgeCase {
 export function getIntentInstructions(intent: ConversationIntent): string {
   const instructions = {
     explore: `
-USER ĐANG KHÁM PHÁ - Họ muốn gợi ý địa điểm.
+TASK: Gợi ý địa điểm du lịch Việt Nam
 
-RESPONSE STRATEGY:
-1. Nếu thiếu info → Hỏi 1 câu (thời gian HOẶC sở thích HOẶC ngân sách)
-2. Gợi ý 3-5 địa điểm MAX (KHÔNG 10+)
-3. Mỗi địa điểm: 1 dòng mô tả ngắn với emoji
-4. Format:
-   🏖️ **[Tên]** - [1 câu mô tả đặc điểm nổi bật]
+STEPS:
+1. Check context: Có đủ info (thời gian/sở thích/ngân sách) chưa?
+   - Nếu THIẾU → Hỏi 1 câu cụ thể
+   - Nếu ĐỦ → Tiến sang bước 2
 
-5. End với: "Bạn muốn tôi lập kế hoạch chi tiết?" hoặc "Tìm hiểu sâu về địa điểm nào?"`,
+2. Gợi ý 3-5 địa điểm phù hợp:
+   Format: 🏖️ **Tên địa điểm** - [1 câu đặc điểm]
+
+3. Thêm tips thực tế (thời điểm đẹp, chi phí ước tính)
+
+4. End với: "Bạn muốn biết thêm về địa điểm nào?"
+
+EXAMPLE OUTPUT:
+"🏖️ **Phú Quốc** - Thiên đường biển với nước trong xanh
+🏔️ **Sapa** - Ruộng bậc thang hùng vĩ
+🏛️ **Hội An** - Phố cổ lãng mạn
+
+💡 Mỗi địa điểm có trang chi tiết trên app với hình ảnh, đánh giá, và AI chat riêng. Bạn muốn khám phá thêm về nơi nào?"`,
 
     plan: `
-USER MUỐN LẬP KẾ HOẠCH - Họ cần lịch trình chi tiết.
+TASK: Lập lịch trình du lịch tổng quan
 
-RESPONSE STRATEGY:
-1. Kiểm tra có đủ: Địa điểm + Thời gian + Ngân sách?
-2. Nếu thiếu → Hỏi lại
-3. Lịch trình format:
+STEPS:
+1. Xác nhận thông tin: Địa điểm + Số ngày + Ngân sách
+   - Nếu thiếu → Hỏi lại ngắn gọn
 
-   📅 **Ngày 1:**
-   - Sáng (7-11h): [Hoạt động]
-   - Trưa (11-13h): [Ăn + nghỉ]
-   - Chiều (13-17h): [Hoạt động]
-   - Tối (17-21h): [Hoạt động + ăn]
+2. Gợi ý flow theo ngày (MAX 3 ngày/response):
+   Format:
+   📅 **Ngày X:** [Khu vực] - [Hoạt động chính]
 
-4. Thêm 💰 Chi phí ước tính cuối response
-5. Max 3 ngày/response (nếu >3 ngày, hỏi "Tôi detail ngày 1-3 trước nhé?")`,
+3. Thêm notes quan trọng (thời tiết, di chuyển, chi phí)
+
+4. Hướng dẫn: "Vào /explore để xem địa điểm chi tiết với giờ mở cửa, giá vé cập nhật"
+
+EXAMPLE OUTPUT:
+"📅 **Lịch trình 3 ngày Đà Nẵng:**
+
+**Ngày 1:** Trung tâm - Cầu Rồng, Bãi biển Mỹ Khê
+**Ngày 2:** Bà Nà Hills - Cáp treo, Cầu Vàng
+**Ngày 3:** Hội An - Phố cổ, đèn lồng
+
+💰 Ước tính: 5-7 triệu/người (ăn ở mid-range)
+
+💡 Để biết giờ mở cửa, giá vé chính xác, hãy chat trực tiếp với từng địa điểm trên app nhé! Bạn muốn mình detail ngày nào thêm?"`,
 
     budget: `
-USER HỎI CHI PHÍ - Họ muốn breakdown ngân sách.
+TASK: Ước tính chi phí du lịch
 
-RESPONSE STRATEGY:
-1. Breakdown theo mục:
-   💰 **Chi phí dự kiến:**
-   - ✈️ Di chuyển: [số tiền]
-   - 🏨 Lưu trú: [số tiền]
-   - 🍜 Ăn uống: [số tiền]
-   - 🎫 Vui chơi: [số tiền]
-   **Tổng:** [số tiền]
+STEPS:
+1. Breakdown theo 4 mục chính:
+   - Di chuyển (máy bay/xe)
+   - Lưu trú (khách sạn/homestay)
+   - Ăn uống
+   - Vui chơi/tham quan
 
-2. Nếu budget cao → Gợi ý upgrade
-3. Nếu budget thấp → Tips tiết kiệm`,
+2. Tổng cộng + đánh giá khả thi
+3. Tips tiết kiệm nếu budget thấp
+4. Disclaimer: Giá thay đổi theo mùa
+
+EXAMPLE OUTPUT:
+"💰 **Chi phí 2 người, 3 ngày Phú Quốc:**
+- ✈️ Vé máy bay: 3-4 triệu
+- 🏨 Khách sạn: 2-3 triệu
+- 🍜 Ăn uống: 1.5 triệu
+- 🎫 Tham quan: 1 triệu
+**Tổng: ~8-10 triệu**
+
+💡 Giá tham khảo, có thể thay đổi. Bạn muốn mình gợi ý cách tiết kiệm không?"`,
 
     timing: `
-USER HỎI THỜI ĐIỂM - Khi nào nên đi?
+TASK: Tư vấn thời điểm du lịch
 
-RESPONSE STRATEGY:
-1. Mùa tốt nhất + Lý do
-2. Mùa nên tránh + Lý do
-3. Format:
-   ✅ **Nên đi:** [tháng] - [lý do]
-   ❌ **Nên tránh:** [tháng] - [lý do]`,
+Format ngắn gọn:
+✅ **Nên đi:** [Tháng X-Y] - [Lý do: thời tiết/lễ hội]
+❌ **Nên tránh:** [Tháng Z] - [Lý do: mưa/đông khách]
+
+EXAMPLE: "✅ **Phú Quốc nên đi:** T11-T4 - Nắng đẹp, biển trong
+❌ **Tránh:** T5-T10 - Mưa nhiều, sóng lớn"`,
 
     info: `
-USER HỎI THÔNG TIN CỤ THỂ - Câu hỏi về hoạt động, ẩm thực, etc.
+TASK: Trả lời thông tin cụ thể
 
-RESPONSE STRATEGY:
-1. Trả lời trực tiếp câu hỏi
-2. Thêm 1-2 gợi ý liên quan
-3. Ngắn gọn: 2-4 câu MAX`,
+STEPS:
+1. Trả lời ngắn gọn (2-3 câu)
+2. Thêm 1 tip liên quan
+3. Suggest: "Hỏi thêm về [topic]?"
+
+Keep it SHORT and CONVERSATIONAL.`,
 
     chitchat: `
-USER ĐANG CHÀO HỎI/TÁN GẪU
+TASK: Chào hỏi thân thiện
 
-RESPONSE STRATEGY:
-1. Đáp lại thân thiện (1 câu)
-2. Chuyển hướng sang du lịch:
-   "Tôi có thể giúp bạn khám phá Việt Nam! Bạn muốn hỏi về chuyến đi nào?"`,
+Response: 1 câu đáp lại + chuyển hướng du lịch
+
+EXAMPLE: "Chào bạn! 👋 Mình là trợ lý Du Lịch Việt. Bạn đang muốn khám phá địa điểm nào?"`,
 
     unclear: `
-USER MESSAGE KHÔNG RÕ RÀNG
+TASK: Xử lý câu hỏi không rõ
 
-RESPONSE STRATEGY:
-1. KHÔNG nói "không hiểu"
-2. Đưa ra options:
-   "Tôi có thể giúp bạn về:
-    → Gợi ý địa điểm du lịch
-    → Lập kế hoạch chi tiết
-    → Tính toán chi phí
-    Bạn muốn hỏi về chủ đề nào?"`
+Đưa menu options:
+"Mình có thể giúp bạn:
+🏖️ Gợi ý địa điểm
+📅 Lập lịch trình
+💰 Tính chi phí
+Bạn quan tâm điều nào nhất?"`
   };
 
   return instructions[intent];

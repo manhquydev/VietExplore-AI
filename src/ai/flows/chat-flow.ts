@@ -76,63 +76,35 @@ export const chatFlow = ai.defineFlow(
       // ============================================================================
       const intentInstructions = getIntentInstructions(intent);
 
-      const systemPrompt = `
-[PERSONA]
-Bạn là AI Travel Expert của "Du Lịch Việt" - chuyên gia tư vấn du lịch Việt Nam thông minh, thân thiện, và hiệu quả.
+      // ✨ OPTIMIZED PROMPT - Based on Gemini 2.5 Flash best practices
+      const systemPrompt = `Bạn là Du Lịch Việt AI Assistant - chuyên gia tư vấn du lịch Việt Nam.
 
-[TASK]
-Nhiệm vụ của bạn:
-- Hiểu nhu cầu du lịch của người dùng qua hội thoại tự nhiên
-- Đưa ra gợi ý phù hợp và thực tế dựa trên database địa điểm Việt Nam
-- Lập kế hoạch chi tiết khi cần
-- LUÔN hỏi lại nếu thiếu thông tin quan trọng (theo nguyên tắc Progressive Disclosure)
+ROLE & CAPABILITIES:
+Bạn giúp người dùng khám phá Việt Nam bằng cách:
+- Gợi ý địa điểm nổi tiếng theo sở thích
+- Tư vấn lịch trình tổng quan
+- Ước tính ngân sách và mùa du lịch
+- Hướng dẫn sử dụng app để tìm thông tin chi tiết
 
-[CONTEXT]
-${formattedContext || '(Đây là tin nhắn đầu tiên)'}
+${formattedContext ? `CONVERSATION HISTORY:\n${formattedContext}\n` : ''}
 
-[FORMAT RULES]
-
-1. PROGRESSIVE DISCLOSURE - Hỏi 1 câu/lần:
-   ❌ WRONG: "Bạn có bao nhiêu ngày? Ngân sách? Đi với ai?"
-   ✅ RIGHT: "Bạn có bao nhiêu ngày cho chuyến đi?"
-            → (User trả lời)
-            → "Ngân sách dự kiến của bạn?"
-
-2. RESPONSE LENGTH - Dynamic based on intent:
-   - Simple/Chitchat: 1-2 câu
-   - Explore: 3-5 bullets max (KHÔNG 10+)
-   - Planning: Chi tiết theo ngày, nhưng max 7-10 dòng
-   - Info: 2-4 câu
-
-3. STRUCTURE - Luôn dùng:
-   - Emojis để highlight (🏖️ 🏔️ 💰 📅 ✈️)
-   - Bullets hoặc numbered lists cho nhiều items
-   - **Bold** cho keywords quan trọng
-   - Line breaks giữa sections
-
-4. FALLBACK - KHÔNG BAO GIỜ nói "không hiểu":
-   ❌ WRONG: "Xin lỗi, tôi không hiểu câu hỏi của bạn"
-   ✅ RIGHT: "Tôi có thể giúp bạn về:
-              → Gợi ý địa điểm du lịch
-              → Lập kế hoạch chi tiết
-              → Tính toán chi phí
-              Bạn muốn tôi giúp việc nào?"
-
-5. ALWAYS END với 1-2 follow-up options phù hợp context:
-   "**Tiếp theo:**
-    → [Action 1]
-    → [Action 2]"
-
-${intentInstructions}
-
-[USER MESSAGE]
+USER QUESTION:
 ${input.message}
 
-[RESPONSE GUIDELINES]
-- Viết bằng tiếng Việt tự nhiên, thân thiện
-- Dựa trên thông tin có sẵn, KHÔNG bịa đặt
-- Nếu không chắc chắn → Hỏi lại hoặc gợi ý kiểm tra nguồn chính thức
-- Luôn kết thúc với câu hỏi hoặc call-to-action
+RESPONSE GUIDELINES (Intent: ${intent}):
+${intentInstructions}
+
+OUTPUT FORMAT:
+- Dùng tiếng Việt tự nhiên, giọng điệu thân thiện
+- Emoji phù hợp cho highlight (🏖️ 🏔️ 💰 📅)
+- Markdown cho structure (**, bullets, numbers)
+- Độ dài: 100-250 từ (ngắn gọn, súc tích)
+- Kết thúc bằng 1 câu hỏi mở để tiếp tục hội thoại
+
+IMPORTANT:
+- Base trên kiến thức du lịch Việt Nam
+- Hướng dẫn user đến /explore khi cần thông tin cập nhật
+- Luôn generate response đầy đủ, KHÔNG trả về empty
 `;
 
       // ============================================================================
@@ -140,22 +112,57 @@ ${input.message}
       // ============================================================================
       console.log('[CHAT-FLOW] Calling Gemini 2.5 Flash...');
 
-      const { text } = await ai.generate({
+      // ⚙️ OPTIMIZED CONFIG - Based on Gemini 2.5 Flash best practices
+      const result = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
         prompt: systemPrompt,
         config: {
-          temperature: 0.7,      // Balance creativity and consistency
-          maxOutputTokens: 800,  // Limit response length (cost optimization)
+          // Temperature: 0.5 cho conversational AI (balance giữa creative & consistent)
+          temperature: 0.5,
+
+          // ⚠️ CRITICAL: Gemini 2.5 Flash uses THINKING TOKENS (1000-2000 internally)
+          // Must set high enough for: thinkingTokens (1500) + actualOutput (500) = 2000+
+          // Reference: https://github.com/googleapis/python-genai/issues/811
+          // Setting to 4000 to match place-chat-flow (working config)
+          maxOutputTokens: 4000,
+
+          // TopK/TopP: Standard values cho quality output
           topK: 40,
           topP: 0.9,
         }
       });
 
-      const responseText = text || 'Xin lỗi, tôi không thể trả lời lúc này. Vui lòng thử lại sau.';
+      // 🔍 DEBUG: Log raw result structure
+      console.log('[CHAT-FLOW] Raw Gemini result:', {
+        hasText: 'text' in result,
+        textType: typeof result.text,
+        textValue: result.text?.substring(0, 100),
+        hasUsage: 'usage' in result,
+        finishReason: result.finishReason,
+        finishMessage: result.finishMessage,
+        messageContent: result.message?.[0]?.content?.[0]?.text?.substring(0, 100),
+        resultKeys: Object.keys(result)
+      });
+
+      // 🔄 Extract text - Try multiple paths for compatibility
+      const textFromDirect = result.text;
+      const textFromMessage = result.message?.[0]?.content?.[0]?.text;
+      const extractedText = textFromDirect || textFromMessage;
+
+      // 🔍 DEBUG: Log extraction attempts
+      console.log('[CHAT-FLOW] Text extraction:', {
+        fromDirect: textFromDirect ? `${textFromDirect.length} chars` : 'empty/undefined',
+        fromMessage: textFromMessage ? `${textFromMessage.length} chars` : 'empty/undefined',
+        finalText: extractedText ? `${extractedText.length} chars` : 'NONE',
+        preview: extractedText?.substring(0, 150) || '(NO TEXT EXTRACTED)'
+      });
+
+      const responseText = extractedText || 'Xin lỗi, tôi không thể trả lời lúc này. Vui lòng thử lại sau.';
 
       console.log('[CHAT-FLOW] Success:', {
         intent,
         responseLength: responseText.length,
+        isFallback: responseText.startsWith('Xin lỗi'),
         hasFollowUp: responseText.includes('Tiếp theo') || responseText.includes('→')
       });
 

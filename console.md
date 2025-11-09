@@ -1,0 +1,1 @@
+C:\Users\manhq\Downloads\DuLichViet\VietExplore-AI\src\lib\client\api.ts:52 API Response for /ai/chat: {status: 200, text: '{"response":"Xin lỗi, tôi không thể trả lời lúc nà…06.787Z"},"timestamp":"2025-11-09T09:08:12.859Z"}'}
