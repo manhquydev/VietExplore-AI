@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/server/firebaseAdmin';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
 import { FieldValue } from 'firebase-admin/firestore';
-import { EnhancedNotificationService } from '@/lib/server/enhanced-notification-service';
+import { EnhancedNotificationService, NotificationType } from '@/lib/server/enhanced-notification-service';
 import { CacheService } from '@/lib/server/cache-service';
 import { VersioningService } from '@/lib/server/versioning-service';
 import { SoftDeleteService } from '@/lib/server/soft-delete-service';
@@ -213,14 +213,45 @@ export async function PATCH(
       });
 
     } else if (action === 'release') {
+      const now = new Date().toISOString();
+
+      // Get moderation item data before release
+      const itemDoc = await adminDb.collection('moderation_queue').doc(itemId).get();
+      const itemData = itemDoc.data();
+
       // Release the claim
       await adminDb.collection('moderation_queue').doc(itemId).update({
         status: 'pending',
         claimedBy: FieldValue.delete(),
         claimedAt: FieldValue.delete(),
         claimExpiresAt: FieldValue.delete(),
-        updatedAt: new Date().toISOString()
+        updatedAt: now
       });
+
+      // FIX GAP #3: Notify creator about claim release
+      if (itemData?.submittedBy && (itemData?.contentType === 'place' || itemData?.itemType === 'place_edit' || itemData?.itemType === 'new_place')) {
+        const contentId = itemData.contentId || itemData.itemId;
+        const placeDoc = await adminDb.collection('places').doc(contentId).get();
+        const placeData = placeDoc.exists ? placeDoc.data() : null;
+
+        if (placeData) {
+          console.log(`[NOTIFICATION] 🔔 Sending CONTENT_RELEASED to creator ${itemData.submittedBy} for place ${contentId}`);
+          try {
+            await EnhancedNotificationService.sendNotification(
+              itemData.submittedBy,
+              NotificationType.CONTENT_RELEASED,
+              {
+                contentName: placeData.name || 'Địa điểm',
+                itemId: itemId,
+              }
+            );
+            console.log(`[NOTIFICATION] ✅ Release notification sent successfully`);
+          } catch (notifError) {
+            console.error(`[NOTIFICATION] ❌ Failed to send release notification:`, notifError);
+            // Don't block release flow if notification fails
+          }
+        }
+      }
 
       return NextResponse.json({
         success: true,
@@ -899,6 +930,45 @@ export async function PUT(
           moderator.fullName || moderator.email,
           reviewNotes || 'Không có lý do cụ thể'
         );
+
+        // FIX GAP #1: Notify creator about escalation (transparency)
+        const placeData = placeDocForUpdate?.data();
+
+        console.log('========================================');
+        console.log('[MODERATION] ESCALATE ACTION - NOTIFY CREATOR');
+        console.log('========================================');
+        console.log('Place ID:', contentId);
+        console.log('Place Name:', placeData?.name);
+        console.log('Created By:', placeData?.createdBy);
+        console.log('Moderator:', moderator.id, moderator.email);
+        console.log('Escalation Reason:', reviewNotes);
+        console.log('========================================');
+
+        if (placeData?.createdBy) {
+          console.log(`[NOTIFICATION] 🔔 Sending CONTENT_ESCALATED notification to creator ${placeData.createdBy}`);
+          try {
+            await EnhancedNotificationService.sendNotification(
+              placeData.createdBy,
+              NotificationType.CONTENT_ESCALATED,
+              {
+                contentName: placeData.name || 'Địa điểm',
+                reason: reviewNotes || 'Cần xem xét từ quản trị viên cấp cao',
+                escalationId: itemId,
+              }
+            );
+            console.log('[NOTIFICATION] ✅ Escalation notification sent to creator successfully');
+          } catch (notifError: any) {
+            console.error('========================================');
+            console.error('[NOTIFICATION] ❌ ESCALATION NOTIFICATION ERROR');
+            console.error('========================================');
+            console.error('Error message:', notifError.message);
+            console.error('Error stack:', notifError.stack);
+            console.error('========================================');
+            // Don't block escalation flow if notification fails
+          }
+        } else {
+          console.error('[NOTIFICATION] ⚠️ WARNING: placeData.createdBy is missing for escalation!');
+        }
       } else if (action === 'request_edit') {
         // Send needs_revision notification to submitter
         const placeData = placeDocForUpdate?.data();
@@ -934,6 +1004,43 @@ export async function PUT(
           }
         } else {
           console.error('[MODERATION] ⚠️ WARNING: placeData.createdBy is missing!');
+        }
+      } else if (action === 'direct_delete') {
+        // FIX GAP #4 (CRITICAL): Notify owner about direct deletion
+        const placeData = placeDocForUpdate?.data();
+
+        console.log('========================================');
+        console.log('[MODERATION] DIRECT_DELETE ACTION - NOTIFY OWNER');
+        console.log('========================================');
+        console.log('Place ID:', contentId);
+        console.log('Place Name:', placeData?.name);
+        console.log('Created By:', placeData?.createdBy);
+        console.log('Moderator:', moderator.id, moderator.email);
+        console.log('Deletion Reason:', reviewNotes);
+        console.log('========================================');
+
+        if (placeData?.createdBy) {
+          console.log(`[NOTIFICATION] 🔔 Sending PLACE_HIDDEN notification to owner ${placeData.createdBy} for place ${contentId}`);
+          try {
+            await EnhancedNotificationService.notifyPlaceHidden(
+              contentId,
+              placeData.name || 'Địa điểm',
+              placeData.createdBy,
+              reviewNotes || 'Xóa bởi kiểm duyệt viên',
+              itemId // reportId for appeal link
+            );
+            console.log('[NOTIFICATION] ✅ Place hidden notification sent to owner successfully');
+          } catch (notifError: any) {
+            console.error('========================================');
+            console.error('[NOTIFICATION] ❌ PLACE_HIDDEN NOTIFICATION ERROR');
+            console.error('========================================');
+            console.error('Error message:', notifError.message);
+            console.error('Error stack:', notifError.stack);
+            console.error('========================================');
+            // Don't block deletion flow if notification fails
+          }
+        } else {
+          console.error('[NOTIFICATION] ⚠️ WARNING: placeData.createdBy is missing for direct_delete!');
         }
       }
     }

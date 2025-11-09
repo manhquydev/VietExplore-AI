@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Hero } from '@/components/hero';
-import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
 import DestinationGrid from '@/components/destination-grid';
 import { usePublicHomepageSettings } from '@/hooks/use-homepage-settings';
@@ -18,11 +17,6 @@ import { useThesisPopupSettings } from '@/hooks/use-thesis-popup';
 export default function Home() {
   const { homepageSettings, loading: homepageLoading } = usePublicHomepageSettings()
   const { settings: thesisPopupSettings, loading: thesisPopupLoading } = useThesisPopupSettings()
-  
-  const handleSearch = (query: string, filters: any) => {
-    console.log('Searching:', query, filters)
-    // Implement search logic
-  }
 
   // Convert homepage settings to regions array format
   const regions = Object.entries(homepageSettings.regions).map(([key, region]) => ({
@@ -44,24 +38,6 @@ export default function Home() {
       <main>
         {/* Hero Section */}
         <Hero />
-
-        {/* Quick Search - Window to Discovery - Mobile Optimized */}
-        <section className="container py-8 sm:py-12 md:py-16 lg:py-20">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8 sm:mb-10 md:mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-5 md:mb-6 text-text leading-tight">
-                Cửa sổ{" "}
-                <span className="gradient-text">
-                  khám phá
-                </span>
-              </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-muted leading-relaxed px-4 sm:px-0">
-                Mở ra hàng ngàn điểm đến được tin cậy khắp đất nước Việt Nam
-              </p>
-            </div>
-            <SearchBar onSearch={handleSearch} />
-          </div>
-        </section>
 
         {/* Regions - Glass Windows to Vietnam - Mobile Optimized */}
         <section className="container py-8 sm:py-12 md:py-16 lg:py-20">

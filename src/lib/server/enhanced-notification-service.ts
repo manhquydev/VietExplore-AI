@@ -11,6 +11,7 @@
 
 import { getAdminDb, getRealtimeDb } from './firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { generatePlaceUrl } from '@/lib/utils/url-helpers';
 
 // Notification types theo workflow moderation
 export enum NotificationType {
@@ -146,6 +147,21 @@ export interface NotificationPreferences {
 export class EnhancedNotificationService {
   private static adminDb = getAdminDb();
   private static realtimeDb: ReturnType<typeof getRealtimeDb> | null = null;
+
+  // Moderation-related notifications BYPASS quiet hours
+  // Lý do: Người dùng cần nhận thông báo kiểm duyệt NGAY LẬP TỨC
+  // để có thể hành động kịp thời (sửa lỗi, xem kết quả, etc.)
+  private static readonly BYPASS_QUIET_HOURS_TYPES = [
+    NotificationType.PLACE_RECEIVED,
+    NotificationType.PLACE_CLAIMED,
+    NotificationType.PLACE_IN_REVIEW,
+    NotificationType.PLACE_APPROVED,
+    NotificationType.PLACE_REJECTED,
+    NotificationType.REVISION_REQUESTED,
+    NotificationType.EDIT_APPROVED,
+    NotificationType.EDIT_REJECTED,
+    NotificationType.CONTENT_ESCALATED,
+  ];
 
   // Initialize Firebase Realtime Database
   private static getRealtimeDatabase() {
@@ -495,13 +511,20 @@ export class EnhancedNotificationService {
             continue;
           }
 
-          // Check quiet hours
-          if (this.isQuietHours(preferences.globalSettings.quietHours)) {
+          // Check quiet hours (BYPASS cho moderation notifications)
+          const shouldBypassQuietHours = this.BYPASS_QUIET_HOURS_TYPES.includes(type);
+
+          if (!shouldBypassQuietHours && this.isQuietHours(preferences.globalSettings.quietHours)) {
             // Queue for later unless critical
             if (template.priority !== NotificationPriority.CRITICAL) {
+              console.log(`[NOTIFICATION] Skipping ${type} for user ${userId} due to quiet hours (will schedule later)`);
               await this.scheduleNotification(userId, type, data, overrides);
               continue;
             }
+          }
+
+          if (shouldBypassQuietHours) {
+            console.log(`[NOTIFICATION] Bypassing quiet hours for moderation notification: ${type}`);
           }
 
           // 2. Build notification payload
@@ -599,9 +622,13 @@ export class EnhancedNotificationService {
         console.warn('Realtime Database not available, skipping real-time notification');
         return;
       }
-      
+
       const userNotificationsRef = realtimeDb.ref(`notifications/${payload.recipientId}`);
-      
+
+      // CRITICAL FIX: Firebase Realtime Database does NOT allow undefined values
+      // Filter out undefined values to prevent "set failed" errors
+      const cleanData = this.removeUndefinedFields(payload.data || {});
+
       // Add to user's real-time notifications
       await userNotificationsRef.child(payload.id).set({
         id: payload.id,
@@ -611,7 +638,7 @@ export class EnhancedNotificationService {
         body: payload.body,
         actionUrl: payload.actionUrl,
         actionText: payload.actionText,
-        data: payload.data,
+        data: cleanData,  // ← Use cleaned data
         createdAt: payload.createdAt,
         read: false,
         dismissed: false
@@ -692,8 +719,16 @@ export class EnhancedNotificationService {
    */
   private static async storeNotificationHistory(payload: NotificationPayload): Promise<void> {
     try {
-      await this.adminDb.collection('notification_history').doc(payload.id).set(payload);
-      
+      // CRITICAL FIX: Firestore also doesn't allow undefined values
+      // Clean payload before storing
+      const cleanedPayload = {
+        ...payload,
+        data: this.removeUndefinedFields(payload.data || {}),
+        metadata: this.removeUndefinedFields(payload.metadata || {})
+      };
+
+      await this.adminDb.collection('notification_history').doc(payload.id).set(cleanedPayload);
+
       // Also update user's notification summary
       const userStatsRef = this.adminDb.collection('notification_stats').doc(payload.recipientId);
       await userStatsRef.set({
@@ -831,6 +866,38 @@ export class EnhancedNotificationService {
     });
   }
 
+  /**
+   * Remove undefined fields from object (Firebase Realtime DB doesn't allow undefined)
+   */
+  private static removeUndefinedFields(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return {};
+    }
+
+    if (typeof obj !== 'object') {
+      return obj;
+    }
+
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj.filter(item => item !== undefined).map(item => this.removeUndefinedFields(item));
+    }
+
+    // Handle objects
+    const cleaned: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
+        const value = obj[key];
+        if (typeof value === 'object' && value !== null) {
+          cleaned[key] = this.removeUndefinedFields(value);
+        } else {
+          cleaned[key] = value;
+        }
+      }
+    }
+    return cleaned;
+  }
+
   private static isQuietHours(quietHours: any): boolean {
     if (!quietHours.enabled) return false;
     
@@ -912,11 +979,21 @@ export class EnhancedNotificationService {
   }
 
   static async notifyPlaceApproved(placeId: string, placeName: string, slug: string, ownerId: string): Promise<void> {
-    await this.sendNotification(ownerId, NotificationType.PLACE_APPROVED, {
-      placeId,
-      placeName,
-      slug
-    });
+    // Generate compound URL: /places/{slug}-{shortId}
+    const placeUrl = generatePlaceUrl({ slug, name: placeName, id: placeId });
+
+    await this.sendNotification(
+      ownerId,
+      NotificationType.PLACE_APPROVED,
+      {
+        placeId,
+        placeName,
+        slug
+      },
+      {
+        actionUrl: placeUrl  // Override template URL with compound format
+      }
+    );
   }
 
   static async notifyPlaceRejected(draftId: string, placeName: string, ownerId: string, reason: string): Promise<void> {
@@ -962,15 +1039,26 @@ export class EnhancedNotificationService {
     });
 
     const type = status === 'approved' ? NotificationType.EDIT_APPROVED : NotificationType.EDIT_REJECTED;
-    const result = await this.sendNotification(userId, type, {
-      placeId,
-      placeName,
-      slug,
-      draftId,
-      status,
-      reviewNotes,
-      reason: reviewNotes // Add reason for template interpolation
-    });
+
+    // Generate compound URL for approved edits (needs full place URL)
+    const overrides = status === 'approved' ? {
+      actionUrl: generatePlaceUrl({ slug, name: placeName, id: placeId })
+    } : {};
+
+    const result = await this.sendNotification(
+      userId,
+      type,
+      {
+        placeId,
+        placeName,
+        slug,
+        draftId,
+        status,
+        reviewNotes,
+        reason: reviewNotes // Add reason for template interpolation
+      },
+      overrides  // Override actionUrl for approved status
+    );
 
     console.log(`[NOTIFICATION] notifyEditSubmitter result:`, result);
     return result;
@@ -1001,15 +1089,25 @@ export class EnhancedNotificationService {
       needs_edit: NotificationType.REVISION_REQUESTED
     };
 
-    const result = await this.sendNotification(userId, typeMap[status], {
-      placeId,
-      placeName,
-      slug,
-      draftId,
-      status,
-      reviewNotes,
-      reason: reviewNotes // Add reason for template interpolation
-    });
+    // Generate compound URL for approved status (needs full place URL)
+    const overrides = status === 'approved' ? {
+      actionUrl: generatePlaceUrl({ slug, name: placeName, id: placeId })
+    } : {};
+
+    const result = await this.sendNotification(
+      userId,
+      typeMap[status],
+      {
+        placeId,
+        placeName,
+        slug,
+        draftId,
+        status,
+        reviewNotes,
+        reason: reviewNotes // Add reason for template interpolation
+      },
+      overrides  // Override actionUrl for approved status
+    );
 
     console.log(`[NOTIFICATION] notifyPlaceSubmitter result:`, result);
     return result;

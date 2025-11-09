@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import { callApi } from "@/lib/client/api"
 import ReactMarkdown from 'react-markdown'
 import { ChatInput } from "@/ai/flows/chat-flow"
 
@@ -112,6 +113,44 @@ export default function AIChatPage() {
   const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
   const tipIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
 
+  // ✅ NEW: AI Chat Quota State
+  const [quota, setQuota] = React.useState<{
+    limit: number;
+    used: number;
+    remaining: number;
+    resetAt: string;
+    isUnlimited: boolean;
+  } | null>(null)
+
+  // ✅ NEW: Fetch AI quota khi component mount
+  React.useEffect(() => {
+    const fetchQuota = async () => {
+      try {
+        const response = await callApi<{
+          success: boolean;
+          data: {
+            limit: number;
+            used: number;
+            remaining: number;
+            resetAt: string;
+            isUnlimited: boolean;
+          };
+        }>('/ai/rate-limit');
+
+        if (response.success && response.data) {
+          setQuota(response.data);
+        }
+      } catch (error) {
+        console.error('[QUOTA] Failed to fetch:', error);
+        // Không block UI nếu fetch quota fail
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchQuota();
+    }
+  }, [isAuthenticated]);
+
   React.useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
@@ -188,19 +227,31 @@ export default function AIChatPage() {
         message: content.trim()
       }
 
-      const response = await fetch('/api/ai/chat', {
+      // ✅ Use callApi with auth header
+      const aiResponse = await callApi<{
+        response: string;
+        rateLimit?: {
+          limit: number;
+          used: number;
+          remaining: number;
+          resetAt: string;
+        };
+        timestamp: string;
+      }>('/ai/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(input),
       });
 
-      if (!response.ok) {
-        throw new Error(`Network response was not ok. Status: ${response.status}`);
+      // ✅ Update quota from response
+      if (aiResponse.rateLimit) {
+        setQuota({
+          limit: aiResponse.rateLimit.limit,
+          used: aiResponse.rateLimit.used,
+          remaining: aiResponse.rateLimit.remaining,
+          resetAt: aiResponse.rateLimit.resetAt,
+          isUnlimited: aiResponse.rateLimit.limit === 999999
+        });
       }
-
-      const aiResponse = await response.json();
 
       const aiMessage: Message = {
         id: `msg_${Date.now()}_ai`,
@@ -511,6 +562,45 @@ export default function AIChatPage() {
 
           {/* Input Area */}
           <div className="border-t border bg-bg">
+            {/* ✅ Quota Display */}
+            {quota && !quota.isUnlimited && (
+              <div className={cn(
+                "flex items-center justify-between gap-2 text-sm px-4 py-2 border-b border",
+                quota.remaining === 0
+                  ? "bg-red-50 text-red-700"
+                  : quota.remaining < 3
+                  ? "bg-orange-50 text-orange-700"
+                  : "bg-surface text-muted"
+              )}>
+                <div className="flex items-center gap-2">
+                  <Sparkles className={cn(
+                    "w-4 h-4",
+                    quota.remaining === 0 ? "text-red-600" : "text-primary"
+                  )} />
+                  <span>
+                    Còn lại <strong className={cn(
+                      "font-semibold",
+                      quota.remaining === 0
+                        ? "text-red-700"
+                        : quota.remaining < 3
+                        ? "text-orange-700"
+                        : "text-primary"
+                    )}>{quota.remaining}/{quota.limit}</strong> lượt chat hôm nay
+                  </span>
+                </div>
+                {quota.remaining < 3 && quota.remaining > 0 && (
+                  <span className="text-xs">
+                    Sắp hết hạn mức!
+                  </span>
+                )}
+                {quota.remaining === 0 && (
+                  <span className="text-xs">
+                    Vui lòng quay lại sau
+                  </span>
+                )}
+              </div>
+            )}
+
             {/* Quick Suggestions (for non-welcome state) */}
             {!showWelcome && messages.length === 0 && (
               <div className="p-4 pb-2">
@@ -536,20 +626,30 @@ export default function AIChatPage() {
               <div className="relative">
                 <div className="flex items-end gap-3 bg-surface rounded-2xl border border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200 p-3">
                   <Input
-                    placeholder={showWelcome ? "Hỏi tôi bất cứ điều gì về du lịch Việt Nam..." : "Tiếp tục cuộc trò chuyện..."}
+                    placeholder={
+                      quota && quota.remaining === 0
+                        ? "Đã hết lượt chat hôm nay. Vui lòng quay lại sau."
+                        : showWelcome
+                        ? "Hỏi tôi bất cứ điều gì về du lịch Việt Nam..."
+                        : "Tiếp tục cuộc trò chuyện..."
+                    }
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    disabled={isLoading}
+                    disabled={isLoading || (quota !== null && quota.remaining === 0)}
                     className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base px-0 resize-none"
                   />
 
                   <Button
                     onClick={() => sendMessage(inputValue)}
-                    disabled={!inputValue.trim() || isLoading}
+                    disabled={
+                      !inputValue.trim() ||
+                      isLoading ||
+                      (quota !== null && quota.remaining === 0)
+                    }
                     className={cn(
                       "rounded-xl p-2 transition-all duration-200",
-                      inputValue.trim() && !isLoading
+                      inputValue.trim() && !isLoading && (quota === null || quota.remaining > 0)
                         ? "bg-gradient-to-r from-primary to-primary-700 hover:from-primary-700 hover:to-primary text-white shadow-lg"
                         : "bg-border text-muted cursor-not-allowed"
                     )}

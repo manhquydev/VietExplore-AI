@@ -32,17 +32,55 @@ interface AuditLogData {
 export class ServerAuditService {
   private static db = getDatabase()
 
+  /**
+   * Recursively remove undefined fields from object
+   * Firebase Realtime DB rejects undefined values
+   */
+  private static removeUndefinedFields(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return {}
+    }
+
+    if (typeof obj !== 'object') {
+      return obj
+    }
+
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj
+        .filter(item => item !== undefined)
+        .map(item => this.removeUndefinedFields(item))
+    }
+
+    // Handle objects
+    const cleaned: any = {}
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
+        const value = obj[key]
+        if (typeof value === 'object' && value !== null) {
+          cleaned[key] = this.removeUndefinedFields(value)
+        } else {
+          cleaned[key] = value
+        }
+      }
+    }
+    return cleaned
+  }
+
   static async logAction(auditData: AuditLogData): Promise<string | null> {
     try {
       const auditRef = this.db.ref('audit_logs').push()
-      
+
+      // Remove undefined fields to prevent Firebase errors
+      const cleanedData = this.removeUndefinedFields(auditData)
+
       const auditLog = {
         id: auditRef.key,
         timestamp: Date.now(),
-        ...auditData,
+        ...cleanedData,
         severity: auditData.severity || this.getSeverityFromAction(auditData.action)
       }
-      
+
       await auditRef.set(auditLog)
       
       // Update daily stats

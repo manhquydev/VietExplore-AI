@@ -8,7 +8,6 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SearchBar } from "@/components/search-bar"
 import { PlaceCard } from "@/components/place-card"
-import { FilterBar } from "@/components/filter-bar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { BrandedCardSkeleton } from "@/components/ui/branded-loading"
@@ -25,6 +24,7 @@ interface SearchFilters {
   region?: PlaceRegion
   province?: string
   type?: string
+  trustLabel?: string
 }
 
 export default function PlacesPage() {
@@ -41,13 +41,15 @@ export default function PlacesPage() {
     const regionParam = searchParams.get('region') as PlaceRegion
     const provinceParam = searchParams.get('province')
     const typeParam = searchParams.get('type')
+    const trustLabelParam = searchParams.get('trustLabel')
     const searchParam = searchParams.get('search')
 
-    if (regionParam || provinceParam || typeParam) {
+    if (regionParam || provinceParam || typeParam || trustLabelParam) {
       setFilters({
         region: regionParam || undefined,
         province: provinceParam || undefined,
         type: typeParam || undefined,
+        trustLabel: trustLabelParam || undefined,
       })
     }
 
@@ -62,6 +64,7 @@ export default function PlacesPage() {
     region: filters.region || undefined,
     province: filters.province || undefined,
     type: filters.type as any || undefined,
+    trustLabel: filters.trustLabel as any || undefined,
     sortBy: 'newest'
   })
 
@@ -145,6 +148,8 @@ export default function PlacesPage() {
               <div className="glass-subtle p-3 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-sm">
                 <SearchBar
                   onSearch={handleSearch}
+                  onFiltersChange={handleFiltersChange}
+                  filters={filters}
                   placeholder="Tìm kiếm địa điểm, tỉnh thành, trải nghiệm..."
                 />
               </div>
@@ -172,12 +177,6 @@ export default function PlacesPage() {
 
         {/* Results Section - Mobile Optimized */}
         <section className="container py-6 sm:py-8 relative">
-          {/* Filter Bar - Self-contained glassmorphism */}
-          <FilterBar
-            onFiltersChange={handleFiltersChange}
-            initialFilters={filters}
-          />
-
           {/* Results Header - Mobile Optimized */}
           <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">
             {/* Count and Filters Row */}
@@ -209,34 +208,6 @@ export default function PlacesPage() {
                 </div>
               </div>
             </div>
-
-            {/* Active Filters - Mobile Friendly */}
-            {(searchQuery || Object.values(filters).some(Boolean)) && (
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {searchQuery && (
-                  <Badge variant="outline" className="glass-subtle border-teal-200 text-xs">
-                    Tìm: "{searchQuery}"
-                  </Badge>
-                )}
-                {filters.region && (
-                  <Badge variant="outline" className="glass-subtle border-emerald-200 text-xs">
-                    {filters.region === 'bac-bo' ? 'Miền Bắc' :
-                     filters.region === 'trung-bo' ? 'Miền Trung' :
-                     filters.region === 'nam-bo' ? 'Miền Nam' : filters.region}
-                  </Badge>
-                )}
-                {filters.type && (
-                  <Badge variant="outline" className="glass-subtle border-sky-200 text-xs">
-                    {filters.type}
-                  </Badge>
-                )}
-                {filters.province && (
-                  <Badge variant="outline" className="glass-subtle border-blue-200 text-xs">
-                    {filters.province}
-                  </Badge>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Results Content - Mobile Optimized Grid */}

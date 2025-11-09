@@ -1,16 +1,10 @@
 // src/app/api/ai/place-chat/route.ts
+// Place-specific AI Chat - Unified Rate Limiting
+// ✅ UPDATED: Sử dụng centralized rate limiting service
+
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/server/auth-middleware';
-import { adminDb } from '@/lib/firebase-admin';
-
-// Rate limiting config based on user role
-const RATE_LIMIT = {
-  TRAVELER: 10,      // Free tier - 10 questions per day per place
-  CONTRIBUTOR: 20,   // Contributor tier - 20 questions per day per place
-  PARTNER: 50,       // Partner tier - 50 questions per day per place
-  UNLIMITED: 999999, // Moderator/Admin - unlimited (practically unlimited)
-  WINDOW_HOURS: 24
-};
+import { checkAndIncrementAIQuota, logAIChatInteraction } from '@/lib/server/ai-rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,15 +45,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Check rate limiting (pass full user object for role-based limits)
-    const rateLimitCheck = await checkRateLimit(user, placeId);
+    // 3. Check UNIFIED rate limiting (atomic transaction - zero race condition)
+    const rateLimitResult = await checkAndIncrementAIQuota(user);
 
-    if (!rateLimitCheck.allowed) {
+    if (!rateLimitResult.allowed) {
       return NextResponse.json({
         error: 'Rate limit exceeded',
         code: 'RATE_LIMIT_EXCEEDED',
-        message: `Bạn đã đạt giới hạn ${rateLimitCheck.limit} câu hỏi trong 24 giờ cho địa điểm này. Vui lòng thử lại sau.`,
-        resetAt: rateLimitCheck.resetAt
+        message: `Bạn đã sử dụng ${rateLimitResult.used}/${rateLimitResult.limit} lượt chat trong 24 giờ. Vui lòng quay lại sau.`,
+        rateLimit: {
+          limit: rateLimitResult.limit,
+          used: rateLimitResult.used,
+          remaining: rateLimitResult.remaining,
+          resetAt: rateLimitResult.resetAt
+        }
       }, { status: 429 });
     }
 
@@ -68,7 +67,7 @@ export async function POST(request: NextRequest) {
       placeId,
       messageLength: message.length,
       historyLength: history?.length || 0,
-      remaining: rateLimitCheck.remaining
+      quotaRemaining: rateLimitResult.remaining
     });
 
     // 4. Dynamic import AI flow (avoid init errors)
@@ -83,26 +82,24 @@ export async function POST(request: NextRequest) {
     });
     const responseTime = Date.now() - startTime;
 
-    // 6. Log interaction for analytics
-    await logChatInteraction({
+    // 6. Log interaction for analytics (unified logging)
+    await logAIChatInteraction({
       userId: user.id,
       placeId,
+      source: 'place_chat',
       message,
       response: result.response,
       tokensUsed: result.tokensUsed,
       responseTime
     });
 
-    // 7. Increment rate limit counter
-    await incrementRateLimitCounter(user.id, placeId);
-
     console.log('[PLACE-CHAT-API] Success:', {
       userId: user.id,
       placeId,
       placeName: result.placeInfo?.name,
-      responseTime,
+      responseTime: `${responseTime}ms`,
       tokensUsed: result.tokensUsed,
-      remaining: rateLimitCheck.remaining - 1
+      quotaRemaining: rateLimitResult.remaining
     });
 
     return NextResponse.json({
@@ -112,9 +109,10 @@ export async function POST(request: NextRequest) {
       placeInfo: result.placeInfo,
       tokensUsed: result.tokensUsed,
       rateLimit: {
-        limit: rateLimitCheck.limit,
-        remaining: rateLimitCheck.remaining - 1,
-        resetAt: rateLimitCheck.resetAt
+        limit: rateLimitResult.limit,
+        used: rateLimitResult.used,
+        remaining: rateLimitResult.remaining,
+        resetAt: rateLimitResult.resetAt
       },
       timestamp: new Date().toISOString()
     });
@@ -161,141 +159,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Check if user has exceeded rate limit based on their role
- */
-async function checkRateLimit(user: { id: string; role: string }, placeId: string): Promise<{
-  allowed: boolean;
-  limit: number;
-  remaining: number;
-  resetAt: string;
-}> {
-  try {
-    // Calculate time window
-    const now = new Date();
-    const windowStart = new Date(now.getTime() - RATE_LIMIT.WINDOW_HOURS * 60 * 60 * 1000);
-
-    // Determine rate limit based on user role
-    let limit: number;
-    switch (user.role) {
-      case 'admin':
-      case 'moderator':
-        limit = RATE_LIMIT.UNLIMITED;
-        break;
-      case 'partner':
-        limit = RATE_LIMIT.PARTNER;
-        break;
-      case 'contributor':
-        limit = RATE_LIMIT.CONTRIBUTOR;
-        break;
-      case 'traveler':
-      case 'guest':
-      default:
-        limit = RATE_LIMIT.TRAVELER;
-        break;
-    }
-
-    // For unlimited users, skip the query
-    if (limit === RATE_LIMIT.UNLIMITED) {
-      return {
-        allowed: true,
-        limit,
-        remaining: RATE_LIMIT.UNLIMITED,
-        resetAt: new Date(now.getTime() + RATE_LIMIT.WINDOW_HOURS * 60 * 60 * 1000).toISOString()
-      };
-    }
-
-    // Query recent chat interactions for non-unlimited users
-    const snapshot = await adminDb.collection('ai_chat_logs')
-      .where('userId', '==', user.id)
-      .where('placeId', '==', placeId)
-      .where('timestamp', '>=', windowStart.toISOString())
-      .count()
-      .get();
-
-    const count = snapshot.data().count;
-
-    const resetAt = new Date(now.getTime() + RATE_LIMIT.WINDOW_HOURS * 60 * 60 * 1000).toISOString();
-
-    console.log('[RATE-LIMIT] Check result:', {
-      userId: user.id,
-      role: user.role,
-      limit,
-      count,
-      remaining: Math.max(0, limit - count),
-      allowed: count < limit
-    });
-
-    return {
-      allowed: count < limit,
-      limit,
-      remaining: Math.max(0, limit - count),
-      resetAt
-    };
-
-  } catch (error) {
-    console.error('[RATE-LIMIT] Error checking rate limit:', error);
-    // On error, allow the request (fail open) with traveler limit
-    return {
-      allowed: true,
-      limit: RATE_LIMIT.TRAVELER,
-      remaining: RATE_LIMIT.TRAVELER,
-      resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    };
-  }
-}
-
-/**
- * Increment rate limit counter (called after successful AI response)
- */
-async function incrementRateLimitCounter(userId: string, placeId: string): Promise<void> {
-  // This is automatically handled by logChatInteraction
-  // Rate limit check queries ai_chat_logs collection
-}
-
-/**
- * Log chat interaction for analytics and cost tracking
- */
-async function logChatInteraction(data: {
-  userId: string;
-  placeId: string;
-  message: string;
-  response: string;
-  tokensUsed?: { input: number; output: number };
-  responseTime: number;
-}): Promise<void> {
-  try {
-    // Calculate cost
-    const inputTokens = data.tokensUsed?.input || 0;
-    const outputTokens = data.tokensUsed?.output || 0;
-    const cost = (inputTokens / 1_000_000) * 0.15 + (outputTokens / 1_000_000) * 0.60;
-
-    await adminDb.collection('ai_chat_logs').add({
-      userId: data.userId,
-      placeId: data.placeId,
-      messageLength: data.message.length,
-      responseLength: data.response.length,
-      tokensUsed: {
-        input: inputTokens,
-        output: outputTokens,
-        total: inputTokens + outputTokens
-      },
-      cost: Number(cost.toFixed(6)),
-      responseTime: data.responseTime,
-      timestamp: new Date().toISOString(),
-      createdAt: new Date().toISOString()
-    });
-
-    console.log('[CHAT-LOG] Logged interaction:', {
-      userId: data.userId,
-      placeId: data.placeId,
-      tokensTotal: inputTokens + outputTokens,
-      cost: cost.toFixed(6),
-      responseTime: data.responseTime
-    });
-
-  } catch (error) {
-    // Don't fail the request if logging fails
-    console.error('[CHAT-LOG] Error logging interaction:', error);
-  }
-}
+// ============================================================================
+// DEPRECATED FUNCTIONS (Removed - using centralized service instead)
+// ============================================================================
+//
+// ❌ checkRateLimit() - Replaced by checkAndIncrementAIQuota()
+// ❌ incrementRateLimitCounter() - Auto-handled by checkAndIncrementAIQuota()
+// ❌ logChatInteraction() - Replaced by logAIChatInteraction()
+//
+// All functions moved to: src/lib/server/ai-rate-limiter.ts
+// ============================================================================

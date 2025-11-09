@@ -507,6 +507,11 @@ export const scheduledCleanupExpiredClaims = functions
       // Release expired claims
       const releasePromises = expiredClaimsQuery.docs.map(async (doc) => {
         try {
+          const docData = doc.data();
+          const creatorId = docData.submittedBy;
+          const contentId = docData.contentId || docData.itemId;
+
+          // Update moderation queue
           await db.collection('moderation_queue').doc(doc.id).update({
             status: 'pending',
             claimedBy: admin.firestore.FieldValue.delete(),
@@ -519,6 +524,41 @@ export const scheduledCleanupExpiredClaims = functions
 
           releasedCount++;
           console.log(`✅ Auto-released expired claim: ${doc.id}`);
+
+          // FIX GAP #2: Notify creator about claim expiration
+          if (creatorId && contentId && (docData.contentType === 'place' || docData.itemType === 'place_edit' || docData.itemType === 'new_place')) {
+            try {
+              const placeDoc = await db.collection('places').doc(contentId).get();
+              const placeName = placeDoc.exists ? placeDoc.data()?.name : 'Địa điểm';
+
+              // Send CLAIM_EXPIRED notification to creator via Realtime Database
+              const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+              await admin.database()
+                .ref(`notifications/${creatorId}/${notificationId}`)
+                .set({
+                  id: notificationId,
+                  type: 'CLAIM_EXPIRED',
+                  priority: 'medium',
+                  title: 'Tiếp nhận đã hết hạn',
+                  body: `"${placeName}" đã được giải phóng do hết thời gian xử lý (2 giờ)`,
+                  actionUrl: `/contribute/my-drafts/${contentId}/moderation`,
+                  actionText: 'Xem chi tiết',
+                  createdAt: nowISOString,
+                  read: false,
+                  dismissed: false,
+                });
+
+              // Update unread count
+              const unreadCountRef = admin.database().ref(`unreadCounts/${creatorId}`);
+              await unreadCountRef.transaction((currentCount) => (currentCount || 0) + 1);
+
+              console.log(`✅ Sent CLAIM_EXPIRED notification to creator ${creatorId}`);
+            } catch (notifError) {
+              console.error(`❌ Failed to send notification for ${doc.id}:`, notifError);
+              // Don't block release if notification fails
+            }
+          }
         } catch (error) {
           console.error(`❌ Failed to release claim ${doc.id}:`, error);
         }

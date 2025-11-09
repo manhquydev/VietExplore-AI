@@ -197,44 +197,78 @@ CÂU HỎI CỦA NGƯỜI DÙNG: ${input.message}`;
         config: {
           tools: [{ googleSearch: {} }],
           temperature: 1.0,  // Recommended for grounding
-          maxOutputTokens: 800  // Increased for detailed responses
+          maxOutputTokens: 4000  // CRITICAL: Gemini 2.5 Flash uses thinking tokens (1000-2000)
+                                 // Must be high enough for: thinkingTokens + actualOutput
+                                 // Reference: https://github.com/googleapis/python-genai/issues/811
         }
       });
 
       // Extract response text with multiple fallback strategies
       let responseText = '';
 
-      // Strategy 1: Direct text property (convenience method)
-      if (searchResult.text && searchResult.text.trim().length > 0) {
-        responseText = searchResult.text;
-        console.log('[PLACE-CHAT] Got text from .text property');
+      // Check for MAX_TOKENS issue (Gemini 2.5 Flash thinking model)
+      const finishReason = searchResult.candidates?.[0]?.finishReason;
+      if (finishReason === 'MAX_TOKENS') {
+        console.warn('[PLACE-CHAT] ⚠️ MAX_TOKENS hit - Model used tokens for thinking, no output');
+        console.warn('[PLACE-CHAT] Thinking tokens:', searchResult.usageMetadata?.thoughtsTokenCount);
+        console.warn('[PLACE-CHAT] Candidates tokens:', searchResult.usageMetadata?.candidatesTokenCount);
+
+        // Fallback to database-only response when MAX_TOKENS
+        const { text: dbText } = await ai.generate({
+          model: 'googleai/gemini-2.5-flash',
+          prompt: systemPrompt,
+          config: {
+            temperature: 0.3,
+            maxOutputTokens: 500,
+            topP: 0.8,
+            topK: 40,
+          }
+        });
+
+        responseText = dbText || `Dựa vào thông tin có sẵn về ${place.name}:\n\n` +
+          `📍 **Vị trí:** ${place.province}\n` +
+          `⏰ **Giờ mở cửa:** ${place.openingHours || 'Chưa cập nhật'}\n` +
+          `💰 **Giá vé:** ${place.entryFee || 'Chưa cập nhật'}\n` +
+          `🗓️ **Thời điểm tốt nhất:** ${place.bestTimeToVisit || 'Quanh năm'}\n\n` +
+          `Bạn có thể hỏi cụ thể hơn về giờ mở cửa, giá vé, hoặc hoạt động tại đây!`;
+
+        console.log('[PLACE-CHAT] Using database fallback due to MAX_TOKENS');
       }
-      // Strategy 2: Full response path
-      else if (searchResult.candidates?.[0]?.content?.parts?.[0]?.text) {
-        responseText = searchResult.candidates[0].content.parts[0].text;
-        console.log('[PLACE-CHAT] Got text from candidates path');
-      }
-      // Strategy 3: Check if there are multiple parts
-      else if (searchResult.candidates?.[0]?.content?.parts) {
-        const parts = searchResult.candidates[0].content.parts;
-        responseText = parts.map((p: any) => p.text).filter(Boolean).join('\n');
-        console.log('[PLACE-CHAT] Concatenated text from multiple parts');
+      // Normal extraction
+      else {
+        // Strategy 1: Direct text property (convenience method)
+        if (searchResult.text && searchResult.text.trim().length > 0) {
+          responseText = searchResult.text;
+          console.log('[PLACE-CHAT] Got text from .text property');
+        }
+        // Strategy 2: Full response path
+        else if (searchResult.candidates?.[0]?.content?.parts?.[0]?.text) {
+          responseText = searchResult.candidates[0].content.parts[0].text;
+          console.log('[PLACE-CHAT] Got text from candidates path');
+        }
+        // Strategy 3: Check if there are multiple parts
+        else if (searchResult.candidates?.[0]?.content?.parts) {
+          const parts = searchResult.candidates[0].content.parts;
+          responseText = parts.map((p: any) => p.text).filter(Boolean).join('\n');
+          console.log('[PLACE-CHAT] Concatenated text from multiple parts');
+        }
       }
 
       console.log('[PLACE-CHAT] Response extraction:', {
+        finishReason,
         hasText: !!searchResult.text,
         hasCandidates: !!searchResult.candidates,
         hasGroundingMetadata: !!searchResult.groundingMetadata,
+        thinkingTokens: searchResult.usageMetadata?.thoughtsTokenCount,
         responseLength: responseText.length,
         responsePreview: responseText.substring(0, 150)
       });
 
-      // Final fallback if still empty
+      // Final fallback if still empty (should rarely hit now)
       if (!responseText || responseText.trim().length === 0) {
         console.error('[PLACE-CHAT] All extraction strategies failed. Full result:', JSON.stringify(searchResult, null, 2));
 
-        // Fallback: Try to use database context with helpful message
-        responseText = `Xin lỗi, tôi đã tìm kiếm thông tin qua Google nhưng chưa tìm thấy kết quả phù hợp. Dựa trên thông tin có sẵn, ${place.name} là ${getPlaceTypeLabel(place.type).toLowerCase()} tại ${place.province}. Bạn có thể hỏi cụ thể hơn về giờ mở cửa, giá vé, hoặc hoạt động tại đây để tôi tìm kiếm tốt hơn.`;
+        responseText = `Xin lỗi, tôi gặp sự cố kỹ thuật khi tìm kiếm thông tin. Dựa trên dữ liệu có sẵn về ${place.name} tại ${place.province}, bạn có thể hỏi tôi về giờ mở cửa, giá vé, hoặc hoạt động cụ thể!`;
       }
 
       const citations = extractCitations(searchResult.groundingMetadata);
