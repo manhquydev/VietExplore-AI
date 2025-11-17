@@ -1,0 +1,178 @@
+[
+  {
+    "id": "google-translate",
+    "name": "Google Translate",
+    "category": "Dịch ngôn ngữ",
+    "icon": "🌐",
+    "description": "Dịch tiếng Việt offline, camera translator, phát âm chuẩn",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.google.android.apps.translate",
+      "app_store": "https://apps.apple.com/app/google-translate/id414706506"
+    },
+    "featured": true,
+    "rating": 4.5,
+    "free": true
+  },
+  {
+    "id": "grab",
+    "name": "Grab",
+    "category": "Gọi xe & Đặt món",
+    "icon": "🚗",
+    "description": "Gọi xe, GrabFood, GrabExpress - Thanh toán tiền mặt & thẻ",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.grabtaxi.passenger",
+      "app_store": "https://apps.apple.com/app/grab-app/id647268330"
+    },
+    "featured": true,
+    "rating": 4.6,
+    "free": true,
+    "website": "https://www.grab.com/vn/en/"
+  },
+  {
+    "id": "be",
+    "name": "be - Gọi xe công nghệ",
+    "category": "Gọi xe",
+    "icon": "🛺",
+    "description": "Xe ôm, taxi 4-7 chỗ - Giá rẻ hơn Grab",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.be.bedriver",
+      "app_store": "https://apps.apple.com/app/be-go-i-xe-re/id1476888986"
+    },
+    "featured": true,
+    "rating": 4.4,
+    "free": true,
+    "website": "https://be.com.vn"
+  },
+  {
+    "id": "momo",
+    "name": "MoMo - Ví điện tử",
+    "category": "Thanh toán",
+    "icon": "💳",
+    "description": "Ví điện tử số 1 VN - Thanh toán, chuyển tiền, mua sắm",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.mservice.momotransfer",
+      "app_store": "https://apps.apple.com/app/momo-chuyen-tien-thanh-toan/id918751511"
+    },
+    "featured": true,
+    "rating": 4.7,
+    "free": true,
+    "website": "https://momo.vn"
+  },
+  {
+    "id": "zalopay",
+    "name": "ZaloPay - Ví điện tử",
+    "category": "Thanh toán",
+    "icon": "💰",
+    "description": "Thanh toán QR, chuyển tiền miễn phí, ưu đãi đặc biệt",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.zing.zalo.zalopay",
+      "app_store": "https://apps.apple.com/app/zalopay-ung-dung-thanh-toan/id1112682904"
+    },
+    "featured": true,
+    "rating": 4.5,
+    "free": true,
+    "website": "https://zalopay.vn"
+  },
+  {
+    "id": "maps-me",
+    "name": "MAPS.ME",
+    "category": "Bản đồ offline",
+    "icon": "🗺️",
+    "description": "Bản đồ offline, điều hướng, đánh dấu địa điểm yêu thích",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.mapswithme.maps.pro",
+      "app_store": "https://apps.apple.com/app/maps-me-offline-map-nav/id510623322"
+    },
+    "featured": true,
+    "rating": 4.6,
+    "free": true,
+    "website": "https://maps.me"
+  },
+  {
+    "id": "google-maps",
+    "name": "Google Maps",
+    "category": "Điều hướng",
+    "icon": "📍",
+    "description": "Bản đồ, điều hướng real-time, tìm địa điểm gần đây",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.google.android.apps.maps",
+      "app_store": "https://apps.apple.com/app/google-maps/id585027354"
+    },
+    "featured": true,
+    "rating": 4.7,
+    "free": true
+  },
+  {
+    "id": "zalo",
+    "name": "Zalo",
+    "category": "Nhắn tin & Gọi điện",
+    "icon": "💬",
+    "description": "Nhắn tin, gọi điện miễn phí - App phổ biến nhất VN",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.zing.zalo",
+      "app_store": "https://apps.apple.com/app/zalo/id579523206"
+    },
+    "featured": true,
+    "rating": 4.6,
+    "free": true,
+    "website": "https://zalo.me"
+  },
+  {
+    "id": "shopeefood",
+    "name": "ShopeeFood",
+    "category": "Đặt món ăn",
+    "icon": "🍔",
+    "description": "Đặt đồ ăn giao tận nơi - Ưu đãi hấp dẫn",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.foody.vn",
+      "app_store": "https://apps.apple.com/app/shopeefood-giao-do-an/id1162917731"
+    },
+    "featured": false,
+    "rating": 4.5,
+    "free": true,
+    "website": "https://shopeefood.vn"
+  },
+  {
+    "id": "traveloka",
+    "name": "Traveloka",
+    "category": "Du lịch",
+    "icon": "✈️",
+    "description": "Đặt vé máy bay, khách sạn, tour du lịch",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=com.traveloka.android",
+      "app_store": "https://apps.apple.com/app/traveloka-book-flight-hotel/id572011216"
+    },
+    "featured": false,
+    "rating": 4.5,
+    "free": true,
+    "website": "https://www.traveloka.com/vi-vn"
+  },
+  {
+    "id": "weather-vn",
+    "name": "Thời Tiết Việt Nam",
+    "category": "Thời tiết",
+    "icon": "🌤️",
+    "description": "Dự báo thời tiết chính xác, cảnh báo thiên tai",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=vn.dmc.weathervietnam",
+      "app_store": "https://apps.apple.com/app/thoi-tiet-viet-nam/id1455687243"
+    },
+    "featured": false,
+    "rating": 4.3,
+    "free": true
+  },
+  {
+    "id": "xe-om-tech",
+    "name": "Xe Ôm Công Nghệ",
+    "category": "Gọi xe ôm",
+    "icon": "🏍️",
+    "description": "Gọi xe ôm giá rẻ, nhanh chóng trong thành phố",
+    "app_stores": {
+      "play_store": "https://play.google.com/store/apps/details?id=vn.xeomcongnghe.passenger",
+      "app_store": "https://apps.apple.com/app/id1509882196"
+    },
+    "featured": false,
+    "rating": 4.2,
+    "free": true
+  }
+]

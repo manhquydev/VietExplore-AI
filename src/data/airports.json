@@ -1,0 +1,128 @@
+[
+  {
+    "id": "noi-bai-han",
+    "name": "Sân Bay Quốc Tế Nội Bài",
+    "city": "hanoi",
+    "code": "HAN",
+    "website": "https://vietnamairport.vn/noibaiairport/en",
+    "phone_display": "024 3886 5047",
+    "tel_link": "tel:02438865047",
+    "address": "Phú Minh, Sóc Sơn, Hà Nội",
+    "map_link": "https://maps.google.com/?q=Noi+Bai+International+Airport",
+    "distance_to_city": "27 km",
+    "travel_time": "35-45 phút",
+    "transport_options": [
+      "Taxi (Mai Linh: 024 3822 2666)",
+      "Grab/Be",
+      "Bus #86 (30.000đ)",
+      "Airport shuttle"
+    ],
+    "terminals": ["T1 (Domestic)", "T2 (International)"],
+    "facilities": ["Free WiFi", "Lounge", "Duty-free", "Currency exchange"]
+  },
+  {
+    "id": "tan-son-nhat-sgn",
+    "name": "Sân Bay Quốc Tế Tân Sơn Nhất",
+    "city": "hcm",
+    "code": "SGN",
+    "website": "https://vietnamairport.vn/tansonnhatairport/en",
+    "phone_display": "028 3848 5383",
+    "tel_link": "tel:02838485383",
+    "address": "Trường Sơn, Phường 2, Tân Bình, TP.HCM",
+    "map_link": "https://maps.google.com/?q=Tan+Son+Nhat+International+Airport",
+    "distance_to_city": "8 km",
+    "travel_time": "20-30 phút",
+    "transport_options": [
+      "Taxi (Vinasun: 028 3827 2727)",
+      "Grab/Be",
+      "Bus #109, #119 (15.000đ)",
+      "Mai Linh Airport Express"
+    ],
+    "terminals": ["T1 (Domestic)", "T2 (International)", "T3 (Opening 2025)"],
+    "facilities": ["Free WiFi", "VIP Lounge", "Duty-free", "24/7 services"]
+  },
+  {
+    "id": "da-nang-dad",
+    "name": "Sân Bay Quốc Tế Đà Nẵng",
+    "city": "danang",
+    "code": "DAD",
+    "website": "https://vietnamairport.vn/danangairport/en",
+    "phone_display": "0236 3837 878",
+    "tel_link": "tel:02363837878",
+    "address": "Hòa Thuận Tây, Hải Châu, Đà Nẵng",
+    "map_link": "https://maps.google.com/?q=Da+Nang+International+Airport",
+    "distance_to_city": "3 km",
+    "travel_time": "10-15 phút",
+    "transport_options": [
+      "Taxi (Tiên Sa: 0236 3797 979)",
+      "Grab/Be",
+      "Airport shuttle",
+      "Hotel pickup"
+    ],
+    "terminals": ["T1 (Domestic)", "T2 (International)"],
+    "facilities": ["Free WiFi", "Lounge", "Duty-free", "Car rental"]
+  },
+  {
+    "id": "can-tho-vca",
+    "name": "Sân Bay Quốc Tế Cần Thơ",
+    "city": "cantho",
+    "code": "VCA",
+    "website": "https://vietnamairport.vn/canthoairport/en",
+    "phone_display": "0292 3830 079",
+    "tel_link": "tel:02923830079",
+    "address": "Đường Nguyễn Văn Cừ, An Bình, Ninh Kiều, Cần Thơ",
+    "map_link": "https://maps.google.com/?q=Can+Tho+International+Airport",
+    "distance_to_city": "10 km",
+    "travel_time": "20-25 phút",
+    "transport_options": [
+      "Taxi (Mai Linh Can Tho)",
+      "Grab/Be",
+      "Hotel shuttle",
+      "Private car"
+    ],
+    "terminals": ["Terminal 1"],
+    "facilities": ["Free WiFi", "Café", "Currency exchange", "ATM"]
+  },
+  {
+    "id": "cam-ranh-crr",
+    "name": "Sân Bay Quốc Tế Cam Ranh",
+    "city": "nhatrang",
+    "code": "CXR",
+    "website": "https://vietnamairport.vn/camranhairport/en",
+    "phone_display": "0258 3989 898",
+    "tel_link": "tel:02583989898",
+    "address": "Cam Lâm, Khánh Hòa",
+    "map_link": "https://maps.google.com/?q=Cam+Ranh+International+Airport",
+    "distance_to_city": "35 km (đến Nha Trang)",
+    "travel_time": "45-60 phút",
+    "transport_options": [
+      "Taxi (Nha Trang Taxi: 0258 3812 812)",
+      "Grab/Be",
+      "Airport shuttle",
+      "Private transfer"
+    ],
+    "terminals": ["T1 (Domestic)", "T2 (International)"],
+    "facilities": ["Free WiFi", "Lounge", "Duty-free", "Food court"]
+  },
+  {
+    "id": "phu-quoc-pqc",
+    "name": "Sân Bay Quốc Tế Phú Quốc",
+    "city": "phuquoc",
+    "code": "PQC",
+    "website": "https://vietnamairport.vn/phuquocairport/en",
+    "phone_display": "0297 3980 088",
+    "tel_link": "tel:02973980088",
+    "address": "Dương Đông, Phú Quốc, Kiên Giang",
+    "map_link": "https://maps.google.com/?q=Phu+Quoc+International+Airport",
+    "distance_to_city": "10 km (đến trung tâm Dương Đông)",
+    "travel_time": "15-20 phút",
+    "transport_options": [
+      "Taxi (Sasco: 0297 6266 266)",
+      "Grab",
+      "Resort shuttle",
+      "Private car"
+    ],
+    "terminals": ["T1 (Domestic)", "T2 (International)"],
+    "facilities": ["Free WiFi", "VIP Lounge", "Duty-free", "Car rental"]
+  }
+]

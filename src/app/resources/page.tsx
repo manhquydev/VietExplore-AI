@@ -1,5 +1,12 @@
+"use client"
+
+/**
+ * Resources Page - Redesigned với Brand Colors đồng nhất
+ * Theme: Bánh Chưng (Green #16A34A & Gold #F59E0B)
+ * Du Lịch Việt - VietExplore AI
+ */
+
 import * as React from "react"
-import { Metadata } from "next"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -7,397 +14,401 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   BookOpen,
-  ExternalLink,
-  Phone,
-  MapPin,
-  Calendar,
-  Shield,
-  Heart,
-  Plane,
-  Camera,
-  Compass,
-  MessageCircle,
-  Download,
-  Globe,
-  CreditCard,
-  Smartphone,
-  Clock,
   AlertTriangle,
-  Users
+  Plane,
+  MapPin,
+  Heart,
+  Smartphone,
+  Download,
+  Info,
+  Building2
 } from "lucide-react"
-
-export const metadata: Metadata = {
-  title: "Tài nguyên du lịch | Du Lịch Việt",
-  description: "Tổng hợp tài nguyên, hướng dẫn và công cụ hữu ích cho chuyến du lịch Việt Nam của bạn",
-}
+import {
+  HotlineCard,
+  SearchBar,
+  AirlineCard,
+  HospitalCard,
+  AppCard,
+  CitySelector
+} from "@/components/resources"
+import {
+  getActiveHotlines,
+  getLegacyHotlines,
+  getAirlinesByRegion,
+  getAirportsByCity,
+  getHospitalsByCity,
+  getFeaturedApps,
+  searchResources,
+  City
+} from "@/data"
 
 export default function ResourcesPage() {
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [selectedCity, setSelectedCity] = React.useState<City>("all")
+  const [showLegacyNumbers, setShowLegacyNumbers] = React.useState(false)
+
+  const activeHotlines = getActiveHotlines()
+  const legacyHotlines = getLegacyHotlines()
+
+  // Filter data by city
+  const airlines = getAirlinesByRegion("all")
+  const airports = getAirportsByCity(selectedCity)
+  const hospitals = getHospitalsByCity(selectedCity)
+  const apps = getFeaturedApps()
+
+  // Search results
+  const searchResults = React.useMemo(() => {
+    if (!searchQuery.trim()) return null
+    return searchResources(searchQuery)
+  }, [searchQuery])
+
+  const hasSearchResults = searchResults && (
+    searchResults.airlines.length > 0 ||
+    searchResults.airports.length > 0 ||
+    searchResults.hospitals.length > 0 ||
+    searchResults.apps.length > 0
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50">
       <Header />
-      
+
       <main className="min-h-screen pt-14 sm:pt-16 md:pt-20">
-        {/* Hero Section - Compact & Optimized */}
-        <section className="relative py-6 sm:py-8 md:py-12 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/80 via-green-50/40 to-amber-50/60"></div>
+        {/* Hero Section - Compact & Branded */}
+        <section className="relative py-6 sm:py-8 md:py-12 overflow-hidden bg-gradient-to-br from-brand-green/5 via-white to-brand-gold/5">
+          <div className="absolute inset-0 bg-[url('/patterns/topography.svg')] opacity-5"></div>
 
           <div className="relative container max-w-7xl">
-            <div className="glass-card max-w-4xl mx-auto text-center p-4 sm:p-6 md:p-8">
-              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-brand-green" />
+            <div className="glass-card max-w-4xl mx-auto text-center p-5 sm:p-6 md:p-8 border-2 border-brand-green/20">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-brand-green to-brand-forest flex items-center justify-center shadow-lg">
+                  <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <h1 className="gradient-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-                  Tài nguyên du lịch
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+                  <span className="bg-gradient-to-r from-brand-green to-brand-forest bg-clip-text text-transparent">
+                    Tài nguyên du lịch
+                  </span>
                 </h1>
               </div>
-              <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-4 sm:mb-5 md:mb-6 max-w-2xl mx-auto leading-relaxed">
-                Tổng hợp đầy đủ các hướng dẫn, công cụ và thông tin cần thiết<br className="hidden sm:block" />
-                để bạn có chuyến khám phá Việt Nam an toàn và trọn vẹn.
+
+              <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-5 sm:mb-6 max-w-2xl mx-auto leading-relaxed">
+                Thông tin thiết yếu cho chuyến du lịch an toàn:<br className="hidden sm:block" />
+                Số khẩn cấp <strong className="text-red-600">112</strong>, hãng hàng không, bệnh viện 24/7, ứng dụng cần thiết
               </p>
 
-              {/* Quick access stats */}
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span>Hướng dẫn toàn diện</span>
+              {/* Search Bar */}
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                showResultCount={false}
+                className="max-w-2xl mx-auto"
+              />
+
+              {/* Quick Stats */}
+              <div className="flex flex-wrap items-center justify-center gap-4 mt-5 text-xs sm:text-sm">
+                <div className="flex items-center gap-2 text-slate-600">
+                  <div className="w-2 h-2 bg-brand-green rounded-full"></div>
+                  <span>Cập nhật 2025</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Cập nhật liên tục</span>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <div className="w-2 h-2 bg-brand-gold rounded-full"></div>
+                  <span>Thông tin chính xác</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Dễ dàng tra cứu</span>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span>Cấp cứu 24/7</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
+        {/* City Selector - Sticky */}
+        <CitySelector
+          selectedCity={selectedCity}
+          onChange={setSelectedCity}
+        />
+
         <section className="container py-6 sm:py-8 md:py-10 lg:py-12 max-w-7xl">
+          {/* Search Results (if searching) */}
+          {searchQuery && hasSearchResults && searchResults && (
+            <div className="mb-10">
+              <div className="glass-card p-5 sm:p-6 border-2 border-brand-gold/30 bg-brand-gold/5">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <Smartphone className="w-6 h-6 text-brand-gold" />
+                  Kết quả tìm kiếm cho &quot;{searchQuery}&quot;
+                </h2>
 
-        {/* Essential Resources Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10 md:mb-12">
-          {/* Travel Planning */}
-          <div className="glass-card p-5 sm:p-6 md:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold" />
+                {/* Airlines Results */}
+                {searchResults.airlines.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-brand-green mb-3">
+                      ✈️ Hãng hàng không ({searchResults.airlines.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {searchResults.airlines.map(airline => (
+                        <AirlineCard key={airline.id} airline={airline} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hospitals Results */}
+                {searchResults.hospitals.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-red-600 mb-3">
+                      🏥 Bệnh viện ({searchResults.hospitals.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {searchResults.hospitals.map(hospital => (
+                        <HospitalCard key={hospital.id} hospital={hospital} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Apps Results */}
+                {searchResults.apps.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-brand-gold mb-3">
+                      📱 Ứng dụng ({searchResults.apps.length})
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {searchResults.apps.map(app => (
+                        <AppCard key={app.id} app={app} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              Lập kế hoạch
-            </h2>
-            
-            <div className="space-y-3 sm:space-y-4">
-              {[
-                {
-                  title: "Mùa du lịch tốt nhất",
-                  description: "Thời điểm lý tưởng cho từng vùng miền",
-                  icon: Clock,
-                  href: "#weather-guide"
-                },
-                {
-                  title: "Ngân sách du lịch",
-                  description: "Ước tính chi phí cho các loại hình du lịch",
-                  icon: CreditCard,
-                  href: "#budget-guide"
-                },
-                {
-                  title: "Khám phá địa điểm",
-                  description: "Tìm điểm đến phù hợp với sở thích",
-                  icon: MapPin,
-                  href: "/places"
-                },
-                {
-                  title: "Trợ lý AI",
-                  description: "Lập kế hoạch thông minh với AI",
-                  icon: Smartphone,
-                  href: "/ai-assistant/chat"
-                }
-              ].map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group min-h-[64px] sm:min-h-[72px]"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm sm:text-base text-slate-900 group-hover:text-brand-gold transition-colors">
-                      {item.title}
-                    </div>
-                    <div className="text-xs sm:text-sm text-slate-600">
-                      {item.description}
-                    </div>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-brand-gold transition-colors flex-shrink-0" />
-                </Link>
-              ))}
             </div>
-          </div>
+          )}
 
-          {/* Transportation */}
-          <div className="glass-card p-5 sm:p-6 md:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <Plane className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
-              </div>
-              Di chuyển
-            </h2>
-
-            <div className="space-y-3 sm:space-y-4">
-              {[
-                {
-                  title: "Vé máy bay",
-                  description: "Hãng hàng không và sân bay trong nước",
-                  icon: Plane,
-                  external: true,
-                  href: "https://www.vietnam-airlines.com"
-                },
-                {
-                  title: "Xe khách & tàu hỏa",
-                  description: "Đặt vé liên tỉnh thuận tiện",
-                  icon: Compass,
-                  external: true,
-                  href: "https://futabus.vn"
-                },
-                {
-                  title: "Grab & be",
-                  description: "Ứng dụng gọi xe phổ biến",
-                  icon: Smartphone,
-                  external: true,
-                  href: "https://www.grab.com/vn/"
-                },
-                {
-                  title: "Thuê xe máy",
-                  description: "Hướng dẫn thuê xe và lái xe an toàn",
-                  icon: MapPin,
-                  href: "#motorbike-guide"
-                }
-              ].map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  target={item.external ? "_blank" : undefined}
-                  rel={item.external ? "noopener noreferrer" : undefined}
-                  className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group min-h-[64px] sm:min-h-[72px]"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm sm:text-base text-slate-900 group-hover:text-emerald-600 transition-colors">
-                      {item.title}
-                    </div>
-                    <div className="text-xs sm:text-sm text-slate-600">
-                      {item.description}
-                    </div>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Safety & Health */}
-          <div className="glass-card p-5 sm:p-6 md:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
-              </div>
-              An toàn & sức khỏe
-            </h2>
-
-            <div className="space-y-3 sm:space-y-4">
-              {[
-                {
-                  title: "Số điện thoại khẩn cấp",
-                  description: "Cảnh sát, cứu hỏa, y tế",
-                  icon: Phone,
-                  href: "#emergency"
-                },
-                {
-                  title: "Bảo hiểm du lịch",
-                  description: "Gợi ý các gói bảo hiểm phù hợp",
-                  icon: Heart,
-                  href: "#insurance"
-                },
-                {
-                  title: "Y tế & thuốc men",
-                  description: "Bệnh viện, nhà thuốc 24/7",
-                  icon: MessageCircle,
-                  href: "#healthcare"
-                },
-                {
-                  title: "An toàn thực phẩm",
-                  description: "Lưu ý khi ăn uống tại Việt Nam",
-                  icon: AlertTriangle,
-                  href: "#food-safety"
-                }
-              ].map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 glass-subtle rounded-xl hover:bg-slate-100/50 transition-colors group min-h-[64px] sm:min-h-[72px]"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm sm:text-base text-slate-900 group-hover:text-red-600 transition-colors">
-                      {item.title}
-                    </div>
-                    <div className="text-xs sm:text-sm text-slate-600">
-                      {item.description}
-                    </div>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-red-500 transition-colors flex-shrink-0" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Essential Apps Section */}
-        <div className="glass-card p-5 sm:p-6 md:p-8 mb-8 sm:mb-10 md:mb-12">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6 sm:mb-7 md:mb-8 text-center flex items-center justify-center gap-2 sm:gap-3">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-green" />
-            </div>
-            Ứng dụng thiết yếu
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
-            {[
-              {
-                name: "Google Translate",
-                description: "Dịch tiếng Việt offline",
-                category: "Ngôn ngữ",
-                colorBg: "bg-blue-100",
-                colorIcon: "text-brand-green",
-                icon: Globe
-              },
-              {
-                name: "Grab",
-                description: "Gọi xe, đặt món",
-                category: "Di chuyển",
-                colorBg: "bg-emerald-100",
-                colorIcon: "text-emerald-600",
-                icon: Plane
-              },
-              {
-                name: "Zalo Pay/MoMo",
-                description: "Thanh toán không tiền mặt",
-                category: "Thanh toán",
-                colorBg: "bg-amber-100",
-                colorIcon: "text-brand-gold",
-                icon: CreditCard
-              },
-              {
-                name: "Maps.me",
-                description: "Bản đồ offline",
-                category: "Điều hướng",
-                colorBg: "bg-amber-100",
-                colorIcon: "text-amber-600",
-                icon: MapPin
-              }
-            ].map((app, index) => (
-              <div key={index} className="glass-subtle p-4 sm:p-5 md:p-6 rounded-xl text-center hover:scale-105 transition-transform duration-200 min-h-[160px] sm:min-h-[180px]">
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${app.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}>
-                  <app.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${app.colorIcon}`} />
+          {/* 🚨 EMERGENCY SECTION - ALWAYS VISIBLE */}
+          <div id="emergency" className="mb-10">
+            <div className="glass-card p-5 sm:p-6 md:p-8 mb-6 bg-red-50/80 border-2 border-red-300 shadow-lg">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-1.5 sm:mb-2">{app.name}</h3>
-                <p className="text-xs sm:text-sm text-slate-600 mb-2 sm:mb-3">{app.description}</p>
-                <Badge className="bg-green-100 text-brand-green text-xs">
-                  {app.category}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Emergency Contacts */}
-        <div className="glass-card p-5 sm:p-6 md:p-8 mb-8 sm:mb-10 md:mb-12">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5 sm:mb-6 flex items-center gap-2 sm:gap-3">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
-            </div>
-            Số điện thoại khẩn cấp
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-            {[
-              {
-                service: "Cảnh sát",
-                number: "113",
-                description: "Báo cáo tội phạm, mất trộm",
-                colorBg: "bg-blue-100",
-                colorIcon: "text-brand-green"
-              },
-              {
-                service: "Cứu hỏa",
-                number: "114",
-                description: "Hỏa hoạn, cứu hộ khẩn cấp",
-                colorBg: "bg-red-100",
-                colorIcon: "text-red-600"
-              },
-              {
-                service: "Y tế khẩn cấp",
-                number: "115",
-                description: "Cấp cứu y tế, tai nạn",
-                colorBg: "bg-emerald-100",
-                colorIcon: "text-emerald-600"
-              }
-            ].map((item, index) => (
-              <div key={index} className="glass-subtle p-5 sm:p-6 rounded-xl text-center">
-                <div className={`w-14 h-14 sm:w-16 sm:h-16 ${item.colorBg} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}>
-                  <Phone className={`w-7 h-7 sm:w-8 sm:h-8 ${item.colorIcon}`} />
+                <div className="flex-1">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                    🚨 Số khẩn cấp
+                  </h2>
+                  <p className="text-sm sm:text-base text-slate-700">
+                    Luôn sẵn sàng hỗ trợ 24/7 trong trường hợp khẩn cấp
+                  </p>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">{item.service}</h3>
-                <div className="text-2xl sm:text-3xl font-bold text-red-600 mb-2 sm:mb-3">{item.number}</div>
-                <p className="text-xs sm:text-sm text-slate-600">{item.description}</p>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Download Guides */}
-        <div className="glass-card text-center p-5 sm:p-6 md:p-8">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6">
-            <Download className="w-7 h-7 sm:w-8 sm:h-8 text-amber-600" />
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 sm:mb-4">
-            Tải hướng dẫn offline
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-7 md:mb-8 max-w-2xl mx-auto">
-            Tải về các hướng dẫn PDF để sử dụng khi không có internet trong chuyến du lịch.
-          </p>
+              {/* Important Notice */}
+              <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm sm:text-base text-amber-900 leading-relaxed">
+                    <strong className="font-bold">Thông báo quan trọng:</strong> Từ ngày{" "}
+                    <strong className="font-bold">23/8/2025</strong>, Việt Nam chính thức sử dụng số{" "}
+                    <strong className="text-red-600 text-lg">112</strong> làm tổng đài khẩn cấp thống nhất
+                    (thay thế 113, 114, 115).
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Button
-              className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white min-h-[44px] text-sm sm:text-base"
-              asChild
-            >
-              <Link href="#guide-download">
-                <Download className="w-4 h-4 mr-2" />
-                Hướng dẫn tổng quan
-              </Link>
-            </Button>
-            <Button variant="secondary" className="glass-subtle min-h-[44px] text-sm sm:text-base" asChild>
-              <Link href="#emergency-guide">
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Thẻ khẩn cấp
-              </Link>
-            </Button>
-            <Button variant="secondary" className="glass-subtle min-h-[44px] text-sm sm:text-base" asChild>
-              <Link href="#phrase-book">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Sổ tay tiếng Việt
-              </Link>
-            </Button>
+            {/* Active Hotlines - Optimized Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 mb-6">
+              {activeHotlines.map(hotline => (
+                <HotlineCard key={hotline.id} hotline={hotline} />
+              ))}
+            </div>
+
+            {/* Legacy Numbers */}
+            {legacyHotlines.length > 0 && (
+              <div className="glass-card p-5 bg-slate-50">
+                <button
+                  onClick={() => setShowLegacyNumbers(!showLegacyNumbers)}
+                  className="w-full flex items-center justify-between text-left hover:bg-slate-100 p-3 rounded-lg transition-colors"
+                  aria-expanded={showLegacyNumbers}
+                >
+                  <div className="flex items-center gap-3">
+                    <Info className="w-5 h-5 text-slate-500" />
+                    <span className="font-semibold text-slate-700">
+                      Các số khẩn cấp cũ (chuyển sang 112)
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="bg-slate-100">
+                    {showLegacyNumbers ? "Ẩn" : "Xem"}
+                  </Badge>
+                </button>
+
+                {showLegacyNumbers && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 mt-4 border-t border-slate-200">
+                    {legacyHotlines.map(hotline => (
+                      <HotlineCard key={hotline.id} hotline={hotline} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+
+          {/* ✈️ AIRLINES SECTION */}
+          <div id="airlines" className="mb-10">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-brand-green to-brand-forest rounded-2xl flex items-center justify-center shadow-lg">
+                <Plane className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  Hãng hàng không
+                </h2>
+                <p className="text-sm text-slate-600">
+                  Đặt vé máy bay nhanh chóng, tiện lợi
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+              {airlines.map(airline => (
+                <AirlineCard key={airline.id} airline={airline} />
+              ))}
+            </div>
+          </div>
+
+          {/* 🛫 AIRPORTS SECTION */}
+          {airports.length > 0 && (
+            <div id="airports" className="mb-10">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-brand-gold to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                    Sân bay
+                  </h2>
+                  <p className="text-sm text-slate-600">
+                    Thông tin liên hệ và di chuyển
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+                {airports.map(airport => (
+                  <div key={airport.id} className="glass-card p-5 sm:p-6 hover:shadow-lg transition-shadow border-l-4 border-brand-gold overflow-hidden">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">{airport.name}</h3>
+                    <Badge className="mb-3 bg-brand-gold text-white">{airport.code}</Badge>
+                    <p className="text-sm text-slate-600 mb-3">{airport.address}</p>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-brand-gold" />
+                        <span className="text-slate-700">{airport.distance_to_city} - {airport.travel_time}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      <a
+                        href={airport.tel_link}
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg glass-subtle hover:bg-brand-gold/10 text-brand-gold font-medium border border-brand-gold/30 min-h-[40px]"
+                      >
+                        Gọi ngay
+                      </a>
+                      <Link
+                        href={airport.map_link}
+                        target="_blank"
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg glass-subtle hover:bg-slate-100 text-slate-700 font-medium border border-slate-300 min-h-[40px]"
+                      >
+                        Bản đồ
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 🏥 HOSPITALS SECTION */}
+          {hospitals.length > 0 && (
+            <div id="hospitals" className="mb-10">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                    Bệnh viện 24/7
+                  </h2>
+                  <p className="text-sm text-slate-600">
+                    Cấp cứu và chăm sóc sức khỏe
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+                {hospitals.map(hospital => (
+                  <HospitalCard key={hospital.id} hospital={hospital} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 📱 APPS SECTION */}
+          <div id="apps" className="mb-10">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-brand-green to-brand-gold rounded-2xl flex items-center justify-center shadow-lg">
+                <Smartphone className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  Ứng dụng thiết yếu
+                </h2>
+                <p className="text-sm text-slate-600">
+                  Download ngay để trải nghiệm tốt hơn
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
+              {apps.map(app => (
+                <AppCard key={app.id} app={app} />
+              ))}
+            </div>
+          </div>
+
+          {/* Download Guides CTA */}
+          <div className="glass-card text-center p-6 sm:p-8 bg-gradient-to-br from-brand-green/5 to-brand-gold/5 border-2 border-brand-green/20">
+            <div className="w-16 h-16 bg-gradient-to-br from-brand-green to-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+              <Download className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
+              Tải hướng dẫn offline
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+              Tải về các hướng dẫn PDF để sử dụng khi không có internet trong chuyến du lịch.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                className="bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-white min-h-[44px]"
+                asChild
+              >
+                <Link href="#guide-download">
+                  <Download className="w-4 h-4 mr-2" />
+                  Hướng dẫn tổng quan
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="border-2 border-brand-gold text-brand-gold hover:bg-brand-gold/10 min-h-[44px]"
+                asChild
+              >
+                <Link href="#emergency-guide">
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Thẻ khẩn cấp
+                </Link>
+              </Button>
+            </div>
+          </div>
         </section>
       </main>
 
