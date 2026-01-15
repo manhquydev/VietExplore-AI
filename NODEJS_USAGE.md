@@ -45,13 +45,13 @@ Thư mục `functions/` chứa Firebase Cloud Functions chạy trên Node.js.
     "node": "20"
   },
   "dependencies": {
-    "firebase-admin": "^12.1.0",  // Functions sử dụng v12
+    "firebase-admin": "^12.1.0",
     "firebase-functions": "^5.0.0"
   }
 }
 ```
 
-**Lưu ý:** Main app sử dụng `firebase-admin@^13.4.0` (Server Components), trong khi Firebase Functions sử dụng `firebase-admin@^12.1.0` (Cloud Functions runtime). Cả hai đều tương thích và hoạt động độc lập.
+**Lưu ý:** Ứng dụng chính sử dụng `firebase-admin@^13.4.0` (Server Components), trong khi Firebase Functions sử dụng `firebase-admin@^12.1.0` (Cloud Functions runtime). Cả hai đều tương thích và hoạt động độc lập.
 
 ### 2. Yêu Cầu Node.js Version
 
@@ -130,7 +130,7 @@ VietExplore-AI/
 - `next@15.3.3` - Framework chính
 - `react@18.3.1` - UI library
 - `firebase@11.10.0` - Firebase SDK (client-side)
-- `firebase-admin@13.4.0` - Admin SDK (main app)
+- `firebase-admin@13.4.0` - Admin SDK (ứng dụng chính)
 - `firebase-admin@12.1.0` - Admin SDK (functions/)
 - `genkit@1.16.1` - AI framework
 - `typescript@5.9.2` - Type system
