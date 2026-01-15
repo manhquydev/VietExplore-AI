@@ -21,6 +21,7 @@ Nền tảng chia sẻ và khám phá địa điểm du lịch Việt Nam với 
 - [Deployment](#deployment)
 - [Contributing](#contributing)
 - [License](#license)
+- [Câu Hỏi Thường Gặp (FAQ)](#câu-hỏi-thường-gặp-faq)
 
 ---
 
@@ -794,6 +795,106 @@ copies or substantial portions of the Software.
 **Bạn phải:**
 - Bao gồm thông báo bản quyền và license trong tất cả bản sao
 - Ghi rõ các thay đổi quan trọng được thực hiện với phần mềm
+
+---
+
+## Câu Hỏi Thường Gặp (FAQ)
+
+### Dự án có dùng Node.js không?
+
+**CÓ** - Dự án VietExplore-AI sử dụng Node.js làm nền tảng chính.
+
+**Chi tiết:**
+- **Frontend**: Next.js 15.3.3 chạy trên Node.js runtime
+- **Backend**: Firebase Cloud Functions yêu cầu Node.js 20
+- **Build Tools**: npm, TypeScript, ESLint đều cần Node.js
+- **Yêu cầu**: Node.js >= 18.0.0, npm >= 9.0.0
+
+**Không thể chạy dự án này mà không có Node.js.**
+
+Xem chi tiết tại [NODEJS_USAGE.md](./NODEJS_USAGE.md)
+
+### Tech stack chính là gì?
+
+- **Frontend**: Next.js 15 + React 18 + TypeScript
+- **Backend**: Firebase (Firestore, Auth, Storage, Functions)
+- **AI**: Google Genkit + Vertex AI
+- **Styling**: TailwindCSS + Radix UI
+- **Testing**: Jest + React Testing Library
+
+### Làm sao để chạy dự án?
+
+```bash
+# 1. Cài đặt dependencies
+npm install
+
+# 2. Thiết lập biến môi trường
+cp .env.example .env.local
+# Chỉnh sửa .env.local với Firebase config của bạn
+
+# 3. Chạy development server
+npm run dev
+```
+
+Server sẽ chạy tại `http://localhost:9002`
+
+### Cần gì để deploy production?
+
+- Tài khoản Firebase (Blaze plan cho Functions)
+- Vercel account (hoặc bất kỳ Next.js hosting)
+- Google AI API key (cho AI Trip Planner)
+- Firebase service account key
+
+### Dự án có hỗ trợ mobile không?
+
+Có! Dự án được thiết kế **mobile-first** với:
+- Responsive design trên mọi thiết bị
+- PWA (Progressive Web App) support
+- Touch-friendly UI components
+- Offline capability với Service Worker
+
+### Làm sao để contribute?
+
+1. Fork repository
+2. Tạo feature branch: `git checkout -b feature/AmazingFeature`
+3. Commit changes: `git commit -m 'feat: add AmazingFeature'`
+4. Push to branch: `git push origin feature/AmazingFeature`
+5. Mở Pull Request
+
+Xem chi tiết tại [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+### Dự án có miễn phí không?
+
+Có! Dự án được phát hành dưới **MIT License** - hoàn toàn miễn phí để:
+- Sử dụng cho mục đích cá nhân
+- Sử dụng cho mục đích thương mại
+- Chỉnh sửa và phân phối
+- Tích hợp vào dự án khác
+
+### Có support bằng tiếng Việt không?
+
+Có! Toàn bộ:
+- UI/UX được thiết kế bằng tiếng Việt
+- Documentation có cả tiếng Việt
+- Support team nói tiếng Việt
+- Community discussions bằng tiếng Việt
+
+### AI Trip Planner hoạt động như thế nào?
+
+AI Trip Planner sử dụng:
+- **Google Genkit** framework
+- **Vertex AI** large language model
+- Dữ liệu địa điểm từ Firestore
+
+**Input:** Thời gian, sở thích, ngân sách, số người
+**Output:** Lịch trình chi tiết theo ngày với địa điểm gợi ý
+
+### Làm sao để report bug?
+
+1. Kiểm tra [Issues](https://github.com/manhquydev/VietExplore-AI/issues) hiện có
+2. Tạo issue mới với template
+3. Mô tả chi tiết: steps to reproduce, expected vs actual behavior
+4. Attach screenshots nếu có
 
 ---
 
