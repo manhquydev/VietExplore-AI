@@ -167,4 +167,4 @@ VietExplore-AI/
 
 **Tóm lại**: Dự án này **BẮT BUỘC** phải có Node.js để hoạt động. Node.js là nền tảng cốt lõi của toàn bộ stack công nghệ.
 
-**Node.js Version được dùng trong môi trường hiện tại**: `v20.19.6`
+**Kiểm tra Node.js version của bạn**: Chạy `node --version` để kiểm tra. Đảm bảo bạn có Node.js >= 18.0.0 hoặc Node.js 20 (được khuyến nghị cho Firebase Functions).
