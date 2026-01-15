@@ -124,7 +124,7 @@ VietExplore-AI/
 
 ### 7. Node.js Packages Chính
 
-**Runtime Dependencies (198 packages):**
+**Runtime Dependencies (major packages):**
 - `next@15.3.3` - Framework chính
 - `react@18.3.1` - UI library
 - `firebase@11.10.0` - Firebase SDK
@@ -132,7 +132,7 @@ VietExplore-AI/
 - `genkit@1.16.1` - AI framework
 - `typescript@5.9.2` - Type system
 
-**Dev Dependencies (30+ packages):**
+**Dev Dependencies (key packages):**
 - `jest@30.0.5` - Testing
 - `eslint@9.37.0` - Linting
 - `@types/node@20` - TypeScript types cho Node.js
